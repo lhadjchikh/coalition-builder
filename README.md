@@ -3,7 +3,7 @@
 [![Backend Tests](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_backend.yml/badge.svg)](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_backend.yml)
 [![Frontend Tests](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_frontend.yml/badge.svg)](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_frontend.yml)
 [![Full Stack Tests](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_fullstack.yml/badge.svg)](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_fullstack.yml)
-[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://your-org.github.io/coalition-builder/)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://lhadjchikh.github.io/coalition-builder/)
 
 A comprehensive platform for organizing and managing policy advocacy campaigns, bringing together stakeholders, legislators, and advocates to drive meaningful policy change.
 
@@ -11,7 +11,7 @@ A comprehensive platform for organizing and managing policy advocacy campaigns, 
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/coalition-builder.git
+git clone https://github.com/lhadjchikh/coalition-builder.git
 cd coalition-builder
 
 # Start with Docker (recommended)
@@ -28,7 +28,7 @@ docker-compose exec backend python scripts/create_test_data.py
 
 ## 📚 Documentation
 
-**Complete documentation is available at: [your-org.github.io/coalition-builder](https://your-org.github.io/coalition-builder/)**
+**Complete documentation is available at: [lhadjchikh.github.io/coalition-builder](https://lhadjchikh.github.io/coalition-builder/)**
 
 ### Quick Links
 
@@ -67,9 +67,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🆘 Support
 
-- 📖 [Documentation](https://your-org.github.io/coalition-builder/)
-- 🐛 [Issue Tracker](https://github.com/your-org/coalition-builder/issues)
-- 💬 [Discussions](https://github.com/your-org/coalition-builder/discussions)
+- 📖 [Documentation](https://lhadjchikh.github.io/coalition-builder/)
+- 🐛 [Issue Tracker](https://github.com/lhadjchikh/coalition-builder/issues)
+- 💬 [Discussions](https://github.com/lhadjchikh/coalition-builder/discussions)
 
 ---
 

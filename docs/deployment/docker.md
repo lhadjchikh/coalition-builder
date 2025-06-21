@@ -32,7 +32,7 @@ docker-compose.yml
 
 ```bash
 # Clone repository
-git clone https://github.com/your-org/coalition-builder.git
+git clone https://github.com/lhadjchikh/coalition-builder.git
 cd coalition-builder
 
 # Start all services

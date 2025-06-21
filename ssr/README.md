@@ -4,7 +4,7 @@ This directory contains the Next.js application that provides server-side render
 
 ## 📚 Documentation
 
-**For complete documentation, visit: [your-org.github.io/coalition-builder](https://your-org.github.io/coalition-builder/)**
+**For complete documentation, visit: [lhadjchikh.github.io/coalition-builder](https://lhadjchikh.github.io/coalition-builder/)**
 
 Quick links:
 

@@ -20,7 +20,7 @@ Coalition Builder can be easily customized for different advocacy groups through
 2. **Clone your fork and set up environment**:
 
    ```bash
-   git clone https://github.com/your-org/coalition-builder.git
+   git clone https://github.com/lhadjchikh/coalition-builder.git
    cd coalition-builder
    cp .env.example .env
    ```
