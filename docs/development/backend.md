@@ -145,7 +145,7 @@ from .schemas import CampaignSchema
 
 router = Router()
 
-@router.get("/", response=List[CampaignSchema])
+@router.get("/", response=list[CampaignSchema])
 def list_campaigns(request):
     return PolicyCampaign.objects.all()
 
