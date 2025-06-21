@@ -138,14 +138,6 @@ Content blocks allow you to add flexible sections to your homepage beyond the st
 
 **Background color**: Hex color code for the block background (e.g., #f0f0f0).
 
-### Content Block Best Practices
-
-1. **Order thoughtfully**: Arrange blocks to tell a story and guide visitors through your message
-2. **Use variety**: Mix different block types for visual interest
-3. **Keep it focused**: Each block should have a clear purpose
-4. **Test visibility**: Use the visibility toggle to test different arrangements
-5. **Optimize for mobile**: Consider how content will appear on different screen sizes
-
 ## Managing Multiple Organizations
 
 ### Single Active Homepage
@@ -192,20 +184,6 @@ This ensures the site always displays some content.
 **Tell Your Story**: Explain why your organization exists and what makes it unique.
 
 **Include Calls-to-Action**: Make it easy for visitors to take the next step.
-
-### SEO Best Practices
-
-**Organization Name**: Should be your official organization name for brand consistency.
-
-**Tagline**: Acts as the meta description - keep it under 160 characters and make it compelling.
-
-**Hero Title**: This often becomes the page title, so make it descriptive and keyword-rich.
-
-**Content Structure**: Use headings and organized content for better search engine understanding.
-
-### Accessibility
-
-**Alt Text**: Always include descriptive alt text for images.
 
 **Heading Structure**: Use proper heading hierarchy in content blocks.
 

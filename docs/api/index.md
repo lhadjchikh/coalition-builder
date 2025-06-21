@@ -277,12 +277,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 ```
 
-### Error Handling Best Practices
-
-Always implement fallback content for when API calls fail:
+### Error Handling
 
 ```typescript
-// Recommended error handling
+// Basic error handling
 let homepage: HomePage | null = null;
 try {
   homepage = await apiClient.getHomepage();

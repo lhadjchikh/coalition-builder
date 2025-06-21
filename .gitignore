@@ -63,6 +63,9 @@ override.tf.json
 *_override.tf.json
 .terragrunt-cache/
 
+# Documentation
+site/
+
 # General
 .idea/
 *.iml
