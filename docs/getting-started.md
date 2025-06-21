@@ -24,7 +24,7 @@ Coalition Builder consists of three main components:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-org/coalition-builder.git
+   git clone https://github.com/lhadjchikh/coalition-builder.git
    cd coalition-builder
    ```
 

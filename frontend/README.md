@@ -9,7 +9,7 @@ that interacts with the Django backend API.
 
 ## 📚 Documentation
 
-**For complete documentation, visit: [your-org.github.io/coalition-builder](https://your-org.github.io/coalition-builder/)**
+**For complete documentation, visit: [lhadjchikh.github.io/coalition-builder](https://lhadjchikh.github.io/coalition-builder/)**
 
 Quick links:
 
