@@ -140,29 +140,6 @@ Content blocks provide flexible sections that can be added, reordered, and custo
 - **Show/Hide**: Use **Is Visible** checkbox
 - **Delete**: Use the delete checkbox and save
 
-## Best Practices
-
-### Content Writing
-
-1. **Keep it concise**: Write clear, scannable content
-2. **Use headings**: Break up long content with subheadings
-3. **Include calls-to-action**: Guide visitors to take action
-4. **Update regularly**: Keep information current
-
-### Images
-
-1. **Use proper URLs**: Always use full URLs starting with `https://`
-2. **Add alt text**: Describe images for accessibility
-3. **Optimize size**: Use appropriately sized images to avoid slow loading
-4. **Consistent style**: Maintain visual consistency across images
-
-### Content Structure
-
-1. **Logical flow**: Arrange content blocks in a natural reading order
-2. **Visual hierarchy**: Use different block types to create visual interest
-3. **Call-to-action placement**: Position important actions prominently
-4. **Mobile consideration**: Keep layouts simple for mobile viewing
-
 ## Examples
 
 ### Basic Organization Homepage

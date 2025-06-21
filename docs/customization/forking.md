@@ -375,22 +375,6 @@ Help other organizations by sharing:
 - **Integration guides** for popular third-party services
 - **Deployment scripts** and automation tools
 
-## Security Considerations
-
-### Protecting Sensitive Data
-
-- **Never commit secrets** to your fork
-- **Use environment variables** for all configuration
-- **Implement proper access controls** for admin interface
-- **Regular security updates** and dependency management
-
-### Production Security
-
-- **SSL/TLS encryption** for all traffic
-- **Regular security audits** of custom code
-- **Backup and disaster recovery** planning
-- **Monitoring and alerting** for security events
-
 ## Success Stories
 
 Learn from other organizations that have successfully customized Coalition Builder:

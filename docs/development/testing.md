@@ -770,30 +770,4 @@ jobs:
         run: npm run test:ci
 ```
 
-## Best Practices
-
-### Test Organization
-
-1. **Follow AAA Pattern**: Arrange, Act, Assert
-2. **Use Descriptive Names**: Test names should clearly describe what is being tested
-3. **Keep Tests Independent**: Each test should be able to run independently
-4. **Mock External Dependencies**: Use mocks for API calls, database connections, etc.
-5. **Test Edge Cases**: Include tests for error conditions and boundary cases
-
-### Performance Considerations
-
-1. **Use Test Databases**: Use separate databases for testing
-2. **Parallel Execution**: Run tests in parallel when possible
-3. **Selective Testing**: Run only relevant tests during development
-4. **Test Data Cleanup**: Clean up test data between tests
-5. **Optimize Fixtures**: Use factories instead of fixtures for better performance
-
-### Debugging Tests
-
-1. **Verbose Output**: Use verbose flags for detailed test output
-2. **Isolated Execution**: Run individual tests to isolate failures
-3. **Browser DevTools**: Use browser debugging tools for frontend tests
-4. **Log Analysis**: Check application logs during test failures
-5. **Test Coverage**: Use coverage tools to identify untested code
-
 For more specific troubleshooting help, see the [main troubleshooting guide](../admin/troubleshooting.md).

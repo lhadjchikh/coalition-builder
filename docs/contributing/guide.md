@@ -171,16 +171,6 @@ When reporting bugs or requesting features:
 3. **Code Comments**: Review inline documentation in the codebase
 4. **Community**: Connect with other organizations using Coalition Builder
 
-## Security Considerations
-
-When contributing to Coalition Builder:
-
-- Never commit secrets, API keys, or passwords
-- Use environment variables for all configuration
-- Follow secure coding practices for web applications
-- Report security vulnerabilities privately through GitHub's security advisory system
-- Test security-related changes thoroughly
-
 ## License and Contribution Agreement
 
 By contributing to Coalition Builder, you agree that your contributions will be licensed under the same license as the project. Ensure you have the right to contribute any code you submit.

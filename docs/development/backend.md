@@ -349,35 +349,6 @@ def my_view(request):
     # ... view logic
 ```
 
-## Best Practices
-
-1. **Model Design**:
-
-   - Use descriptive field names
-   - Add help_text for admin interface
-   - Implement proper **str** methods
-   - Use model validation
-
-2. **API Design**:
-
-   - Use consistent naming conventions
-   - Implement proper error handling
-   - Add comprehensive schemas
-   - Document endpoints
-
-3. **Testing**:
-
-   - Write tests for all models and views
-   - Use factories for test data
-   - Test both success and error cases
-   - Maintain good test coverage
-
-4. **Security**:
-   - Validate all input data
-   - Use proper authentication
-   - Sanitize user-generated content
-   - Follow Django security best practices
-
 ## Related Documentation
 
 - [API Reference](../api/index.md)

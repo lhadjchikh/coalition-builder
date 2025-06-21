@@ -556,36 +556,6 @@ The GitHub Actions workflow automatically:
 4. Updates ECS service with new image
 5. Performs health checks to verify deployment
 
-## Best Practices
-
-### Performance Optimization
-
-1. **Static Generation**: Use static generation for pages that don't change frequently
-2. **Image Optimization**: Use Next.js Image component for automatic optimization
-3. **Code Splitting**: Leverage automatic code splitting for better loading performance
-4. **Caching**: Implement appropriate caching strategies for API responses
-
-### SEO Optimization
-
-1. **Metadata**: Generate dynamic metadata based on page content
-2. **Structured Data**: Include JSON-LD structured data for better search visibility
-3. **Sitemap**: Generate sitemaps for search engine indexing
-4. **Open Graph**: Include Open Graph tags for social media sharing
-
-### Error Handling
-
-1. **Fallback Content**: Always provide fallback content when API calls fail
-2. **Error Boundaries**: Implement React error boundaries for graceful error handling
-3. **Retry Logic**: Implement retry logic for transient API failures
-4. **Monitoring**: Use health checks and metrics for monitoring application health
-
-### Security
-
-1. **Environment Variables**: Use server-side environment variables for sensitive data
-2. **Content Security**: Sanitize HTML content before rendering
-3. **HTTPS**: Always use HTTPS in production
-4. **Headers**: Set appropriate security headers
-
 ## Troubleshooting
 
 ### Common Issues

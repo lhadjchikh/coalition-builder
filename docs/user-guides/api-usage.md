@@ -208,14 +208,6 @@ const campaigns = await api.getCampaigns();
 const homepage = await api.getHomepage();
 ```
 
-## Best Practices
-
-1. **Caching**: Cache API responses where appropriate to reduce server load
-2. **Pagination**: Use pagination for large result sets
-3. **Error Handling**: Always handle API errors gracefully
-4. **Authentication**: Store credentials securely
-5. **Rate Limiting**: Respect rate limits in production environments
-
 ## Next Steps
 
 - [API Reference](../api/index.md) - Complete API documentation
