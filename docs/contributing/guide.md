@@ -1,10 +1,10 @@
 # Contributing Guide
 
-This guide covers how to contribute to the Coalition Builder project, including development workflows, testing, and customization for other organizations.
+This guide covers how to contribute to the Coalition Builder project, including development workflows, code quality standards, and the pull request process.
 
 ## Getting Started
 
-Coalition Builder is designed to be reusable by other advocacy groups. Whether you're contributing to the main project or forking for your own organization, this guide will help you get started.
+Thank you for your interest in contributing to Coalition Builder! This project helps advocacy organizations build effective campaigns, and your contributions make it better for everyone.
 
 ### Repository Structure
 
@@ -13,7 +13,7 @@ This repository contains multiple components:
 - `backend/` – Django REST API using Poetry
 - `frontend/` – React + TypeScript client
 - `ssr/` – optional Next.js app for server side rendering
-- `terraform/` – IaC definitions
+- `terraform/` – Infrastructure as Code definitions
 
 ## Development Workflow
 
@@ -62,108 +62,11 @@ This script runs formatting and linting across Python, frontend files, Terraform
 - Ensure linters and tests pass before opening a pull request.
 - Use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages.
 
-## Forking for Your Organization
+## Project Organization
 
-Coalition Builder can be customized for other advocacy groups. Follow these steps after forking:
+Coalition Builder is designed to be both a standalone platform and a customizable foundation for other advocacy organizations. If you're interested in forking the project for your organization, see our [Forking and Customization Guide](../customization/forking.md).
 
-### Initial Setup
-
-1. **Clone your fork and set up environment**:
-
-   ```bash
-   git clone https://github.com/your-org/coalition-builder.git
-   cd coalition-builder
-   cp .env.example .env
-   ```
-
-2. **Update organization-specific values in `.env`**:
-
-   ```bash
-   # Organization Information
-   ORG_NAME="Your Organization Name"
-   ORG_TAGLINE="Your mission statement"
-   CONTACT_EMAIL="info@yourorg.org"
-
-   # Database
-   DB_NAME="your_db_name"
-
-   # Domain settings (for production deployment)
-   DOMAIN_NAME="yourdomain.org"
-   TF_VAR_domain_name="yourdomain.org"
-   TF_VAR_route53_zone_id="your-zone-id"
-   TF_VAR_acm_certificate_arn="your-cert-arn"
-   ```
-
-3. **Edit branding configuration** (optional):
-   Edit `branding.json` if you want to change logos or default text:
-
-   ```json
-   {
-     "organization_name": "Your Organization",
-     "primary_color": "#your-color",
-     "logo_url": "https://yoursite.com/logo.png"
-   }
-   ```
-
-4. **Start development or deploy**:
-
-   ```bash
-   # For local development
-   docker-compose up
-
-   # For cloud deployment
-   # Follow terraform/README.md for cloud deployment
-   ```
-
-With these variables customized, the app will display your organization name and use your infrastructure settings.
-
-### Customization Options
-
-#### Environment Variables
-
-The application supports extensive customization through environment variables:
-
-**Organization Configuration:**
-
-- `ORGANIZATION_NAME`: Your organization's full name
-- `ORG_TAGLINE`: Brief mission statement or slogan
-- `CONTACT_EMAIL`: Primary contact email
-
-**Database Configuration:**
-
-- `DB_NAME`: Name of your database
-- `DATABASE_URL`: Full database connection URL
-
-**Deployment Configuration:**
-
-- `DOMAIN_NAME`: Your organization's domain
-- `AWS_REGION`: Preferred AWS region for deployment
-- `ENVIRONMENT`: Deployment environment (development, staging, production)
-
-#### Branding Customization
-
-The `branding.json` file allows you to customize:
-
-- Organization name and tagline
-- Color scheme and theme
-- Logo and favicon URLs
-- Social media links
-- Default content and messaging
-
-#### Content Management
-
-Once deployed, you can customize all content through the Django admin interface:
-
-1. Access the admin at `https://yourdomain.org/admin/`
-2. Configure your homepage in "Homepage Configurations"
-3. Add your organization's specific campaigns, stakeholders, and content
-4. Customize content blocks for your specific messaging
-
-See the [Content Management Guide](../user-guides/content-management.md) for detailed instructions.
-
-## Contributing to the Main Project
-
-### Reporting Issues
+## Reporting Issues
 
 When reporting bugs or requesting features:
 

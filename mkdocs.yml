@@ -64,6 +64,9 @@ nav:
   - Contributing:
       - Contributing Guide: contributing/guide.md
 
+  - Customization:
+      - Forking Guide: customization/forking.md
+
   - Reference:
       - API Reference: api/index.md
       - Environment Variables: reference/environment.md

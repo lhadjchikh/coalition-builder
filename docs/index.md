@@ -54,6 +54,12 @@ Help improve Coalition Builder:
 
 - [Contributing Guide](contributing/guide.md) - How to contribute to the project
 
+## 🔧 Customization
+
+Adapt Coalition Builder for your organization:
+
+- [Forking Guide](customization/forking.md) - Fork and customize for your organization
+
 ## 📚 Reference
 
 Complete reference documentation:
@@ -165,6 +171,7 @@ Coalition Builder provides a comprehensive set of tools for advocacy organizatio
 
 - **Issues**: Report bugs and request features on GitHub
 - **Contributing**: Read our [contributing guide](contributing/guide.md)
+- **Customization**: See our [forking guide](customization/forking.md) for organization-specific setups
 - **Updates**: Follow the [changelog](reference/changelog.md) for latest changes
 
 ## 📄 License
