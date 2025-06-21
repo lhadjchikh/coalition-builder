@@ -5,23 +5,37 @@ This document provides a high-level overview of the Coalition Builder system arc
 ## Architecture Diagram
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Users/Admins  │    │   Load Balancer │    │   Monitoring    │
-│                 │    │      (ALB)      │    │  (CloudWatch)   │
-└─────────┬───────┘    └─────────┬───────┘    └─────────────────┘
-          │                      │                      ▲
-          │                      │                      │
-          ▼                      ▼                      │
-┌─────────────────┐    ┌─────────────────┐             │
-│  Frontend/SSR   │    │   Django API    │─────────────┘
-│   (React/Next)  │◄──►│   (Backend)     │
-└─────────────────┘    └─────────┬───────┘
-                                 │
-                                 ▼
-                       ┌─────────────────┐
-                       │   PostgreSQL    │
-                       │   + PostGIS     │
-                       └─────────────────┘
+┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
+│      Users      │      │  Load Balancer  │      │   Monitoring    │
+│                 │      │      (ALB)      │      │  (CloudWatch)   │
+└────────┬────────┘      └────────┬────────┘      └─────────────────┘
+         │                        │                        ▲
+         │               ┌────────┼────────┐               │
+         ▼               │        ▼        │               │
+┌─────────────────┐      │ ┌─────────────┐ │               │
+│  Frontend/SSR   │      │ │ ECS Service │ │───────────────┘
+│   (React/Next)  │◄─────┤ │             │ │
+└─────────────────┘      │ │ ┌─────────┐ │ │
+                         │ │ │ Django  │ │ │
+┌─────────────────┐      │ │ │   API   │ │ │
+│   Django Admin  │◄─────┤ │ │  (port  │ │ │
+│                 │      │ │ │  8000)  │ │ │
+└─────────────────┘      │ │ └─────────┘ │ │
+                         │ │             │ │
+                         │ │ ┌─────────┐ │ │
+                         │ │ │   SSR   │ │ │
+                         │ │ │ Next.js │ │ │
+                         │ │ │  (port  │ │ │
+                         │ │ │  3000)  │ │ │
+                         │ │ └─────────┘ │ │
+                         │ └─────────────┘ │
+                         └────────┬────────┘
+                                  │
+                                  ▼
+                         ┌─────────────────┐
+                         │   PostgreSQL    │
+                         │   + PostGIS     │
+                         └─────────────────┘
 ```
 
 ## Core Components
@@ -118,17 +132,20 @@ Internet
     ▼
 Application Load Balancer (ALB)
     │
-    ├── Target Group 1: Django API
-    │   └── ECS Fargate Tasks
-    │       └── Django Container
-    │
-    └── Target Group 2: SSR (Optional)
-        └── ECS Fargate Tasks
-            └── Next.js Container
+    ├── /api/* → Target Group 1: Django API (port 8000)
+    ├── /admin/* → Target Group 1: Django API (port 8000)
+    ├── /static/* → Target Group 1: Django API (port 8000)
+    └── /* (default) → Target Group 2: SSR (port 3000)
                 │
                 ▼
-            RDS PostgreSQL
-            └── PostGIS Extension
+        ECS Fargate Service (Single Task Definition)
+                │
+                ├── Django API Container (port 8000)
+                └── SSR Container (port 3000)
+                        │
+                        ▼
+                RDS PostgreSQL
+                └── PostGIS Extension
 ```
 
 ## Technology Stack
@@ -215,7 +232,7 @@ Frontend/SSR → Django Middleware → URL Router → View Function → Database
 ### Horizontal Scaling
 
 - **Frontend**: Can be deployed to CDN for global distribution
-- **API**: ECS auto-scaling based on CPU/memory metrics
+- **ECS Service**: Auto-scaling based on CPU/memory metrics (scales both containers together)
 - **Database**: Read replicas for improved read performance
 
 ### Performance Optimization
