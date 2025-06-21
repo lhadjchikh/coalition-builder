@@ -67,7 +67,6 @@ Complete reference documentation:
 - [API Reference](api/index.md) - Complete API documentation
 - [Environment Variables](reference/environment.md) - Configuration reference
 - [CLI Reference](reference/cli.md) - Command-line tools and scripts
-- [Changelog](reference/changelog.md) - Version history and updates
 
 ---
 
@@ -172,7 +171,6 @@ Coalition Builder provides a comprehensive set of tools for advocacy organizatio
 - **Issues**: Report bugs and request features on GitHub
 - **Contributing**: Read our [contributing guide](contributing/guide.md)
 - **Customization**: See our [forking guide](customization/forking.md) for organization-specific setups
-- **Updates**: Follow the [changelog](reference/changelog.md) for latest changes
 
 ## 📄 License
 

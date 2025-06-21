@@ -71,7 +71,6 @@ nav:
       - API Reference: api/index.md
       - Environment Variables: reference/environment.md
       - CLI Reference: reference/cli.md
-      - Changelog: reference/changelog.md
 
 markdown_extensions:
   - admonition
