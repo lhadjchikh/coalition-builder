@@ -9,19 +9,16 @@ from .schemas import PolicyCampaignOut
 router = Router()
 
 
-@router.get("/", response=list[PolicyCampaignOut] | PolicyCampaignOut)
-def list_campaigns(
-    request: HttpRequest,
-    name: str = None,
-) -> list[PolicyCampaign] | PolicyCampaign:
-    """List all active campaigns, or get a specific campaign by name"""
-    queryset = PolicyCampaign.objects.filter(active=True)
+@router.get("/", response=list[PolicyCampaignOut])
+def list_campaigns(request: HttpRequest) -> list[PolicyCampaign]:
+    """List all active campaigns"""
+    return PolicyCampaign.objects.filter(active=True).all()
 
-    # If name is provided, return single campaign
-    if name is not None:
-        return get_object_or_404(queryset, name=name)
 
-    return queryset.all()
+@router.get("/by-name/{name}/", response=PolicyCampaignOut)
+def get_campaign_by_name(request: HttpRequest, name: str) -> PolicyCampaign:
+    """Get a specific campaign by name"""
+    return get_object_or_404(PolicyCampaign, name=name, active=True)
 
 
 @router.get("/{campaign_id}/", response=PolicyCampaignOut)

@@ -124,7 +124,7 @@ const API = {
 
   getCampaignByName: async (name: string): Promise<Campaign> => {
     try {
-      const response = await fetch(`${getBaseUrl()}/api/campaigns/?name=${name}`);
+      const response = await fetch(`${getBaseUrl()}/api/campaigns/by-name/${name}/`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

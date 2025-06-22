@@ -147,8 +147,8 @@ class PolicyCampaignAPITest(TestCase):
         assert data["endorsement_statement"] == "I support this test campaign"
 
     def test_get_campaign_by_name(self) -> None:
-        """Test GET /api/campaigns/?name={name} endpoint"""
-        response = self.client.get(f"/api/campaigns/?name={self.campaign.name}")
+        """Test GET /api/campaigns/by-name/{name}/ endpoint"""
+        response = self.client.get(f"/api/campaigns/by-name/{self.campaign.name}/")
         assert response.status_code == 200
 
         data = response.json()
@@ -160,7 +160,7 @@ class PolicyCampaignAPITest(TestCase):
         response = self.client.get("/api/campaigns/99999/")
         assert response.status_code == 404
 
-        response = self.client.get("/api/campaigns/?name=nonexistent-name")
+        response = self.client.get("/api/campaigns/by-name/nonexistent-name/")
         assert response.status_code == 404
 
     def test_inactive_campaigns_not_listed(self) -> None:

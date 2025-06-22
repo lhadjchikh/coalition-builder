@@ -222,9 +222,31 @@ Returns a specific campaign by ID.
 }
 ```
 
-#### `GET /api/campaigns/?name={name}`
+#### `GET /api/campaigns/by-name/{name}/`
 
-Returns a specific campaign by machine name using query parameter filtering.
+Returns a specific campaign by machine name.
+
+**Response Example:**
+
+```json
+{
+  "id": 1,
+  "name": "clean-water-protection-act",
+  "title": "Clean Water Protection Act",
+  "summary": "Legislation to strengthen water quality standards and protect the Chesapeake Bay watershed",
+  "description": "Comprehensive legislation that establishes new water quality standards, provides funding for watershed restoration, and creates enforcement mechanisms to protect the Chesapeake Bay and its tributaries.",
+  "endorsement_statement": "I support the Clean Water Protection Act and its goal of ensuring safe, clean water for all communities in the Chesapeake Bay watershed.",
+  "allow_endorsements": true,
+  "endorsement_form_instructions": "Please provide your organization details and any additional comments about why you support this legislation.",
+  "active": true,
+  "created_at": "2024-01-15T10:00:00Z"
+}
+```
+
+**Status Codes:**
+
+- `200 OK`: Campaign found and returned
+- `404 Not Found`: Campaign not found or not active
 
 ### Stakeholders
 
