@@ -170,10 +170,30 @@ class CampaignDetailSchema(Schema):
     slug: str
     summary: str
     description: Optional[str]
+    endorsement_statement: Optional[str]
+    allow_endorsements: bool
+    endorsement_form_instructions: Optional[str]
     active: bool
-    endorsements_count: int
     created_at: datetime
-    updated_at: datetime
+
+class StakeholderSchema(Schema):
+    id: int
+    name: str
+    organization: str
+    role: Optional[str]
+    email: str
+    state: str
+    county: Optional[str]
+    type: str
+    created_at: datetime
+
+class EndorsementSchema(Schema):
+    id: int
+    stakeholder: StakeholderSchema
+    campaign: CampaignDetailSchema
+    statement: Optional[str]
+    public_display: bool
+    created_at: datetime
 ```
 
 ### Custom Serialization Logic
@@ -498,3 +518,98 @@ def list_campaigns(request):
 ```
 
 This API design provides a solid foundation for frontend applications while maintaining flexibility for future enhancements and ensuring type safety throughout the application.
+
+## Endorsement System
+
+The endorsement API enables stakeholders to endorse campaigns with automatic deduplication and validation.
+
+### Endorsement Endpoints
+
+**GET /api/endorsements/**
+
+- Lists all public endorsements across all campaigns
+- Returns endorsements with full stakeholder and campaign details
+- Filters to only show endorsements with `public_display=True`
+- Ordered by creation date (newest first)
+
+**GET /api/endorsements/campaign/{campaign_id}/**
+
+- Lists all public endorsements for a specific campaign
+- Includes full stakeholder details for each endorsement
+- Returns 404 if campaign doesn't exist
+- Only shows public endorsements
+
+**POST /api/endorsements/**
+
+- Creates new endorsement with automatic stakeholder deduplication
+- Updates existing stakeholder info if email already exists
+- Validates campaign exists and allows endorsements
+- Prevents duplicate endorsements (same stakeholder + campaign)
+- Returns 400 if campaign doesn't allow endorsements
+
+**Request Body:**
+
+```json
+{
+  "campaign_id": 1,
+  "stakeholder": {
+    "name": "John Doe",
+    "organization": "Farm Coalition",
+    "role": "Director",
+    "email": "john@farm.org",
+    "state": "MD",
+    "county": "Carroll County",
+    "type": "farmer"
+  },
+  "statement": "Optional additional comment",
+  "public_display": true
+}
+```
+
+**Response:**
+
+```json
+{
+  "id": 25,
+  "stakeholder": {
+    "id": 12,
+    "name": "John Doe",
+    "organization": "Farm Coalition",
+    "role": "Director",
+    "email": "john@farm.org",
+    "state": "MD",
+    "county": "Carroll County",
+    "type": "farmer",
+    "created_at": "2024-01-01T00:00:00Z"
+  },
+  "campaign": {
+    "id": 1,
+    "title": "Clean Water Protection Act",
+    "slug": "clean-water-protection",
+    "summary": "Protecting our waterways",
+    "endorsement_statement": "I support the Clean Water Protection Act",
+    "allow_endorsements": true,
+    "created_at": "2024-01-01T00:00:00Z"
+  },
+  "statement": "Optional additional comment",
+  "public_display": true,
+  "created_at": "2024-01-01T12:00:00Z"
+}
+```
+
+### Campaign Endorsement Details
+
+**GET /api/campaigns/slug/{slug}/**
+
+- Returns full campaign details including endorsement configuration
+- Includes `endorsement_statement`, `allow_endorsements`, and `endorsement_form_instructions`
+- Used by frontend to display endorsement forms with proper campaign context
+
+### Stakeholder Deduplication
+
+Email-based deduplication ensures consistent stakeholder records:
+
+- Stakeholders identified by email address (case-insensitive)
+- Existing stakeholder info updated when endorsing new campaigns
+- Prevents duplicate stakeholder records across campaigns
+- Maintains endorsement history per stakeholder

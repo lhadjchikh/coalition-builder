@@ -14,6 +14,12 @@ class PolicyCampaignOut(Schema):
     title: str
     slug: str
     summary: str
+    description: str
+    endorsement_statement: str
+    allow_endorsements: bool
+    endorsement_form_instructions: str
+    active: bool
+    created_at: datetime
 
 
 class StakeholderOut(Schema):
@@ -26,6 +32,7 @@ class StakeholderOut(Schema):
     county: str
     type: str
     created_at: datetime
+    updated_at: datetime
 
 
 class EndorsementOut(Schema):
@@ -110,3 +117,21 @@ class HomePageOut(Schema):
     def resolve_content_blocks(obj: "HomePage") -> "QuerySet[ContentBlock]":
         """Only return visible content blocks, ordered by order field"""
         return obj.content_blocks.filter(is_visible=True).order_by("order")
+
+
+# Input schemas for creating endorsements
+class StakeholderCreateSchema(Schema):
+    name: str
+    organization: str
+    role: str = ""
+    email: str
+    state: str
+    county: str = ""
+    type: str
+
+
+class EndorsementCreateSchema(Schema):
+    campaign_id: int
+    stakeholder: StakeholderCreateSchema
+    statement: str = ""  # Optional additional comment
+    public_display: bool = True

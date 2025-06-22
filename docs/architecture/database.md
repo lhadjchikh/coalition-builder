@@ -96,7 +96,10 @@ PolicyCampaign
 ├── title (CharField, unique)
 ├── slug (SlugField, unique, indexed)
 ├── summary (TextField)
-├── description (TextField, optional, rich text)
+├── description (TextField, optional)
+├── endorsement_statement (TextField, optional)
+├── allow_endorsements (BooleanField, default=True)
+├── endorsement_form_instructions (TextField, optional)
 ├── active (BooleanField, default=True, indexed)
 ├── created_at (DateTimeField, auto, indexed)
 └── updated_at (DateTimeField, auto)
@@ -104,19 +107,12 @@ PolicyCampaign
 # Stakeholder Management
 Stakeholder
 ├── name (CharField)
-├── organization (CharField, optional)
-├── title (CharField, optional)
-├── stakeholder_type (CharField: farmer, business, nonprofit, etc.)
-├── email (EmailField, optional)
-├── phone (CharField, optional)
-├── address (TextField, optional)
-├── city (CharField, optional)
-├── state (CharField, optional)
-├── zip_code (CharField, optional)
-├── location (PointField, PostGIS, optional)
-├── website (URLField, optional)
-├── bio (TextField, optional)
-├── is_public (BooleanField, default=True)
+├── organization (CharField)
+├── role (CharField, optional)
+├── email (EmailField, unique)
+├── state (CharField)
+├── county (CharField, optional)
+├── type (CharField: farmer, waterman, business, nonprofit, individual, government, other)
 ├── created_at (DateTimeField, auto)
 └── updated_at (DateTimeField, auto)
 
@@ -125,7 +121,7 @@ Endorsement
 ├── stakeholder (ForeignKey to Stakeholder)
 ├── campaign (ForeignKey to PolicyCampaign)
 ├── statement (TextField, optional)
-├── is_public (BooleanField, default=True)
+├── public_display (BooleanField, default=True)
 ├── created_at (DateTimeField, auto)
 └── updated_at (DateTimeField, auto)
 ```
@@ -148,8 +144,13 @@ ALTER TABLE endorsements_endorsement ADD CONSTRAINT unique_stakeholder_campaign
 ALTER TABLE core_contentblock ADD CONSTRAINT positive_order
     CHECK (order >= 0);
 
+-- Email uniqueness
+ALTER TABLE stakeholders_stakeholder ADD CONSTRAINT unique_email
+    UNIQUE (email);
+
+-- Stakeholder type validation
 ALTER TABLE stakeholders_stakeholder ADD CONSTRAINT valid_stakeholder_type
-    CHECK (stakeholder_type IN ('farmer', 'waterman', 'business', 'nonprofit', 'individual', 'government', 'other'));
+    CHECK (type IN ('farmer', 'waterman', 'business', 'nonprofit', 'individual', 'government', 'other'));
 ```
 
 ## PostGIS Integration
