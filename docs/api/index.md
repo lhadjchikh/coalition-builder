@@ -117,6 +117,70 @@ Content blocks support different types for flexible page layouts:
 - **`stats`**: Statistics or metrics display
 - **`custom_html`**: Custom HTML content for advanced layouts
 
+### Content Blocks
+
+#### `GET /api/content-blocks/`
+
+Returns all visible content blocks, optionally filtered by homepage.
+
+**Query Parameters:**
+
+- `homepage_id` (optional): Filter content blocks by homepage ID
+
+**Response Example:**
+
+```json
+[
+  {
+    "id": 1,
+    "title": "Why Coalition Building Matters",
+    "block_type": "text",
+    "content": "<p>Effective policy change requires more than individual voices—it requires coordinated action from diverse stakeholders.</p>",
+    "image_url": "",
+    "image_alt_text": "",
+    "css_classes": "bg-gray-50",
+    "background_color": "",
+    "order": 1,
+    "is_visible": true,
+    "created_at": "2024-01-01T10:00:00Z",
+    "updated_at": "2024-01-01T10:00:00Z"
+  }
+]
+```
+
+**Status Codes:**
+
+- `200 OK`: Content blocks found and returned
+- `200 OK`: Empty array if no content blocks found
+
+#### `GET /api/content-blocks/{block_id}/`
+
+Returns a specific visible content block by ID.
+
+**Response Example:**
+
+```json
+{
+  "id": 1,
+  "title": "Why Coalition Building Matters",
+  "block_type": "text",
+  "content": "<p>Effective policy change requires more than individual voices—it requires coordinated action from diverse stakeholders.</p>",
+  "image_url": "",
+  "image_alt_text": "",
+  "css_classes": "bg-gray-50",
+  "background_color": "",
+  "order": 1,
+  "is_visible": true,
+  "created_at": "2024-01-01T10:00:00Z",
+  "updated_at": "2024-01-01T10:00:00Z"
+}
+```
+
+**Status Codes:**
+
+- `200 OK`: Content block found and returned
+- `404 Not Found`: Content block not found or not visible
+
 ### Policy Campaigns
 
 #### `GET /api/campaigns/`

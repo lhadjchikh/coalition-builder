@@ -316,6 +316,11 @@ class HomepageAPITest(TestCase):
         assert data["tagline"] == "Building test coalitions"
         assert data["is_active"]
 
+        # Specific homepage by ID should include content blocks
+        assert "content_blocks" in data
+        content_blocks = data["content_blocks"]
+        assert len(content_blocks) == 2  # Only visible blocks
+
     def test_get_homepage_by_id_not_found(self) -> None:
         """Test homepage retrieval by non-existent ID"""
         non_existent_id = 99999
@@ -328,7 +333,9 @@ class HomepageAPITest(TestCase):
 
     def test_get_content_blocks_for_homepage(self) -> None:
         """Test retrieval of content blocks for a specific homepage"""
-        response = self.client.get(f"/api/homepage/{self.homepage.id}/content-blocks/")
+        response = self.client.get(
+            f"/api/content-blocks/?homepage_id={self.homepage.id}",
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -356,12 +363,13 @@ class HomepageAPITest(TestCase):
     def test_get_content_blocks_for_nonexistent_homepage(self) -> None:
         """Test content blocks retrieval for non-existent homepage"""
         non_existent_id = 99999
-        response = self.client.get(f"/api/homepage/{non_existent_id}/content-blocks/")
+        response = self.client.get(
+            f"/api/content-blocks/?homepage_id={non_existent_id}",
+        )
 
-        assert response.status_code == 404
+        assert response.status_code == 200
         data = response.json()
-        assert "detail" in data
-        assert data["detail"] == "Not Found"
+        assert data == []  # Empty list for non-existent homepage
 
     def test_get_content_blocks_empty_list(self) -> None:
         """Test content blocks retrieval for homepage with no visible blocks"""
@@ -375,7 +383,9 @@ class HomepageAPITest(TestCase):
             is_active=False,  # Don't interfere with existing active homepage
         )
 
-        response = self.client.get(f"/api/homepage/{empty_homepage.id}/content-blocks/")
+        response = self.client.get(
+            f"/api/content-blocks/?homepage_id={empty_homepage.id}",
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -408,7 +418,9 @@ class HomepageAPITest(TestCase):
             is_visible=False,
         )
 
-        response = self.client.get(f"/api/homepage/{self.homepage.id}/content-blocks/")
+        response = self.client.get(
+            f"/api/content-blocks/?homepage_id={self.homepage.id}",
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -429,7 +441,7 @@ class HomepageAPITest(TestCase):
     def test_get_content_block_by_id_success(self) -> None:
         """Test successful content block retrieval by ID"""
         response = self.client.get(
-            f"/api/homepage/content-blocks/{self.content_block1.id}/",
+            f"/api/content-blocks/{self.content_block1.id}/",
         )
 
         assert response.status_code == 200
@@ -454,7 +466,7 @@ class HomepageAPITest(TestCase):
     def test_get_content_block_by_id_not_found(self) -> None:
         """Test content block retrieval by non-existent ID"""
         non_existent_id = 99999
-        response = self.client.get(f"/api/homepage/content-blocks/{non_existent_id}/")
+        response = self.client.get(f"/api/content-blocks/{non_existent_id}/")
 
         assert response.status_code == 404
         data = response.json()
@@ -464,7 +476,7 @@ class HomepageAPITest(TestCase):
     def test_get_content_block_with_image_data(self) -> None:
         """Test content block retrieval with image data populated"""
         response = self.client.get(
-            f"/api/homepage/content-blocks/{self.content_block2.id}/",
+            f"/api/content-blocks/{self.content_block2.id}/",
         )
 
         assert response.status_code == 200
@@ -479,18 +491,16 @@ class HomepageAPITest(TestCase):
         assert data["order"] == 2
 
     def test_get_hidden_content_block_by_id(self) -> None:
-        """Test that hidden content blocks can still be retrieved by ID"""
-        # Hidden blocks can be retrieved by ID even if they don't appear in lists
+        """Test that hidden content blocks cannot be retrieved by ID in the new API"""
+        # Hidden blocks should not be retrievable by ID in the new API
         response = self.client.get(
-            f"/api/homepage/content-blocks/{self.hidden_block.id}/",
+            f"/api/content-blocks/{self.hidden_block.id}/",
         )
 
-        assert response.status_code == 200
+        assert response.status_code == 404
         data = response.json()
-
-        assert data["id"] == self.hidden_block.id
-        assert data["title"] == "Hidden Block"
-        assert data["is_visible"] is False
+        assert "detail" in data
+        assert data["detail"] == "Not Found"
 
     def test_api_endpoint_response_structure_consistency(self) -> None:
         """Test that all homepage API endpoints return consistent data structures"""
@@ -516,7 +526,7 @@ class HomepageAPITest(TestCase):
 
         # Test content blocks list endpoint
         blocks_response = self.client.get(
-            f"/api/homepage/{self.homepage.id}/content-blocks/",
+            f"/api/content-blocks/?homepage_id={self.homepage.id}",
         )
         assert blocks_response.status_code == 200
         blocks_data = blocks_response.json()
@@ -528,7 +538,7 @@ class HomepageAPITest(TestCase):
         if blocks_data:
             first_block = blocks_data[0]
             block_response = self.client.get(
-                f"/api/homepage/content-blocks/{first_block['id']}/",
+                f"/api/content-blocks/{first_block['id']}/",
             )
             assert block_response.status_code == 200
             block_data = block_response.json()
