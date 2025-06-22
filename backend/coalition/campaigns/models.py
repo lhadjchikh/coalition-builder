@@ -6,6 +6,22 @@ class PolicyCampaign(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
     summary = models.TextField()
+    description = models.TextField(
+        blank=True,
+        help_text="Additional context/details about the campaign",
+    )
+    endorsement_statement = models.TextField(
+        blank=True,
+        help_text="The exact statement that endorsers are agreeing to support",
+    )
+    allow_endorsements = models.BooleanField(
+        default=True,
+        help_text="Allow stakeholders to endorse this campaign",
+    )
+    endorsement_form_instructions = models.TextField(
+        blank=True,
+        help_text="Custom instructions shown above the endorsement form",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=True)
 

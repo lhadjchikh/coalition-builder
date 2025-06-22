@@ -24,20 +24,42 @@ class PolicyCampaignAdmin(admin.ModelAdmin):
 
     inlines = [BillInline]
 
-    list_display = ("title", "slug", "active", "created_at", "bill_count")
+    list_display = (
+        "title",
+        "slug",
+        "allow_endorsements",
+        "active",
+        "created_at",
+        "endorsement_count",
+        "bill_count",
+    )
 
-    list_filter = ("active", "created_at")
+    list_filter = ("active", "allow_endorsements", "created_at")
 
-    search_fields = ("title", "slug", "summary")
+    search_fields = ("title", "slug", "summary", "description")
 
-    list_editable = ("active",)
+    list_editable = ("active", "allow_endorsements")
 
     prepopulated_fields = {"slug": ("title",)}
 
     readonly_fields = ("created_at",)
 
     fieldsets = (
-        ("Campaign Information", {"fields": ("title", "slug", "summary", "active")}),
+        (
+            "Campaign Information",
+            {"fields": ("title", "slug", "summary", "description", "active")},
+        ),
+        (
+            "Endorsements",
+            {
+                "fields": (
+                    "allow_endorsements",
+                    "endorsement_statement",
+                    "endorsement_form_instructions",
+                ),
+                "description": "Configure how endorsements work for this campaign",
+            },
+        ),
         (
             "Metadata",
             {
@@ -46,6 +68,12 @@ class PolicyCampaignAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+    def endorsement_count(self, obj: PolicyCampaign) -> int:
+        """Display count of endorsements"""
+        return obj.endorsements.count()
+
+    endorsement_count.short_description = "Endorsements"
 
     def bill_count(self, obj: PolicyCampaign) -> int:
         """Display count of associated bills"""
