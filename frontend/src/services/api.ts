@@ -78,7 +78,7 @@ const API = {
 
   getCampaignEndorsements: async (campaignId: number): Promise<Endorsement[]> => {
     try {
-      const response = await fetch(`${getBaseUrl()}/api/endorsements/campaign/${campaignId}/`);
+      const response = await fetch(`${getBaseUrl()}/api/endorsements/?campaign_id=${campaignId}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

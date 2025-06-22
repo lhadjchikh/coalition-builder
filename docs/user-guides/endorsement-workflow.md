@@ -110,7 +110,7 @@ Endorsed campaigns show:
 - `GET /api/campaigns/{id}/` - Campaign details with endorsement fields
 - `POST /api/endorsements/` - Submit new endorsement
 - `GET /api/endorsements/` - All public endorsements
-- `GET /api/campaigns/{id}/endorsements/` - Campaign-specific endorsements
+- `GET /api/endorsements/?campaign_id={id}` - Campaign-specific endorsements
 
 ## Admin Workflow
 

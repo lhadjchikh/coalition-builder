@@ -228,9 +228,9 @@ Returns all public endorsements with stakeholder and campaign details.
 ]
 ```
 
-#### `GET /api/campaigns/{campaign_id}/endorsements/`
+#### `GET /api/endorsements/?campaign_id={campaign_id}`
 
-Returns all public endorsements for a specific campaign.
+Returns all public endorsements for a specific campaign using query parameter filtering.
 
 **Response Example:**
 

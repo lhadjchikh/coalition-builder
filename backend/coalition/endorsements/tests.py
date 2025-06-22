@@ -191,8 +191,8 @@ class EndorsementAPITest(TestCase):
         assert endorsement_data["campaign"]["title"] == "Test Campaign"
 
     def test_list_campaign_endorsements(self) -> None:
-        """Test GET /api/endorsements/campaign/{id}/ endpoint"""
-        response = self.client.get(f"/api/endorsements/campaign/{self.campaign.id}/")
+        """Test GET /api/endorsements/?campaign_id={id} endpoint"""
+        response = self.client.get(f"/api/endorsements/?campaign_id={self.campaign.id}")
         assert response.status_code == 200
 
         data = response.json()
@@ -431,7 +431,7 @@ class EndorsementAPITest(TestCase):
             assert not Stakeholder.objects.filter(email="new@example.com").exists()
 
         # List campaign endorsements
-        response = self.client.get(f"/api/endorsements/campaign/{self.campaign.id}/")
+        response = self.client.get(f"/api/endorsements/?campaign_id={self.campaign.id}")
         data = response.json()
 
         # Should only return the public endorsement

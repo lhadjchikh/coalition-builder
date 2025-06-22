@@ -14,26 +14,19 @@ router = Router()
 
 
 @router.get("/", response=list[EndorsementOut])
-def list_endorsements(request: HttpRequest) -> list[Endorsement]:
-    """List all public endorsements"""
-    return (
-        Endorsement.objects.select_related("stakeholder", "campaign")
-        .filter(public_display=True)
-        .all()
-    )
-
-
-@router.get("/campaign/{campaign_id}/", response=list[EndorsementOut])
-def list_campaign_endorsements(
-    request: HttpRequest,
-    campaign_id: int,
+def list_endorsements(
+    request: HttpRequest, campaign_id: int = None,
 ) -> list[Endorsement]:
-    """List all public endorsements for a specific campaign"""
-    return (
-        Endorsement.objects.select_related("stakeholder", "campaign")
-        .filter(campaign_id=campaign_id, public_display=True)
-        .all()
+    """List all public endorsements, optionally filtered by campaign"""
+    queryset = Endorsement.objects.select_related("stakeholder", "campaign").filter(
+        public_display=True,
     )
+
+    # Filter by campaign if campaign_id is provided
+    if campaign_id is not None:
+        queryset = queryset.filter(campaign_id=campaign_id)
+
+    return queryset.all()
 
 
 @router.post("/", response=EndorsementOut)
