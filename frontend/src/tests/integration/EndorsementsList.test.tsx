@@ -27,8 +27,8 @@ describe('EndorsementsList', () => {
       },
       campaign: {
         id: 1,
+        name: 'test-campaign',
         title: 'Test Campaign',
-        slug: 'test-campaign',
         summary: 'Test summary',
       },
       statement: 'This is a great campaign that we fully support!',
@@ -51,8 +51,8 @@ describe('EndorsementsList', () => {
       },
       campaign: {
         id: 1,
+        name: 'test-campaign',
         title: 'Test Campaign',
-        slug: 'test-campaign',
         summary: 'Test summary',
       },
       statement: 'Essential legislation for our environment.',

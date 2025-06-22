@@ -7,10 +7,10 @@ import './Endorsements.css';
 
 interface CampaignDetailProps {
   campaignId?: number;
-  campaignSlug?: string;
+  campaignName?: string;
 }
 
-const CampaignDetail: React.FC<CampaignDetailProps> = ({ campaignId, campaignSlug }) => {
+const CampaignDetail: React.FC<CampaignDetailProps> = ({ campaignId, campaignName }) => {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,10 +25,10 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({ campaignId, campaignSlu
         let data: Campaign;
         if (campaignId) {
           data = await API.getCampaignById(campaignId);
-        } else if (campaignSlug) {
-          data = await API.getCampaignBySlug(campaignSlug);
+        } else if (campaignName) {
+          data = await API.getCampaignByName(campaignName);
         } else {
-          throw new Error('Either campaignId or campaignSlug must be provided');
+          throw new Error('Either campaignId or campaignName must be provided');
         }
 
         setCampaign(data);
@@ -39,10 +39,10 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({ campaignId, campaignSlu
       }
     };
 
-    if (campaignId || campaignSlug) {
+    if (campaignId || campaignName) {
       fetchCampaign();
     }
-  }, [campaignId, campaignSlug]);
+  }, [campaignId, campaignName]);
 
   const handleEndorsementSubmitted = () => {
     // Trigger a refresh of the endorsements list

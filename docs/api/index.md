@@ -22,8 +22,7 @@ All API responses follow a consistent JSON format:
 // Success example
 {
   "id": 1,
-  "name": "Example Campaign",
-  "slug": "example-campaign"
+  "name": "example-campaign"
 }
 
 // Error example
@@ -193,8 +192,8 @@ Returns all active policy campaigns.
 [
   {
     "id": 1,
+    "name": "clean-water-protection-act",
     "title": "Clean Water Protection Act",
-    "slug": "clean-water-protection-act",
     "summary": "Legislation to strengthen water quality standards and protect the Chesapeake Bay watershed",
     "active": true,
     "created_at": "2024-01-15T10:00:00Z"
@@ -211,8 +210,8 @@ Returns a specific campaign by ID.
 ```json
 {
   "id": 1,
+  "name": "clean-water-protection-act",
   "title": "Clean Water Protection Act",
-  "slug": "clean-water-protection-act",
   "summary": "Legislation to strengthen water quality standards and protect the Chesapeake Bay watershed",
   "description": "Comprehensive legislation that establishes new water quality standards, provides funding for watershed restoration, and creates enforcement mechanisms to protect the Chesapeake Bay and its tributaries.",
   "endorsement_statement": "I support the Clean Water Protection Act and its goal of ensuring safe, clean water for all communities in the Chesapeake Bay watershed.",
@@ -223,9 +222,9 @@ Returns a specific campaign by ID.
 }
 ```
 
-#### `GET /api/campaigns/slug/{slug}/`
+#### `GET /api/campaigns/?name={name}`
 
-Returns a specific campaign by slug.
+Returns a specific campaign by machine name using query parameter filtering.
 
 ### Stakeholders
 
@@ -282,8 +281,8 @@ Returns all public endorsements with stakeholder and campaign details.
     },
     "campaign": {
       "id": 1,
-      "title": "Clean Water Protection Act",
-      "slug": "clean-water-protection-act"
+      "name": "clean-water-protection-act",
+      "title": "Clean Water Protection Act"
     },
     "statement": "This legislation is crucial for protecting our agricultural lands while ensuring clean water for future generations.",
     "public_display": true,
@@ -355,8 +354,8 @@ Creates a new endorsement for a campaign.
   },
   "campaign": {
     "id": 1,
-    "title": "Clean Water Protection Act",
-    "slug": "clean-water-protection-act"
+    "name": "clean-water-protection-act",
+    "title": "Clean Water Protection Act"
   },
   "statement": "This legislation is crucial for protecting our agricultural lands while ensuring clean water for future generations.",
   "public_display": true,

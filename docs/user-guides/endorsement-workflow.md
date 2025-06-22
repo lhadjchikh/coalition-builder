@@ -108,6 +108,7 @@ Endorsed campaigns show:
 
 - `GET /api/campaigns/` - List campaigns with basic info
 - `GET /api/campaigns/{id}/` - Campaign details with endorsement fields
+- `GET /api/campaigns/?name={name}` - Campaign details by machine name
 - `POST /api/endorsements/` - Submit new endorsement
 - `GET /api/endorsements/` - All public endorsements
 - `GET /api/endorsements/?campaign_id={id}` - Campaign-specific endorsements

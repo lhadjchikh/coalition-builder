@@ -22,8 +22,8 @@ class EndorsementModelTest(TestCase):
 
         # Create a campaign
         self.campaign = PolicyCampaign.objects.create(
+            name="clean-water-act",
             title="Clean Water Act",
-            slug="clean-water-act",
             summary="Protecting our waterways",
         )
 
@@ -146,8 +146,8 @@ class EndorsementAPITest(TestCase):
 
         # Create test campaign with endorsement fields
         self.campaign = PolicyCampaign.objects.create(
+            name="test-campaign",
             title="Test Campaign",
-            slug="test-campaign",
             summary="A test campaign for API testing",
             description="Detailed description of the test campaign",
             endorsement_statement="I support this test campaign and its goals",

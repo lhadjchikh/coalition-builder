@@ -15,7 +15,8 @@ router = Router()
 
 @router.get("/", response=list[EndorsementOut])
 def list_endorsements(
-    request: HttpRequest, campaign_id: int = None,
+    request: HttpRequest,
+    campaign_id: int = None,
 ) -> list[Endorsement]:
     """List all public endorsements, optionally filtered by campaign"""
     queryset = Endorsement.objects.select_related("stakeholder", "campaign").filter(

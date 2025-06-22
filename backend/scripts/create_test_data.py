@@ -27,8 +27,8 @@ def create_test_data() -> int:
         # Create a test campaign if none exists
         if not PolicyCampaign.objects.exists():
             PolicyCampaign.objects.create(
+                name="test-campaign",
                 title="Test Campaign",
-                slug="test-campaign",
                 summary="This is a test campaign for integration testing",
             )
             print("Created test campaign")

@@ -17,8 +17,8 @@ describe('App component', () => {
     (API.getCampaigns as jest.Mock).mockResolvedValue([
       {
         id: 1,
+        name: 'test-campaign',
         title: 'Test Campaign',
-        slug: 'test-campaign',
         summary: 'This is a test campaign',
       },
     ]);
@@ -75,8 +75,8 @@ describe('App component', () => {
     resolvePromise!([
       {
         id: 1,
+        name: 'test-campaign',
         title: 'Test Campaign',
-        slug: 'test-campaign',
         summary: 'This is a test campaign',
       },
     ]);

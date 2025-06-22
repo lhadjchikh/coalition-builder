@@ -23,8 +23,8 @@ describe('CampaignsList Integration', () => {
     const mockData: Campaign[] = [
       {
         id: 1,
+        name: 'test-campaign',
         title: 'Test Campaign',
-        slug: 'test-campaign',
         summary: 'This is a test campaign',
       },
     ];

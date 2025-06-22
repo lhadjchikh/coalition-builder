@@ -16,13 +16,13 @@ describe('App Integration Test', () => {
     {
       id: 1,
       title: 'Save the Bay',
-      slug: 'save-the-bay',
+      name: 'save-the-bay',
       summary: 'Campaign to protect the Chesapeake Bay',
     },
     {
       id: 2,
       title: 'Clean Water Initiative',
-      slug: 'clean-water',
+      name: 'clean-water',
       summary: 'Ensuring clean water for all communities',
     },
   ];

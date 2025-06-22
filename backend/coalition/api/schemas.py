@@ -11,8 +11,8 @@ if TYPE_CHECKING:
 
 class PolicyCampaignOut(Schema):
     id: int
+    name: str
     title: str
-    slug: str
     summary: str
     description: str
     endorsement_statement: str

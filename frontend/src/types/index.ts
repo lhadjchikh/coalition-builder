@@ -1,8 +1,8 @@
 // Campaign type definition
 export interface Campaign {
   id: number;
+  name: string;
   title: string;
-  slug: string;
   summary: string;
   description?: string;
   endorsement_statement?: string;

@@ -3,8 +3,11 @@ from django.utils import timezone
 
 
 class PolicyCampaign(models.Model):
+    name = models.SlugField(
+        unique=True,
+        help_text="Machine-readable name for the campaign",
+    )
     title = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True)
     summary = models.TextField()
     description = models.TextField(
         blank=True,

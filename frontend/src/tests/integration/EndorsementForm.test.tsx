@@ -12,8 +12,8 @@ const mockAPI = API as jest.Mocked<typeof API>;
 describe('EndorsementForm', () => {
   const mockCampaign: Campaign = {
     id: 1,
+    name: 'test-campaign',
     title: 'Test Campaign',
-    slug: 'test-campaign',
     summary: 'A test campaign for endorsements',
     description: 'Test description',
     endorsement_statement: 'I support this test campaign',

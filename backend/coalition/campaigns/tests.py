@@ -8,8 +8,8 @@ class PolicyCampaignModelTest(TestCase):
 
     def setUp(self) -> None:
         self.campaign_data = {
+            "name": "clean-water-protection",
             "title": "Clean Water Protection Act",
-            "slug": "clean-water-protection",
             "summary": "Protecting our waterways for future generations",
             "description": "A comprehensive bill to strengthen water quality standards",
             "endorsement_statement": (
@@ -27,8 +27,8 @@ class PolicyCampaignModelTest(TestCase):
         """Test creating a campaign with all endorsement-related fields"""
         campaign = PolicyCampaign.objects.create(**self.campaign_data)
 
+        assert campaign.name == "clean-water-protection"
         assert campaign.title == "Clean Water Protection Act"
-        assert campaign.slug == "clean-water-protection"
         assert campaign.summary == "Protecting our waterways for future generations"
         assert campaign.description == (
             "A comprehensive bill to strengthen water quality standards"
@@ -48,8 +48,8 @@ class PolicyCampaignModelTest(TestCase):
     def test_campaign_endorsement_defaults(self) -> None:
         """Test default values for endorsement fields"""
         minimal_data = {
+            "name": "test-campaign",
             "title": "Test Campaign",
-            "slug": "test-campaign",
             "summary": "A test campaign",
         }
         campaign = PolicyCampaign.objects.create(**minimal_data)
@@ -111,8 +111,8 @@ class PolicyCampaignAPITest(TestCase):
     def setUp(self) -> None:
         self.client = Client()
         self.campaign = PolicyCampaign.objects.create(
+            name="test-api-campaign",
             title="Test API Campaign",
-            slug="test-api-campaign",
             summary="Testing campaign API",
             description="Detailed description for API testing",
             endorsement_statement="I support this test campaign",
@@ -146,13 +146,13 @@ class PolicyCampaignAPITest(TestCase):
         assert data["title"] == "Test API Campaign"
         assert data["endorsement_statement"] == "I support this test campaign"
 
-    def test_get_campaign_by_slug(self) -> None:
-        """Test GET /api/campaigns/slug/{slug}/ endpoint"""
-        response = self.client.get(f"/api/campaigns/slug/{self.campaign.slug}/")
+    def test_get_campaign_by_name(self) -> None:
+        """Test GET /api/campaigns/?name={name} endpoint"""
+        response = self.client.get(f"/api/campaigns/?name={self.campaign.name}")
         assert response.status_code == 200
 
         data = response.json()
-        assert data["slug"] == "test-api-campaign"
+        assert data["name"] == "test-api-campaign"
         assert data["title"] == "Test API Campaign"
 
     def test_get_nonexistent_campaign(self) -> None:
@@ -160,15 +160,15 @@ class PolicyCampaignAPITest(TestCase):
         response = self.client.get("/api/campaigns/99999/")
         assert response.status_code == 404
 
-        response = self.client.get("/api/campaigns/slug/nonexistent-slug/")
+        response = self.client.get("/api/campaigns/?name=nonexistent-name")
         assert response.status_code == 404
 
     def test_inactive_campaigns_not_listed(self) -> None:
         """Test that inactive campaigns are not returned"""
         # Create inactive campaign
         inactive_campaign = PolicyCampaign.objects.create(
+            name="inactive-campaign",
             title="Inactive Campaign",
-            slug="inactive-campaign",
             summary="This campaign is inactive",
             active=False,
         )

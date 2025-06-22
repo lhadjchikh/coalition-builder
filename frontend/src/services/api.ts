@@ -122,15 +122,15 @@ const API = {
     }
   },
 
-  getCampaignBySlug: async (slug: string): Promise<Campaign> => {
+  getCampaignByName: async (name: string): Promise<Campaign> => {
     try {
-      const response = await fetch(`${getBaseUrl()}/api/campaigns/slug/${slug}/`);
+      const response = await fetch(`${getBaseUrl()}/api/campaigns/?name=${name}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       return (await response.json()) as Campaign;
     } catch (error) {
-      console.error('Error fetching campaign by slug:', error);
+      console.error('Error fetching campaign by name:', error);
       throw error;
     }
   },

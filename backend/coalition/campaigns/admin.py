@@ -25,8 +25,8 @@ class PolicyCampaignAdmin(admin.ModelAdmin):
     inlines = [BillInline]
 
     list_display = (
+        "name",
         "title",
-        "slug",
         "allow_endorsements",
         "active",
         "created_at",
@@ -36,18 +36,18 @@ class PolicyCampaignAdmin(admin.ModelAdmin):
 
     list_filter = ("active", "allow_endorsements", "created_at")
 
-    search_fields = ("title", "slug", "summary", "description")
+    search_fields = ("name", "title", "summary", "description")
 
     list_editable = ("active", "allow_endorsements")
 
-    prepopulated_fields = {"slug": ("title",)}
+    prepopulated_fields = {"name": ("title",)}
 
     readonly_fields = ("created_at",)
 
     fieldsets = (
         (
             "Campaign Information",
-            {"fields": ("title", "slug", "summary", "description", "active")},
+            {"fields": ("name", "title", "summary", "description", "active")},
         ),
         (
             "Endorsements",
