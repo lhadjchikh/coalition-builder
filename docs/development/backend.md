@@ -7,8 +7,7 @@ This guide covers Django backend development for Coalition Builder, including mo
 The backend is built with:
 
 - **Django 5.2** - Web framework
-- **Django REST Framework** - API framework
-- **Django Ninja** - Fast, type-safe API endpoints
+- **Django Ninja** - Fast, type-safe API framework
 - **PostgreSQL 16** - Database
 - **PostGIS** - Spatial database extension
 
