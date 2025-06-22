@@ -37,20 +37,13 @@ const App: React.FC = () => {
         {currentView === 'list' ? (
           <div>
             <CampaignsList onCampaignSelect={handleCampaignSelect} />
-            <div
-              style={{
-                marginTop: '2rem',
-                padding: '1rem',
-                backgroundColor: '#f0f0f0',
-                borderRadius: '8px',
-              }}
-            >
+            <div className="mt-8 p-4 bg-gray-100 rounded-lg">
               <h3>Frontend Endorsement Demo</h3>
               <p>
                 This demonstrates the new endorsement functionality. Click "View Campaign" above to
                 see:
               </p>
-              <ul style={{ textAlign: 'left', maxWidth: '600px', margin: '0 auto' }}>
+              <ul className="text-left max-w-xl mx-auto">
                 <li>Campaign details with endorsement statement</li>
                 <li>Endorsement form for stakeholders</li>
                 <li>List of existing endorsements</li>
@@ -60,11 +53,11 @@ const App: React.FC = () => {
                 <strong>Demo Navigation:</strong> Use the campaign ID (like 1, 2, etc.) to view
                 specific campaigns.
               </p>
-              <div style={{ marginTop: '1rem' }}>
-                <button onClick={() => showCampaignDetail(1)} style={{ margin: '0.5rem' }}>
+              <div className="mt-4">
+                <button onClick={() => showCampaignDetail(1)} className="m-2">
                   Demo: View Campaign 1
                 </button>
-                <button onClick={() => showCampaignDetail(2)} style={{ margin: '0.5rem' }}>
+                <button onClick={() => showCampaignDetail(2)} className="m-2">
                   Demo: View Campaign 2
                 </button>
               </div>
