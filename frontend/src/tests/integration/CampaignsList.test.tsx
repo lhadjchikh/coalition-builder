@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import CampaignsList from '../../components/CampaignsList';
 import API from '../../services/api';
 import { Campaign } from '../../types';
@@ -91,5 +91,76 @@ describe('CampaignsList Integration', () => {
     );
 
     expect(screen.getByText('No campaigns found')).toBeInTheDocument();
+  });
+
+  test('calls onCampaignSelect when View Campaign button is clicked', async () => {
+    // Mock data for the test
+    const mockData: Campaign[] = [
+      {
+        id: 1,
+        name: 'test-campaign',
+        title: 'Test Campaign',
+        summary: 'This is a test campaign',
+      },
+    ];
+
+    // Setup the API mock to return data
+    (API.getCampaigns as jest.Mock).mockResolvedValue(mockData);
+
+    // Mock callback function
+    const mockOnCampaignSelect = jest.fn();
+
+    render(<CampaignsList onCampaignSelect={mockOnCampaignSelect} />);
+
+    // Wait for the component to load
+    await waitFor(
+      () => {
+        expect(screen.getByTestId('campaigns-list')).toBeInTheDocument();
+      },
+      { timeout: 3000 }
+    );
+
+    // Find and click the View Campaign button
+    const viewButton = screen.getByTestId('view-campaign-1');
+    expect(viewButton).toBeInTheDocument();
+
+    fireEvent.click(viewButton);
+
+    // Verify the callback was called with the correct campaign
+    expect(mockOnCampaignSelect).toHaveBeenCalledTimes(1);
+    expect(mockOnCampaignSelect).toHaveBeenCalledWith(mockData[0]);
+  });
+
+  test('renders without onCampaignSelect callback (optional prop)', async () => {
+    // Mock data for the test
+    const mockData: Campaign[] = [
+      {
+        id: 1,
+        name: 'test-campaign',
+        title: 'Test Campaign',
+        summary: 'This is a test campaign',
+      },
+    ];
+
+    // Setup the API mock to return data
+    (API.getCampaigns as jest.Mock).mockResolvedValue(mockData);
+
+    // Render without callback - should not throw an error
+    render(<CampaignsList />);
+
+    // Wait for the component to load
+    await waitFor(
+      () => {
+        expect(screen.getByTestId('campaigns-list')).toBeInTheDocument();
+      },
+      { timeout: 3000 }
+    );
+
+    // Find and click the View Campaign button - should not throw an error
+    const viewButton = screen.getByTestId('view-campaign-1');
+    expect(viewButton).toBeInTheDocument();
+
+    // Clicking should not cause an error (graceful handling of missing callback)
+    expect(() => fireEvent.click(viewButton)).not.toThrow();
   });
 });

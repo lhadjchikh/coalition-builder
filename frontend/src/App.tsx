@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './App.css';
 import CampaignsList from './components/CampaignsList';
 import CampaignDetail from './components/CampaignDetail';
+import { Campaign } from './types';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<'list' | 'detail'>('list');
@@ -10,6 +11,10 @@ const App: React.FC = () => {
   const showCampaignDetail = (campaignId: number) => {
     setSelectedCampaignId(campaignId);
     setCurrentView('detail');
+  };
+
+  const handleCampaignSelect = (campaign: Campaign) => {
+    showCampaignDetail(campaign.id);
   };
 
   const showCampaignsList = () => {
@@ -31,7 +36,7 @@ const App: React.FC = () => {
       <main className="App-main">
         {currentView === 'list' ? (
           <div>
-            <CampaignsList />
+            <CampaignsList onCampaignSelect={handleCampaignSelect} />
             <div
               style={{
                 marginTop: '2rem',

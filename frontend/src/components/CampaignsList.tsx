@@ -3,7 +3,11 @@ import API from '../services/api';
 import { Campaign } from '../types';
 import './Endorsements.css';
 
-const CampaignsList: React.FC = () => {
+interface CampaignsListProps {
+  onCampaignSelect?: (campaign: Campaign) => void;
+}
+
+const CampaignsList: React.FC<CampaignsListProps> = ({ onCampaignSelect }) => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,10 +63,7 @@ const CampaignsList: React.FC = () => {
               <div className="campaign-actions">
                 <button
                   className="view-campaign-btn"
-                  onClick={() => {
-                    // For now, just show campaign ID - in a real app this would navigate
-                    alert(`Navigate to campaign: ${campaign.id}`);
-                  }}
+                  onClick={() => onCampaignSelect?.(campaign)}
                   data-testid={`view-campaign-${campaign.id}`}
                 >
                   View Campaign
