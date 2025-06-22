@@ -5,7 +5,7 @@
 [![Frontend Tests](https://github.com/lhadjchikh/coalition-builder/actions/workflows/frontend-tests.yml/badge.svg)](https://github.com/lhadjchikh/coalition-builder/actions/workflows/frontend-tests.yml)
 
 This is the frontend for Coalition Builder. It's a React application with TypeScript
-that interacts with the Django backend API.
+that interacts with the Django backend API to provide campaign management and stakeholder endorsement features.
 
 ## 📚 Documentation
 
@@ -18,6 +18,43 @@ Quick links:
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app) and has been
 migrated to TypeScript.
+
+## 🌟 Key Features
+
+### Campaign Management
+
+- **CampaignsList** - Displays all active policy campaigns with endorsement counts
+- **CampaignDetail** - Shows detailed campaign information with endorsement functionality
+
+### Stakeholder Endorsements
+
+- **EndorsementForm** - Form for stakeholders to submit endorsements for campaigns
+- **EndorsementsList** - Displays all endorsements with stakeholder information
+- **Endorsement Management** - Integration with backend API for creating and fetching endorsements
+
+### API Integration
+
+- **API Service** - Centralized service for all backend API calls
+- **Type Safety** - Full TypeScript types for campaigns, stakeholders, and endorsements
+- **Error Handling** - Comprehensive error handling with user-friendly messages
+
+### Components Overview
+
+#### Core Components
+
+- `src/components/CampaignsList.tsx` - Lists all active campaigns
+- `src/components/EndorsementForm.tsx` - Form for submitting endorsements
+- `src/components/EndorsementsList.tsx` - Displays campaign endorsements
+- `src/components/CampaignDetail.tsx` - Combines endorsement form and list
+
+#### Services
+
+- `src/services/api.ts` - API integration with backend
+- `src/types/index.ts` - TypeScript type definitions
+
+#### Styling
+
+- `src/components/Endorsements.css` - Comprehensive styling for all endorsement components
 
 ## Available Scripts
 

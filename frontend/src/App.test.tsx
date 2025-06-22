@@ -34,35 +34,27 @@ describe('App component', () => {
     expect(headingElement).toBeInTheDocument();
   });
 
-  test('renders learn react link', () => {
+  test('renders navigation elements', () => {
     render(<App />);
-    const linkElement = screen.getByText(/learn react/i);
-    expect(linkElement).toBeInTheDocument();
+    const navButton = screen.getByText(/All Campaigns/i);
+    expect(navButton).toBeInTheDocument();
   });
 
-  test('renders the logo image correctly', () => {
+  test('renders demo information', () => {
     render(<App />);
-    const logoElement = screen.getByAltText('logo') as HTMLImageElement;
-    expect(logoElement).toBeInTheDocument();
-    expect(logoElement.tagName).toBe('IMG');
-    expect(logoElement).toHaveClass('App-logo');
-    expect(logoElement.src).toMatch(/logo\.svg$/);
+    const demoHeading = screen.getByText(/Frontend Endorsement Demo/i);
+    expect(demoHeading).toBeInTheDocument();
+
+    const demoButton1 = screen.getByText(/Demo: View Campaign 1/i);
+    const demoButton2 = screen.getByText(/Demo: View Campaign 2/i);
+    expect(demoButton1).toBeInTheDocument();
+    expect(demoButton2).toBeInTheDocument();
   });
 
-  test('static assets are properly loaded', () => {
+  test('app header has correct styling', () => {
     render(<App />);
-    const logoElement = screen.getByAltText('logo') as HTMLImageElement;
-
-    // Check that the image source isn't broken
-    expect(logoElement.src).not.toBe('');
-    expect(logoElement.src).toBeDefined();
-
-    // Test for CSS styles from App.css being applied
     const appHeader = screen.getByRole('banner');
     expect(appHeader).toHaveClass('App-header');
-
-    const appLink = screen.getByText(/learn react/i);
-    expect(appLink).toHaveClass('App-link');
   });
 
   test('renders CampaignsList component', async () => {

@@ -138,7 +138,28 @@ Returns all active policy campaigns.
 ]
 ```
 
-#### `GET /api/campaigns/{slug}/`
+#### `GET /api/campaigns/{id}/`
+
+Returns a specific campaign by ID.
+
+**Response Example:**
+
+```json
+{
+  "id": 1,
+  "title": "Clean Water Protection Act",
+  "slug": "clean-water-protection-act",
+  "summary": "Legislation to strengthen water quality standards and protect the Chesapeake Bay watershed",
+  "description": "Comprehensive legislation that establishes new water quality standards, provides funding for watershed restoration, and creates enforcement mechanisms to protect the Chesapeake Bay and its tributaries.",
+  "endorsement_statement": "I support the Clean Water Protection Act and its goal of ensuring safe, clean water for all communities in the Chesapeake Bay watershed.",
+  "allow_endorsements": true,
+  "endorsement_form_instructions": "Please provide your organization details and any additional comments about why you support this legislation.",
+  "active": true,
+  "created_at": "2024-01-15T10:00:00Z"
+}
+```
+
+#### `GET /api/campaigns/slug/{slug}/`
 
 Returns a specific campaign by slug.
 
@@ -189,7 +210,11 @@ Returns all public endorsements with stakeholder and campaign details.
     "stakeholder": {
       "id": 1,
       "name": "Jamie Smith",
-      "organization": "Bay Area Farmers Coalition"
+      "organization": "Bay Area Farmers Coalition",
+      "role": "Executive Director",
+      "state": "MD",
+      "county": "Anne Arundel",
+      "type": "nonprofit"
     },
     "campaign": {
       "id": 1,
@@ -202,6 +227,100 @@ Returns all public endorsements with stakeholder and campaign details.
   }
 ]
 ```
+
+#### `GET /api/campaigns/{campaign_id}/endorsements/`
+
+Returns all public endorsements for a specific campaign.
+
+**Response Example:**
+
+```json
+[
+  {
+    "id": 1,
+    "stakeholder": {
+      "id": 1,
+      "name": "Jamie Smith",
+      "organization": "Bay Area Farmers Coalition",
+      "role": "Executive Director",
+      "state": "MD",
+      "county": "Anne Arundel",
+      "type": "nonprofit"
+    },
+    "statement": "This legislation is crucial for protecting our agricultural lands while ensuring clean water for future generations.",
+    "public_display": true,
+    "created_at": "2024-01-20T10:00:00Z"
+  }
+]
+```
+
+#### `POST /api/endorsements/`
+
+Creates a new endorsement for a campaign.
+
+**Request Body:**
+
+```json
+{
+  "campaign_id": 1,
+  "name": "Jamie Smith",
+  "organization": "Bay Area Farmers Coalition",
+  "role": "Executive Director",
+  "email": "jamie@bayareafarmers.org",
+  "state": "MD",
+  "county": "Anne Arundel",
+  "type": "nonprofit",
+  "statement": "This legislation is crucial for protecting our agricultural lands while ensuring clean water for future generations.",
+  "public_display": true
+}
+```
+
+**Response Example:**
+
+```json
+{
+  "id": 1,
+  "stakeholder": {
+    "id": 1,
+    "name": "Jamie Smith",
+    "organization": "Bay Area Farmers Coalition",
+    "role": "Executive Director",
+    "state": "MD",
+    "county": "Anne Arundel",
+    "type": "nonprofit"
+  },
+  "campaign": {
+    "id": 1,
+    "title": "Clean Water Protection Act",
+    "slug": "clean-water-protection-act"
+  },
+  "statement": "This legislation is crucial for protecting our agricultural lands while ensuring clean water for future generations.",
+  "public_display": true,
+  "created_at": "2024-01-20T10:00:00Z"
+}
+```
+
+**Status Codes:**
+
+- `201 Created`: Endorsement created successfully
+- `400 Bad Request`: Invalid request data
+- `409 Conflict`: Stakeholder with this email already endorsed this campaign
+
+**Required Fields:**
+
+- `campaign_id`: ID of the campaign to endorse
+- `name`: Stakeholder's name
+- `organization`: Stakeholder's organization
+- `email`: Stakeholder's email (must be unique per campaign)
+- `state`: Stakeholder's state
+- `type`: Stakeholder type (farmer, waterman, business, nonprofit, individual, government, other)
+
+**Optional Fields:**
+
+- `role`: Stakeholder's role within organization
+- `county`: Stakeholder's county
+- `statement`: Custom endorsement statement
+- `public_display`: Whether to display endorsement publicly (defaults to true)
 
 ### Legislators
 

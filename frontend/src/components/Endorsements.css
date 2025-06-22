@@ -1,0 +1,363 @@
+/* Endorsement Form Styles */
+.endorsement-form {
+  max-width: 600px;
+  margin: 2rem 0;
+  padding: 2rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.endorsement-form h3 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.endorsement-statement {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background-color: #e8f4f8;
+  border-left: 4px solid #2196f3;
+  border-radius: 4px;
+}
+
+.endorsement-statement h4 {
+  margin-top: 0;
+  color: #1976d2;
+  font-size: 1rem;
+}
+
+.endorsement-statement blockquote {
+  margin: 0.5rem 0 0 0;
+  font-style: italic;
+  color: #555;
+}
+
+.form-instructions {
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: #f0f8f0;
+  border-radius: 4px;
+  border-left: 4px solid #4caf50;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.checkbox-label {
+  display: flex !important;
+  align-items: center;
+  font-weight: normal !important;
+  cursor: pointer;
+}
+
+.checkbox-label input[type='checkbox'] {
+  width: auto !important;
+  margin-right: 0.5rem;
+}
+
+.submit-button {
+  background-color: #2196f3;
+  color: white;
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: #1976d2;
+}
+
+.submit-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.success-message {
+  padding: 1rem;
+  background-color: #e8f5e8;
+  border: 1px solid #4caf50;
+  border-radius: 4px;
+  color: #2e7d32;
+  margin: 1rem 0;
+}
+
+.error-message {
+  padding: 1rem;
+  background-color: #ffebee;
+  border: 1px solid #f44336;
+  border-radius: 4px;
+  color: #c62828;
+  margin: 1rem 0;
+}
+
+.endorsement-form-disabled {
+  padding: 1.5rem;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+  color: #666;
+}
+
+/* Endorsements List Styles */
+.endorsements-list {
+  margin: 2rem 0;
+}
+
+.endorsements-list h3 {
+  color: #333;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.endorsements-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.endorsement-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s;
+}
+
+.endorsement-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.endorsement-header {
+  margin-bottom: 1rem;
+}
+
+.stakeholder-name {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 1.25rem;
+}
+
+.stakeholder-info {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.role {
+  font-weight: 600;
+}
+
+.organization {
+  font-weight: 600;
+}
+
+.location {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.stakeholder-type {
+  display: inline-block;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.endorsement-statement {
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-left: 3px solid #2196f3;
+  border-radius: 4px;
+}
+
+.endorsement-statement blockquote {
+  margin: 0;
+  font-style: italic;
+  color: #555;
+  line-height: 1.5;
+}
+
+.endorsement-footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.endorsement-date {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.no-endorsements {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+/* Campaign Detail Styles */
+.campaign-detail {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.campaign-header {
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.campaign-header h1 {
+  color: #333;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.campaign-summary {
+  font-size: 1.25rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+.campaign-description {
+  margin-bottom: 3rem;
+}
+
+.campaign-description h2 {
+  color: #333;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.campaign-endorsements {
+  margin-top: 3rem;
+}
+
+.endorsements-container {
+  display: grid;
+  gap: 3rem;
+  grid-template-columns: 2fr 1fr;
+}
+
+@media (max-width: 768px) {
+  .endorsements-container {
+    grid-template-columns: 1fr;
+  }
+
+  .endorsement-form-container {
+    order: -1;
+  }
+}
+
+/* Campaign List Styles */
+.campaigns-grid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  margin-top: 1.5rem;
+}
+
+.campaign-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s;
+}
+
+.campaign-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.campaign-card h3 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.campaign-summary {
+  color: #666;
+  line-height: 1.5;
+  margin: 1rem 0;
+}
+
+.campaign-description {
+  color: #888;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 1rem 0;
+}
+
+.campaign-meta {
+  margin: 1rem 0;
+}
+
+.endorsements-allowed {
+  background-color: #e8f5e8;
+  color: #2e7d32;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.campaign-actions {
+  margin-top: 1.5rem;
+}
+
+.view-campaign-btn {
+  background-color: #2196f3;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.view-campaign-btn:hover {
+  background-color: #1976d2;
+}
