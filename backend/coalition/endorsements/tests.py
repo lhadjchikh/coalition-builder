@@ -387,6 +387,49 @@ class EndorsementAPITest(TestCase):
         assert len(data) == 1
         assert data[0]["stakeholder"]["name"] == "Jane Smith"
 
+    def test_transaction_rollback_on_endorsement_error(self) -> None:
+        """Test stakeholder creation rollback if endorsement creation fails"""
+        from unittest.mock import patch
+
+        # Count stakeholders before the operation
+        initial_stakeholder_count = Stakeholder.objects.count()
+
+        endorsement_data = {
+            "campaign_id": self.campaign.id,
+            "stakeholder": {
+                "name": "New Stakeholder",
+                "organization": "New Organization",
+                "role": "Manager",
+                "email": "new@example.com",
+                "state": "VA",
+                "county": "New County",
+                "type": "business",
+            },
+            "statement": "Test statement",
+            "public_display": True,
+        }
+
+        # Mock the Endorsement.objects.get_or_create to raise an exception
+        # after the stakeholder is created
+        with patch(
+            "coalition.endorsements.models.Endorsement.objects.get_or_create",
+        ) as mock_create:
+            mock_create.side_effect = Exception(
+                "Simulated endorsement creation failure",
+            )
+
+            response = self.client.post(
+                "/api/endorsements/",
+                data=json.dumps(endorsement_data),
+                content_type="application/json",
+            )
+
+            assert response.status_code == 500
+
+            # Verify that the stakeholder was NOT created due to transaction rollback
+            assert Stakeholder.objects.count() == initial_stakeholder_count
+            assert not Stakeholder.objects.filter(email="new@example.com").exists()
+
         # List campaign endorsements
         response = self.client.get(f"/api/endorsements/campaign/{self.campaign.id}/")
         data = response.json()
