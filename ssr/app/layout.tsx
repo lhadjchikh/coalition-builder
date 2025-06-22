@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* The head tag is optional in Next.js App Router,
             but we include it explicitly to ensure it's present for SSR tests */}
