@@ -136,7 +136,7 @@ class EndorsementCreateSchema(Schema):
     statement: str = ""  # Optional additional comment
     public_display: bool = True
     # Spam prevention fields (optional)
-    form_metadata: dict = {}  # For honeypot fields, timing, etc.
+    form_metadata: dict | None = None  # For honeypot fields, timing, etc.
 
 
 class EndorsementVerifySchema(Schema):
