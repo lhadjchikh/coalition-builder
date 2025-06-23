@@ -75,7 +75,8 @@ def get_client_ip(request: HttpRequest) -> str:
 
     # Only trust proxy headers if the direct connection is from a private IP
     # This prevents arbitrary header spoofing from internet clients
-    if not is_private_ip(remote_addr):
+    remote_is_private = is_private_ip(remote_addr)
+    if not remote_is_private:
         # Direct internet connection - ignore potentially spoofed headers
         return remote_addr if is_valid_ip(remote_addr) else "127.0.0.1"
 
