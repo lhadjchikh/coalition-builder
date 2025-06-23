@@ -1257,7 +1257,7 @@ class EndorsementAPIEnhancedTest(TestCase):
         assert "already verified" in data["message"].lower()
 
     def test_resend_verification_success(self) -> None:
-        """Test successful resend verification email"""
+        """Test resend verification endpoint (privacy-preserving response)"""
         response = self.client.post(
             "/api/endorsements/resend-verification/",
             {
@@ -1270,10 +1270,11 @@ class EndorsementAPIEnhancedTest(TestCase):
         assert response.status_code == 200
         data = response.json()
         assert data["success"] is True
-        assert "sent successfully" in data["message"].lower()
+        # Check for privacy-preserving message
+        assert "if an endorsement exists" in data["message"].lower()
 
     def test_resend_verification_already_verified(self) -> None:
-        """Test resend verification for already verified endorsement"""
+        """Test resend verification returns same message for verified endorsement"""
         self.endorsement.email_verified = True
         self.endorsement.save()
 
@@ -1289,10 +1290,11 @@ class EndorsementAPIEnhancedTest(TestCase):
         assert response.status_code == 200
         data = response.json()
         assert data["success"] is True
-        assert "already verified" in data["message"].lower()
+        # Same privacy-preserving message regardless of verification status
+        assert "if an endorsement exists" in data["message"].lower()
 
     def test_resend_verification_not_found(self) -> None:
-        """Test resend verification for non-existent endorsement returns 404"""
+        """Test resend verification returns same message for non-existent endorsement"""
         response = self.client.post(
             "/api/endorsements/resend-verification/",
             {
@@ -1302,7 +1304,39 @@ class EndorsementAPIEnhancedTest(TestCase):
             content_type="application/json",
         )
 
-        assert response.status_code == 404
+        # Should return 200 with same message to prevent information disclosure
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert "if an endorsement exists" in data["message"].lower()
+
+    def test_resend_verification_rate_limiting(self) -> None:
+        """Test resend verification endpoint has rate limiting"""
+        # Make multiple requests to trigger rate limiting
+        request_data = {
+            "email": self.stakeholder.email,
+            "campaign_id": self.campaign.id,
+        }
+        
+        # Make requests up to the rate limit
+        for _ in range(3):  # Default rate limit is 3 attempts
+            response = self.client.post(
+                "/api/endorsements/resend-verification/",
+                request_data,
+                content_type="application/json",
+            )
+            # Should succeed initially
+            assert response.status_code in [200, 429]
+        
+        # The next request should be rate limited
+        response = self.client.post(
+            "/api/endorsements/resend-verification/",
+            request_data,
+            content_type="application/json",
+        )
+        assert response.status_code == 429
+        data = response.json()
+        assert "too many" in data["detail"].lower()
 
     def test_admin_approve_endorsement_requires_auth(self) -> None:
         """Test admin endorsement approval endpoint requires authentication"""
