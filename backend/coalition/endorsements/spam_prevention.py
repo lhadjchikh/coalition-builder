@@ -28,6 +28,16 @@ from django_ratelimit.core import is_ratelimited
 logger = logging.getLogger(__name__)
 
 
+def secure_ip_key(group: str, request: HttpRequest) -> str:
+    """
+    Custom rate limit key function that uses our secure IP extraction.
+
+    This prevents IP spoofing attacks by using get_client_ip() which validates
+    IP addresses and handles proxy headers safely.
+    """
+    return get_client_ip(request)
+
+
 def get_client_ip(request: HttpRequest) -> str:
     """
     Securely extract client IP address with validation and spoofing protection.
@@ -117,7 +127,7 @@ class SpamPreventionService:
         ratelimited = is_ratelimited(
             request=request,
             group="endorsement_submission",
-            key="ip",
+            key=secure_ip_key,
             rate=rate,
             increment=False,  # Just check, don't increment yet
         )
@@ -149,7 +159,7 @@ class SpamPreventionService:
         is_ratelimited(
             request=request,
             group="endorsement_submission",
-            key="ip",
+            key=secure_ip_key,
             rate=rate,
             increment=True,  # Increment the counter
         )
