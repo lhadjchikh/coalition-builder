@@ -210,3 +210,9 @@ API_URL = os.getenv("API_URL", "http://localhost:8000")  # Backend URL
 
 # Admin notification emails for endorsement system
 ADMIN_NOTIFICATION_EMAILS = os.getenv("ADMIN_NOTIFICATION_EMAILS", "")
+
+# Endorsement moderation settings
+AUTO_APPROVE_VERIFIED_ENDORSEMENTS = os.getenv(
+    "AUTO_APPROVE_VERIFIED_ENDORSEMENTS",
+    "true",
+).lower() in ("true", "1", "t")

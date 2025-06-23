@@ -87,9 +87,16 @@ class Endorsement(models.Model):
 
     def verify_email(self) -> None:
         """Mark email as verified and auto-approve if configured"""
+        from django.conf import settings
+
         self.email_verified = True
         self.verified_at = timezone.now()
-        # Auto-approve verified endorsements (can be configured per campaign)
-        if self.status == "pending":
+
+        # Auto-approve only if configured to do so
+        auto_approve = getattr(settings, "AUTO_APPROVE_VERIFIED_ENDORSEMENTS", True)
+        if auto_approve and self.status == "pending":
             self.status = "approved"
+        elif self.status == "pending":
+            self.status = "verified"
+
         self.save()
