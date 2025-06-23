@@ -187,6 +187,14 @@ def create_endorsement(
 @router.post("/verify/{token}/")
 def verify_endorsement(request: HttpRequest, token: str) -> dict:
     """Verify an endorsement using the verification token"""
+    # Apply rate limiting to prevent token brute-force attacks
+    spam_check = SpamPreventionService.check_rate_limit(request)
+    if not spam_check["allowed"]:
+        raise HttpError(429, "Too many verification attempts. Please try again later.")
+
+    # Record this attempt for rate limiting
+    SpamPreventionService.record_submission_attempt(request)
+
     try:
         # Parse token as UUID
         verification_token = uuid.UUID(token)
