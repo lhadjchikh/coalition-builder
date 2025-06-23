@@ -1304,8 +1304,21 @@ class EndorsementAPIEnhancedTest(TestCase):
 
         assert response.status_code == 404
 
-    def test_admin_approve_endorsement(self) -> None:
-        """Test admin endorsement approval endpoint"""
+    def test_admin_approve_endorsement_requires_auth(self) -> None:
+        """Test admin endorsement approval endpoint requires authentication"""
+        # Test unauthenticated access
+        response = self.client.post(
+            f"/api/endorsements/admin/approve/{self.endorsement.id}/",
+        )
+        assert response.status_code == 403
+        data = response.json()
+        assert "admin access required" in data["detail"].lower()
+
+    def test_admin_approve_endorsement_success(self) -> None:
+        """Test admin endorsement approval endpoint with authenticated staff user"""
+        # Login as staff user
+        self.client.force_login(self.user)
+
         response = self.client.post(
             f"/api/endorsements/admin/approve/{self.endorsement.id}/",
         )
@@ -1316,9 +1329,23 @@ class EndorsementAPIEnhancedTest(TestCase):
 
         self.endorsement.refresh_from_db()
         assert self.endorsement.status == "approved"
+        assert self.endorsement.reviewed_by == self.user
 
-    def test_admin_reject_endorsement(self) -> None:
-        """Test admin endorsement rejection endpoint"""
+    def test_admin_reject_endorsement_requires_auth(self) -> None:
+        """Test admin endorsement rejection endpoint requires authentication"""
+        # Test unauthenticated access
+        response = self.client.post(
+            f"/api/endorsements/admin/reject/{self.endorsement.id}/",
+        )
+        assert response.status_code == 403
+        data = response.json()
+        assert "admin access required" in data["detail"].lower()
+
+    def test_admin_reject_endorsement_success(self) -> None:
+        """Test admin endorsement rejection endpoint with authenticated staff user"""
+        # Login as staff user
+        self.client.force_login(self.user)
+
         response = self.client.post(
             f"/api/endorsements/admin/reject/{self.endorsement.id}/",
         )
@@ -1329,6 +1356,7 @@ class EndorsementAPIEnhancedTest(TestCase):
 
         self.endorsement.refresh_from_db()
         assert self.endorsement.status == "rejected"
+        assert self.endorsement.reviewed_by == self.user
 
     def test_export_endorsements_csv(self) -> None:
         """Test CSV export endpoint (requires admin access)"""
@@ -1384,27 +1412,72 @@ class EndorsementAPIEnhancedTest(TestCase):
         response = self.client.get("/api/endorsements/export/json/")
         assert response.status_code == 403
 
-    def test_admin_endpoints_work_without_authentication(self) -> None:
-        """Test that admin endpoints work (authentication not yet implemented)"""
-        # Test approve endpoint
+    def test_admin_pending_endorsements_requires_auth(self) -> None:
+        """Test admin pending endorsements endpoint requires authentication"""
+        # Test unauthenticated access
+        response = self.client.get("/api/endorsements/admin/pending/")
+        assert response.status_code == 403
+        data = response.json()
+        assert "admin access required" in data["detail"].lower()
+
+    def test_admin_pending_endorsements_success(self) -> None:
+        """Test admin pending endorsements endpoint with authenticated staff user"""
+        # Login as staff user
+        self.client.force_login(self.user)
+
+        # Create another pending endorsement
+        stakeholder2 = Stakeholder.objects.create(
+            name="Another User",
+            organization="Another Org",
+            email="another@example.com",
+            state="CA",
+            type="individual",
+        )
+        endorsement2 = Endorsement.objects.create(
+            stakeholder=stakeholder2,
+            campaign=self.campaign,
+            statement="Another statement",
+            status="pending",
+        )
+
+        response = self.client.get("/api/endorsements/admin/pending/")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert len(data) == 2  # Both pending endorsements should be returned
+
+        # Check that the response contains endorsement data
+        endorsement_ids = [item["id"] for item in data]
+        assert self.endorsement.id in endorsement_ids
+        assert endorsement2.id in endorsement_ids
+
+    def test_non_staff_user_cannot_access_admin_endpoints(self) -> None:
+        """Test that regular (non-staff) users cannot access admin endpoints"""
+        # Create a regular user (not staff)
+        regular_user = User.objects.create_user(
+            username="regular",
+            email="regular@example.com",
+            password="testpass",
+            is_staff=False,
+        )
+        self.client.force_login(regular_user)
+
+        # Test all admin endpoints return 403
         response = self.client.post(
             f"/api/endorsements/admin/approve/{self.endorsement.id}/",
         )
-        assert response.status_code == 200
+        assert response.status_code == 403
 
-        # Reset endorsement status
-        self.endorsement.status = "pending"
-        self.endorsement.save()
-
-        # Test reject endpoint
         response = self.client.post(
             f"/api/endorsements/admin/reject/{self.endorsement.id}/",
         )
-        assert response.status_code == 200
+        assert response.status_code == 403
 
-        # Test export endpoints work without auth (TODO: add auth later)
+        response = self.client.get("/api/endorsements/admin/pending/")
+        assert response.status_code == 403
+
         response = self.client.get("/api/endorsements/export/csv/")
-        assert response.status_code == 200
+        assert response.status_code == 403
 
         response = self.client.get("/api/endorsements/export/json/")
-        assert response.status_code == 200
+        assert response.status_code == 403
