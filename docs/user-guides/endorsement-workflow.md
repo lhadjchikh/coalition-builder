@@ -1,10 +1,10 @@
 # Endorsement Workflow Guide
 
-This guide explains how the endorsement system works in Coalition Builder, from a stakeholder submitting an endorsement to it being displayed publicly.
+This guide explains how the comprehensive endorsement system works in Coalition Builder, from initial submission through email verification, admin review, and public display.
 
 ## Overview
 
-The endorsement system allows stakeholders (farmers, watermen, businesses, nonprofits, individuals, etc.) to publicly endorse policy campaigns. This creates a visible coalition of support that can be used for advocacy and lobbying efforts.
+The endorsement system allows stakeholders (farmers, watermen, businesses, nonprofits, individuals, etc.) to publicly endorse policy campaigns through a secure, multi-step verification process. This creates a credible coalition of support with email verification, spam prevention, and admin moderation capabilities.
 
 ## User Journey
 
@@ -53,40 +53,120 @@ The system validates:
 - Email address hasn't already endorsed this campaign
 - Stakeholder type is valid
 
-### 5. Endorsement Processing
+### 5. Spam Prevention
 
-When submitted:
+Before processing, the system runs comprehensive spam checks:
+
+**Automated Checks:**
+
+- **Rate Limiting**: IP-based submission limits (3 attempts per 5 minutes)
+- **Honeypot Fields**: Hidden form fields to detect bots
+- **Timing Analysis**: Form completion time validation
+- **Email Reputation**: Checks for disposable email domains and suspicious patterns
+- **Content Quality**: Analysis for spam keywords and suspicious content patterns
+
+**Response to Spam Detection:**
+
+- High-confidence spam submissions are automatically rejected
+- Suspicious submissions are flagged for manual review
+- Rate limit violations temporarily block further submissions
+
+### 6. Endorsement Processing
+
+When a legitimate submission passes spam checks:
 
 1. **Stakeholder Creation/Update**: If the email exists, updates the stakeholder; otherwise creates new
-2. **Endorsement Creation**: Creates the endorsement record linking stakeholder to campaign
+2. **Endorsement Creation**: Creates the endorsement record with "pending" status
 3. **Email Normalization**: Emails are normalized to lowercase for consistency
-4. **Success Response**: Returns the created endorsement with stakeholder details
+4. **Verification Email**: Automatic verification email sent to stakeholder
+5. **Admin Notification**: Admins notified of new endorsement requiring review
 
-### 6. Public Display
+### 7. Email Verification Process
 
-Endorsed campaigns show:
+**Initial Status**: All new endorsements start as "pending" and require email verification
+
+**Verification Steps:**
+
+1. **Verification Email**: Stakeholder receives email with unique verification link
+2. **Link Expiration**: Verification links expire after 24 hours for security
+3. **One-Click Verification**: Stakeholders click link to verify their email address
+4. **Status Update**: Verified endorsements move to "approved" status (if auto-approval enabled)
+5. **Confirmation Email**: Stakeholders receive confirmation when endorsement is approved
+
+**Verification Features:**
+
+- Unique UUID tokens for each endorsement
+- Secure verification links with token validation
+- Automatic expiration and regeneration capabilities
+- Resend verification email functionality
+
+### 8. Admin Review Process
+
+**Admin Dashboard**: Enhanced Django admin interface for endorsement management
+
+**Review Capabilities:**
+
+- **Status Management**: Approve, reject, or mark endorsements as verified
+- **Bulk Actions**: Process multiple endorsements simultaneously
+- **Visual Indicators**: Color-coded status badges and verification indicators
+- **Email Management**: Send verification emails or approval notifications
+- **Review Tracking**: Track which admin reviewed each endorsement and when
+
+**Review Workflow:**
+
+1. **New Submission Review**: Admins see pending endorsements in dashboard
+2. **Quality Assessment**: Review stakeholder information and endorsement content
+3. **Status Decision**: Approve for public display or reject with notes
+4. **Notification**: Automatic confirmation emails sent to approved stakeholders
+
+### 9. Public Display
+
+**Display Requirements**: Only endorsements that meet ALL criteria are shown publicly:
+
+- ✅ Email verified by stakeholder
+- ✅ Approved by admin review
+- ✅ Public display enabled
+- ✅ Campaign allows endorsements
+
+**Public Information Displayed:**
 
 - **Endorsement Count**: Updated count on campaign listings
-- **Endorsement List**: All public endorsements with stakeholder details
+- **Endorsement List**: All approved, verified, public endorsements
 - **Stakeholder Information**: Name, organization, role, location, type
 - **Endorsement Statement**: Custom statement or campaign default
-- **Date**: When the endorsement was submitted
+- **Verification Status**: Visual indicators showing verified endorsements
+- **Date**: When the endorsement was submitted and approved
 
 ## Technical Implementation
 
 ### Backend (Django)
 
 ```python
-# Models involved
+# Models
 - PolicyCampaign: Campaigns that can be endorsed
-- Stakeholder: People/organizations who endorse
-- Endorsement: Links stakeholders to campaigns
+- Stakeholder: People/organizations who endorse (with email verification)
+- Endorsement: Links stakeholders to campaigns (with verification workflow)
 
-# Key features
-- Unique email constraint per campaign (one endorsement per email per campaign)
-- Automatic stakeholder creation/update on endorsement
-- Email normalization to prevent duplicates
-- Public/private endorsement display control
+# Endorsement Model Fields
+- verification_token: UUID for email verification
+- email_verified: Boolean verification status
+- verification_sent_at: Timestamp of verification email
+- verified_at: Timestamp when email was verified
+- status: pending/verified/approved/rejected
+- admin_notes: Internal notes for admin review
+- reviewed_by: Admin user who reviewed endorsement
+- reviewed_at: Timestamp of admin review
+
+# Services
+- EndorsementEmailService: Email verification and notifications
+- SpamPreventionService: Comprehensive spam detection
+- Django Admin: Custom admin interface for endorsement management
+
+# Security Features
+- Email verification with secure tokens
+- Rate limiting and spam prevention
+- Admin moderation workflow
+- Audit trail for all endorsement actions
 ```
 
 ### Frontend (React)
@@ -106,12 +186,30 @@ Endorsed campaigns show:
 
 ### API Endpoints
 
+**Public Endpoints:**
+
 - `GET /api/campaigns/` - List campaigns with basic info
 - `GET /api/campaigns/{id}/` - Campaign details with endorsement fields
 - `GET /api/campaigns/?name={name}` - Campaign details by machine name
-- `POST /api/endorsements/` - Submit new endorsement
-- `GET /api/endorsements/` - All public endorsements
+- `POST /api/endorsements/` - Submit new endorsement (with spam prevention)
+- `GET /api/endorsements/` - All approved, verified, public endorsements
 - `GET /api/endorsements/?campaign_id={id}` - Campaign-specific endorsements
+
+**Verification Endpoints:**
+
+- `POST /api/endorsements/verify/{token}/` - Verify endorsement email
+- `POST /api/endorsements/resend-verification/` - Resend verification email
+
+**Admin Endpoints** (authentication required):
+
+- `POST /api/endorsements/admin/approve/{id}/` - Approve endorsement
+- `POST /api/endorsements/admin/reject/{id}/` - Reject endorsement
+- `GET /api/endorsements/admin/pending/` - List pending endorsements
+
+**Export Endpoints** (admin only):
+
+- `GET /api/endorsements/export/csv/` - Export endorsements as CSV
+- `GET /api/endorsements/export/json/` - Export endorsements as JSON
 
 ## Admin Workflow
 
@@ -128,12 +226,28 @@ Endorsed campaigns show:
 
 ### Endorsement Management
 
-Administrators can:
+**Admin Dashboard Features:**
 
-- View all endorsements for each campaign
-- Toggle endorsement visibility (public/private)
-- Export endorsement data
-- Contact stakeholders who have endorsed
+- **Comprehensive Overview**: View all endorsements with status, verification, and review information
+- **Advanced Filtering**: Filter by status, verification, campaign, stakeholder type, and date ranges
+- **Bulk Operations**: Approve, reject, or verify multiple endorsements simultaneously
+- **Email Management**: Send verification emails, approval notifications, and custom communications
+- **Export Capabilities**: Export endorsement data in CSV or JSON format with filtering
+- **Audit Trail**: Track all administrative actions with user attribution and timestamps
+
+**Review Workflow:**
+
+- **Status Management**: Move endorsements through pending → verified → approved workflow
+- **Quality Control**: Review stakeholder information and endorsement content
+- **Notification System**: Automatic emails for verification, approval, and rejection
+- **Admin Notes**: Internal notes for tracking review decisions and follow-up actions
+
+**Security and Moderation:**
+
+- **Spam Detection**: Built-in spam prevention with confidence scoring
+- **Verification Management**: Track email verification status and resend capabilities
+- **Access Control**: Role-based permissions for endorsement management
+- **Data Integrity**: Comprehensive validation and error handling
 
 ## Best Practices
 
@@ -153,19 +267,29 @@ Administrators can:
 
 ## Privacy and Data Handling
 
-### Stakeholder Data
+### Data Security
 
-- **Email Privacy**: Email addresses are never displayed publicly
+- **Email Privacy**: Email addresses are never displayed publicly and are used only for verification
+- **Secure Verification**: Email verification uses cryptographically secure UUID tokens
 - **Contact Information**: Only name, organization, role, and location are shown publicly
 - **Update Rights**: Stakeholders with existing records can update their information
 - **Duplicate Prevention**: Email-based deduplication prevents multiple endorsements per campaign
 
-### Public Display Control
+### Multi-Layer Display Control
 
-- **Default Public**: Endorsements default to public display
-- **Opt-out Available**: Stakeholders can choose private endorsements
-- **Admin Override**: Administrators can toggle endorsement visibility
-- **Bulk Display Control**: Campaign-level endorsement display can be disabled
+- **Triple Verification**: Endorsements must be email-verified, admin-approved, AND public to display
+- **Stakeholder Choice**: Stakeholders can choose private endorsements during submission
+- **Admin Moderation**: Administrators review and approve all endorsements before public display
+- **Campaign Control**: Campaign-level endorsement display can be disabled
+- **Audit Trail**: All display status changes are tracked with timestamps and user attribution
+
+### Spam Prevention and Security
+
+- **Rate Limiting**: IP-based submission limits to prevent abuse
+- **Content Analysis**: Automatic detection of spam keywords and suspicious patterns
+- **Email Validation**: Comprehensive checks for disposable emails and suspicious patterns
+- **Honeypot Protection**: Hidden form fields to detect automated submissions
+- **Timing Analysis**: Form submission timing validation to detect bots
 
 ## Troubleshooting
 
@@ -174,24 +298,60 @@ Administrators can:
 **"Email already exists" Error**
 
 - One stakeholder can only endorse each campaign once
-- If updating information, the system will update the existing stakeholder record
+- If updating information, the system will update the existing stakeholder record and reset verification status
 
-**Form Validation Errors**
+**"Spam detected" Error**
 
-- Check that all required fields are completed
-- Verify email address format
-- Ensure stakeholder type is selected from valid options
+- Submission triggered spam prevention measures
+- Check for rapid successive submissions (rate limiting)
+- Verify all form fields are filled appropriately
+- Ensure email address is from a legitimate domain
 
-**Endorsements Not Appearing**
+**"Verification link expired" Error**
 
-- Check that `public_display` is set to true
-- Verify the campaign has `allow_endorsements` enabled
-- Confirm the endorsement was successfully created
+- Email verification links expire after 24 hours
+- Request a new verification email through the resend endpoint
+- Check email spam folder for verification messages
+
+**Endorsements Not Appearing Publicly**
+
+- **Not Email Verified**: Stakeholder must click verification link in email
+- **Not Admin Approved**: Endorsement requires admin review and approval
+- **Public Display Disabled**: Check that `public_display` is set to true
+- **Campaign Settings**: Verify the campaign has `allow_endorsements` enabled
+- **Status Check**: Endorsement must have "approved" status to appear publicly
+
+**Verification Email Issues**
+
+- Check email spam/junk folders
+- Verify email address was entered correctly
+- Use resend verification endpoint if email not received
+- Contact administrators if persistent email delivery issues
+
+**Admin Review Delays**
+
+- New endorsements require manual admin review
+- Approval notifications are sent automatically when processed
+- Complex or suspicious submissions may require additional review time
 
 ### Support
 
 For technical issues or questions about the endorsement system:
 
-- Check the [API documentation](../api/index.md)
-- Review the [development setup guide](../development/setup.md)
-- Submit issues to the project repository
+- Check the [API documentation](../api/index.md) for endpoints
+- Review the [development setup guide](../development/setup.md) for local testing
+- Review [spam prevention configuration](../reference/environment.md) for customization
+- Check the [admin troubleshooting guide](../admin/troubleshooting.md) for management issues
+- Submit issues to the project repository with detailed reproduction steps
+
+### Features Summary
+
+**Current Features:**
+
+- ✅ **Email Verification System**: Secure token-based email verification with automated workflows
+- ✅ **Admin Review Interface**: Enhanced Django admin with bulk actions and status management
+- ✅ **Spam Prevention**: Comprehensive protection including rate limiting, honeypots, and content analysis
+- ✅ **Export Functionality**: CSV and JSON export capabilities with filtering options
+- ✅ **Enhanced Security**: Multi-layer verification, audit trails, and secure token management
+- ✅ **Automated Notifications**: Email notifications for verification, approval, and admin alerts
+- ✅ **Quality Assurance**: 71 comprehensive tests covering all new functionality
