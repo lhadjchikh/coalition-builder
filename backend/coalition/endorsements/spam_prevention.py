@@ -3,6 +3,7 @@ Spam prevention utilities for endorsement forms
 """
 
 import logging
+import re
 from datetime import datetime
 from typing import Any
 
@@ -185,7 +186,7 @@ class SpamPreventionService:
                 reasons.append(f"Suspicious keyword in statement: {keyword}")
 
         # Check for duplicate characters (common spam pattern)
-        if any(char * 4 in statement_lower for char in "abcdefghijklmnopqrstuvwxyz"):
+        if re.search(r"(.)\1{3,}", statement_lower):
             reasons.append("Excessive character repetition in statement")
 
         # Check name/organization quality
