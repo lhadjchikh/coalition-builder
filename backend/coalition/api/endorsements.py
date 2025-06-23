@@ -141,8 +141,11 @@ def create_endorsement(
             # Send verification email
             email_sent = EndorsementEmailService.send_verification_email(endorsement)
             if not email_sent:
-                # Log error but don't fail the request
-                pass  # Email service already logs errors
+                # Log error with additional context for debugging
+                logger.error(
+                    f"Failed to send verification email for endorsement "
+                    f"{endorsement.id} to {stakeholder.email}. Email delivery failed.",
+                )
 
             # Send admin notification for new endorsements
             if created:
