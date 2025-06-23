@@ -114,7 +114,11 @@ describe('EndorsementForm', () => {
         statement: 'Great campaign!',
         public_display: true,
         form_metadata: expect.objectContaining({
-          form_start_time: expect.any(Number),
+          form_start_time: expect.any(String),
+          website: '',
+          url: '',
+          homepage: '',
+          confirm_email: '',
         }),
       });
     });
