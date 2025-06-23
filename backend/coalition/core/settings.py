@@ -231,12 +231,6 @@ if CACHE_URL.startswith("redis://"):
         "default": {
             "BACKEND": "django.core.cache.backends.redis.RedisCache",
             "LOCATION": CACHE_URL,
-            "OPTIONS": {
-                "CONNECTION_POOL_KWARGS": {
-                    "max_connections": 20,
-                    "retry_on_timeout": True,
-                },
-            },
         },
     }
 elif CACHE_URL.startswith("dummy://") or "test" in sys.argv:
