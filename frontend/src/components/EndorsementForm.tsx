@@ -77,6 +77,12 @@ const EndorsementForm: React.FC<EndorsementFormProps> = ({ campaign, onEndorseme
       });
       setStatement('');
       setPublicDisplay(true);
+      setHoneypotFields({
+        website: '',
+        url: '',
+        homepage: '',
+        confirm_email: '',
+      });
 
       // Notify parent component
       if (onEndorsementSubmitted) {
