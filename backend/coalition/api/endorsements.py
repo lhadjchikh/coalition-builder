@@ -234,7 +234,9 @@ def resend_verification(request: HttpRequest, data: EndorsementVerifySchema) -> 
 @router.post("/admin/approve/{endorsement_id}/")
 def admin_approve_endorsement(request: HttpRequest, endorsement_id: int) -> dict:
     """Admin endpoint to approve an endorsement"""
-    # TODO: Add authentication/permission checks for production use
+    # Require staff/admin access for endorsement approval
+    if not request.user.is_authenticated or not request.user.is_staff:
+        raise HttpError(403, "Admin access required for endorsement approval")
 
     endorsement = get_object_or_404(Endorsement, id=endorsement_id)
 
@@ -244,8 +246,7 @@ def admin_approve_endorsement(request: HttpRequest, endorsement_id: int) -> dict
             "message": "Endorsement was already approved",
         }
 
-    # TODO: Pass request.user when authentication is implemented
-    endorsement.approve()
+    endorsement.approve(user=request.user)
 
     # Send confirmation email
     EndorsementEmailService.send_confirmation_email(endorsement)
@@ -260,7 +261,9 @@ def admin_approve_endorsement(request: HttpRequest, endorsement_id: int) -> dict
 @router.post("/admin/reject/{endorsement_id}/")
 def admin_reject_endorsement(request: HttpRequest, endorsement_id: int) -> dict:
     """Admin endpoint to reject an endorsement"""
-    # TODO: Add authentication/permission checks for production use
+    # Require staff/admin access for endorsement rejection
+    if not request.user.is_authenticated or not request.user.is_staff:
+        raise HttpError(403, "Admin access required for endorsement rejection")
 
     endorsement = get_object_or_404(Endorsement, id=endorsement_id)
 
@@ -270,8 +273,7 @@ def admin_reject_endorsement(request: HttpRequest, endorsement_id: int) -> dict:
             "message": "Endorsement was already rejected",
         }
 
-    # TODO: Pass request.user when authentication is implemented
-    endorsement.reject()
+    endorsement.reject(user=request.user)
 
     return {
         "success": True,
@@ -283,7 +285,9 @@ def admin_reject_endorsement(request: HttpRequest, endorsement_id: int) -> dict:
 @router.get("/admin/pending/")
 def admin_list_pending_endorsements(request: HttpRequest) -> list[EndorsementOut]:
     """Admin endpoint to list endorsements requiring review"""
-    # TODO: Add authentication/permission checks for production use
+    # Require staff/admin access for pending endorsements list
+    if not request.user.is_authenticated or not request.user.is_staff:
+        raise HttpError(403, "Admin access required for pending endorsements list")
 
     queryset = (
         Endorsement.objects.select_related("stakeholder", "campaign")
