@@ -348,15 +348,27 @@ Creates a new endorsement for a campaign.
 ```json
 {
   "campaign_id": 1,
-  "name": "Jamie Smith",
-  "organization": "Bay Area Farmers Coalition",
-  "role": "Executive Director",
-  "email": "jamie@bayareafarmers.org",
-  "state": "MD",
-  "county": "Anne Arundel",
-  "type": "nonprofit",
+  "stakeholder": {
+    "name": "Jamie Smith",
+    "organization": "Bay Area Farmers Coalition",
+    "role": "Executive Director",
+    "email": "jamie@bayareafarmers.org",
+    "state": "MD",
+    "county": "Anne Arundel",
+    "type": "nonprofit"
+  },
   "statement": "This legislation is crucial for protecting our agricultural lands while ensuring clean water for future generations.",
-  "public_display": true
+  "public_display": true,
+  "form_metadata": {
+    "form_start_time": "2024-01-20T10:00:00Z",
+    "website": "",
+    "url": "",
+    "homepage": "",
+    "confirm_email": "",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+    "referrer": "https://example.com/campaigns/clean-water",
+    "form_version": "1.0"
+  }
 }
 ```
 
@@ -390,22 +402,34 @@ Creates a new endorsement for a campaign.
 - `201 Created`: Endorsement created successfully
 - `400 Bad Request`: Invalid request data
 - `409 Conflict`: Stakeholder with this email already endorsed this campaign
+- `429 Too Many Requests`: Rate limit exceeded (too many submissions from same IP)
+- `422 Unprocessable Entity`: Spam detection triggered (honeypot fields filled, suspicious timing, etc.)
 
 **Required Fields:**
 
 - `campaign_id`: ID of the campaign to endorse
-- `name`: Stakeholder's name
-- `organization`: Stakeholder's organization
-- `email`: Stakeholder's email (must be unique per campaign)
-- `state`: Stakeholder's state
-- `type`: Stakeholder type (farmer, waterman, business, nonprofit, individual, government, other)
+- `stakeholder`: Object containing stakeholder information
+  - `name`: Stakeholder's name
+  - `organization`: Stakeholder's organization
+  - `email`: Stakeholder's email (must be unique per campaign)
+  - `state`: Stakeholder's state
+  - `type`: Stakeholder type (farmer, waterman, business, nonprofit, individual, government, other)
 
 **Optional Fields:**
 
-- `role`: Stakeholder's role within organization
-- `county`: Stakeholder's county
+- `stakeholder.role`: Stakeholder's role within organization
+- `stakeholder.county`: Stakeholder's county
 - `statement`: Custom endorsement statement
 - `public_display`: Whether to display endorsement publicly (defaults to true)
+- `form_metadata`: Spam prevention and analytics data (optional but recommended)
+  - `form_start_time`: ISO timestamp when form was loaded (for timing validation)
+  - `website`: Honeypot field (should be empty for legitimate users)
+  - `url`: Honeypot field (should be empty for legitimate users)
+  - `homepage`: Honeypot field (should be empty for legitimate users)
+  - `confirm_email`: Honeypot field (should be empty for legitimate users)
+  - `user_agent`: Browser user agent string
+  - `referrer`: Page referrer URL
+  - `form_version`: Frontend form version identifier
 
 ### Legislators
 
