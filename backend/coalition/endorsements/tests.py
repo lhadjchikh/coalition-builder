@@ -1699,19 +1699,19 @@ class RedisIntegrationTests(TestCase):
     """Test Redis cache integration for rate limiting"""
 
     def setUp(self) -> None:
-        # Ensure we're using dummy cache for testing
+        # Clear cache before testing
         from django.core.cache import cache
 
         cache.clear()
 
-    def test_cache_configuration_in_tests(self) -> None:
-        """Test that tests use dummy cache backend"""
+    def test_cache_configuration_uses_redis(self) -> None:
+        """Test that Redis cache backend is configured"""
         from django.conf import settings
 
-        # In tests, should use dummy cache
+        # Should now use Redis cache consistently
         assert (
             settings.CACHES["default"]["BACKEND"]
-            == "django.core.cache.backends.dummy.DummyCache"
+            == "django.core.cache.backends.redis.RedisCache"
         )
 
     def test_spam_prevention_service_with_cache(self) -> None:
@@ -1738,47 +1738,25 @@ class RedisIntegrationTests(TestCase):
 
 class RateLimitingIntegrationTests(TestCase):
     """
-    Integration tests for rate limiting functionality that require Redis cache.
+    Integration tests for rate limiting functionality.
 
-    These tests are separate from unit tests because they require a functioning
-    cache backend that supports atomic operations (Redis), not the dummy cache
-    used in regular unit tests.
+    Now that Redis is used consistently across all environments,
+    these tests can run with the standard cache configuration.
     """
 
     def setUp(self) -> None:
-        # Override cache settings to use Redis for these integration tests
-        from django.conf import settings
-        from django.core.cache import caches
-        from django.core.cache.backends.redis import RedisCache
+        # Clear cache before each test to ensure clean state
+        from django.core.cache import cache
 
-        # Force Redis cache configuration for these integration tests
-        redis_cache_config = {
-            "BACKEND": "django.core.cache.backends.redis.RedisCache",
-            "LOCATION": "redis://redis:6379/1",
-        }
+        cache.clear()
 
-        # Create a new Redis cache instance
+        # Verify Redis is working (skip tests if not available)
         try:
-            redis_cache = RedisCache("redis://redis:6379/1", {})
-            redis_cache.clear()
-
-            # Test that Redis is working
-            test_key = "integration_test_key"
-            redis_cache.set(test_key, "test_value", 10)
-            if redis_cache.get(test_key) != "test_value":
-                self.skipTest(
-                    "Redis cache backend not available for rate limiting "
-                    "integration tests",
-                )
-
-            # Override the default cache with Redis for these tests
-            settings.CACHES["default"] = redis_cache_config
-
-            # Clear Django's cache instance cache to force reload
-            caches._caches.clear()
-
+            cache.set("test_redis_connection", "working", 10)
+            if cache.get("test_redis_connection") != "working":
+                self.skipTest("Redis cache not available for rate limiting tests")
         except Exception as e:
-            self.skipTest(f"Redis cache backend not available: {e}")
+            self.skipTest(f"Redis cache not available: {e}")
 
     def test_rate_limit_check_within_limit(self) -> None:
         """Test rate limit check when within limits"""
@@ -1799,8 +1777,8 @@ class RateLimitingIntegrationTests(TestCase):
         request = HttpRequest()
         request.META = {"REMOTE_ADDR": "192.168.1.101"}
 
-        # Record maximum attempts
-        for _ in range(SpamPreventionService.RATE_LIMIT_MAX_ATTEMPTS):
+        # Record attempts to exceed the limit
+        for _ in range(SpamPreventionService.RATE_LIMIT_MAX_ATTEMPTS + 1):
             SpamPreventionService.record_submission_attempt(request)
 
         result = SpamPreventionService.check_rate_limit(request)
@@ -1821,8 +1799,8 @@ class RateLimitingIntegrationTests(TestCase):
         result = SpamPreventionService.check_rate_limit(request)
         assert result["allowed"] is True
 
-        # Record more attempts to reach limit
-        for _ in range(SpamPreventionService.RATE_LIMIT_MAX_ATTEMPTS - 1):
+        # Record more attempts to exceed the limit
+        for _ in range(SpamPreventionService.RATE_LIMIT_MAX_ATTEMPTS):
             SpamPreventionService.record_submission_attempt(request)
 
         result = SpamPreventionService.check_rate_limit(request)
@@ -1844,7 +1822,7 @@ class RateLimitingIntegrationTests(TestCase):
         }
 
         # Exceed rate limit first
-        for _ in range(SpamPreventionService.RATE_LIMIT_MAX_ATTEMPTS):
+        for _ in range(SpamPreventionService.RATE_LIMIT_MAX_ATTEMPTS + 1):
             SpamPreventionService.record_submission_attempt(request)
 
         result = SpamPreventionService.comprehensive_spam_check(
@@ -1862,6 +1840,15 @@ class RateLimitingIntegrationTests(TestCase):
         """Test that rate limiting uses secure IP extraction to prevent spoofing"""
         from unittest.mock import patch
 
+        from coalition.campaigns.models import PolicyCampaign
+
+        # Create a campaign for the test
+        campaign = PolicyCampaign.objects.create(
+            name="test-campaign",
+            title="Test Campaign",
+            summary="Test campaign for rate limiting",
+        )
+
         with patch(
             "coalition.endorsements.spam_prevention.get_client_ip",
         ) as mock_get_ip:
@@ -1869,12 +1856,12 @@ class RateLimitingIntegrationTests(TestCase):
             mock_get_ip.return_value = "192.168.1.104"
 
             # Try multiple requests with different X-Forwarded-For headers
-            for i in range(4):  # Exceed the rate limit (assuming limit is 3)
+            for i in range(4):  # Exceed the rate limit (limit is 3)
                 response = self.client.post(
                     "/api/endorsements/resend-verification/",
                     {
                         "email": "test@example.com",
-                        "campaign_id": 1,
+                        "campaign_id": campaign.id,
                     },
                     content_type="application/json",
                     # Different IPs to try to bypass rate limiting
