@@ -1235,6 +1235,54 @@ class EndorsementAPIEnhancedTest(TestCase):
         data = response.json()
         assert "already verified" in data["message"].lower()
 
+    def test_resend_verification_success(self) -> None:
+        """Test successful resend verification email"""
+        response = self.client.post(
+            "/api/endorsements/resend-verification/",
+            {
+                "email": self.stakeholder.email,
+                "campaign_id": self.campaign.id,
+            },
+            content_type="application/json",
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert "sent successfully" in data["message"].lower()
+
+    def test_resend_verification_already_verified(self) -> None:
+        """Test resend verification for already verified endorsement"""
+        self.endorsement.email_verified = True
+        self.endorsement.save()
+
+        response = self.client.post(
+            "/api/endorsements/resend-verification/",
+            {
+                "email": self.stakeholder.email,
+                "campaign_id": self.campaign.id,
+            },
+            content_type="application/json",
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert "already verified" in data["message"].lower()
+
+    def test_resend_verification_not_found(self) -> None:
+        """Test resend verification for non-existent endorsement returns 404"""
+        response = self.client.post(
+            "/api/endorsements/resend-verification/",
+            {
+                "email": "nonexistent@example.com",
+                "campaign_id": self.campaign.id,
+            },
+            content_type="application/json",
+        )
+
+        assert response.status_code == 404
+
     def test_admin_approve_endorsement(self) -> None:
         """Test admin endorsement approval endpoint"""
         response = self.client.post(
@@ -1262,11 +1310,14 @@ class EndorsementAPIEnhancedTest(TestCase):
         assert self.endorsement.status == "rejected"
 
     def test_export_endorsements_csv(self) -> None:
-        """Test CSV export endpoint"""
+        """Test CSV export endpoint (requires admin access)"""
         # Make endorsement approved and verified to appear in export
         self.endorsement.email_verified = True
         self.endorsement.status = "approved"
         self.endorsement.save()
+
+        # Login as admin user
+        self.client.force_login(self.user)
 
         response = self.client.get(
             f"/api/endorsements/export/csv/?campaign_id={self.campaign.id}",
@@ -1280,12 +1331,20 @@ class EndorsementAPIEnhancedTest(TestCase):
         assert "Test User" in content
         assert "Test Org" in content
 
+    def test_export_endorsements_csv_unauthorized(self) -> None:
+        """Test CSV export endpoint returns 403 for non-admin users"""
+        response = self.client.get("/api/endorsements/export/csv/")
+        assert response.status_code == 403
+
     def test_export_endorsements_json(self) -> None:
-        """Test JSON export endpoint"""
+        """Test JSON export endpoint (requires admin access)"""
         # Make endorsement approved and verified to appear in export
         self.endorsement.email_verified = True
         self.endorsement.status = "approved"
         self.endorsement.save()
+
+        # Login as admin user
+        self.client.force_login(self.user)
 
         response = self.client.get(
             f"/api/endorsements/export/json/?campaign_id={self.campaign.id}",
@@ -1298,6 +1357,11 @@ class EndorsementAPIEnhancedTest(TestCase):
         data = response.json()
         assert len(data["endorsements"]) == 1
         assert data["endorsements"][0]["stakeholder"]["name"] == "Test User"
+
+    def test_export_endorsements_json_unauthorized(self) -> None:
+        """Test JSON export endpoint returns 403 for non-admin users"""
+        response = self.client.get("/api/endorsements/export/json/")
+        assert response.status_code == 403
 
     def test_admin_endpoints_work_without_authentication(self) -> None:
         """Test that admin endpoints work (authentication not yet implemented)"""
