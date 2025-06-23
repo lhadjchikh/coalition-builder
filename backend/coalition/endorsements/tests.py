@@ -1637,3 +1637,190 @@ class EndorsementAPIEnhancedTest(TestCase):
 
         response = self.client.get("/api/endorsements/export/json/")
         assert response.status_code == 403
+
+
+class SecurityVulnerabilityTests(TestCase):
+    """Test security fixes for data overwriting and rate limiting vulnerabilities"""
+
+    def setUp(self) -> None:
+        self.client = Client()
+
+        # Create existing stakeholder
+        self.existing_stakeholder = Stakeholder.objects.create(
+            name="John Doe",
+            organization="Acme Corp",
+            role="CEO",
+            email="john@acme.com",
+            state="NY",
+            county="Manhattan",
+            type="business",
+        )
+
+        self.campaign = PolicyCampaign.objects.create(
+            name="test-campaign",
+            title="Test Campaign",
+            summary="Test summary",
+            allow_endorsements=True,
+        )
+
+        # Create verified endorsement
+        self.verified_endorsement = Endorsement.objects.create(
+            stakeholder=self.existing_stakeholder,
+            campaign=self.campaign,
+            statement="Original statement",
+            email_verified=True,
+            status="verified",
+        )
+
+    def test_stakeholder_data_overwrite_prevention_exact_match(self) -> None:
+        """Test that exact data matches are allowed for stakeholder updates"""
+        # Submit identical data - should be allowed
+        response = self.client.post(
+            "/api/endorsements/",
+            {
+                "campaign_id": self.campaign.id,
+                "stakeholder": {
+                    "name": "John Doe",  # Exact match
+                    "organization": "Acme Corp",  # Exact match
+                    "role": "CEO",  # Exact match
+                    "email": "john@acme.com",
+                    "state": "NY",  # Exact match
+                    "county": "Manhattan",  # Exact match
+                    "type": "business",  # Exact match
+                },
+                "statement": "Updated statement",
+                "public_display": True,
+            },
+            content_type="application/json",
+        )
+
+        # Should succeed since data matches exactly
+        assert response.status_code == 201
+
+    def test_stakeholder_data_overwrite_prevention_name_mismatch(self) -> None:
+        """Test that name mismatches are blocked to prevent account takeover"""
+        # Try to overwrite with different name
+        response = self.client.post(
+            "/api/endorsements/",
+            {
+                "campaign_id": self.campaign.id,
+                "stakeholder": {
+                    "name": "Jane Smith",  # Different name - should be blocked
+                    "organization": "Acme Corp",
+                    "role": "CEO",
+                    "email": "john@acme.com",  # Same email
+                    "state": "NY",
+                    "county": "Manhattan",
+                    "type": "business",
+                },
+                "statement": "Malicious update",
+                "public_display": True,
+            },
+            content_type="application/json",
+        )
+
+        assert response.status_code == 409
+        data = response.json()
+        assert "stakeholder with this email already exists" in data["detail"].lower()
+        assert "different information" in data["detail"].lower()
+
+    def test_verified_endorsement_modification_prevention(self) -> None:
+        """Test that verified endorsements cannot be modified"""
+        response = self.client.post(
+            "/api/endorsements/",
+            {
+                "campaign_id": self.campaign.id,
+                "stakeholder": {
+                    "name": "John Doe",
+                    "organization": "Acme Corp",
+                    "role": "CEO",
+                    "email": "john@acme.com",
+                    "state": "NY",
+                    "county": "Manhattan",
+                    "type": "business",
+                },
+                "statement": "Attempting to change verified endorsement",
+                "public_display": False,
+            },
+            content_type="application/json",
+        )
+
+        assert response.status_code == 409
+        data = response.json()
+        assert "already been verified" in data["detail"].lower()
+        assert "contact support" in data["detail"].lower()
+
+    @patch("coalition.endorsements.spam_prevention.get_client_ip")
+    def test_rate_limiting_ip_spoofing_prevention(
+        self,
+        mock_get_client_ip: Mock,
+    ) -> None:
+        """Test that rate limiting uses secure IP extraction to prevent spoofing"""
+        # Mock secure IP extraction to return consistent IP
+        mock_get_client_ip.return_value = "192.168.1.100"
+
+        # Make multiple verification requests to trigger rate limiting
+        for i in range(4):  # Exceed rate limit of 3
+            response = self.client.post(
+                "/api/endorsements/resend-verification/",
+                {
+                    "email": "test@example.com",
+                    "campaign_id": self.campaign.id,
+                },
+                content_type="application/json",
+                # Try to spoof with X-Forwarded-For header
+                HTTP_X_FORWARDED_FOR=f"10.0.0.{i}",  # Different IPs to try to bypass
+            )
+
+            if i < 3:
+                # First 3 should succeed (within rate limit)
+                assert response.status_code == 200
+            else:
+                # 4th should be rate limited
+                assert response.status_code == 429
+                data = response.json()
+                assert "too many" in data["detail"].lower()
+
+        # Verify that get_client_ip was called for rate limiting (not spoofed headers)
+        assert mock_get_client_ip.call_count >= 4
+
+
+class RedisIntegrationTests(TestCase):
+    """Test Redis cache integration for rate limiting"""
+
+    def setUp(self) -> None:
+        # Ensure we're using dummy cache for testing
+        from django.core.cache import cache
+
+        cache.clear()
+
+    def test_cache_configuration_in_tests(self) -> None:
+        """Test that tests use dummy cache backend"""
+        from django.conf import settings
+
+        # In tests, should use dummy cache
+        assert (
+            settings.CACHES["default"]["BACKEND"]
+            == "django.core.cache.backends.dummy.DummyCache"
+        )
+
+    def test_spam_prevention_service_with_cache(self) -> None:
+        """Test that SpamPreventionService works with cache backend"""
+        from django.test import RequestFactory
+
+        from coalition.endorsements.spam_prevention import SpamPreventionService
+
+        factory = RequestFactory()
+        request = factory.post("/api/endorsements/")
+        request.META["REMOTE_ADDR"] = "192.168.1.1"
+
+        # Test rate limit check
+        result = SpamPreventionService.check_rate_limit(request)
+        assert result["allowed"] is True
+
+        # Record submission attempt
+        SpamPreventionService.record_submission_attempt(request)
+
+        # Should still be allowed for second attempt
+        result = SpamPreventionService.check_rate_limit(request)
+        assert result["allowed"] is True

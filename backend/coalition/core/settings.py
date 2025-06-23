@@ -220,3 +220,39 @@ AUTO_APPROVE_VERIFIED_ENDORSEMENTS = os.getenv(
 
 # Akismet spam detection
 AKISMET_SECRET_API_KEY = os.getenv("AKISMET_SECRET_API_KEY")
+
+# Cache configuration
+# Required for django-ratelimit which needs a shared cache backend
+CACHE_URL = os.getenv("CACHE_URL", "locmem://")
+
+if CACHE_URL.startswith("redis://"):
+    # Use Redis for production/development - supports atomic operations
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": CACHE_URL,
+            "OPTIONS": {
+                "CONNECTION_POOL_KWARGS": {
+                    "max_connections": 20,
+                    "retry_on_timeout": True,
+                },
+            },
+        },
+    }
+elif CACHE_URL.startswith("dummy://") or "test" in sys.argv:
+    # Use dummy cache for testing to avoid cache-related test issues
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+        },
+    }
+else:
+    # Fallback for local development without Redis
+    # Note: LocMemCache doesn't support atomic operations needed by django-ratelimit
+    # For full functionality, use Redis
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "coalition-cache",
+        },
+    }

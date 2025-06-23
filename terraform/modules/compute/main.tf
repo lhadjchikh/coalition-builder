@@ -179,14 +179,56 @@ resource "aws_ecs_task_definition" "app" {
   task_role_arn            = aws_iam_role.ecs_task_role.arn
 
   container_definitions = var.enable_ssr ? jsonencode([
+    # Redis Cache Container
+    {
+      name      = "redis"
+      image     = "redis:7-alpine"
+      essential = false
+      # Allocate minimal resources for Redis
+      cpu    = 128 # 128 CPU units
+      memory = 128 # 128 MB RAM
+
+      portMappings = [
+        {
+          containerPort = 6379
+          hostPort      = 6379
+          protocol      = "tcp"
+          name          = "redis"
+        }
+      ]
+      command = [
+        "redis-server",
+        "--appendonly", "yes",
+        "--maxmemory", "96mb",
+        "--maxmemory-policy", "allkeys-lru"
+      ]
+      healthCheck = {
+        command = [
+          "CMD-SHELL",
+          "redis-cli ping || exit 1"
+        ],
+        interval    = 30,
+        timeout     = 5,
+        retries     = 3,
+        startPeriod = 10
+      }
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.ecs_logs.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "redis"
+        }
+      }
+    },
     # Django API Container
     {
       name      = "app"
       image     = "${aws_ecr_repository.api.repository_url}:latest"
       essential = true
-      # Allocate appropriate CPU for Django API container
-      cpu    = var.enable_ssr ? floor(var.task_cpu * 0.6) : var.task_cpu                       # 60% for API when SSR enabled, 100% when disabled
-      memory = var.enable_ssr ? floor(local.calculated_memory * 0.6) : local.calculated_memory # 60% for API when SSR enabled, 100% when disabled
+      # Adjust CPU allocation for API container when Redis is present
+      cpu    = var.enable_ssr ? floor((var.task_cpu - 128) * 0.6) : (var.task_cpu - 128)                       # 60% of remaining CPU when SSR enabled
+      memory = var.enable_ssr ? floor((local.calculated_memory - 128) * 0.6) : (local.calculated_memory - 128) # 60% of remaining memory when SSR enabled
 
       portMappings = [
         {
@@ -204,6 +246,10 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "ALLOWED_HOSTS"
           value = "*"
+        },
+        {
+          name  = "CACHE_URL"
+          value = "redis://localhost:6379/1"
         }
       ]
       secrets = [
@@ -234,15 +280,21 @@ resource "aws_ecs_task_definition" "app" {
           "awslogs-stream-prefix" = "django"
         }
       }
+      dependsOn = [
+        {
+          containerName = "redis"
+          condition     = "HEALTHY"
+        }
+      ]
     },
     # SSR Container
     {
       name      = "ssr"
       image     = "${aws_ecr_repository.ssr.repository_url}:latest"
       essential = true
-      # Allocate remaining CPU and memory for SSR container
-      cpu    = floor(var.task_cpu * 0.4)            # 40% for SSR
-      memory = floor(local.calculated_memory * 0.4) # 40% for SSR
+      # Allocate remaining CPU and memory for SSR container (after Redis allocation)
+      cpu    = floor((var.task_cpu - 128) * 0.4)            # 40% of remaining CPU after Redis
+      memory = floor((local.calculated_memory - 128) * 0.4) # 40% of remaining memory after Redis
 
       portMappings = [
         {
@@ -296,11 +348,56 @@ resource "aws_ecs_task_definition" "app" {
       ]
     }
     ]) : jsonencode([
+    # Redis Cache Container (always included)
+    {
+      name      = "redis"
+      image     = "redis:7-alpine"
+      essential = false
+      # Allocate minimal resources for Redis
+      cpu    = 128 # 128 CPU units
+      memory = 128 # 128 MB RAM
+
+      portMappings = [
+        {
+          containerPort = 6379
+          hostPort      = 6379
+          protocol      = "tcp"
+          name          = "redis"
+        }
+      ]
+      command = [
+        "redis-server",
+        "--appendonly", "yes",
+        "--maxmemory", "96mb",
+        "--maxmemory-policy", "allkeys-lru"
+      ]
+      healthCheck = {
+        command = [
+          "CMD-SHELL",
+          "redis-cli ping || exit 1"
+        ],
+        interval    = 30,
+        timeout     = 5,
+        retries     = 3,
+        startPeriod = 10
+      }
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.ecs_logs.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "redis"
+        }
+      }
+    },
     # Django API Container only (when enable_ssr is false)
     {
       name      = "app"
       image     = "${aws_ecr_repository.api.repository_url}:latest"
       essential = true
+      # Use remaining CPU and memory after Redis allocation
+      cpu    = var.task_cpu - 128
+      memory = local.calculated_memory - 128
 
       portMappings = [
         {
@@ -318,6 +415,10 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "ALLOWED_HOSTS"
           value = "*"
+        },
+        {
+          name  = "CACHE_URL"
+          value = "redis://localhost:6379/1"
         }
       ]
       secrets = [
@@ -330,6 +431,16 @@ resource "aws_ecs_task_definition" "app" {
           valueFrom = "${var.db_url_secret_arn}:url::"
         }
       ]
+      healthCheck = {
+        command = [
+          "CMD-SHELL",
+          "curl -f http://localhost:${var.container_port_api}${var.health_check_path_api} || exit 1"
+        ],
+        interval    = 30,
+        timeout     = 10,
+        retries     = 5,
+        startPeriod = 30
+      }
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -338,6 +449,12 @@ resource "aws_ecs_task_definition" "app" {
           "awslogs-stream-prefix" = "django"
         }
       }
+      dependsOn = [
+        {
+          containerName = "redis"
+          condition     = "HEALTHY"
+        }
+      ]
     }
   ])
 

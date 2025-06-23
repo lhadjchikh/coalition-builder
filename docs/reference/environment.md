@@ -135,7 +135,7 @@ ENDORSEMENT_RATE_LIMIT_WINDOW=300
 ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS=3
 
 # Cache backend (required for rate limiting)
-# Redis recommended for production
+# Redis recommended for production and development
 CACHE_URL=redis://localhost:6379/1
 ```
 
@@ -326,8 +326,8 @@ SITE_URL="http://localhost:3000"
 ENDORSEMENT_RATE_LIMIT_WINDOW=300
 ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS=3
 
-# Cache (for rate limiting)
-CACHE_URL=redis://localhost:6379/1
+# Cache (for rate limiting) - Redis container in docker-compose
+CACHE_URL=redis://redis:6379/1
 
 # Frontend
 REACT_APP_API_URL=http://localhost:8000/api
