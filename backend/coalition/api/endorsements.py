@@ -1,7 +1,6 @@
 import csv
 import json
 import logging
-import re
 import uuid
 
 from django.db import IntegrityError, transaction
@@ -27,24 +26,21 @@ def sanitize_csv_field(value: str) -> str:
     """
     Sanitize CSV field to prevent formula injection attacks.
 
-    Removes or escapes characters that could be interpreted as formulas
-    by spreadsheet applications (=, +, -, @, etc.)
+    Prefixes dangerous characters with single quote as per security best practices.
+    This prevents formula execution while preserving original data content.
     """
     if not isinstance(value, str):
         return str(value)
 
-    # Remove any leading characters that could start a formula
-    dangerous_chars = ["=", "+", "-", "@", "\t", "\r", "\n"]
+    # Strip whitespace first
+    value = value.strip()
 
-    # Strip leading dangerous characters
-    while value and value[0] in dangerous_chars:
-        value = value[1:]
+    # If field starts with dangerous characters, prefix with single quote
+    # This is the industry standard approach recommended by security experts
+    if value and value[0] in ("=", "+", "-", "@", "|"):
+        return "'" + value
 
-    # Replace any remaining formula-like patterns
-    # This is a conservative approach to prevent CSV injection
-    value = re.sub(r"^[=+\-@]", "", value)
-
-    # Remove or escape other potentially dangerous characters
+    # Clean up problematic whitespace characters
     value = value.replace("\r", " ").replace("\n", " ").replace("\t", " ")
 
     return value

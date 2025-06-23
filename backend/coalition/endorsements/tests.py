@@ -1441,14 +1441,15 @@ class EndorsementAPIEnhancedTest(TestCase):
 
         content = response.content.decode("utf-8")
 
-        # Verify dangerous characters are sanitized
-        assert "=cmd" not in content  # Leading = should be removed
-        assert "@SUM" not in content  # Leading @ should be removed
-        assert "+1+1+cmd" not in content  # Leading + should be removed
+        # Verify dangerous characters are prefixed with single quote
+        assert "'=cmd" in content  # Leading = should be prefixed with '
+        assert "'@SUM" in content  # Leading @ should be prefixed with '
+        assert "'+1+1+cmd" in content  # Leading + should be prefixed with '
 
-        # Verify data is still present but sanitized
-        assert "cmd" in content  # Content should still be there, just sanitized
-        assert "calc" in content
+        # Verify original dangerous strings are not present
+        assert "=cmd|" not in content  # Raw formula should not appear
+        assert "@SUM(1+1)" not in content  # Raw formula should not appear
+        assert "+1+1+cmd|" not in content  # Raw formula should not appear
 
     def test_export_endorsements_csv_unauthorized(self) -> None:
         """Test CSV export endpoint returns 403 for non-admin users"""
