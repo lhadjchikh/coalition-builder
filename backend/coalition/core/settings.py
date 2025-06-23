@@ -34,6 +34,10 @@ DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "t")
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
+# Add testserver for Django tests
+if "test" in sys.argv or "testserver" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append("testserver")
+
 ORGANIZATION_NAME = os.getenv("ORGANIZATION_NAME", "Coalition Builder")
 TAGLINE = os.getenv("ORG_TAGLINE", "Building strong advocacy partnerships")
 CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "info@example.org")
