@@ -164,7 +164,7 @@ def list_endorsements(
     if campaign_id is not None:
         queryset = queryset.filter(campaign_id=campaign_id)
 
-    return queryset.order_by("-created_at").all()
+    return list(queryset.order_by("-created_at").all())
 
 
 @router.post("/", response=EndorsementOut)
@@ -192,8 +192,8 @@ def create_endorsement(
         "type": data.stakeholder.type,
     }
 
-    # Get form metadata (honeypot fields, timing, etc.)
-    form_data = getattr(data, "form_metadata", {})
+    # Get form metadata (honeypot fields, timing, etc.) - required field
+    form_data = data.form_metadata
 
     spam_check = SpamPreventionService.comprehensive_spam_check(
         request=request,
@@ -403,8 +403,8 @@ def admin_reject_endorsement(request: HttpRequest, endorsement_id: int) -> dict:
     }
 
 
-@router.get("/admin/pending/")
-def admin_list_pending_endorsements(request: HttpRequest) -> list[EndorsementOut]:
+@router.get("/admin/pending/", response=list[EndorsementOut])
+def admin_list_pending_endorsements(request: HttpRequest) -> list[Endorsement]:
     """Admin endpoint to list endorsements requiring review"""
     # Require staff/admin access for pending endorsements list
     if not request.user.is_authenticated or not request.user.is_staff:
