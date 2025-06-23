@@ -162,4 +162,49 @@ describe('EndorsementForm', () => {
     expect(emailInput).toBeRequired();
     expect(stateSelect).toBeRequired();
   });
+
+  it('prevents submission when honeypot fields are filled (bot detection)', async () => {
+    // Mock API to simulate honeypot detection rejection
+    mockAPI.createEndorsement.mockRejectedValue(
+      new Error('Submission rejected due to spam detection')
+    );
+
+    render(<EndorsementForm campaign={mockCampaign} />);
+
+    // Fill out required fields
+    fireEvent.change(screen.getByTestId('name-input'), { target: { value: 'Bot User' } });
+    fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Bot Org' } });
+    fireEvent.change(screen.getByTestId('email-input'), { target: { value: 'bot@spam.com' } });
+    fireEvent.change(screen.getByTestId('state-select'), { target: { value: 'CA' } });
+
+    // Fill honeypot fields (this simulates bot behavior)
+    const websiteField = screen.getByLabelText(/website.*leave blank/i);
+    const urlField = screen.getByLabelText(/url.*leave blank/i);
+    fireEvent.change(websiteField, { target: { value: 'http://spam.com' } });
+    fireEvent.change(urlField, { target: { value: 'http://malicious.com' } });
+
+    // Submit the form
+    fireEvent.click(screen.getByTestId('submit-button'));
+
+    // Verify that API was called with honeypot fields filled
+    await waitFor(() => {
+      expect(mockAPI.createEndorsement).toHaveBeenCalledWith(
+        expect.objectContaining({
+          form_metadata: expect.objectContaining({
+            website: 'http://spam.com',
+            url: 'http://malicious.com',
+          }),
+        })
+      );
+    });
+
+    // Verify that submission was rejected (spam detection)
+    await waitFor(() => {
+      expect(screen.getByTestId('error-message')).toBeInTheDocument();
+      expect(screen.getByTestId('error-message')).toHaveTextContent(/spam detection/i);
+    });
+
+    // Verify success callback was not called
+    expect(screen.queryByTestId('success-message')).not.toBeInTheDocument();
+  });
 });
