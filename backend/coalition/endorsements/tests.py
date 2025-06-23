@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
 from django.core import mail
+from django.core.cache import cache
 from django.db import IntegrityError
 from django.http import HttpRequest
 from django.test import Client, TestCase
@@ -18,6 +19,10 @@ from .admin import EndorsementAdmin
 from .email_service import EndorsementEmailService
 from .models import Endorsement
 from .spam_prevention import SpamPreventionService, get_client_ip
+
+# Test constants
+TEST_PUBLIC_IP = "8.8.8.8"  # Google DNS - a reliable public IP for testing
+TEST_PRIVATE_IP = "10.0.0.5"  # Private IP for simulating load balancers/proxies
 
 
 def get_valid_form_metadata() -> dict:
@@ -986,34 +991,34 @@ class IPValidationTest(TestCase):
     def test_get_client_ip_direct_connection(self) -> None:
         """Test IP extraction for direct internet connections"""
         request = HttpRequest()
-        request.META = {"REMOTE_ADDR": "203.0.113.42"}  # Public IP
+        request.META = {"REMOTE_ADDR": TEST_PUBLIC_IP}  # Public IP
 
         ip = get_client_ip(request)
-        assert ip == "203.0.113.42"
+        assert ip == TEST_PUBLIC_IP
 
     def test_get_client_ip_ignores_spoofed_headers_from_internet(self) -> None:
         """Test that spoofed headers are ignored for direct internet connections"""
         request = HttpRequest()
         request.META = {
-            "REMOTE_ADDR": "203.0.113.42",  # Public IP (direct connection)
+            "REMOTE_ADDR": TEST_PUBLIC_IP,  # Public IP (direct connection)
             "HTTP_X_FORWARDED_FOR": "192.168.1.100",  # Spoofed private IP
         }
 
         # Should ignore X-Forwarded-For and use REMOTE_ADDR
         ip = get_client_ip(request)
-        assert ip == "203.0.113.42"
+        assert ip == TEST_PUBLIC_IP
 
     def test_get_client_ip_trusts_proxy_from_private_ip(self) -> None:
         """Test that proxy headers are trusted when connection is from private IP"""
         request = HttpRequest()
         request.META = {
-            "REMOTE_ADDR": "10.0.0.5",  # Private IP (load balancer)
-            "HTTP_X_FORWARDED_FOR": "8.8.8.8, 10.0.0.5",  # Real client IP
+            "REMOTE_ADDR": TEST_PRIVATE_IP,  # Private IP (load balancer)
+            "HTTP_X_FORWARDED_FOR": f"{TEST_PUBLIC_IP}, {TEST_PRIVATE_IP}",
         }
 
         # Should trust X-Forwarded-For from private IP connection
         ip = get_client_ip(request)
-        assert ip == "8.8.8.8"
+        assert ip == TEST_PUBLIC_IP
 
     def test_get_client_ip_handles_invalid_ips(self) -> None:
         """Test handling of invalid IP addresses"""
@@ -1032,33 +1037,33 @@ class IPValidationTest(TestCase):
         request = HttpRequest()
         request.META = {
             "REMOTE_ADDR": "172.16.0.1",  # Private IP (reverse proxy)
-            "HTTP_X_FORWARDED_FOR": "8.8.8.8, 10.0.0.5, 172.16.0.1",
+            "HTTP_X_FORWARDED_FOR": f"{TEST_PUBLIC_IP}, {TEST_PRIVATE_IP}, 172.16.0.1",
         }
 
         # Should find the first public IP in the chain
         ip = get_client_ip(request)
-        assert ip == "8.8.8.8"
+        assert ip == TEST_PUBLIC_IP
 
     def test_get_client_ip_no_forwarded_header(self) -> None:
         """Test IP extraction when no X-Forwarded-For header is present"""
         request = HttpRequest()
-        request.META = {"REMOTE_ADDR": "8.8.8.8"}
+        request.META = {"REMOTE_ADDR": TEST_PUBLIC_IP}
 
         ip = get_client_ip(request)
-        assert ip == "8.8.8.8"
+        assert ip == TEST_PUBLIC_IP
 
     def test_get_client_ip_prevents_rate_limit_bypass(self) -> None:
         """Test that IP validation prevents rate limit bypass attempts"""
         # Simulate attacker trying to bypass rate limits with fake IPs
         request = HttpRequest()
         request.META = {
-            "REMOTE_ADDR": "8.8.8.8",  # Real public IP
+            "REMOTE_ADDR": TEST_PUBLIC_IP,  # Real public IP
             "HTTP_X_FORWARDED_FOR": "1.2.3.4",  # Fake IP to bypass rate limits
         }
 
         # Should ignore the fake header and use real IP
         ip = get_client_ip(request)
-        assert ip == "8.8.8.8"
+        assert ip == TEST_PUBLIC_IP
 
         # The IP should be consistent across multiple calls
         ip2 = get_client_ip(request)
@@ -1227,6 +1232,7 @@ class EndorsementAPIEnhancedTest(TestCase):
     """Test enhanced API endpoints for verification and admin functionality"""
 
     def setUp(self) -> None:
+        cache.clear()  # Clear rate limiting cache between tests
         self.client = Client()
 
         self.user = User.objects.create_user(
@@ -1359,24 +1365,27 @@ class EndorsementAPIEnhancedTest(TestCase):
             "campaign_id": self.campaign.id,
         }
 
-        # Make requests up to the rate limit
-        for _ in range(3):  # Default rate limit is 3 attempts
+        # Make 4 requests - first 3 should succeed, 4th should be rate limited
+        responses = []
+        for _ in range(4):
             response = self.client.post(
                 "/api/endorsements/resend-verification/",
                 request_data,
                 content_type="application/json",
             )
-            # Should succeed initially
-            assert response.status_code in [200, 429]
+            responses.append(response)
 
-        # The next request should be rate limited
-        response = self.client.post(
-            "/api/endorsements/resend-verification/",
-            request_data,
-            content_type="application/json",
-        )
-        assert response.status_code == 429
-        data = response.json()
+        # First 3 should succeed
+        for i in range(3):
+            assert (
+                responses[i].status_code == 200
+            ), f"Request {i+1} should succeed but got {responses[i].status_code}"
+
+        # 4th request should be rate limited
+        assert (
+            responses[3].status_code == 429
+        ), f"Request 4 should be rate limited but got {responses[3].status_code}"
+        data = responses[3].json()
         assert "too many" in data["detail"].lower()
 
     def test_admin_approve_endorsement_requires_auth(self) -> None:
