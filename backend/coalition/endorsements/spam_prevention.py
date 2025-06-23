@@ -116,7 +116,7 @@ class SpamPreventionService:
             return True
 
         try:
-            start_time = datetime.fromisoformat(form_start_time)
+            start_time = timezone.make_aware(datetime.fromisoformat(form_start_time))
             submission_time = timezone.now()
             time_taken = (submission_time - start_time).total_seconds()
 
