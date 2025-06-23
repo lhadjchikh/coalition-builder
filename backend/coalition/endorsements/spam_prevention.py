@@ -2,6 +2,7 @@
 Spam prevention utilities for endorsement forms
 """
 
+import ipaddress
 import logging
 import re
 from datetime import datetime
@@ -25,6 +26,57 @@ except ImportError:
 from django_ratelimit.core import is_ratelimited
 
 logger = logging.getLogger(__name__)
+
+
+def get_client_ip(request: HttpRequest) -> str:
+    """
+    Securely extract client IP address with validation and spoofing protection.
+
+    Validates IP addresses and handles proxy headers safely to prevent
+    rate limit bypass and log pollution attacks.
+    """
+
+    def is_valid_ip(ip_str: str) -> bool:
+        """Validate if string is a valid IP address."""
+        try:
+            ipaddress.ip_address(ip_str.strip())
+            return True
+        except (ValueError, ipaddress.AddressValueError):
+            return False
+
+    def is_private_ip(ip_str: str) -> bool:
+        """Check if IP is in private/internal range."""
+        try:
+            ip = ipaddress.ip_address(ip_str.strip())
+            return ip.is_private or ip.is_loopback or ip.is_link_local
+        except (ValueError, ipaddress.AddressValueError):
+            return True  # Treat invalid IPs as private for safety
+
+    # Get the direct connection IP (always trustworthy)
+    remote_addr = request.META.get("REMOTE_ADDR", "")
+
+    # If no proxy headers or direct connection from internet, use REMOTE_ADDR
+    forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR", "").strip()
+    if not forwarded_for:
+        return remote_addr if is_valid_ip(remote_addr) else "127.0.0.1"
+
+    # Parse X-Forwarded-For header (format: client, proxy1, proxy2, ...)
+    forwarded_ips = [ip.strip() for ip in forwarded_for.split(",")]
+
+    # Only trust proxy headers if the direct connection is from a private IP
+    # This prevents arbitrary header spoofing from internet clients
+    if not is_private_ip(remote_addr):
+        # Direct internet connection - ignore potentially spoofed headers
+        return remote_addr if is_valid_ip(remote_addr) else "127.0.0.1"
+
+    # Connection is from private IP (reverse proxy/load balancer)
+    # Find the first valid public IP in the chain
+    for ip in forwarded_ips:
+        if is_valid_ip(ip) and not is_private_ip(ip):
+            return ip
+
+    # No valid public IP found, fall back to REMOTE_ADDR
+    return remote_addr if is_valid_ip(remote_addr) else "127.0.0.1"
 
 
 class SpamPreventionService:
@@ -307,10 +359,8 @@ class SpamPreventionService:
         Run comprehensive spam check
         Returns dict with overall assessment and details
         """
-        # Extract IP address from request
-        ip_address = request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[
-            0
-        ] or request.META.get("REMOTE_ADDR", "unknown")
+        # Extract IP address from request with validation and spoofing protection
+        ip_address = get_client_ip(request)
 
         results = {
             "is_spam": False,

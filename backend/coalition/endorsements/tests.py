@@ -17,7 +17,7 @@ from coalition.stakeholders.models import Stakeholder
 from .admin import EndorsementAdmin
 from .email_service import EndorsementEmailService
 from .models import Endorsement
-from .spam_prevention import SpamPreventionService
+from .spam_prevention import SpamPreventionService, get_client_ip
 
 
 class EndorsementModelTest(TestCase):
@@ -1022,6 +1022,91 @@ class SpamPreventionServiceTest(TestCase):
         assert result["is_spam"] is True
         assert result["confidence_score"] == 1.0
         assert "rate limit" in result["reasons"][0].lower()
+
+
+class IPValidationTest(TestCase):
+    """Test secure IP address extraction and validation"""
+
+    def test_get_client_ip_direct_connection(self) -> None:
+        """Test IP extraction for direct internet connections"""
+        request = HttpRequest()
+        request.META = {"REMOTE_ADDR": "203.0.113.42"}  # Public IP
+
+        ip = get_client_ip(request)
+        assert ip == "203.0.113.42"
+
+    def test_get_client_ip_ignores_spoofed_headers_from_internet(self) -> None:
+        """Test that spoofed headers are ignored for direct internet connections"""
+        request = HttpRequest()
+        request.META = {
+            "REMOTE_ADDR": "203.0.113.42",  # Public IP (direct connection)
+            "HTTP_X_FORWARDED_FOR": "192.168.1.100",  # Spoofed private IP
+        }
+
+        # Should ignore X-Forwarded-For and use REMOTE_ADDR
+        ip = get_client_ip(request)
+        assert ip == "203.0.113.42"
+
+    def test_get_client_ip_trusts_proxy_from_private_ip(self) -> None:
+        """Test that proxy headers are trusted when connection is from private IP"""
+        request = HttpRequest()
+        request.META = {
+            "REMOTE_ADDR": "10.0.0.5",  # Private IP (load balancer)
+            "HTTP_X_FORWARDED_FOR": "203.0.113.42, 10.0.0.5",  # Real client IP
+        }
+
+        # Should trust X-Forwarded-For from private IP connection
+        ip = get_client_ip(request)
+        assert ip == "203.0.113.42"
+
+    def test_get_client_ip_handles_invalid_ips(self) -> None:
+        """Test handling of invalid IP addresses"""
+        request = HttpRequest()
+        request.META = {
+            "REMOTE_ADDR": "invalid.ip.address",
+            "HTTP_X_FORWARDED_FOR": "not.an.ip, also.invalid",
+        }
+
+        # Should fallback to localhost for invalid IPs
+        ip = get_client_ip(request)
+        assert ip == "127.0.0.1"
+
+    def test_get_client_ip_multiple_proxies(self) -> None:
+        """Test IP extraction through multiple proxy layers"""
+        request = HttpRequest()
+        request.META = {
+            "REMOTE_ADDR": "172.16.0.1",  # Private IP (reverse proxy)
+            "HTTP_X_FORWARDED_FOR": "203.0.113.42, 10.0.0.5, 172.16.0.1",
+        }
+
+        # Should find the first public IP in the chain
+        ip = get_client_ip(request)
+        assert ip == "203.0.113.42"
+
+    def test_get_client_ip_no_forwarded_header(self) -> None:
+        """Test IP extraction when no X-Forwarded-For header is present"""
+        request = HttpRequest()
+        request.META = {"REMOTE_ADDR": "203.0.113.42"}
+
+        ip = get_client_ip(request)
+        assert ip == "203.0.113.42"
+
+    def test_get_client_ip_prevents_rate_limit_bypass(self) -> None:
+        """Test that IP validation prevents rate limit bypass attempts"""
+        # Simulate attacker trying to bypass rate limits with fake IPs
+        request = HttpRequest()
+        request.META = {
+            "REMOTE_ADDR": "203.0.113.42",  # Real public IP
+            "HTTP_X_FORWARDED_FOR": "1.2.3.4",  # Fake IP to bypass rate limits
+        }
+
+        # Should ignore the fake header and use real IP
+        ip = get_client_ip(request)
+        assert ip == "203.0.113.42"
+
+        # The IP should be consistent across multiple calls
+        ip2 = get_client_ip(request)
+        assert ip == ip2
 
 
 class EndorsementAdminTest(TestCase):

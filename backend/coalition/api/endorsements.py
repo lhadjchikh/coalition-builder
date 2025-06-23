@@ -13,7 +13,7 @@ from ninja.errors import HttpError
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.email_service import EndorsementEmailService
 from coalition.endorsements.models import Endorsement
-from coalition.endorsements.spam_prevention import SpamPreventionService
+from coalition.endorsements.spam_prevention import SpamPreventionService, get_client_ip
 from coalition.stakeholders.models import Stakeholder
 
 from .schemas import EndorsementCreateSchema, EndorsementOut, EndorsementVerifySchema
@@ -71,10 +71,8 @@ def create_endorsement(
     data: EndorsementCreateSchema,
 ) -> Endorsement:
     """Create a new endorsement with stakeholder deduplication and spam prevention"""
-    # Get client IP address
-    ip_address = request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[
-        0
-    ] or request.META.get("REMOTE_ADDR", "unknown")
+    # Get client IP address with validation and spoofing protection
+    ip_address = get_client_ip(request)
 
     # Verify campaign exists and allows endorsements
     campaign = get_object_or_404(PolicyCampaign, id=data.campaign_id)
