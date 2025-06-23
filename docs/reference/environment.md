@@ -61,19 +61,20 @@ CONTACT_EMAIL="info@environmentalcoalition.org"
 
 ### Email Configuration
 
-| Variable                             | Description                           | Default   | Required |
-| ------------------------------------ | ------------------------------------- | --------- | -------- |
-| `EMAIL_BACKEND`                      | Django email backend                  | `console` | No       |
-| `EMAIL_HOST`                         | SMTP host                             | -         | No       |
-| `EMAIL_PORT`                         | SMTP port                             | `587`     | No       |
-| `EMAIL_USE_TLS`                      | Use TLS encryption                    | `True`    | No       |
-| `EMAIL_HOST_USER`                    | SMTP username                         | -         | No       |
-| `EMAIL_HOST_PASSWORD`                | SMTP password                         | -         | No       |
-| `DEFAULT_FROM_EMAIL`                 | Default sender email                  | -         | No       |
-| `ADMIN_NOTIFICATION_EMAILS`          | Comma-separated admin emails          | -         | No       |
-| `AUTO_APPROVE_VERIFIED_ENDORSEMENTS` | Auto-approve after email verification | `true`    | No       |
-| `AKISMET_SECRET_API_KEY`             | Akismet API key for spam detection    | -         | No       |
-| `SITE_URL`                           | Base URL for email links              | -         | Yes      |
+| Variable                             | Description                           | Default                 | Required |
+| ------------------------------------ | ------------------------------------- | ----------------------- | -------- |
+| `EMAIL_BACKEND`                      | Django email backend                  | `console`               | No       |
+| `EMAIL_HOST`                         | SMTP host                             | -                       | No       |
+| `EMAIL_PORT`                         | SMTP port                             | `587`                   | No       |
+| `EMAIL_USE_TLS`                      | Use TLS encryption                    | `True`                  | No       |
+| `EMAIL_HOST_USER`                    | SMTP username                         | -                       | No       |
+| `EMAIL_HOST_PASSWORD`                | SMTP password                         | -                       | No       |
+| `DEFAULT_FROM_EMAIL`                 | Default sender email                  | -                       | No       |
+| `ADMIN_NOTIFICATION_EMAILS`          | Comma-separated admin emails          | -                       | No       |
+| `AUTO_APPROVE_VERIFIED_ENDORSEMENTS` | Auto-approve after email verification | `true`                  | No       |
+| `AKISMET_SECRET_API_KEY`             | Akismet API key for spam detection    | -                       | No       |
+| `SITE_URL`                           | Base URL for email links              | -                       | Yes      |
+| `API_URL`                            | Backend API URL (for admin links)     | `http://localhost:8000` | No       |
 
 **Email Template Configuration:**
 
@@ -93,6 +94,7 @@ EMAIL_HOST_PASSWORD=your-app-password
 DEFAULT_FROM_EMAIL="Coalition Builder <noreply@yourdomain.com>"
 ADMIN_NOTIFICATION_EMAILS="admin1@yourdomain.com,admin2@yourdomain.com"
 SITE_URL="https://yourdomain.com"
+API_URL="https://api.yourdomain.com"
 ```
 
 ### Storage Configuration
