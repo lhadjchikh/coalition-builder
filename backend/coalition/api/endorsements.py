@@ -77,10 +77,11 @@ def create_endorsement(
         statement=data.statement,
         form_data=form_data,
         user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        request=request,
     )
 
     # Record the submission attempt for rate limiting
-    SpamPreventionService.record_submission_attempt(ip_address)
+    SpamPreventionService.record_submission_attempt(ip_address, request)
 
     # Handle spam detection
     if spam_check["is_spam"]:

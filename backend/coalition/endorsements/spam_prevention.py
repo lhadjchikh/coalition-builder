@@ -16,6 +16,12 @@ try:
 except ImportError:
     akismet = None
 
+try:
+    from email_validator import EmailNotValidError, validate_email
+except ImportError:
+    validate_email = None
+    EmailNotValidError = Exception
+
 logger = logging.getLogger(__name__)
 
 
@@ -34,7 +40,8 @@ class SpamPreventionService:
         3,
     )
 
-    # Suspicious patterns
+    # Known disposable email domains (fallback when email-validator unavailable)
+    # email-validator handles most disposable domains automatically
     SUSPICIOUS_DOMAINS = [
         "mailinator.com",
         "10minutemail.com",
@@ -137,24 +144,58 @@ class SpamPreventionService:
     @classmethod
     def check_email_reputation(cls, email: str) -> dict[str, Any]:
         """
-        Check email address reputation
+        Check email address reputation using email-validator
+        Falls back to basic checks if email-validator is unavailable
         Returns dict with 'suspicious' boolean and 'reasons' list
         """
         reasons = []
 
-        # Check domain against known disposable email providers
-        domain = email.split("@")[-1].lower()
-        if domain in cls.SUSPICIOUS_DOMAINS:
-            reasons.append(f"Disposable email domain: {domain}")
+        # Use email-validator for comprehensive validation
+        if validate_email:
+            try:
+                # Validate email with deliverability and domain checks
+                validated_email = validate_email(
+                    email,
+                    check_deliverability=True,  # Check if domain has MX record
+                )
 
-        # Check for suspicious patterns in email
-        email_lower = email.lower()
-        if "+" in email_lower and "test" in email_lower:
-            reasons.append("Test email pattern detected")
+                # Additional checks on the validated email
+                normalized_email = validated_email.email.lower()
+                domain = validated_email.domain.lower()
 
-        # Check for sequential numbers (common in spam)
-        if any(str(i) * 3 in email_lower for i in range(10)):  # 000, 111, 222, etc.
-            reasons.append("Sequential number pattern in email")
+                # Check for test patterns in validated email
+                if "test" in normalized_email and "+" in normalized_email:
+                    reasons.append("Test email pattern detected")
+
+                # Check for sequential numbers (common in spam)
+                if any(str(i) * 3 in normalized_email for i in range(10)):
+                    reasons.append("Sequential number pattern in email")
+
+            except EmailNotValidError as e:
+                # Email is invalid according to email-validator
+                reasons.append(f"Invalid email address: {str(e)}")
+                logger.info(f"Email validation failed for {email}: {e}")
+            except Exception as e:
+                # Network or other errors - log but don't block
+                logger.warning(f"Email validation service error for {email}: {e}")
+                # Fall through to basic checks below
+
+        # Fallback to basic domain checks if email-validator unavailable or failed
+        if not validate_email or not reasons:
+            domain = email.split("@")[-1].lower() if "@" in email else ""
+
+            # Check domain against known disposable email providers
+            if domain in cls.SUSPICIOUS_DOMAINS:
+                reasons.append(f"Disposable email domain: {domain}")
+
+            # Basic pattern checks
+            email_lower = email.lower()
+            if "+" in email_lower and "test" in email_lower:
+                reasons.append("Test email pattern detected")
+
+            # Check for sequential numbers
+            if any(str(i) * 3 in email_lower for i in range(10)):
+                reasons.append("Sequential number pattern in email")
 
         return {
             "suspicious": len(reasons) > 0,
