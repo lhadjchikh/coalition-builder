@@ -60,4 +60,5 @@ export interface EndorsementCreate {
   stakeholder: Omit<Stakeholder, 'id' | 'created_at' | 'updated_at'>;
   statement?: string;
   public_display: boolean;
+  form_metadata?: Record<string, any>; // For spam prevention
 }

@@ -1,16 +1,25 @@
+import csv
+import json
+import logging
+import uuid
+
 from django.db import IntegrityError, transaction
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from ninja import Router
 from ninja.errors import HttpError
 
 from coalition.campaigns.models import PolicyCampaign
+from coalition.endorsements.email_service import EndorsementEmailService
 from coalition.endorsements.models import Endorsement
+from coalition.endorsements.spam_prevention import SpamPreventionService
 from coalition.stakeholders.models import Stakeholder
 
-from .schemas import EndorsementCreateSchema, EndorsementOut
+from .schemas import EndorsementCreateSchema, EndorsementOut, EndorsementVerifySchema
 
 router = Router()
+logger = logging.getLogger(__name__)
 
 
 @router.get("/", response=list[EndorsementOut])
@@ -18,16 +27,18 @@ def list_endorsements(
     request: HttpRequest,
     campaign_id: int = None,
 ) -> list[Endorsement]:
-    """List all public endorsements, optionally filtered by campaign"""
+    """List all approved public endorsements, optionally filtered by campaign"""
     queryset = Endorsement.objects.select_related("stakeholder", "campaign").filter(
+        status="approved",
         public_display=True,
+        email_verified=True,
     )
 
     # Filter by campaign if campaign_id is provided
     if campaign_id is not None:
         queryset = queryset.filter(campaign_id=campaign_id)
 
-    return queryset.all()
+    return queryset.order_by("-created_at").all()
 
 
 @router.post("/", response=EndorsementOut)
@@ -35,11 +46,51 @@ def create_endorsement(
     request: HttpRequest,
     data: EndorsementCreateSchema,
 ) -> Endorsement:
-    """Create a new endorsement with stakeholder deduplication"""
+    """Create a new endorsement with stakeholder deduplication and spam prevention"""
+    # Get client IP address
+    ip_address = request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[
+        0
+    ] or request.META.get("REMOTE_ADDR", "unknown")
+
     # Verify campaign exists and allows endorsements
     campaign = get_object_or_404(PolicyCampaign, id=data.campaign_id)
     if not campaign.allow_endorsements:
         raise HttpError(400, "This campaign is not accepting endorsements")
+
+    # Run spam prevention checks
+    stakeholder_data = {
+        "name": data.stakeholder.name,
+        "organization": data.stakeholder.organization,
+        "role": data.stakeholder.role,
+        "email": data.stakeholder.email,
+        "state": data.stakeholder.state,
+        "county": data.stakeholder.county,
+        "type": data.stakeholder.type,
+    }
+
+    # Get form metadata (honeypot fields, timing, etc.)
+    form_data = getattr(data, "form_metadata", {})
+
+    spam_check = SpamPreventionService.comprehensive_spam_check(
+        ip_address=ip_address,
+        stakeholder_data=stakeholder_data,
+        statement=data.statement,
+        form_data=form_data,
+    )
+
+    # Record the submission attempt for rate limiting
+    SpamPreventionService.record_submission_attempt(ip_address)
+
+    # Handle spam detection
+    if spam_check["is_spam"]:
+        logger.warning(f"Spam detected from IP {ip_address}: {spam_check['reasons']}")
+        raise HttpError(400, "Submission rejected due to spam detection")
+
+    # Log suspicious activity for review
+    if spam_check["confidence_score"] > 0.2:
+        logger.info(
+            f"Suspicious endorsement from IP {ip_address}: {spam_check['reasons']}",
+        )
 
     try:
         with transaction.atomic():
@@ -74,6 +125,7 @@ def create_endorsement(
                 defaults={
                     "statement": data.statement,
                     "public_display": data.public_display,
+                    "status": "pending",  # Start as pending verification
                 },
             )
 
@@ -81,7 +133,20 @@ def create_endorsement(
             if not created:
                 endorsement.statement = data.statement
                 endorsement.public_display = data.public_display
+                # Reset status to pending if updating
+                endorsement.status = "pending"
+                endorsement.email_verified = False
                 endorsement.save()
+
+            # Send verification email
+            email_sent = EndorsementEmailService.send_verification_email(endorsement)
+            if not email_sent:
+                # Log error but don't fail the request
+                pass  # Email service already logs errors
+
+            # Send admin notification for new endorsements
+            if created:
+                EndorsementEmailService.send_admin_notification(endorsement)
 
             return endorsement
 
@@ -89,3 +154,294 @@ def create_endorsement(
         raise HttpError(400, f"Error creating endorsement: {str(e)}") from e
     except Exception as e:
         raise HttpError(500, f"Unexpected error: {str(e)}") from e
+
+
+@router.post("/verify/{token}/")
+def verify_endorsement(request: HttpRequest, token: str) -> dict:
+    """Verify an endorsement using the verification token"""
+    try:
+        # Parse token as UUID
+        verification_token = uuid.UUID(token)
+    except ValueError as e:
+        raise HttpError(400, "Invalid verification token format") from e
+
+    # Find endorsement by token
+    endorsement = get_object_or_404(Endorsement, verification_token=verification_token)
+
+    # Check if already verified
+    if endorsement.email_verified:
+        return {
+            "success": True,
+            "message": "Email already verified",
+            "status": endorsement.status,
+        }
+
+    # Check if token is expired
+    if endorsement.is_verification_expired:
+        raise HttpError(400, "Verification link has expired. Please request a new one.")
+
+    # Verify the endorsement
+    endorsement.verify_email()
+
+    # Send confirmation email
+    EndorsementEmailService.send_confirmation_email(endorsement)
+
+    return {
+        "success": True,
+        "message": "Email verified successfully! Your endorsement is now under review.",
+        "status": endorsement.status,
+    }
+
+
+@router.post("/resend-verification/")
+def resend_verification(request: HttpRequest, data: EndorsementVerifySchema) -> dict:
+    """Resend verification email for an endorsement"""
+    try:
+        # Find endorsement by stakeholder email and campaign
+        endorsement = get_object_or_404(
+            Endorsement,
+            stakeholder__email__iexact=data.email,
+            campaign_id=data.campaign_id,
+        )
+
+        # Check if already verified
+        if endorsement.email_verified:
+            return {
+                "success": True,
+                "message": "Email is already verified",
+            }
+
+        # Send verification email
+        email_sent = EndorsementEmailService.send_verification_email(endorsement)
+
+        if email_sent:
+            return {
+                "success": True,
+                "message": "Verification email sent successfully",
+            }
+        else:
+            raise HttpError(500, "Failed to send verification email")
+
+    except Exception as e:
+        raise HttpError(500, f"Error resending verification: {str(e)}") from e
+
+
+@router.post("/admin/approve/{endorsement_id}/")
+def admin_approve_endorsement(request: HttpRequest, endorsement_id: int) -> dict:
+    """Admin endpoint to approve an endorsement"""
+    # TODO: Add authentication/permission checks for production use
+
+    endorsement = get_object_or_404(Endorsement, id=endorsement_id)
+
+    if endorsement.status == "approved":
+        return {
+            "success": True,
+            "message": "Endorsement was already approved",
+        }
+
+    # TODO: Pass request.user when authentication is implemented
+    endorsement.approve()
+
+    # Send confirmation email
+    EndorsementEmailService.send_confirmation_email(endorsement)
+
+    return {
+        "success": True,
+        "message": "Endorsement approved successfully",
+        "status": endorsement.status,
+    }
+
+
+@router.post("/admin/reject/{endorsement_id}/")
+def admin_reject_endorsement(request: HttpRequest, endorsement_id: int) -> dict:
+    """Admin endpoint to reject an endorsement"""
+    # TODO: Add authentication/permission checks for production use
+
+    endorsement = get_object_or_404(Endorsement, id=endorsement_id)
+
+    if endorsement.status == "rejected":
+        return {
+            "success": True,
+            "message": "Endorsement was already rejected",
+        }
+
+    # TODO: Pass request.user when authentication is implemented
+    endorsement.reject()
+
+    return {
+        "success": True,
+        "message": "Endorsement rejected successfully",
+        "status": endorsement.status,
+    }
+
+
+@router.get("/admin/pending/")
+def admin_list_pending_endorsements(request: HttpRequest) -> list[EndorsementOut]:
+    """Admin endpoint to list endorsements requiring review"""
+    # TODO: Add authentication/permission checks for production use
+
+    queryset = (
+        Endorsement.objects.select_related("stakeholder", "campaign")
+        .filter(status__in=["pending", "verified"])
+        .order_by("-created_at")
+    )
+
+    return list(queryset.all())
+
+
+@router.get("/export/csv/")
+def export_endorsements_csv(
+    request: HttpRequest,
+    campaign_id: int = None,
+) -> HttpResponse:
+    """Export endorsements to CSV format"""
+    # TODO: Add authentication/permission checks for production use
+
+    # Get approved endorsements
+    queryset = Endorsement.objects.select_related("stakeholder", "campaign").filter(
+        status="approved",
+        email_verified=True,
+    )
+
+    if campaign_id:
+        queryset = queryset.filter(campaign_id=campaign_id)
+        campaign = get_object_or_404(PolicyCampaign, id=campaign_id)
+        filename = f"endorsements_{campaign.name}.csv"
+    else:
+        filename = "endorsements_all.csv"
+
+    # Create CSV response
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    writer = csv.writer(response)
+
+    # Write header row
+    writer.writerow(
+        [
+            "Campaign",
+            "Campaign ID",
+            "Stakeholder Name",
+            "Organization",
+            "Role",
+            "Email",
+            "State",
+            "County",
+            "Type",
+            "Statement",
+            "Public Display",
+            "Email Verified",
+            "Status",
+            "Created At",
+            "Verified At",
+            "Reviewed At",
+        ],
+    )
+
+    # Write data rows
+    for endorsement in queryset.order_by("campaign__title", "stakeholder__name"):
+        writer.writerow(
+            [
+                endorsement.campaign.title,
+                endorsement.campaign.id,
+                endorsement.stakeholder.name,
+                endorsement.stakeholder.organization,
+                endorsement.stakeholder.role,
+                endorsement.stakeholder.email,
+                endorsement.stakeholder.state,
+                endorsement.stakeholder.county,
+                endorsement.stakeholder.get_type_display(),
+                endorsement.statement,
+                "Yes" if endorsement.public_display else "No",
+                "Yes" if endorsement.email_verified else "No",
+                endorsement.get_status_display(),
+                endorsement.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                (
+                    endorsement.verified_at.strftime("%Y-%m-%d %H:%M:%S")
+                    if endorsement.verified_at
+                    else ""
+                ),
+                (
+                    endorsement.reviewed_at.strftime("%Y-%m-%d %H:%M:%S")
+                    if endorsement.reviewed_at
+                    else ""
+                ),
+            ],
+        )
+
+    return response
+
+
+@router.get("/export/json/")
+def export_endorsements_json(
+    request: HttpRequest,
+    campaign_id: int = None,
+) -> HttpResponse:
+    """Export endorsements to JSON format"""
+    # TODO: Add authentication/permission checks for production use
+
+    # Get approved endorsements
+    queryset = Endorsement.objects.select_related("stakeholder", "campaign").filter(
+        status="approved",
+        email_verified=True,
+    )
+
+    if campaign_id:
+        queryset = queryset.filter(campaign_id=campaign_id)
+        campaign = get_object_or_404(PolicyCampaign, id=campaign_id)
+        filename = f"endorsements_{campaign.name}.json"
+    else:
+        filename = "endorsements_all.json"
+
+    # Build JSON data
+    data = {
+        "export_info": {
+            "exported_at": timezone.now().isoformat(),
+            "total_count": queryset.count(),
+            "campaign_filter": campaign_id,
+        },
+        "endorsements": [],
+    }
+
+    for endorsement in queryset.order_by("campaign__title", "stakeholder__name"):
+        data["endorsements"].append(
+            {
+                "id": endorsement.id,
+                "campaign": {
+                    "id": endorsement.campaign.id,
+                    "name": endorsement.campaign.name,
+                    "title": endorsement.campaign.title,
+                },
+                "stakeholder": {
+                    "id": endorsement.stakeholder.id,
+                    "name": endorsement.stakeholder.name,
+                    "organization": endorsement.stakeholder.organization,
+                    "role": endorsement.stakeholder.role,
+                    "email": endorsement.stakeholder.email,
+                    "state": endorsement.stakeholder.state,
+                    "county": endorsement.stakeholder.county,
+                    "type": endorsement.stakeholder.type,
+                },
+                "statement": endorsement.statement,
+                "public_display": endorsement.public_display,
+                "email_verified": endorsement.email_verified,
+                "status": endorsement.status,
+                "created_at": endorsement.created_at.isoformat(),
+                "verified_at": (
+                    endorsement.verified_at.isoformat()
+                    if endorsement.verified_at
+                    else None
+                ),
+                "reviewed_at": (
+                    endorsement.reviewed_at.isoformat()
+                    if endorsement.reviewed_at
+                    else None
+                ),
+            },
+        )
+
+    # Create JSON response
+    response = HttpResponse(json.dumps(data, indent=2), content_type="application/json")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    return response
