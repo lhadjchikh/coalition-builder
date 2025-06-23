@@ -72,6 +72,7 @@ CONTACT_EMAIL="info@environmentalcoalition.org"
 | `DEFAULT_FROM_EMAIL`                 | Default sender email                  | -         | No       |
 | `ADMIN_NOTIFICATION_EMAILS`          | Comma-separated admin emails          | -         | No       |
 | `AUTO_APPROVE_VERIFIED_ENDORSEMENTS` | Auto-approve after email verification | `true`    | No       |
+| `AKISMET_SECRET_API_KEY`             | Akismet API key for spam detection    | -         | No       |
 | `SITE_URL`                           | Base URL for email links              | -         | Yes      |
 
 **Email Template Configuration:**

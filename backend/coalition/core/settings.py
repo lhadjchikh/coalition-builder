@@ -216,3 +216,6 @@ AUTO_APPROVE_VERIFIED_ENDORSEMENTS = os.getenv(
     "AUTO_APPROVE_VERIFIED_ENDORSEMENTS",
     "true",
 ).lower() in ("true", "1", "t")
+
+# Akismet spam detection
+AKISMET_SECRET_API_KEY = os.getenv("AKISMET_SECRET_API_KEY")

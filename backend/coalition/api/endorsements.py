@@ -76,6 +76,7 @@ def create_endorsement(
         stakeholder_data=stakeholder_data,
         statement=data.statement,
         form_data=form_data,
+        user_agent=request.META.get("HTTP_USER_AGENT", ""),
     )
 
     # Record the submission attempt for rate limiting

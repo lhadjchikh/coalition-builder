@@ -11,6 +11,11 @@ from django.conf import settings
 from django.core.cache import cache
 from django.utils import timezone
 
+try:
+    import akismet
+except ImportError:
+    akismet = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -36,17 +41,6 @@ class SpamPreventionService:
         "guerrillamail.com",
         "temp-mail.org",
         "throwaway.email",
-    ]
-
-    SUSPICIOUS_KEYWORDS = [
-        "test",
-        "spam",
-        "fake",
-        "lorem ipsum",
-        "click here",
-        "buy now",
-        "viagra",
-        "casino",
     ]
 
     @classmethod
@@ -172,24 +166,56 @@ class SpamPreventionService:
         cls,
         stakeholder_data: dict[str, Any],
         statement: str,
+        ip_address: str = None,
+        user_agent: str = None,
     ) -> dict[str, Any]:
         """
-        Check content quality for spam indicators
+        Check content quality for spam indicators using Akismet
+        Falls back to custom checks if Akismet is unavailable
         Returns dict with 'suspicious' boolean and 'reasons' list
         """
         reasons = []
 
-        # Check for suspicious keywords in statement
-        statement_lower = statement.lower()
-        for keyword in cls.SUSPICIOUS_KEYWORDS:
-            if keyword in statement_lower:
-                reasons.append(f"Suspicious keyword in statement: {keyword}")
+        # Try Akismet first if available and configured
+        akismet_key = getattr(settings, "AKISMET_SECRET_API_KEY", None)
+        site_url = getattr(settings, "SITE_URL", None)
 
-        # Check for duplicate characters (common spam pattern)
-        if re.search(r"(.)\1{3,}", statement_lower):
-            reasons.append("Excessive character repetition in statement")
+        if akismet and akismet_key and site_url:
+            try:
+                api = akismet.Akismet(
+                    key=akismet_key,
+                    blog_url=site_url,
+                )
 
-        # Check name/organization quality
+                # Verify API key is valid
+                if api.verify_key():
+                    # Prepare comment data for Akismet
+                    comment_data = {
+                        "comment_type": "endorsement",
+                        "comment_author": stakeholder_data.get("name", ""),
+                        "comment_author_email": stakeholder_data.get("email", ""),
+                        "comment_content": statement,
+                        "user_ip": ip_address or "127.0.0.1",
+                        "user_agent": user_agent or "Coalition Builder",
+                        "blog_lang": "en",
+                        "blog_charset": "UTF-8",
+                    }
+
+                    # Check with Akismet
+                    is_spam = api.comment_check(**comment_data)
+                    if is_spam:
+                        reasons.append("Content flagged as spam by Akismet")
+                        logger.info(
+                            f"Akismet flagged content as spam from "
+                            f"{stakeholder_data.get('email', 'unknown')}",
+                        )
+                else:
+                    logger.warning("Akismet API key verification failed")
+            except Exception as e:
+                logger.warning(f"Akismet check failed: {e}")
+
+        # Fallback to custom checks (always run as additional layer)
+        # Keep basic quality checks
         name = stakeholder_data.get("name", "").lower()
         org = stakeholder_data.get("organization", "").lower()
 
@@ -198,6 +224,10 @@ class SpamPreventionService:
 
         if "test" in org or "fake" in org or len(org) < 3:
             reasons.append("Suspicious organization name")
+
+        # Check for excessive character repetition
+        if re.search(r"(.)\1{3,}", statement.lower()):
+            reasons.append("Excessive character repetition in statement")
 
         # Check for missing required context
         if not statement and not stakeholder_data.get("role"):
@@ -215,6 +245,7 @@ class SpamPreventionService:
         stakeholder_data: dict[str, Any],
         statement: str,
         form_data: dict[str, Any],
+        user_agent: str = None,
     ) -> dict[str, Any]:
         """
         Run comprehensive spam check
@@ -256,7 +287,12 @@ class SpamPreventionService:
             results["reasons"].extend(email_check["reasons"])
 
         # Check content quality
-        content_check = cls.check_content_quality(stakeholder_data, statement)
+        content_check = cls.check_content_quality(
+            stakeholder_data,
+            statement,
+            ip_address,
+            user_agent,
+        )
         if content_check["suspicious"]:
             results["confidence_score"] += 0.3
             results["reasons"].extend(content_check["reasons"])

@@ -876,19 +876,20 @@ class SpamPreventionServiceTest(TestCase):
         assert result["suspicious"] is False
         assert len(result["reasons"]) == 0
 
-    def test_check_content_quality_suspicious_keywords(self) -> None:
-        """Test content quality check for suspicious keywords"""
-        stakeholder_data = {"name": "John Doe", "organization": "Acme Corp"}
-        statement = "Click here to buy viagra now!"
+    def test_check_content_quality_without_akismet(self) -> None:
+        """Test content quality check without Akismet (fallback mode)"""
+        stakeholder_data = {"name": "test user", "organization": "fake org"}
+        statement = "This statement has excessive character repetitionnnnnn!"
 
         result = SpamPreventionService.check_content_quality(
             stakeholder_data,
             statement,
+            "192.168.1.1",
+            "Test User Agent",
         )
         assert result["suspicious"] is True
-        assert any(
-            "suspicious keyword" in reason.lower() for reason in result["reasons"]
-        )
+        # Should catch both name pattern and character repetition
+        assert len(result["reasons"]) >= 2
 
     def test_check_content_quality_character_repetition(self) -> None:
         """Test content quality check for character repetition"""
@@ -898,6 +899,8 @@ class SpamPreventionServiceTest(TestCase):
         result = SpamPreventionService.check_content_quality(
             stakeholder_data,
             statement,
+            "192.168.1.1",
+            "Test User Agent",
         )
         assert result["suspicious"] is True
         assert any("repetition" in reason.lower() for reason in result["reasons"])
@@ -910,6 +913,8 @@ class SpamPreventionServiceTest(TestCase):
         result = SpamPreventionService.check_content_quality(
             stakeholder_data,
             statement,
+            "192.168.1.1",
+            "Test User Agent",
         )
         assert result["suspicious"] is True
         assert any("suspicious name" in reason.lower() for reason in result["reasons"])
@@ -926,6 +931,8 @@ class SpamPreventionServiceTest(TestCase):
         result = SpamPreventionService.check_content_quality(
             stakeholder_data,
             statement,
+            "192.168.1.1",
+            "Test User Agent",
         )
         assert result["suspicious"] is False
         assert len(result["reasons"]) == 0

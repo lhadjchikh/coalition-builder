@@ -23,6 +23,7 @@ whitenoise = "^6.9.0"
 psycopg = "^3.2.9"
 gunicorn = "^23.0.0"
 psutil = "^7.0.0"
+akismet = "^23.5.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
