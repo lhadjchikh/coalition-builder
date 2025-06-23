@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import API from '../services/api';
 import { Campaign, EndorsementCreate, Stakeholder } from '../types';
 import './Endorsements.css';
