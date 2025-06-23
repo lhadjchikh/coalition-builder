@@ -298,8 +298,10 @@ def export_endorsements_csv(
     request: HttpRequest,
     campaign_id: int = None,
 ) -> HttpResponse:
-    """Export endorsements to CSV format"""
-    # TODO: Add authentication/permission checks for production use
+    """Export endorsements to CSV format (admin only)"""
+    # Require staff/admin access for data export
+    if not request.user.is_authenticated or not request.user.is_staff:
+        raise HttpError(403, "Admin access required for data export")
 
     # Get approved endorsements
     queryset = Endorsement.objects.select_related("stakeholder", "campaign").filter(
@@ -381,8 +383,10 @@ def export_endorsements_json(
     request: HttpRequest,
     campaign_id: int = None,
 ) -> HttpResponse:
-    """Export endorsements to JSON format"""
-    # TODO: Add authentication/permission checks for production use
+    """Export endorsements to JSON format (admin only)"""
+    # Require staff/admin access for data export
+    if not request.user.is_authenticated or not request.user.is_staff:
+        raise HttpError(403, "Admin access required for data export")
 
     # Get approved endorsements
     queryset = Endorsement.objects.select_related("stakeholder", "campaign").filter(
