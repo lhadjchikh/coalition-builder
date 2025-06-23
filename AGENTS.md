@@ -7,18 +7,73 @@ This repository contains multiple components:
 - `ssr/` – optional Next.js app for server side rendering
 - `terraform/` – IaC definitions
 
-## Testing
+## Setup
 
-Run tests for each part when relevant:
+### Option 1: Docker Compose (Recommended)
+
+Use Docker Compose for a consistent environment with all dependencies:
 
 ```bash
-# Backend tests
+# Start all services with dependencies installed
+docker-compose up -d
+
+# Run commands in containers
+docker-compose exec backend poetry run python manage.py test
+docker-compose exec frontend npm run test:ci
+docker-compose exec backend python scripts/lint.py
+```
+
+### Option 2: Local Development
+
+Before running tests or code quality checks, ensure dependencies are installed:
+
+#### Backend Setup
+
+```bash
+cd backend
+poetry install
+```
+
+#### Frontend Setup
+
+```bash
+cd frontend
+npm install
+```
+
+#### SSR Setup (optional)
+
+```bash
+cd ssr
+npm install
+```
+
+## Testing
+
+### With Docker Compose (Recommended)
+
+```bash
+# Start services
+docker-compose up -d
+
+# Run tests
+docker-compose exec backend poetry run python manage.py test
+docker-compose exec frontend npm run test:ci
+docker-compose exec ssr npm run test:ci
+```
+
+### Local Development
+
+Run tests for each part when relevant (ensure dependencies are installed first):
+
+```bash
+# Backend tests (requires: cd backend && poetry install)
 cd backend && poetry run python manage.py test
 
-# Frontend unit/integration tests
+# Frontend unit/integration tests (requires: cd frontend && npm install)
 cd frontend && npm run test:ci
 
-# SSR integration tests (requires backend running)
+# SSR integration tests (requires backend running and: cd ssr && npm install)
 cd ssr && npm run test:ci
 ```
 
@@ -26,18 +81,28 @@ The SSR tests expect the backend API running at `http://localhost:8000`. Use `do
 
 ## Code Quality
 
-- **Python**: format with Black and lint with Ruff – `poetry run black .` and `poetry run ruff check .`
-- **JavaScript/TypeScript**: run ESLint and Prettier – `npm run lint` and `npm run format`
-- **Terraform**: run `terraform fmt -write=true -recursive` and `tflint` if available
-- **Shell scripts**: use `shellcheck` if installed
-
-A convenience command is available:
+### With Docker Compose (Recommended)
 
 ```bash
-cd backend && poetry run lint
+# Start services and run linting
+docker-compose up -d
+docker-compose exec backend python scripts/lint.py
+```
+
+### Local Development
+
+Run the comprehensive linting script that handles all code quality checks:
+
+```bash
+python scripts/lint.py
 ```
 
 This script runs formatting and linting across Python, frontend files, Terraform, and shell scripts.
+
+#### Prerequisites for Local Development
+
+- Backend: `cd backend && poetry install`
+- Frontend: `cd frontend && npm install`
 
 ## Contributing Guidelines
 
