@@ -1,6 +1,7 @@
 import csv
 import json
 import logging
+import re
 import uuid
 
 from django.db import IntegrityError, transaction
@@ -20,6 +21,33 @@ from .schemas import EndorsementCreateSchema, EndorsementOut, EndorsementVerifyS
 
 router = Router()
 logger = logging.getLogger(__name__)
+
+
+def sanitize_csv_field(value: str) -> str:
+    """
+    Sanitize CSV field to prevent formula injection attacks.
+    
+    Removes or escapes characters that could be interpreted as formulas
+    by spreadsheet applications (=, +, -, @, etc.)
+    """
+    if not isinstance(value, str):
+        return str(value)
+    
+    # Remove any leading characters that could start a formula
+    dangerous_chars = ["=", "+", "-", "@", "\t", "\r", "\n"]
+    
+    # Strip leading dangerous characters
+    while value and value[0] in dangerous_chars:
+        value = value[1:]
+    
+    # Replace any remaining formula-like patterns
+    # This is a conservative approach to prevent CSV injection
+    value = re.sub(r"^[=+\-@]", "", value)
+    
+    # Remove or escape other potentially dangerous characters
+    value = value.replace("\r", " ").replace("\n", " ").replace("\t", " ")
+    
+    return value
 
 
 @router.get("/", response=list[EndorsementOut])
@@ -361,34 +389,34 @@ def export_endorsements_csv(
         ],
     )
 
-    # Write data rows
+    # Write data rows with CSV injection protection
     for endorsement in queryset.order_by("campaign__title", "stakeholder__name"):
         writer.writerow(
             [
-                endorsement.campaign.title,
-                endorsement.campaign.id,
-                endorsement.stakeholder.name,
-                endorsement.stakeholder.organization,
-                endorsement.stakeholder.role,
-                endorsement.stakeholder.email,
-                endorsement.stakeholder.state,
-                endorsement.stakeholder.county,
-                endorsement.stakeholder.get_type_display(),
-                endorsement.statement,
-                "Yes" if endorsement.public_display else "No",
-                "Yes" if endorsement.email_verified else "No",
-                endorsement.get_status_display(),
-                endorsement.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                sanitize_csv_field(endorsement.campaign.title),
+                endorsement.campaign.id,  # Numeric, safe
+                sanitize_csv_field(endorsement.stakeholder.name),
+                sanitize_csv_field(endorsement.stakeholder.organization),
+                sanitize_csv_field(endorsement.stakeholder.role),
+                sanitize_csv_field(endorsement.stakeholder.email),
+                sanitize_csv_field(endorsement.stakeholder.state),
+                sanitize_csv_field(endorsement.stakeholder.county),
+                sanitize_csv_field(endorsement.stakeholder.get_type_display()),
+                sanitize_csv_field(endorsement.statement),
+                "Yes" if endorsement.public_display else "No",  # Safe boolean
+                "Yes" if endorsement.email_verified else "No",  # Safe boolean
+                sanitize_csv_field(endorsement.get_status_display()),
+                endorsement.created_at.strftime("%Y-%m-%d %H:%M:%S"),  # Safe datetime
                 (
                     endorsement.verified_at.strftime("%Y-%m-%d %H:%M:%S")
                     if endorsement.verified_at
                     else ""
-                ),
+                ),  # Safe datetime
                 (
                     endorsement.reviewed_at.strftime("%Y-%m-%d %H:%M:%S")
                     if endorsement.reviewed_at
                     else ""
-                ),
+                ),  # Safe datetime
             ],
         )
 

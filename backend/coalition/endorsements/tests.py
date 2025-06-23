@@ -1414,6 +1414,42 @@ class EndorsementAPIEnhancedTest(TestCase):
         assert "Test User" in content
         assert "Test Org" in content
 
+    def test_export_endorsements_csv_injection_protection(self) -> None:
+        """Test CSV export sanitizes dangerous formula characters"""
+        # Create stakeholder with potentially dangerous CSV data
+        malicious_stakeholder = Stakeholder.objects.create(
+            name="=cmd|' /C calc'!A0",  # Excel formula injection attempt
+            organization="@SUM(1+1)*cmd|' /C calc'!A0",  # Another injection attempt
+            email="evil@example.com",
+            state="CA",
+            type="individual",
+        )
+        
+        Endorsement.objects.create(
+            stakeholder=malicious_stakeholder,
+            campaign=self.campaign,
+            statement="+1+1+cmd|' /C calc'!A0",  # Statement with formula
+            email_verified=True,
+            status="approved",
+        )
+        
+        # Login as admin user
+        self.client.force_login(self.user)
+        
+        response = self.client.get("/api/endorsements/export/csv/")
+        assert response.status_code == 200
+        
+        content = response.content.decode("utf-8")
+        
+        # Verify dangerous characters are sanitized
+        assert "=cmd" not in content  # Leading = should be removed
+        assert "@SUM" not in content  # Leading @ should be removed
+        assert "+1+1+cmd" not in content  # Leading + should be removed
+        
+        # Verify data is still present but sanitized
+        assert "cmd" in content  # Content should still be there, just sanitized
+        assert "calc" in content
+
     def test_export_endorsements_csv_unauthorized(self) -> None:
         """Test CSV export endpoint returns 403 for non-admin users"""
         response = self.client.get("/api/endorsements/export/csv/")
