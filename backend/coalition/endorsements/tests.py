@@ -6,7 +6,6 @@ from unittest.mock import Mock, patch
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
 from django.core import mail
-from django.core.cache import cache
 from django.db import IntegrityError
 from django.http import HttpRequest
 from django.test import Client, TestCase
@@ -771,26 +770,30 @@ class SpamPreventionServiceTest(TestCase):
     """Test spam prevention service"""
 
     def setUp(self) -> None:
-        # Clear cache before each test
-        cache.clear()
+        # Create a mock request for testing
+        self.request = HttpRequest()
+        self.request.META = {
+            "REMOTE_ADDR": "192.168.1.1",
+            "HTTP_USER_AGENT": "Test User Agent",
+        }
 
     def test_rate_limit_check_within_limit(self) -> None:
         """Test rate limit check when within limits"""
-        ip = "192.168.1.1"
-        result = SpamPreventionService.check_rate_limit(ip)
+        result = SpamPreventionService.check_rate_limit(self.request)
 
         assert result["allowed"] is True
         assert result["remaining"] == SpamPreventionService.RATE_LIMIT_MAX_ATTEMPTS
 
     def test_rate_limit_check_exceeded(self) -> None:
         """Test rate limit check when exceeded"""
-        ip = "192.168.1.2"
+        request = HttpRequest()
+        request.META = {"REMOTE_ADDR": "192.168.1.2"}
 
         # Record maximum attempts
         for _ in range(SpamPreventionService.RATE_LIMIT_MAX_ATTEMPTS):
-            SpamPreventionService.record_submission_attempt(ip)
+            SpamPreventionService.record_submission_attempt(request)
 
-        result = SpamPreventionService.check_rate_limit(ip)
+        result = SpamPreventionService.check_rate_limit(request)
 
         assert result["allowed"] is False
         assert result["remaining"] == 0
@@ -798,31 +801,20 @@ class SpamPreventionServiceTest(TestCase):
 
     def test_record_submission_attempt(self) -> None:
         """Test recording submission attempts"""
-        ip = "192.168.1.3"
+        request = HttpRequest()
+        request.META = {"REMOTE_ADDR": "192.168.1.3"}
 
         # First attempt
-        SpamPreventionService.record_submission_attempt(ip)
-        result = SpamPreventionService.check_rate_limit(ip)
-        assert result["remaining"] == SpamPreventionService.RATE_LIMIT_MAX_ATTEMPTS - 1
-
-        # Second attempt
-        SpamPreventionService.record_submission_attempt(ip)
-        result = SpamPreventionService.check_rate_limit(ip)
-        assert result["remaining"] == SpamPreventionService.RATE_LIMIT_MAX_ATTEMPTS - 2
-
-    def test_rate_limit_with_django_ratelimit_fallback(self) -> None:
-        """Test rate limiting falls back to cache when no request object provided"""
-        ip = "192.168.1.4"
-
-        # Without request object, should use cache-based fallback
-        result = SpamPreventionService.check_rate_limit(ip, request=None)
+        SpamPreventionService.record_submission_attempt(request)
+        result = SpamPreventionService.check_rate_limit(request)
+        # django-ratelimit doesn't provide exact remaining count, just check allowed
         assert result["allowed"] is True
 
-        # Record attempts and verify fallback works
-        for _ in range(SpamPreventionService.RATE_LIMIT_MAX_ATTEMPTS):
-            SpamPreventionService.record_submission_attempt(ip, request=None)
+        # Record more attempts to reach limit
+        for _ in range(SpamPreventionService.RATE_LIMIT_MAX_ATTEMPTS - 1):
+            SpamPreventionService.record_submission_attempt(request)
 
-        result = SpamPreventionService.check_rate_limit(ip, request=None)
+        result = SpamPreventionService.check_rate_limit(request)
         assert result["allowed"] is False
 
     def test_validate_honeypot_empty_fields(self) -> None:
@@ -962,7 +954,6 @@ class SpamPreventionServiceTest(TestCase):
 
     def test_comprehensive_spam_check_clean_submission(self) -> None:
         """Test comprehensive spam check for clean submission"""
-        ip = "192.168.1.10"
         stakeholder_data = {
             "name": "Sarah Johnson",
             "organization": "Environmental Solutions Inc",
@@ -975,7 +966,7 @@ class SpamPreventionServiceTest(TestCase):
         }
 
         result = SpamPreventionService.comprehensive_spam_check(
-            ip,
+            self.request,
             stakeholder_data,
             statement,
             form_data,
@@ -987,7 +978,6 @@ class SpamPreventionServiceTest(TestCase):
 
     def test_comprehensive_spam_check_honeypot_filled(self) -> None:
         """Test comprehensive spam check with honeypot field filled"""
-        ip = "192.168.1.11"
         stakeholder_data = {
             "name": "Spam User",
             "organization": "Spam Corp",
@@ -999,7 +989,7 @@ class SpamPreventionServiceTest(TestCase):
         }
 
         result = SpamPreventionService.comprehensive_spam_check(
-            ip,
+            self.request,
             stakeholder_data,
             statement,
             form_data,
@@ -1011,18 +1001,19 @@ class SpamPreventionServiceTest(TestCase):
 
     def test_comprehensive_spam_check_rate_limit_exceeded(self) -> None:
         """Test comprehensive spam check with rate limit exceeded"""
-        ip = "192.168.1.12"
+        request = HttpRequest()
+        request.META = {"REMOTE_ADDR": "192.168.1.12"}
 
         # Exceed rate limit
         for _ in range(SpamPreventionService.RATE_LIMIT_MAX_ATTEMPTS):
-            SpamPreventionService.record_submission_attempt(ip)
+            SpamPreventionService.record_submission_attempt(request)
 
         stakeholder_data = {"name": "User", "email": "user@example.com"}
         statement = "Message"
         form_data = {}
 
         result = SpamPreventionService.comprehensive_spam_check(
-            ip,
+            request,
             stakeholder_data,
             statement,
             form_data,

@@ -8,7 +8,6 @@ from datetime import datetime
 from typing import Any
 
 from django.conf import settings
-from django.core.cache import cache
 from django.http import HttpRequest
 from django.utils import timezone
 
@@ -23,12 +22,7 @@ except ImportError:
     validate_email = None
     EmailNotValidError = Exception
 
-try:
-    from django_ratelimit.core import is_ratelimited
-    from django_ratelimit.exceptions import Ratelimited
-except ImportError:
-    is_ratelimited = None
-    Ratelimited = Exception
+from django_ratelimit.core import is_ratelimited
 
 logger = logging.getLogger(__name__)
 
@@ -61,53 +55,22 @@ class SpamPreventionService:
     @classmethod
     def check_rate_limit(
         cls,
-        ip_address: str,
-        request: HttpRequest | None = None,
+        request: HttpRequest,
     ) -> dict[str, Any]:
         """
-        Check if IP address has exceeded rate limit using django-ratelimit
-        Falls back to custom cache-based method if django-ratelimit unavailable
+        Check if request has exceeded rate limit using django-ratelimit
         Returns dict with 'allowed' boolean and 'remaining' count
         """
-        if is_ratelimited and request:
-            # Use django-ratelimit for more robust rate limiting
-            try:
-                rate = f"{cls.RATE_LIMIT_MAX_ATTEMPTS}/{cls.RATE_LIMIT_WINDOW}s"
-                ratelimited = is_ratelimited(
-                    request=request,
-                    group="endorsement_submission",
-                    key="ip",
-                    rate=rate,
-                    increment=False,  # Just check, don't increment yet
-                )
+        rate = f"{cls.RATE_LIMIT_MAX_ATTEMPTS}/{cls.RATE_LIMIT_WINDOW}s"
+        ratelimited = is_ratelimited(
+            request=request,
+            group="endorsement_submission",
+            key="ip",
+            rate=rate,
+            increment=False,  # Just check, don't increment yet
+        )
 
-                if ratelimited:
-                    return {
-                        "allowed": False,
-                        "remaining": 0,
-                        "reset_in": cls.RATE_LIMIT_WINDOW,
-                        "message": (
-                            f"Rate limit exceeded. Try again in "
-                            f"{cls.RATE_LIMIT_WINDOW // 60} minutes."
-                        ),
-                    }
-                else:
-                    # Calculate remaining attempts (approximate)
-                    return {
-                        "allowed": True,
-                        # django-ratelimit doesn't expose remaining count easily
-                        "remaining": cls.RATE_LIMIT_MAX_ATTEMPTS,
-                        "reset_in": cls.RATE_LIMIT_WINDOW,
-                    }
-            except Exception as e:
-                logger.warning(f"django-ratelimit check failed: {e}")
-                # Fall through to legacy method
-
-        # Fallback to custom cache-based rate limiting
-        cache_key = f"endorsement_rate_limit:{ip_address}"
-        current_attempts = cache.get(cache_key, 0)
-
-        if current_attempts >= cls.RATE_LIMIT_MAX_ATTEMPTS:
+        if ratelimited:
             return {
                 "allowed": False,
                 "remaining": 0,
@@ -117,40 +80,27 @@ class SpamPreventionService:
                     f"{cls.RATE_LIMIT_WINDOW // 60} minutes."
                 ),
             }
-
-        return {
-            "allowed": True,
-            "remaining": cls.RATE_LIMIT_MAX_ATTEMPTS - current_attempts,
-            "reset_in": cls.RATE_LIMIT_WINDOW,
-        }
+        else:
+            return {
+                "allowed": True,
+                "remaining": cls.RATE_LIMIT_MAX_ATTEMPTS,
+                "reset_in": cls.RATE_LIMIT_WINDOW,
+            }
 
     @classmethod
     def record_submission_attempt(
         cls,
-        ip_address: str,
-        request: HttpRequest | None = None,
+        request: HttpRequest,
     ) -> None:
-        """Record a submission attempt using django-ratelimit or fallback to cache"""
-        if is_ratelimited and request:
-            # Use django-ratelimit to record the attempt
-            try:
-                rate = f"{cls.RATE_LIMIT_MAX_ATTEMPTS}/{cls.RATE_LIMIT_WINDOW}s"
-                is_ratelimited(
-                    request=request,
-                    group="endorsement_submission",
-                    key="ip",
-                    rate=rate,
-                    increment=True,  # Increment the counter
-                )
-                return
-            except Exception as e:
-                logger.warning(f"django-ratelimit record failed: {e}")
-                # Fall through to legacy method
-
-        # Fallback to custom cache-based method
-        cache_key = f"endorsement_rate_limit:{ip_address}"
-        current_attempts = cache.get(cache_key, 0)
-        cache.set(cache_key, current_attempts + 1, cls.RATE_LIMIT_WINDOW)
+        """Record a submission attempt using django-ratelimit"""
+        rate = f"{cls.RATE_LIMIT_MAX_ATTEMPTS}/{cls.RATE_LIMIT_WINDOW}s"
+        is_ratelimited(
+            request=request,
+            group="endorsement_submission",
+            key="ip",
+            rate=rate,
+            increment=True,  # Increment the counter
+        )
 
     @classmethod
     def validate_honeypot(cls, form_data: dict[str, Any]) -> bool:
@@ -347,17 +297,21 @@ class SpamPreventionService:
     @classmethod
     def comprehensive_spam_check(
         cls,
-        ip_address: str,
+        request: HttpRequest,
         stakeholder_data: dict[str, Any],
         statement: str,
         form_data: dict[str, Any],
         user_agent: str = None,
-        request: HttpRequest | None = None,
     ) -> dict[str, Any]:
         """
         Run comprehensive spam check
         Returns dict with overall assessment and details
         """
+        # Extract IP address from request
+        ip_address = request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[
+            0
+        ] or request.META.get("REMOTE_ADDR", "unknown")
+
         results = {
             "is_spam": False,
             "confidence_score": 0.0,  # 0.0 = definitely human, 1.0 = definitely spam
@@ -367,7 +321,7 @@ class SpamPreventionService:
         }
 
         # Check rate limiting
-        rate_limit_result = cls.check_rate_limit(ip_address, request)
+        rate_limit_result = cls.check_rate_limit(request)
         results["rate_limit"] = rate_limit_result
         if not rate_limit_result["allowed"]:
             results["is_spam"] = True
