@@ -38,8 +38,8 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
     API.getCampaigns = jest.fn().mockResolvedValue([
       {
         id: 1,
+        name: 'test-campaign',
         title: 'Test Campaign',
-        slug: 'test-campaign',
         summary: 'This is a test campaign for integration testing',
       },
     ]);
@@ -101,8 +101,8 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
     // Verify campaign structure
     const campaign = campaigns[0];
     expect(campaign).toHaveProperty('id');
+    expect(campaign).toHaveProperty('name');
     expect(campaign).toHaveProperty('title');
-    expect(campaign).toHaveProperty('slug');
     expect(campaign).toHaveProperty('summary');
   });
 

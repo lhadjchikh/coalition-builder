@@ -71,16 +71,15 @@ class ApiClient {
     return this.request<HomePage>(`/api/homepage/${id}/`);
   }
 
-  async getContentBlocks(homepageId: number): Promise<ContentBlock[]> {
-    return this.request<ContentBlock[]>(
-      `/api/homepage/${homepageId}/content-blocks/`,
-    );
+  async getContentBlocks(homepageId?: number): Promise<ContentBlock[]> {
+    const endpoint = homepageId
+      ? `/api/content-blocks/?homepage_id=${homepageId}`
+      : "/api/content-blocks/";
+    return this.request<ContentBlock[]>(endpoint);
   }
 
   async getContentBlock(blockId: number): Promise<ContentBlock> {
-    return this.request<ContentBlock>(
-      `/api/homepage/content-blocks/${blockId}/`,
-    );
+    return this.request<ContentBlock>(`/api/content-blocks/${blockId}/`);
   }
 
   // Health check

@@ -1,4 +1,4 @@
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import Router
@@ -14,26 +14,20 @@ router = Router()
 
 
 @router.get("/", response=list[EndorsementOut])
-def list_endorsements(request: HttpRequest) -> list[Endorsement]:
-    """List all public endorsements"""
-    return (
-        Endorsement.objects.select_related("stakeholder", "campaign")
-        .filter(public_display=True)
-        .all()
-    )
-
-
-@router.get("/campaign/{campaign_id}/", response=list[EndorsementOut])
-def list_campaign_endorsements(
+def list_endorsements(
     request: HttpRequest,
-    campaign_id: int,
+    campaign_id: int = None,
 ) -> list[Endorsement]:
-    """List all public endorsements for a specific campaign"""
-    return (
-        Endorsement.objects.select_related("stakeholder", "campaign")
-        .filter(campaign_id=campaign_id, public_display=True)
-        .all()
+    """List all public endorsements, optionally filtered by campaign"""
+    queryset = Endorsement.objects.select_related("stakeholder", "campaign").filter(
+        public_display=True,
     )
+
+    # Filter by campaign if campaign_id is provided
+    if campaign_id is not None:
+        queryset = queryset.filter(campaign_id=campaign_id)
+
+    return queryset.all()
 
 
 @router.post("/", response=EndorsementOut)
@@ -48,48 +42,48 @@ def create_endorsement(
         raise HttpError(400, "This campaign is not accepting endorsements")
 
     try:
+        with transaction.atomic():
+            # Get or create stakeholder (deduplicate by email)
+            stakeholder, created = Stakeholder.objects.get_or_create(
+                email__iexact=data.stakeholder.email,  # Case-insensitive lookup
+                defaults={
+                    "name": data.stakeholder.name,
+                    "organization": data.stakeholder.organization,
+                    "role": data.stakeholder.role,
+                    "email": data.stakeholder.email.lower(),  # Normalized in save()
+                    "state": data.stakeholder.state.upper(),
+                    "county": data.stakeholder.county,
+                    "type": data.stakeholder.type,
+                },
+            )
 
-        # Get or create stakeholder (deduplicate by email)
-        stakeholder, created = Stakeholder.objects.get_or_create(
-            email__iexact=data.stakeholder.email,  # Case-insensitive lookup
-            defaults={
-                "name": data.stakeholder.name,
-                "organization": data.stakeholder.organization,
-                "role": data.stakeholder.role,
-                "email": data.stakeholder.email.lower(),  # Will be normalized in save()
-                "state": data.stakeholder.state.upper(),
-                "county": data.stakeholder.county,
-                "type": data.stakeholder.type,
-            },
-        )
+            # If stakeholder already exists, update their info
+            if not created:
+                stakeholder.name = data.stakeholder.name
+                stakeholder.organization = data.stakeholder.organization
+                stakeholder.role = data.stakeholder.role
+                stakeholder.state = data.stakeholder.state.upper()
+                stakeholder.county = data.stakeholder.county
+                stakeholder.type = data.stakeholder.type
+                stakeholder.save()
 
-        # If stakeholder already exists, update their info
-        if not created:
-            stakeholder.name = data.stakeholder.name
-            stakeholder.organization = data.stakeholder.organization
-            stakeholder.role = data.stakeholder.role
-            stakeholder.state = data.stakeholder.state.upper()
-            stakeholder.county = data.stakeholder.county
-            stakeholder.type = data.stakeholder.type
-            stakeholder.save()
+            # Create endorsement (unique constraint prevents duplicates)
+            endorsement, created = Endorsement.objects.get_or_create(
+                stakeholder=stakeholder,
+                campaign=campaign,
+                defaults={
+                    "statement": data.statement,
+                    "public_display": data.public_display,
+                },
+            )
 
-        # Create endorsement (unique constraint prevents duplicates)
-        endorsement, created = Endorsement.objects.get_or_create(
-            stakeholder=stakeholder,
-            campaign=campaign,
-            defaults={
-                "statement": data.statement,
-                "public_display": data.public_display,
-            },
-        )
+            # If endorsement already exists, update it
+            if not created:
+                endorsement.statement = data.statement
+                endorsement.public_display = data.public_display
+                endorsement.save()
 
-        # If endorsement already exists, update it
-        if not created:
-            endorsement.statement = data.statement
-            endorsement.public_display = data.public_display
-            endorsement.save()
-
-        return endorsement
+            return endorsement
 
     except IntegrityError as e:
         raise HttpError(400, f"Error creating endorsement: {str(e)}") from e

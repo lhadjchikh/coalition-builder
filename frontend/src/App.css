@@ -15,13 +15,38 @@
 
 .App-header {
   background-color: #282c34;
-  min-height: 100vh;
+  padding: 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+}
+
+.App-main {
+  padding: 2rem;
+  min-height: 70vh;
+}
+
+.nav-button {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.nav-button:hover {
+  background-color: #1976d2;
+}
+
+.nav-breadcrumb {
+  color: #ccc;
+  margin-left: 0.5rem;
 }
 
 .App-link {

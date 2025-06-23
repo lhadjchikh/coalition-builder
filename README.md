@@ -42,7 +42,8 @@ docker-compose exec backend python scripts/create_test_data.py
 
 - **Dynamic Homepage Management** - Database-driven content with flexible blocks
 - **Campaign Management** - Create and track policy advocacy campaigns
-- **Stakeholder Management** - Organize supporters and endorsers
+- **Stakeholder Endorsements** - Collect and display public endorsements from stakeholders
+- **Stakeholder Management** - Organize supporters and endorsers with detailed profiles
 - **Legislator Tracking** - Monitor representatives and their positions
 - **Content Management** - Easy-to-use Django admin interface
 - **API Integration** - RESTful API for custom integrations

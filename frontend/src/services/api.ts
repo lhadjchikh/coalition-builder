@@ -1,4 +1,4 @@
-import { Campaign, Endorser, Legislator } from '../types';
+import { Campaign, Endorser, Legislator, Endorsement, EndorsementCreate } from '../types';
 
 // Determine the API base URL
 const getBaseUrl = (): string => {
@@ -58,6 +58,79 @@ const API = {
       return (await response.json()) as Legislator[];
     } catch (error) {
       console.error('Error fetching legislators:', error);
+      throw error;
+    }
+  },
+
+  // Endorsements
+  getEndorsements: async (): Promise<Endorsement[]> => {
+    try {
+      const response = await fetch(`${getBaseUrl()}/api/endorsements/`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return (await response.json()) as Endorsement[];
+    } catch (error) {
+      console.error('Error fetching endorsements:', error);
+      throw error;
+    }
+  },
+
+  getCampaignEndorsements: async (campaignId: number): Promise<Endorsement[]> => {
+    try {
+      const response = await fetch(`${getBaseUrl()}/api/endorsements/?campaign_id=${campaignId}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return (await response.json()) as Endorsement[];
+    } catch (error) {
+      console.error('Error fetching campaign endorsements:', error);
+      throw error;
+    }
+  },
+
+  createEndorsement: async (endorsementData: EndorsementCreate): Promise<Endorsement> => {
+    try {
+      const response = await fetch(`${getBaseUrl()}/api/endorsements/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(endorsementData),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+      }
+      return (await response.json()) as Endorsement;
+    } catch (error) {
+      console.error('Error creating endorsement:', error);
+      throw error;
+    }
+  },
+
+  getCampaignById: async (campaignId: number): Promise<Campaign> => {
+    try {
+      const response = await fetch(`${getBaseUrl()}/api/campaigns/${campaignId}/`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return (await response.json()) as Campaign;
+    } catch (error) {
+      console.error('Error fetching campaign:', error);
+      throw error;
+    }
+  },
+
+  getCampaignByName: async (name: string): Promise<Campaign> => {
+    try {
+      const response = await fetch(`${getBaseUrl()}/api/campaigns/by-name/${name}/`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return (await response.json()) as Campaign;
+    } catch (error) {
+      console.error('Error fetching campaign by name:', error);
       throw error;
     }
   },

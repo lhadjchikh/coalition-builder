@@ -22,8 +22,7 @@ All API responses follow a consistent JSON format:
 // Success example
 {
   "id": 1,
-  "name": "Example Campaign",
-  "slug": "example-campaign"
+  "name": "example-campaign"
 }
 
 // Error example
@@ -117,6 +116,70 @@ Content blocks support different types for flexible page layouts:
 - **`stats`**: Statistics or metrics display
 - **`custom_html`**: Custom HTML content for advanced layouts
 
+### Content Blocks
+
+#### `GET /api/content-blocks/`
+
+Returns all visible content blocks, optionally filtered by homepage.
+
+**Query Parameters:**
+
+- `homepage_id` (optional): Filter content blocks by homepage ID
+
+**Response Example:**
+
+```json
+[
+  {
+    "id": 1,
+    "title": "Why Coalition Building Matters",
+    "block_type": "text",
+    "content": "<p>Effective policy change requires more than individual voices—it requires coordinated action from diverse stakeholders.</p>",
+    "image_url": "",
+    "image_alt_text": "",
+    "css_classes": "bg-gray-50",
+    "background_color": "",
+    "order": 1,
+    "is_visible": true,
+    "created_at": "2024-01-01T10:00:00Z",
+    "updated_at": "2024-01-01T10:00:00Z"
+  }
+]
+```
+
+**Status Codes:**
+
+- `200 OK`: Content blocks found and returned
+- `200 OK`: Empty array if no content blocks found
+
+#### `GET /api/content-blocks/{block_id}/`
+
+Returns a specific visible content block by ID.
+
+**Response Example:**
+
+```json
+{
+  "id": 1,
+  "title": "Why Coalition Building Matters",
+  "block_type": "text",
+  "content": "<p>Effective policy change requires more than individual voices—it requires coordinated action from diverse stakeholders.</p>",
+  "image_url": "",
+  "image_alt_text": "",
+  "css_classes": "bg-gray-50",
+  "background_color": "",
+  "order": 1,
+  "is_visible": true,
+  "created_at": "2024-01-01T10:00:00Z",
+  "updated_at": "2024-01-01T10:00:00Z"
+}
+```
+
+**Status Codes:**
+
+- `200 OK`: Content block found and returned
+- `404 Not Found`: Content block not found or not visible
+
 ### Policy Campaigns
 
 #### `GET /api/campaigns/`
@@ -129,8 +192,8 @@ Returns all active policy campaigns.
 [
   {
     "id": 1,
+    "name": "clean-water-protection-act",
     "title": "Clean Water Protection Act",
-    "slug": "clean-water-protection-act",
     "summary": "Legislation to strengthen water quality standards and protect the Chesapeake Bay watershed",
     "active": true,
     "created_at": "2024-01-15T10:00:00Z"
@@ -138,9 +201,52 @@ Returns all active policy campaigns.
 ]
 ```
 
-#### `GET /api/campaigns/{slug}/`
+#### `GET /api/campaigns/{id}/`
 
-Returns a specific campaign by slug.
+Returns a specific campaign by ID.
+
+**Response Example:**
+
+```json
+{
+  "id": 1,
+  "name": "clean-water-protection-act",
+  "title": "Clean Water Protection Act",
+  "summary": "Legislation to strengthen water quality standards and protect the Chesapeake Bay watershed",
+  "description": "Comprehensive legislation that establishes new water quality standards, provides funding for watershed restoration, and creates enforcement mechanisms to protect the Chesapeake Bay and its tributaries.",
+  "endorsement_statement": "I support the Clean Water Protection Act and its goal of ensuring safe, clean water for all communities in the Chesapeake Bay watershed.",
+  "allow_endorsements": true,
+  "endorsement_form_instructions": "Please provide your organization details and any additional comments about why you support this legislation.",
+  "active": true,
+  "created_at": "2024-01-15T10:00:00Z"
+}
+```
+
+#### `GET /api/campaigns/by-name/{name}/`
+
+Returns a specific campaign by machine name.
+
+**Response Example:**
+
+```json
+{
+  "id": 1,
+  "name": "clean-water-protection-act",
+  "title": "Clean Water Protection Act",
+  "summary": "Legislation to strengthen water quality standards and protect the Chesapeake Bay watershed",
+  "description": "Comprehensive legislation that establishes new water quality standards, provides funding for watershed restoration, and creates enforcement mechanisms to protect the Chesapeake Bay and its tributaries.",
+  "endorsement_statement": "I support the Clean Water Protection Act and its goal of ensuring safe, clean water for all communities in the Chesapeake Bay watershed.",
+  "allow_endorsements": true,
+  "endorsement_form_instructions": "Please provide your organization details and any additional comments about why you support this legislation.",
+  "active": true,
+  "created_at": "2024-01-15T10:00:00Z"
+}
+```
+
+**Status Codes:**
+
+- `200 OK`: Campaign found and returned
+- `404 Not Found`: Campaign not found or not active
 
 ### Stakeholders
 
@@ -189,12 +295,16 @@ Returns all public endorsements with stakeholder and campaign details.
     "stakeholder": {
       "id": 1,
       "name": "Jamie Smith",
-      "organization": "Bay Area Farmers Coalition"
+      "organization": "Bay Area Farmers Coalition",
+      "role": "Executive Director",
+      "state": "MD",
+      "county": "Anne Arundel",
+      "type": "nonprofit"
     },
     "campaign": {
       "id": 1,
-      "title": "Clean Water Protection Act",
-      "slug": "clean-water-protection-act"
+      "name": "clean-water-protection-act",
+      "title": "Clean Water Protection Act"
     },
     "statement": "This legislation is crucial for protecting our agricultural lands while ensuring clean water for future generations.",
     "public_display": true,
@@ -202,6 +312,100 @@ Returns all public endorsements with stakeholder and campaign details.
   }
 ]
 ```
+
+#### `GET /api/endorsements/?campaign_id={campaign_id}`
+
+Returns all public endorsements for a specific campaign using query parameter filtering.
+
+**Response Example:**
+
+```json
+[
+  {
+    "id": 1,
+    "stakeholder": {
+      "id": 1,
+      "name": "Jamie Smith",
+      "organization": "Bay Area Farmers Coalition",
+      "role": "Executive Director",
+      "state": "MD",
+      "county": "Anne Arundel",
+      "type": "nonprofit"
+    },
+    "statement": "This legislation is crucial for protecting our agricultural lands while ensuring clean water for future generations.",
+    "public_display": true,
+    "created_at": "2024-01-20T10:00:00Z"
+  }
+]
+```
+
+#### `POST /api/endorsements/`
+
+Creates a new endorsement for a campaign.
+
+**Request Body:**
+
+```json
+{
+  "campaign_id": 1,
+  "name": "Jamie Smith",
+  "organization": "Bay Area Farmers Coalition",
+  "role": "Executive Director",
+  "email": "jamie@bayareafarmers.org",
+  "state": "MD",
+  "county": "Anne Arundel",
+  "type": "nonprofit",
+  "statement": "This legislation is crucial for protecting our agricultural lands while ensuring clean water for future generations.",
+  "public_display": true
+}
+```
+
+**Response Example:**
+
+```json
+{
+  "id": 1,
+  "stakeholder": {
+    "id": 1,
+    "name": "Jamie Smith",
+    "organization": "Bay Area Farmers Coalition",
+    "role": "Executive Director",
+    "state": "MD",
+    "county": "Anne Arundel",
+    "type": "nonprofit"
+  },
+  "campaign": {
+    "id": 1,
+    "name": "clean-water-protection-act",
+    "title": "Clean Water Protection Act"
+  },
+  "statement": "This legislation is crucial for protecting our agricultural lands while ensuring clean water for future generations.",
+  "public_display": true,
+  "created_at": "2024-01-20T10:00:00Z"
+}
+```
+
+**Status Codes:**
+
+- `201 Created`: Endorsement created successfully
+- `400 Bad Request`: Invalid request data
+- `409 Conflict`: Stakeholder with this email already endorsed this campaign
+
+**Required Fields:**
+
+- `campaign_id`: ID of the campaign to endorse
+- `name`: Stakeholder's name
+- `organization`: Stakeholder's organization
+- `email`: Stakeholder's email (must be unique per campaign)
+- `state`: Stakeholder's state
+- `type`: Stakeholder type (farmer, waterman, business, nonprofit, individual, government, other)
+
+**Optional Fields:**
+
+- `role`: Stakeholder's role within organization
+- `county`: Stakeholder's county
+- `statement`: Custom endorsement statement
+- `public_display`: Whether to display endorsement publicly (defaults to true)
 
 ### Legislators
 

@@ -15,13 +15,13 @@ def list_campaigns(request: HttpRequest) -> list[PolicyCampaign]:
     return PolicyCampaign.objects.filter(active=True).all()
 
 
+@router.get("/by-name/{name}/", response=PolicyCampaignOut)
+def get_campaign_by_name(request: HttpRequest, name: str) -> PolicyCampaign:
+    """Get a specific campaign by name"""
+    return get_object_or_404(PolicyCampaign, name=name, active=True)
+
+
 @router.get("/{campaign_id}/", response=PolicyCampaignOut)
 def get_campaign(request: HttpRequest, campaign_id: int) -> PolicyCampaign:
     """Get a specific campaign by ID"""
     return get_object_or_404(PolicyCampaign, id=campaign_id, active=True)
-
-
-@router.get("/slug/{slug}/", response=PolicyCampaignOut)
-def get_campaign_by_slug(request: HttpRequest, slug: str) -> PolicyCampaign:
-    """Get a specific campaign by slug"""
-    return get_object_or_404(PolicyCampaign, slug=slug, active=True)
