@@ -136,6 +136,7 @@ def create_endorsement(
                 # Reset status to pending if updating
                 endorsement.status = "pending"
                 endorsement.email_verified = False
+                endorsement.verification_token = uuid.uuid4()  # Generate new token
                 endorsement.save()
 
             # Send verification email
