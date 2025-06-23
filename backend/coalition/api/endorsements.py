@@ -200,24 +200,24 @@ def verify_endorsement(request: HttpRequest, token: str) -> dict:
 @router.post("/resend-verification/")
 def resend_verification(request: HttpRequest, data: EndorsementVerifySchema) -> dict:
     """Resend verification email for an endorsement"""
+    # Find endorsement by stakeholder email and campaign
+    # Let Http404 from get_object_or_404 propagate naturally (becomes 404 response)
+    endorsement = get_object_or_404(
+        Endorsement,
+        stakeholder__email__iexact=data.email,
+        campaign_id=data.campaign_id,
+    )
+
+    # Check if already verified
+    if endorsement.email_verified:
+        return {
+            "success": True,
+            "message": "Email is already verified",
+        }
+
+    # Send verification email
     try:
-        # Find endorsement by stakeholder email and campaign
-        endorsement = get_object_or_404(
-            Endorsement,
-            stakeholder__email__iexact=data.email,
-            campaign_id=data.campaign_id,
-        )
-
-        # Check if already verified
-        if endorsement.email_verified:
-            return {
-                "success": True,
-                "message": "Email is already verified",
-            }
-
-        # Send verification email
         email_sent = EndorsementEmailService.send_verification_email(endorsement)
-
         if email_sent:
             return {
                 "success": True,
@@ -225,9 +225,8 @@ def resend_verification(request: HttpRequest, data: EndorsementVerifySchema) -> 
             }
         else:
             raise HttpError(500, "Failed to send verification email")
-
     except Exception as e:
-        raise HttpError(500, f"Error resending verification: {str(e)}") from e
+        raise HttpError(500, f"Error sending verification email: {str(e)}") from e
 
 
 @router.post("/admin/approve/{endorsement_id}/")
