@@ -160,3 +160,25 @@ variable "health_check_path_api" {
   type        = string
   default     = "/health/"
 }
+
+variable "redis_cpu" {
+  description = "CPU units for Redis container"
+  type        = number
+  default     = 128
+
+  validation {
+    condition     = var.redis_cpu >= 64 && var.redis_cpu <= 512
+    error_message = "Redis CPU must be between 64 and 512 CPU units."
+  }
+}
+
+variable "redis_memory" {
+  description = "Memory in MiB for Redis container"
+  type        = number
+  default     = 128
+
+  validation {
+    condition     = var.redis_memory >= 64 && var.redis_memory <= 1024
+    error_message = "Redis memory must be between 64 and 1024 MiB."
+  }
+}

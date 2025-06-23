@@ -185,8 +185,8 @@ resource "aws_ecs_task_definition" "app" {
       image     = "redis:7-alpine"
       essential = false
       # Allocate minimal resources for Redis
-      cpu    = 128 # 128 CPU units
-      memory = 128 # 128 MB RAM
+      cpu    = var.redis_cpu
+      memory = var.redis_memory
 
       portMappings = [
         {
@@ -227,8 +227,8 @@ resource "aws_ecs_task_definition" "app" {
       image     = "${aws_ecr_repository.api.repository_url}:latest"
       essential = true
       # Adjust CPU allocation for API container when Redis is present
-      cpu    = var.enable_ssr ? floor((var.task_cpu - 128) * 0.6) : (var.task_cpu - 128)                       # 60% of remaining CPU when SSR enabled
-      memory = var.enable_ssr ? floor((local.calculated_memory - 128) * 0.6) : (local.calculated_memory - 128) # 60% of remaining memory when SSR enabled
+      cpu    = var.enable_ssr ? floor((var.task_cpu - var.redis_cpu) * 0.6) : (var.task_cpu - var.redis_cpu)                             # 60% of remaining CPU when SSR enabled
+      memory = var.enable_ssr ? floor((local.calculated_memory - var.redis_memory) * 0.6) : (local.calculated_memory - var.redis_memory) # 60% of remaining memory when SSR enabled
 
       portMappings = [
         {
@@ -293,8 +293,8 @@ resource "aws_ecs_task_definition" "app" {
       image     = "${aws_ecr_repository.ssr.repository_url}:latest"
       essential = true
       # Allocate remaining CPU and memory for SSR container (after Redis allocation)
-      cpu    = floor((var.task_cpu - 128) * 0.4)            # 40% of remaining CPU after Redis
-      memory = floor((local.calculated_memory - 128) * 0.4) # 40% of remaining memory after Redis
+      cpu    = floor((var.task_cpu - var.redis_cpu) * 0.4)               # 40% of remaining CPU after Redis
+      memory = floor((local.calculated_memory - var.redis_memory) * 0.4) # 40% of remaining memory after Redis
 
       portMappings = [
         {
@@ -354,8 +354,8 @@ resource "aws_ecs_task_definition" "app" {
       image     = "redis:7-alpine"
       essential = false
       # Allocate minimal resources for Redis
-      cpu    = 128 # 128 CPU units
-      memory = 128 # 128 MB RAM
+      cpu    = var.redis_cpu
+      memory = var.redis_memory
 
       portMappings = [
         {
@@ -396,8 +396,8 @@ resource "aws_ecs_task_definition" "app" {
       image     = "${aws_ecr_repository.api.repository_url}:latest"
       essential = true
       # Use remaining CPU and memory after Redis allocation
-      cpu    = var.task_cpu - 128
-      memory = local.calculated_memory - 128
+      cpu    = var.task_cpu - var.redis_cpu
+      memory = local.calculated_memory - var.redis_memory
 
       portMappings = [
         {
