@@ -99,8 +99,10 @@ class EndorsementEmailService:
             # Get admin emails from settings or use a default
             admin_emails = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", "")
             if isinstance(admin_emails, str):
-                admin_emails = [email.strip() for email in admin_emails.split(',') if email.strip()]
-            
+                admin_emails = [
+                    email.strip() for email in admin_emails.split(",") if email.strip()
+                ]
+
             if not admin_emails and hasattr(settings, "ADMINS"):
                 admin_emails = [email for name, email in settings.ADMINS]
 
