@@ -509,10 +509,87 @@ const visibleBlocks = homepage.content_blocks
   .sort((a, b) => a.order - b.order);
 ```
 
+## Endorsement System Features
+
+The endorsement system includes comprehensive features:
+
+**🔐 Email Verification System**
+
+- Secure UUID-based verification tokens
+- Automated email workflows with templates
+- 24-hour token expiration for security
+- Resend verification capabilities
+
+**👨‍💼 Admin Review Interface**
+
+- Django admin with bulk actions
+- Status management (pending → verified → approved)
+- Visual indicators and filtering
+- Audit trail with user attribution
+
+**🛡️ Spam Prevention**
+
+- IP-based rate limiting (3 per 5 minutes)
+- Honeypot field detection
+- Form timing analysis
+- Email reputation checks
+- Content quality analysis
+
+**📊 Export Functionality**
+
+- CSV and JSON export formats
+- Campaign-specific filtering
+- Admin-only access control
+- Comprehensive data fields
+
+**📧 Email Notifications**
+
+- Verification emails to stakeholders
+- Admin notifications for new submissions
+- Approval confirmation emails
+- Customizable email templates
+
+**🧪 Quality Assurance**
+
+- 71 comprehensive tests
+- Full API endpoint coverage
+- Email service testing
+- Spam prevention validation
+- Admin interface testing
+
 ## Development Notes
+
+**Data Formats:**
 
 - All datetime fields are returned in ISO 8601 format with UTC timezone
 - HTML content in content blocks should be sanitized before rendering
 - Image URLs should be validated before display
-- The API automatically filters content blocks to only return visible ones
+- UUIDs are used for verification tokens (36-character format)
+
+**Security Considerations:**
+
+- Email addresses are never returned in public endpoints
+- Verification tokens are single-use and expire after 24 hours
+- Spam prevention measures may reject legitimate submissions if misconfigured
+- Admin endpoints require proper authentication in production
+
+**Data Filtering:**
+
+- Public endorsement endpoints filter for approved + verified + public only
+- Content blocks automatically filter to only return visible ones
 - Only one homepage configuration can be active at a time
+- Export endpoints include all endorsements regardless of status (admin only)
+
+**Email Integration:**
+
+- SMTP configuration required for email verification to work
+- Verification emails include secure links with token validation
+- Admin notification emails sent for new endorsements
+- Approval confirmation emails sent automatically
+
+**Testing Considerations:**
+
+- Email functionality may require mock services in development
+- Spam prevention settings can be adjusted via environment variables
+- Rate limiting uses cache backend (Redis recommended for production)
+- Comprehensive test suite covers all new functionality

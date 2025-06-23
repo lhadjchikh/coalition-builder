@@ -135,6 +135,8 @@ class EndorsementCreateSchema(Schema):
     stakeholder: StakeholderCreateSchema
     statement: str = ""  # Optional additional comment
     public_display: bool = True
+    # Spam prevention fields (optional)
+    form_metadata: dict = {}  # For honeypot fields, timing, etc.
 
 
 class EndorsementVerifySchema(Schema):

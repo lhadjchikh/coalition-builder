@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import API from '../services/api';
 import { Campaign, EndorsementCreate, Stakeholder } from '../types';
 import './Endorsements.css';
@@ -27,6 +27,16 @@ const EndorsementForm: React.FC<EndorsementFormProps> = ({ campaign, onEndorseme
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
 
+  // Spam prevention state
+  const [formStartTime] = useState<string>(new Date().toISOString());
+  const [honeypotFields, setHoneypotFields] = useState({
+    website: '',
+    url: '',
+    homepage: '',
+    confirm_email: '',
+  });
+  const formRef = useRef<HTMLFormElement>(null);
+
   const handleStakeholderChange = (field: keyof typeof stakeholder, value: string) => {
     setStakeholder(prev => ({
       ...prev,
@@ -46,6 +56,10 @@ const EndorsementForm: React.FC<EndorsementFormProps> = ({ campaign, onEndorseme
         stakeholder,
         statement,
         public_display: publicDisplay,
+        form_metadata: {
+          form_start_time: formStartTime,
+          ...honeypotFields,
+        },
       };
 
       await API.createEndorsement(endorsementData);
@@ -175,7 +189,47 @@ const EndorsementForm: React.FC<EndorsementFormProps> = ({ campaign, onEndorseme
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} ref={formRef}>
+        {/* Honeypot fields - hidden from users but visible to bots */}
+        <div style={{ position: 'absolute', left: '-9999px', opacity: 0, pointerEvents: 'none' }}>
+          <label htmlFor="website">Website (leave blank):</label>
+          <input
+            id="website"
+            type="text"
+            value={honeypotFields.website}
+            onChange={e => setHoneypotFields(prev => ({ ...prev, website: e.target.value }))}
+            tabIndex={-1}
+            autoComplete="off"
+          />
+          <label htmlFor="url">URL (leave blank):</label>
+          <input
+            id="url"
+            type="text"
+            value={honeypotFields.url}
+            onChange={e => setHoneypotFields(prev => ({ ...prev, url: e.target.value }))}
+            tabIndex={-1}
+            autoComplete="off"
+          />
+          <label htmlFor="homepage">Homepage (leave blank):</label>
+          <input
+            id="homepage"
+            type="text"
+            value={honeypotFields.homepage}
+            onChange={e => setHoneypotFields(prev => ({ ...prev, homepage: e.target.value }))}
+            tabIndex={-1}
+            autoComplete="off"
+          />
+          <label htmlFor="confirm_email">Confirm Email (leave blank):</label>
+          <input
+            id="confirm_email"
+            type="text"
+            value={honeypotFields.confirm_email}
+            onChange={e => setHoneypotFields(prev => ({ ...prev, confirm_email: e.target.value }))}
+            tabIndex={-1}
+            autoComplete="off"
+          />
+        </div>
+
         <div className="form-group">
           <label htmlFor="name">Name *</label>
           <input
