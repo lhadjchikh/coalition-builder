@@ -1,47 +1,69 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from ninja import Schema
+from ninja import ModelSchema, Schema
 
 if TYPE_CHECKING:
     from django.db.models import QuerySet
 
     from coalition.core.models import ContentBlock, HomePage
 
-
-class PolicyCampaignOut(Schema):
-    id: int
-    name: str
-    title: str
-    summary: str
-    description: str
-    endorsement_statement: str
-    allow_endorsements: bool
-    endorsement_form_instructions: str
-    active: bool
-    created_at: datetime
+# Import models for ModelSchema
+from coalition.campaigns.models import PolicyCampaign
+from coalition.endorsements.models import Endorsement
+from coalition.stakeholders.models import Stakeholder
 
 
-class StakeholderOut(Schema):
-    id: int
-    name: str
-    organization: str
-    role: str
-    email: str
-    state: str
-    county: str
-    type: str
-    created_at: datetime
-    updated_at: datetime
+class PolicyCampaignOut(ModelSchema):
+    class Meta:
+        model = PolicyCampaign
+        fields = [
+            "id",
+            "name",
+            "title",
+            "summary",
+            "description",
+            "endorsement_statement",
+            "allow_endorsements",
+            "endorsement_form_instructions",
+            "active",
+            "created_at",
+        ]
 
 
-class EndorsementOut(Schema):
-    id: int
+class StakeholderOut(ModelSchema):
+    class Meta:
+        model = Stakeholder
+        fields = [
+            "id",
+            "name",
+            "organization",
+            "role",
+            "email",
+            "state",
+            "county",
+            "type",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class EndorsementOut(ModelSchema):
     stakeholder: StakeholderOut
     campaign: PolicyCampaignOut
-    statement: str
-    public_display: bool
-    created_at: datetime
+
+    class Meta:
+        model = Endorsement
+        fields = [
+            "id",
+            "statement",
+            "public_display",
+            "status",
+            "email_verified",
+            "created_at",
+            "verified_at",
+            "reviewed_at",
+        ]
 
 
 class LegislatorOut(Schema):
@@ -135,8 +157,8 @@ class EndorsementCreateSchema(Schema):
     stakeholder: StakeholderCreateSchema
     statement: str = ""  # Optional additional comment
     public_display: bool = True
-    # Spam prevention fields (optional)
-    form_metadata: dict | None = None  # For honeypot fields, timing, etc.
+    # Spam prevention fields (required)
+    form_metadata: dict  # For honeypot fields, timing, etc.
 
 
 class EndorsementVerifySchema(Schema):
