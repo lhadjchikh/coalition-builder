@@ -207,3 +207,6 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 # Site configuration for email links
 SITE_URL = os.getenv("SITE_URL", "http://localhost:3000")  # Frontend URL
 API_URL = os.getenv("API_URL", "http://localhost:8000")  # Backend URL
+
+# Admin notification emails for endorsement system
+ADMIN_NOTIFICATION_EMAILS = os.getenv("ADMIN_NOTIFICATION_EMAILS", "")
