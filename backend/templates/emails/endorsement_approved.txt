@@ -1,0 +1,21 @@
+{{ organization_name }}
+Your Endorsement Has Been Approved!
+
+Hello {{ stakeholder.name }},
+
+Great news! Your endorsement for "{{ campaign.title }}" has been approved and is now publicly displayed.
+
+Campaign: {{ campaign.title }}
+Summary: {{ campaign.summary }}
+{% if endorsement.statement %}Your statement: "{{ endorsement.statement }}"{% endif %}
+
+Thank you for your support! Your endorsement helps demonstrate the broad coalition behind this important campaign.
+
+View the campaign page: {{ campaign_url }}
+
+You can view your endorsement along with others on the campaign page. Feel free to share this page with your networks to help build even more support!
+
+Thank you for being part of our coalition.
+
+Best regards,
+The {{ organization_name }} Team

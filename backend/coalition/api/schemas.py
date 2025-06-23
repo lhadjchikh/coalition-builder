@@ -135,3 +135,8 @@ class EndorsementCreateSchema(Schema):
     stakeholder: StakeholderCreateSchema
     statement: str = ""  # Optional additional comment
     public_display: bool = True
+
+
+class EndorsementVerifySchema(Schema):
+    email: str
+    campaign_id: int
