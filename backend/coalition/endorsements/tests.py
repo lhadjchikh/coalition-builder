@@ -1317,7 +1317,7 @@ class EndorsementAPIEnhancedTest(TestCase):
             "email": self.stakeholder.email,
             "campaign_id": self.campaign.id,
         }
-        
+
         # Make requests up to the rate limit
         for _ in range(3):  # Default rate limit is 3 attempts
             response = self.client.post(
@@ -1327,7 +1327,7 @@ class EndorsementAPIEnhancedTest(TestCase):
             )
             # Should succeed initially
             assert response.status_code in [200, 429]
-        
+
         # The next request should be rate limited
         response = self.client.post(
             "/api/endorsements/resend-verification/",
@@ -1424,7 +1424,7 @@ class EndorsementAPIEnhancedTest(TestCase):
             state="CA",
             type="individual",
         )
-        
+
         Endorsement.objects.create(
             stakeholder=malicious_stakeholder,
             campaign=self.campaign,
@@ -1432,20 +1432,20 @@ class EndorsementAPIEnhancedTest(TestCase):
             email_verified=True,
             status="approved",
         )
-        
+
         # Login as admin user
         self.client.force_login(self.user)
-        
+
         response = self.client.get("/api/endorsements/export/csv/")
         assert response.status_code == 200
-        
+
         content = response.content.decode("utf-8")
-        
+
         # Verify dangerous characters are sanitized
         assert "=cmd" not in content  # Leading = should be removed
         assert "@SUM" not in content  # Leading @ should be removed
         assert "+1+1+cmd" not in content  # Leading + should be removed
-        
+
         # Verify data is still present but sanitized
         assert "cmd" in content  # Content should still be there, just sanitized
         assert "calc" in content

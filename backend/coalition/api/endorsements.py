@@ -26,27 +26,27 @@ logger = logging.getLogger(__name__)
 def sanitize_csv_field(value: str) -> str:
     """
     Sanitize CSV field to prevent formula injection attacks.
-    
+
     Removes or escapes characters that could be interpreted as formulas
     by spreadsheet applications (=, +, -, @, etc.)
     """
     if not isinstance(value, str):
         return str(value)
-    
+
     # Remove any leading characters that could start a formula
     dangerous_chars = ["=", "+", "-", "@", "\t", "\r", "\n"]
-    
+
     # Strip leading dangerous characters
     while value and value[0] in dangerous_chars:
         value = value[1:]
-    
+
     # Replace any remaining formula-like patterns
     # This is a conservative approach to prevent CSV injection
     value = re.sub(r"^[=+\-@]", "", value)
-    
+
     # Remove or escape other potentially dangerous characters
     value = value.replace("\r", " ").replace("\n", " ").replace("\t", " ")
-    
+
     return value
 
 
@@ -234,34 +234,34 @@ def resend_verification(request: HttpRequest, data: EndorsementVerifySchema) -> 
     spam_check = SpamPreventionService.check_rate_limit(request)
     if not spam_check["allowed"]:
         raise HttpError(429, "Too many verification requests. Please try again later.")
-    
+
     # Record this attempt for rate limiting
     SpamPreventionService.record_submission_attempt(request)
-    
+
     # Always return the same message to prevent information disclosure
     # This prevents enumeration of which emails have endorsed campaigns
     standard_message = (
         "If an endorsement exists for this email and campaign, "
         "a verification email has been sent."
     )
-    
+
     try:
         # Find endorsement by stakeholder email and campaign
         endorsement = Endorsement.objects.filter(
             stakeholder__email__iexact=data.email,
             campaign_id=data.campaign_id,
         ).first()
-        
+
         # Only send email if endorsement exists and is not already verified
         if endorsement and not endorsement.email_verified:
             EndorsementEmailService.send_verification_email(endorsement)
-            
+
         # Always return the same response regardless of whether endorsement exists
         return {
             "success": True,
             "message": standard_message,
         }
-        
+
     except Exception as e:
         # Log the error but still return the standard message
         logger.error(f"Error in resend verification: {e}")
