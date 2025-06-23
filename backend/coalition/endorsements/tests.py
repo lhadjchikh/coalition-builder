@@ -810,6 +810,21 @@ class SpamPreventionServiceTest(TestCase):
         result = SpamPreventionService.check_rate_limit(ip)
         assert result["remaining"] == SpamPreventionService.RATE_LIMIT_MAX_ATTEMPTS - 2
 
+    def test_rate_limit_with_django_ratelimit_fallback(self) -> None:
+        """Test rate limiting falls back to cache when no request object provided"""
+        ip = "192.168.1.4"
+
+        # Without request object, should use cache-based fallback
+        result = SpamPreventionService.check_rate_limit(ip, request=None)
+        assert result["allowed"] is True
+
+        # Record attempts and verify fallback works
+        for _ in range(SpamPreventionService.RATE_LIMIT_MAX_ATTEMPTS):
+            SpamPreventionService.record_submission_attempt(ip, request=None)
+
+        result = SpamPreventionService.check_rate_limit(ip, request=None)
+        assert result["allowed"] is False
+
     def test_validate_honeypot_empty_fields(self) -> None:
         """Test honeypot validation with empty fields (valid)"""
         form_data = {

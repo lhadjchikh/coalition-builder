@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_ratelimit",
     "coalition.core.apps.CoreConfig",
     "coalition.campaigns.apps.CampaignsConfig",
     "coalition.legislators.apps.LegislatorsConfig",

@@ -9,6 +9,7 @@ from typing import Any
 
 from django.conf import settings
 from django.core.cache import cache
+from django.http import HttpRequest
 from django.utils import timezone
 
 try:
@@ -21,6 +22,13 @@ try:
 except ImportError:
     validate_email = None
     EmailNotValidError = Exception
+
+try:
+    from django_ratelimit.core import is_ratelimited
+    from django_ratelimit.exceptions import Ratelimited
+except ImportError:
+    is_ratelimited = None
+    Ratelimited = Exception
 
 logger = logging.getLogger(__name__)
 
@@ -51,14 +59,52 @@ class SpamPreventionService:
     ]
 
     @classmethod
-    def check_rate_limit(cls, ip_address: str) -> dict[str, Any]:
+    def check_rate_limit(
+        cls,
+        ip_address: str,
+        request: HttpRequest | None = None,
+    ) -> dict[str, Any]:
         """
-        Check if IP address has exceeded rate limit
+        Check if IP address has exceeded rate limit using django-ratelimit
+        Falls back to custom cache-based method if django-ratelimit unavailable
         Returns dict with 'allowed' boolean and 'remaining' count
         """
-        cache_key = f"endorsement_rate_limit:{ip_address}"
+        if is_ratelimited and request:
+            # Use django-ratelimit for more robust rate limiting
+            try:
+                rate = f"{cls.RATE_LIMIT_MAX_ATTEMPTS}/{cls.RATE_LIMIT_WINDOW}s"
+                ratelimited = is_ratelimited(
+                    request=request,
+                    group="endorsement_submission",
+                    key="ip",
+                    rate=rate,
+                    increment=False,  # Just check, don't increment yet
+                )
 
-        # Get current attempt count
+                if ratelimited:
+                    return {
+                        "allowed": False,
+                        "remaining": 0,
+                        "reset_in": cls.RATE_LIMIT_WINDOW,
+                        "message": (
+                            f"Rate limit exceeded. Try again in "
+                            f"{cls.RATE_LIMIT_WINDOW // 60} minutes."
+                        ),
+                    }
+                else:
+                    # Calculate remaining attempts (approximate)
+                    return {
+                        "allowed": True,
+                        # django-ratelimit doesn't expose remaining count easily
+                        "remaining": cls.RATE_LIMIT_MAX_ATTEMPTS,
+                        "reset_in": cls.RATE_LIMIT_WINDOW,
+                    }
+            except Exception as e:
+                logger.warning(f"django-ratelimit check failed: {e}")
+                # Fall through to legacy method
+
+        # Fallback to custom cache-based rate limiting
+        cache_key = f"endorsement_rate_limit:{ip_address}"
         current_attempts = cache.get(cache_key, 0)
 
         if current_attempts >= cls.RATE_LIMIT_MAX_ATTEMPTS:
@@ -79,11 +125,30 @@ class SpamPreventionService:
         }
 
     @classmethod
-    def record_submission_attempt(cls, ip_address: str) -> None:
-        """Record a submission attempt from an IP address"""
-        cache_key = f"endorsement_rate_limit:{ip_address}"
+    def record_submission_attempt(
+        cls,
+        ip_address: str,
+        request: HttpRequest | None = None,
+    ) -> None:
+        """Record a submission attempt using django-ratelimit or fallback to cache"""
+        if is_ratelimited and request:
+            # Use django-ratelimit to record the attempt
+            try:
+                rate = f"{cls.RATE_LIMIT_MAX_ATTEMPTS}/{cls.RATE_LIMIT_WINDOW}s"
+                is_ratelimited(
+                    request=request,
+                    group="endorsement_submission",
+                    key="ip",
+                    rate=rate,
+                    increment=True,  # Increment the counter
+                )
+                return
+            except Exception as e:
+                logger.warning(f"django-ratelimit record failed: {e}")
+                # Fall through to legacy method
 
-        # Increment attempt count
+        # Fallback to custom cache-based method
+        cache_key = f"endorsement_rate_limit:{ip_address}"
         current_attempts = cache.get(cache_key, 0)
         cache.set(cache_key, current_attempts + 1, cls.RATE_LIMIT_WINDOW)
 
@@ -287,6 +352,7 @@ class SpamPreventionService:
         statement: str,
         form_data: dict[str, Any],
         user_agent: str = None,
+        request: HttpRequest | None = None,
     ) -> dict[str, Any]:
         """
         Run comprehensive spam check
@@ -301,7 +367,7 @@ class SpamPreventionService:
         }
 
         # Check rate limiting
-        rate_limit_result = cls.check_rate_limit(ip_address)
+        rate_limit_result = cls.check_rate_limit(ip_address, request)
         results["rate_limit"] = rate_limit_result
         if not rate_limit_result["allowed"]:
             results["is_spam"] = True
