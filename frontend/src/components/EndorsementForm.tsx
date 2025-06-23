@@ -191,7 +191,10 @@ const EndorsementForm: React.FC<EndorsementFormProps> = ({ campaign, onEndorseme
 
       <form onSubmit={handleSubmit} ref={formRef}>
         {/* Honeypot fields - hidden from users but visible to bots */}
-        <div style={{ position: 'absolute', left: '-9999px', opacity: 0, pointerEvents: 'none' }}>
+        <div
+          style={{ position: 'absolute', left: '-9999px', opacity: 0, pointerEvents: 'none' }}
+          aria-hidden="true"
+        >
           <label htmlFor="website">Website (leave blank):</label>
           <input
             id="website"
