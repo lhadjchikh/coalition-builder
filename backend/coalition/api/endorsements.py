@@ -46,6 +46,108 @@ def sanitize_csv_field(value: str) -> str:
     return value
 
 
+def _validate_stakeholder_data_match(
+    existing_stakeholder: Stakeholder,
+    submitted_data: dict,
+    ip_address: str,
+) -> None:
+    """
+    Validate that submitted stakeholder data matches existing stakeholder.
+
+    Raises HttpError if data doesn't match to prevent unauthorized overwriting.
+    """
+    data_matches = (
+        existing_stakeholder.name.lower() == submitted_data["name"].lower()
+        and existing_stakeholder.organization.lower()
+        == submitted_data["organization"].lower()
+        and (existing_stakeholder.role or "").lower()
+        == (submitted_data.get("role") or "").lower()
+        and existing_stakeholder.state.upper() == submitted_data["state"].upper()
+        and (existing_stakeholder.county or "").lower()
+        == (submitted_data.get("county") or "").lower()
+        and existing_stakeholder.type == submitted_data["type"]
+    )
+
+    if not data_matches:
+        # Log the potential takeover attempt
+        logger.warning(
+            f"Attempt to modify existing stakeholder data for "
+            f"{existing_stakeholder.email} from IP {ip_address}. Data mismatch "
+            f"detected.",
+        )
+        raise HttpError(
+            409,
+            "A stakeholder with this email already exists with different "
+            "information. Please verify your details or contact support if "
+            "you believe this is an error.",
+        )
+
+
+def _get_or_create_stakeholder(
+    stakeholder_data: dict,
+    ip_address: str,
+) -> Stakeholder:
+    """
+    Get or create stakeholder with security validation.
+
+    Prevents unauthorized overwriting of existing stakeholder data.
+    """
+    stakeholder, created = Stakeholder.objects.get_or_create(
+        email__iexact=stakeholder_data["email"],  # Case-insensitive lookup
+        defaults={
+            "name": stakeholder_data["name"],
+            "organization": stakeholder_data["organization"],
+            "role": stakeholder_data.get("role"),
+            "email": stakeholder_data["email"].lower(),  # Normalized in save()
+            "state": stakeholder_data["state"].upper(),
+            "county": stakeholder_data.get("county"),
+            "type": stakeholder_data["type"],
+        },
+    )
+
+    # If stakeholder already exists, only allow updates for exact data matches
+    # to prevent unauthorized overwriting of existing user data
+    if not created:
+        _validate_stakeholder_data_match(stakeholder, stakeholder_data, ip_address)
+
+    return stakeholder
+
+
+def _handle_endorsement_update(
+    endorsement: Endorsement,
+    statement: str,
+    public_display: bool,
+    ip_address: str,
+) -> None:
+    """
+    Handle updates to existing endorsements with security validation.
+
+    Only allows updates to unverified endorsements to prevent tampering.
+    """
+    if endorsement.email_verified:
+        # Log the potential takeover attempt
+        logger.warning(
+            f"Attempt to modify verified endorsement {endorsement.id} "
+            f"for {endorsement.stakeholder.email} from IP {ip_address}",
+        )
+        raise HttpError(
+            409,
+            "This email has already been verified for this campaign. "
+            "Contact support if you need to make changes to your "
+            "endorsement.",
+        )
+
+    # Allow updates only for unverified endorsements
+    endorsement.statement = statement
+    endorsement.public_display = public_display
+    # Reset status to pending if updating
+    endorsement.status = "pending"
+    endorsement.email_verified = False
+    endorsement.verified_at = None  # Clear verified_at timestamp
+    endorsement.verification_token = uuid.uuid4()  # Generate new token
+    endorsement.save()
+
+
 @router.get("/", response=list[EndorsementOut])
 def list_endorsements(
     request: HttpRequest,
@@ -117,29 +219,8 @@ def create_endorsement(
 
     try:
         with transaction.atomic():
-            # Get or create stakeholder (deduplicate by email)
-            stakeholder, created = Stakeholder.objects.get_or_create(
-                email__iexact=data.stakeholder.email,  # Case-insensitive lookup
-                defaults={
-                    "name": data.stakeholder.name,
-                    "organization": data.stakeholder.organization,
-                    "role": data.stakeholder.role,
-                    "email": data.stakeholder.email.lower(),  # Normalized in save()
-                    "state": data.stakeholder.state.upper(),
-                    "county": data.stakeholder.county,
-                    "type": data.stakeholder.type,
-                },
-            )
-
-            # If stakeholder already exists, update their info
-            if not created:
-                stakeholder.name = data.stakeholder.name
-                stakeholder.organization = data.stakeholder.organization
-                stakeholder.role = data.stakeholder.role
-                stakeholder.state = data.stakeholder.state.upper()
-                stakeholder.county = data.stakeholder.county
-                stakeholder.type = data.stakeholder.type
-                stakeholder.save()
+            # Get or create stakeholder with security validation
+            stakeholder = _get_or_create_stakeholder(stakeholder_data, ip_address)
 
             # Create endorsement (unique constraint prevents duplicates)
             endorsement, created = Endorsement.objects.get_or_create(
@@ -152,16 +233,14 @@ def create_endorsement(
                 },
             )
 
-            # If endorsement already exists, update it
+            # Handle existing endorsement updates with security validation
             if not created:
-                endorsement.statement = data.statement
-                endorsement.public_display = data.public_display
-                # Reset status to pending if updating
-                endorsement.status = "pending"
-                endorsement.email_verified = False
-                endorsement.verified_at = None  # Clear verified_at timestamp
-                endorsement.verification_token = uuid.uuid4()  # Generate new token
-                endorsement.save()
+                _handle_endorsement_update(
+                    endorsement,
+                    data.statement,
+                    data.public_display,
+                    ip_address,
+                )
 
             # Send verification email
             email_sent = EndorsementEmailService.send_verification_email(endorsement)
