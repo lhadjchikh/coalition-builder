@@ -5,7 +5,7 @@ locals {
   # Redis container definition (shared between SSR and API-only configurations)
   redis_container = {
     name      = "redis"
-    image     = "redis:7-alpine"
+    image     = "public.ecr.aws/docker/library/redis:8-alpine"
     essential = false
     # Allocate minimal resources for Redis
     cpu    = var.redis_cpu
