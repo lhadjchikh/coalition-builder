@@ -5,9 +5,8 @@ from django.core.cache import cache
 from django.test import Client, TestCase
 
 from coalition.campaigns.models import PolicyCampaign
+from coalition.endorsements.models import Endorsement
 from coalition.stakeholders.models import Stakeholder
-
-from .models import Endorsement
 
 
 class EndorsementAPIEnhancedTest(TestCase):
