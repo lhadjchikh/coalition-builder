@@ -58,6 +58,7 @@ const EndorsementForm: React.FC<EndorsementFormProps> = ({ campaign, onEndorseme
         public_display: publicDisplay,
         form_metadata: {
           form_start_time: formStartTime,
+          referrer: document.referrer || '',
           ...honeypotFields,
         },
       };

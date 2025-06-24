@@ -67,9 +67,7 @@ export interface SpamPreventionMetadata {
   confirm_email?: string;
 
   // Additional metadata for spam detection
-  user_agent?: string;
-  referrer?: string;
-  form_version?: string;
+  referrer?: string; // Page referrer for analytics
 }
 
 export interface EndorsementCreate {
