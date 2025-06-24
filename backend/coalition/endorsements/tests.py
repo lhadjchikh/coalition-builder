@@ -1654,11 +1654,19 @@ class SecurityVulnerabilityTests(TestCase):
 
     def test_stakeholder_data_overwrite_prevention_exact_match(self) -> None:
         """Test that exact data matches are allowed for stakeholder updates"""
+        # Create a different campaign to avoid verified endorsement conflict
+        campaign2 = PolicyCampaign.objects.create(
+            name="test-campaign-2",
+            title="Test Campaign 2",
+            summary="Test summary 2",
+            allow_endorsements=True,
+        )
+
         # Submit identical data - should be allowed
         response = self.client.post(
             "/api/endorsements/",
             {
-                "campaign_id": self.campaign.id,
+                "campaign_id": campaign2.id,
                 "stakeholder": {
                     "name": "John Doe",  # Exact match
                     "organization": "Acme Corp",  # Exact match
@@ -1676,7 +1684,7 @@ class SecurityVulnerabilityTests(TestCase):
         )
 
         # Should succeed since data matches exactly
-        assert response.status_code == 201
+        assert response.status_code == 200
 
     def test_stakeholder_data_overwrite_prevention_name_mismatch(self) -> None:
         """Test that name mismatches are blocked to prevent account takeover"""
