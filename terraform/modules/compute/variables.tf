@@ -170,6 +170,11 @@ variable "redis_cpu" {
     condition     = var.redis_cpu >= 64 && var.redis_cpu <= 512
     error_message = "Redis CPU must be between 64 and 512 CPU units."
   }
+
+  validation {
+    condition     = var.redis_cpu < var.task_cpu
+    error_message = "Redis CPU allocation must be less than total task CPU to ensure adequate resources for application containers."
+  }
 }
 
 variable "redis_memory" {
@@ -180,5 +185,16 @@ variable "redis_memory" {
   validation {
     condition     = var.redis_memory >= 64 && var.redis_memory <= 1024
     error_message = "Redis memory must be between 64 and 1024 MiB."
+  }
+
+  validation {
+    condition     = var.task_memory == null || var.redis_memory < var.task_memory
+    error_message = "Redis memory allocation must be less than total task memory when task_memory is explicitly set."
+  }
+
+  validation {
+    # Ensure Redis memory doesn't exceed calculated minimums for any CPU level
+    condition     = var.redis_memory < (var.enable_ssr ? 1024 : 512)
+    error_message = "Redis memory allocation is too high for the minimum calculated memory allocation. Reduce redis_memory or increase task_cpu."
   }
 }
