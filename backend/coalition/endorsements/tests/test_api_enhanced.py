@@ -163,7 +163,7 @@ class EndorsementAPIEnhancedTest(TestCase):
         for i in range(3):
             assert (
                 responses[i].status_code == 200
-            ), f"Request {i+1} should succeed but got {responses[i].status_code}"
+            ), f"Request {i + 1} should succeed but got {responses[i].status_code}"
 
         # 4th request should be rate limited
         assert (
