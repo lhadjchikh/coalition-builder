@@ -38,6 +38,34 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 if "test" in sys.argv or "testserver" not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append("testserver")
 
+# CSRF Protection Configuration
+# Define trusted origins for CSRF token validation
+# This should include all domains that will make requests to the Django API
+CSRF_TRUSTED_ORIGINS = []
+
+# Parse from environment variable (comma-separated URLs with protocols)
+csrf_origins_env = os.getenv("CSRF_TRUSTED_ORIGINS", "")
+if csrf_origins_env:
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins_env.split(",")]
+
+# Add default origins for development
+if DEBUG:
+    default_origins = [
+        "http://localhost:3000",  # Next.js frontend
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",  # Django development server
+        "http://127.0.0.1:8000",
+    ]
+    for origin in default_origins:
+        if origin not in CSRF_TRUSTED_ORIGINS:
+            CSRF_TRUSTED_ORIGINS.append(origin)
+
+# Additional CSRF security settings
+CSRF_COOKIE_SECURE = not DEBUG  # Only send CSRF cookie over HTTPS in production
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access to CSRF token
+CSRF_COOKIE_SAMESITE = "Lax"  # Reasonable default for most applications
+CSRF_USE_SESSIONS = False  # Use cookie-based CSRF tokens (more flexible)
+
 ORGANIZATION_NAME = os.getenv("ORGANIZATION_NAME", "Coalition Builder")
 TAGLINE = os.getenv("ORG_TAGLINE", "Building strong advocacy partnerships")
 CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "info@example.org")
