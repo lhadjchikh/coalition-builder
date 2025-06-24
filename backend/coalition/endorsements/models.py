@@ -93,7 +93,7 @@ class Endorsement(models.Model):
         self.verified_at = timezone.now()
 
         # Auto-approve only if configured to do so
-        auto_approve = getattr(settings, "AUTO_APPROVE_VERIFIED_ENDORSEMENTS", True)
+        auto_approve = getattr(settings, "AUTO_APPROVE_VERIFIED_ENDORSEMENTS", False)
         if auto_approve and self.status == "pending":
             self.status = "approved"
         elif self.status == "pending":
