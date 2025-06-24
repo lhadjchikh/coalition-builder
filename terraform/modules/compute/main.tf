@@ -1,5 +1,51 @@
 # Compute Module
 
+# Local values for container definitions
+locals {
+  # Redis container definition (shared between SSR and API-only configurations)
+  redis_container = {
+    name      = "redis"
+    image     = "redis:7-alpine"
+    essential = false
+    # Allocate minimal resources for Redis
+    cpu    = var.redis_cpu
+    memory = var.redis_memory
+
+    portMappings = [
+      {
+        containerPort = 6379
+        hostPort      = 6379
+        protocol      = "tcp"
+        name          = "redis"
+      }
+    ]
+    command = [
+      "redis-server",
+      "--appendonly", "yes",
+      "--maxmemory", "96mb",
+      "--maxmemory-policy", "allkeys-lru"
+    ]
+    healthCheck = {
+      command = [
+        "CMD-SHELL",
+        "redis-cli ping || exit 1"
+      ]
+      interval    = 30
+      timeout     = 5
+      retries     = 3
+      startPeriod = 10
+    }
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        "awslogs-group"         = aws_cloudwatch_log_group.ecs_logs.name
+        "awslogs-region"        = var.aws_region
+        "awslogs-stream-prefix" = "redis"
+      }
+    }
+  }
+}
+
 # API ECR Repository
 resource "aws_ecr_repository" "api" {
   name                 = "${var.prefix}-api"
@@ -179,48 +225,8 @@ resource "aws_ecs_task_definition" "app" {
   task_role_arn            = aws_iam_role.ecs_task_role.arn
 
   container_definitions = var.enable_ssr ? jsonencode([
-    # Redis Cache Container
-    {
-      name      = "redis"
-      image     = "redis:7-alpine"
-      essential = false
-      # Allocate minimal resources for Redis
-      cpu    = var.redis_cpu
-      memory = var.redis_memory
-
-      portMappings = [
-        {
-          containerPort = 6379
-          hostPort      = 6379
-          protocol      = "tcp"
-          name          = "redis"
-        }
-      ]
-      command = [
-        "redis-server",
-        "--appendonly", "yes",
-        "--maxmemory", "96mb",
-        "--maxmemory-policy", "allkeys-lru"
-      ]
-      healthCheck = {
-        command = [
-          "CMD-SHELL",
-          "redis-cli ping || exit 1"
-        ],
-        interval    = 30,
-        timeout     = 5,
-        retries     = 3,
-        startPeriod = 10
-      }
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.ecs_logs.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "redis"
-        }
-      }
-    },
+    # Redis Cache Container (shared configuration)
+    local.redis_container,
     # Django API Container
     {
       name      = "app"
@@ -348,48 +354,8 @@ resource "aws_ecs_task_definition" "app" {
       ]
     }
     ]) : jsonencode([
-    # Redis Cache Container (always included)
-    {
-      name      = "redis"
-      image     = "redis:7-alpine"
-      essential = false
-      # Allocate minimal resources for Redis
-      cpu    = var.redis_cpu
-      memory = var.redis_memory
-
-      portMappings = [
-        {
-          containerPort = 6379
-          hostPort      = 6379
-          protocol      = "tcp"
-          name          = "redis"
-        }
-      ]
-      command = [
-        "redis-server",
-        "--appendonly", "yes",
-        "--maxmemory", "96mb",
-        "--maxmemory-policy", "allkeys-lru"
-      ]
-      healthCheck = {
-        command = [
-          "CMD-SHELL",
-          "redis-cli ping || exit 1"
-        ],
-        interval    = 30,
-        timeout     = 5,
-        retries     = 3,
-        startPeriod = 10
-      }
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.ecs_logs.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "redis"
-        }
-      }
-    },
+    # Redis Cache Container (shared configuration)
+    local.redis_container,
     # Django API Container only (when enable_ssr is false)
     {
       name      = "app"
