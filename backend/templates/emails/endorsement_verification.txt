@@ -1,0 +1,20 @@
+{{ organization_name }}
+Verify Your Endorsement
+
+Hello {{ stakeholder.name }},
+
+Thank you for endorsing "{{ campaign.title }}"! To complete your endorsement, please verify your email address by visiting the link below.
+
+Campaign: {{ campaign.title }}
+Summary: {{ campaign.summary }}
+{% if endorsement.statement %}Your statement: "{{ endorsement.statement }}"{% endif %}
+
+Verification Link:
+{{ verification_url }}
+
+IMPORTANT: This verification link will expire in 24 hours. If you didn't submit this endorsement, you can safely ignore this email.
+
+If you have any questions, please contact us.
+
+---
+This email was sent by {{ organization_name }} regarding your endorsement of {{ campaign.title }}.

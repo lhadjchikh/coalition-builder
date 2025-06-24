@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-from .models import ContentBlock, HomePage
+from coalition.core.models import ContentBlock, HomePage
 
 
 class HomePageModelTest(TestCase):

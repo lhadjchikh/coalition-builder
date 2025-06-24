@@ -55,9 +55,25 @@ export interface Endorsement {
 }
 
 // For creating new endorsements
+// Spam prevention form metadata interface
+export interface SpamPreventionMetadata {
+  // Timing validation
+  form_start_time?: string; // ISO timestamp when form was loaded
+
+  // Honeypot fields (should remain empty for legitimate users)
+  website?: string;
+  url?: string;
+  homepage?: string;
+  confirm_email?: string;
+
+  // Additional metadata for spam detection
+  referrer?: string; // Page referrer for analytics
+}
+
 export interface EndorsementCreate {
   campaign_id: number;
   stakeholder: Omit<Stakeholder, 'id' | 'created_at' | 'updated_at'>;
   statement?: string;
   public_display: boolean;
+  form_metadata?: SpamPreventionMetadata; // For spam prevention
 }

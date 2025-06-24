@@ -40,15 +40,25 @@ docker-compose exec backend python scripts/create_test_data.py
 
 ## 🌟 Features
 
+### Core Functionality
+
 - **Dynamic Homepage Management** - Database-driven content with flexible blocks
 - **Campaign Management** - Create and track policy advocacy campaigns
-- **Stakeholder Endorsements** - Collect and display public endorsements from stakeholders
 - **Stakeholder Management** - Organize supporters and endorsers with detailed profiles
 - **Legislator Tracking** - Monitor representatives and their positions
 - **Content Management** - Easy-to-use Django admin interface
 - **API Integration** - RESTful API for custom integrations
 - **SEO Optimized** - Server-side rendering with Next.js
 - **Production Ready** - Secure AWS deployment with Terraform
+
+### Endorsement System
+
+- **🔐 Email Verification** - Secure token-based email verification for all endorsements
+- **👨‍💼 Admin Review** - Comprehensive moderation workflow with bulk actions
+- **🛡️ Spam Prevention** - Multi-layer protection including rate limiting and content analysis
+- **📊 Data Export** - CSV/JSON export capabilities with filtering options
+- **📧 Automated Notifications** - Email workflows for verification, approval, and admin alerts
+- **🧪 Quality Assurance** - 71 comprehensive tests covering all functionality
 
 ## 🏗️ Architecture
 

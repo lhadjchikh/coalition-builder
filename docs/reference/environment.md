@@ -61,15 +61,26 @@ CONTACT_EMAIL="info@environmentalcoalition.org"
 
 ### Email Configuration
 
-| Variable              | Description          | Default   | Required |
-| --------------------- | -------------------- | --------- | -------- |
-| `EMAIL_BACKEND`       | Django email backend | `console` | No       |
-| `EMAIL_HOST`          | SMTP host            | -         | No       |
-| `EMAIL_PORT`          | SMTP port            | `587`     | No       |
-| `EMAIL_USE_TLS`       | Use TLS encryption   | `True`    | No       |
-| `EMAIL_HOST_USER`     | SMTP username        | -         | No       |
-| `EMAIL_HOST_PASSWORD` | SMTP password        | -         | No       |
-| `DEFAULT_FROM_EMAIL`  | Default sender email | -         | No       |
+| Variable                             | Description                           | Default                 | Required |
+| ------------------------------------ | ------------------------------------- | ----------------------- | -------- |
+| `EMAIL_BACKEND`                      | Django email backend                  | `console`               | No       |
+| `EMAIL_HOST`                         | SMTP host                             | -                       | No       |
+| `EMAIL_PORT`                         | SMTP port                             | `587`                   | No       |
+| `EMAIL_USE_TLS`                      | Use TLS encryption                    | `True`                  | No       |
+| `EMAIL_HOST_USER`                    | SMTP username                         | -                       | No       |
+| `EMAIL_HOST_PASSWORD`                | SMTP password                         | -                       | No       |
+| `DEFAULT_FROM_EMAIL`                 | Default sender email                  | -                       | No       |
+| `ADMIN_NOTIFICATION_EMAILS`          | Comma-separated admin emails          | -                       | No       |
+| `AUTO_APPROVE_VERIFIED_ENDORSEMENTS` | Auto-approve after email verification | `true`                  | No       |
+| `AKISMET_SECRET_API_KEY`             | Akismet API key for spam detection    | -                       | No       |
+| `SITE_URL`                           | Base URL for email links              | -                       | Yes      |
+| `API_URL`                            | Backend API URL (for admin links)     | `http://localhost:8000` | No       |
+
+**Email Template Configuration:**
+
+| Variable            | Description                  | Default             | Required |
+| ------------------- | ---------------------------- | ------------------- | -------- |
+| `ORGANIZATION_NAME` | Name used in email templates | `Coalition Builder` | No       |
 
 **Example:**
 
@@ -81,6 +92,9 @@ EMAIL_USE_TLS=True
 EMAIL_HOST_USER=your-email@gmail.com
 EMAIL_HOST_PASSWORD=your-app-password
 DEFAULT_FROM_EMAIL="Coalition Builder <noreply@yourdomain.com>"
+ADMIN_NOTIFICATION_EMAILS="admin1@yourdomain.com,admin2@yourdomain.com"
+SITE_URL="https://yourdomain.com"
+API_URL="https://api.yourdomain.com"
 ```
 
 ### Storage Configuration
@@ -103,6 +117,34 @@ AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 AWS_STORAGE_BUCKET_NAME=coalition-builder-static
 AWS_S3_REGION_NAME=us-east-1
 ```
+
+### Endorsement System Configuration
+
+| Variable                              | Description                      | Default | Required |
+| ------------------------------------- | -------------------------------- | ------- | -------- |
+| `ENDORSEMENT_RATE_LIMIT_WINDOW`       | Rate limit time window (seconds) | `300`   | No       |
+| `ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS` | Max attempts per time window     | `3`     | No       |
+
+**Spam Prevention Configuration:**
+
+These settings can be customized to adjust spam detection sensitivity:
+
+```bash
+# Rate limiting (5 minutes = 300 seconds)
+ENDORSEMENT_RATE_LIMIT_WINDOW=300
+ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS=3
+
+# Cache backend (required for rate limiting)
+# Redis recommended for production and development
+CACHE_URL=redis://localhost:6379/1
+```
+
+**Note:** The spam prevention system includes built-in configurations for:
+
+- Suspicious email domain detection
+- Content quality analysis
+- Honeypot field validation
+- Form timing analysis
 
 ### Logging Configuration
 
@@ -274,6 +316,19 @@ ORGANIZATION_NAME="Coalition Builder Development"
 ORG_TAGLINE="Building advocacy partnerships"
 CONTACT_EMAIL="dev@coalitionbuilder.org"
 
+# Email (development - uses console backend)
+EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+DEFAULT_FROM_EMAIL="Coalition Builder Dev <noreply@localhost>"
+ADMIN_NOTIFICATION_EMAILS="admin@localhost"
+SITE_URL="http://localhost:3000"
+
+# Endorsement System
+ENDORSEMENT_RATE_LIMIT_WINDOW=300
+ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS=3
+
+# Cache (for rate limiting) - Redis container in docker-compose
+CACHE_URL=redis://redis:6379/1
+
 # Frontend
 REACT_APP_API_URL=http://localhost:8000/api
 REACT_APP_DEBUG=true
@@ -309,6 +364,16 @@ EMAIL_PORT=587
 EMAIL_USE_TLS=True
 EMAIL_HOST_USER=${EMAIL_USER}
 EMAIL_HOST_PASSWORD=${EMAIL_PASSWORD}
+DEFAULT_FROM_EMAIL="Your Organization <noreply@yourdomain.com>"
+ADMIN_NOTIFICATION_EMAILS="admin@yourdomain.com,moderator@yourdomain.com"
+SITE_URL="https://yourdomain.com"
+
+# Endorsement System
+ENDORSEMENT_RATE_LIMIT_WINDOW=300
+ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS=3
+
+# Cache (Redis recommended for production)
+CACHE_URL=redis://redis:6379/1
 
 # Storage
 USE_S3=True
@@ -343,6 +408,19 @@ ALLOWED_HOSTS=localhost,testserver
 # Disable external services in tests
 EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
 USE_S3=False
+
+# Email settings for testing
+DEFAULT_FROM_EMAIL="Test Coalition <test@example.com>"
+ADMIN_NOTIFICATION_EMAILS="admin@example.com"
+AUTO_APPROVE_VERIFIED_ENDORSEMENTS="false"  # Require manual admin review
+SITE_URL="http://testserver"
+
+# Endorsement system testing
+ENDORSEMENT_RATE_LIMIT_WINDOW=60
+ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS=10
+
+# Cache for testing (in-memory)
+CACHE_URL=locmem://
 
 # Test Organization Settings
 ORGANIZATION_NAME="Test Coalition"

@@ -1,0 +1,25 @@
+{{ organization_name }}
+New Endorsement Requires Review
+
+A new endorsement has been submitted and requires admin review.
+
+Campaign: {{ campaign.title }}
+Status: {{ endorsement.get_status_display }}
+Email Verified: {% if endorsement.email_verified %}Yes{% else %}No{% endif %}
+Public Display: {% if endorsement.public_display %}Yes{% else %}No{% endif %}
+Submitted: {{ endorsement.created_at|date:"F j, Y g:i A" }}
+
+Stakeholder Information:
+Name: {{ stakeholder.name }}
+Organization: {{ stakeholder.organization }}
+{% if stakeholder.role %}Role: {{ stakeholder.role }}{% endif %}
+Email: {{ stakeholder.email }}
+Location: {% if stakeholder.county %}{{ stakeholder.county }}, {% endif %}{{ stakeholder.state }}
+Type: {{ stakeholder.get_type_display }}
+
+{% if endorsement.statement %}Endorsement Statement:
+"{{ endorsement.statement }}"{% endif %}
+
+Review URL: {{ admin_url }}
+
+Please review this endorsement and approve or reject it as appropriate.

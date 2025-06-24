@@ -21,6 +21,21 @@ services:
     networks:
       - app-network
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - app-network
+
   api:
     build:
       context: .
@@ -28,10 +43,13 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       - DEBUG=True
       - SECRET_KEY=dev_secret_key_replace_in_production
       - DATABASE_URL=postgis://${APP_DB_USERNAME:-coalition_app}:${APP_DB_PASSWORD:-app_password}@db:5432/${DB_NAME:-coalition}
+      - CACHE_URL=redis://redis:6379/1
       - ALLOWED_HOSTS=localhost,127.0.0.1,api,ssr,nginx
       - PYTHONPATH=/app/backend
     ports:
@@ -85,6 +103,7 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
 
 networks:
   app-network:

@@ -12,7 +12,9 @@ from . import (
     stakeholders,
 )
 
-api = NinjaAPI(version="1.0")
+# Enable CSRF protection for all endpoints by default
+# This protects admin endpoints from CSRF attacks
+api = NinjaAPI(version="1.0", csrf=True)
 
 api.add_router("/campaigns/", campaigns.router)
 api.add_router("/stakeholders/", stakeholders.router)
