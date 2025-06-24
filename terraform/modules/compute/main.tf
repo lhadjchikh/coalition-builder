@@ -87,34 +87,12 @@ resource "null_resource" "push_redis_to_ecr" {
   triggers = {
     ecr_repository_url = aws_ecr_repository.redis.repository_url
     redis_version      = "8-alpine"
-    # Trigger re-run if this resource changes
-    script_hash = filemd5("${path.module}/main.tf")
+    # Trigger re-run only when the push script changes
+    script_hash = filemd5("${path.module}/scripts/push-redis-to-ecr.sh")
   }
 
   provisioner "local-exec" {
-    command = <<-EOF
-      # Check if image already exists to avoid unnecessary pushes
-      if aws ecr describe-images --repository-name ${aws_ecr_repository.redis.name} --image-ids imageTag=8-alpine --region ${var.aws_region} >/dev/null 2>&1; then
-        echo "Redis image 8-alpine already exists in ECR, skipping push"
-        exit 0
-      fi
-
-      echo "Pushing Redis image to ECR..."
-      
-      # Login to ECR
-      aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${aws_ecr_repository.redis.repository_url}
-      
-      # Pull Redis image from Docker Hub
-      docker pull redis:8-alpine
-      
-      # Tag for ECR
-      docker tag redis:8-alpine ${aws_ecr_repository.redis.repository_url}:8-alpine
-      
-      # Push to ECR
-      docker push ${aws_ecr_repository.redis.repository_url}:8-alpine
-      
-      echo "Successfully pushed Redis image to ECR"
-    EOF
+    command = "${path.module}/scripts/push-redis-to-ecr.sh ${aws_ecr_repository.redis.name} ${aws_ecr_repository.redis.repository_url} ${var.aws_region} 8-alpine"
   }
 
   depends_on = [aws_ecr_repository.redis]
