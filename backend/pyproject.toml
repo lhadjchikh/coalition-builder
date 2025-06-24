@@ -27,6 +27,7 @@ akismet = "^24.11.0"
 email-validator = "^2.1.1"
 django-ratelimit = "^4.1.0"
 redis = "^5.2.0"
+bleach = "^6.2.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"

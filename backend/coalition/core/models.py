@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from coalition.core.html_sanitizer import HTMLSanitizer
+
 if TYPE_CHECKING:
     from typing import Any
 
@@ -125,6 +127,25 @@ class HomePage(models.Model):
                 )
 
     def save(self, *args: "Any", **kwargs: "Any") -> None:
+        """Sanitize HTML fields before saving."""
+        # Sanitize HTML content fields
+        if self.about_section_content:
+            self.about_section_content = HTMLSanitizer.sanitize(
+                self.about_section_content,
+            )
+
+        if self.cta_content:
+            self.cta_content = HTMLSanitizer.sanitize(self.cta_content)
+
+        # Sanitize plain text fields (these shouldn't have HTML)
+        if self.hero_subtitle:
+            self.hero_subtitle = HTMLSanitizer.sanitize_plain_text(self.hero_subtitle)
+
+        if self.campaigns_section_subtitle:
+            self.campaigns_section_subtitle = HTMLSanitizer.sanitize_plain_text(
+                self.campaigns_section_subtitle,
+            )
+
         self.full_clean()
         super().save(*args, **kwargs)
 
@@ -223,3 +244,19 @@ class ContentBlock(models.Model):
 
     def __str__(self) -> str:
         return f"Block: {self.title or self.block_type} (Order: {self.order})"
+
+    def save(self, *args: "Any", **kwargs: "Any") -> None:
+        """Sanitize content based on block type before saving."""
+        if self.content:
+            if self.block_type == "quote":
+                # Quotes should be plain text only
+                self.content = HTMLSanitizer.sanitize_plain_text(self.content)
+            else:
+                # All other block types get HTML sanitization
+                self.content = HTMLSanitizer.sanitize(self.content)
+
+        # Sanitize title (should be plain text)
+        if self.title:
+            self.title = HTMLSanitizer.sanitize_plain_text(self.title)
+
+        super().save(*args, **kwargs)

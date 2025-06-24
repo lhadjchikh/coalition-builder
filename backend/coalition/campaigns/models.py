@@ -1,5 +1,12 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
 from django.utils import timezone
+
+from coalition.core.html_sanitizer import HTMLSanitizer
+
+if TYPE_CHECKING:
+    from typing import Any
 
 
 class PolicyCampaign(models.Model):
@@ -34,6 +41,29 @@ class PolicyCampaign(models.Model):
     def current_bills(self) -> "models.QuerySet[Bill]":
         session = f"{((timezone.now().date().year - 1789) // 2) + 1}th"
         return self.bills.filter(congress_session=session)
+
+    def save(self, *args: "Any", **kwargs: "Any") -> None:
+        """Sanitize HTML fields before saving to prevent XSS attacks."""
+        # Sanitize description field if it contains HTML
+        if self.description:
+            self.description = HTMLSanitizer.sanitize(self.description)
+
+        # Sanitize other HTML fields
+        if self.endorsement_form_instructions:
+            self.endorsement_form_instructions = HTMLSanitizer.sanitize(
+                self.endorsement_form_instructions,
+            )
+
+        # Note: summary and endorsement_statement are plain text, but sanitize anyway
+        if self.summary:
+            self.summary = HTMLSanitizer.sanitize_plain_text(self.summary)
+
+        if self.endorsement_statement:
+            self.endorsement_statement = HTMLSanitizer.sanitize_plain_text(
+                self.endorsement_statement,
+            )
+
+        super().save(*args, **kwargs)
 
 
 class Bill(models.Model):
