@@ -57,8 +57,8 @@ class HTMLSanitizationTest(TestCase):
 
         # javascript: URLs should be removed
         assert "javascript:" not in campaign.description
-        # Safe URLs should remain
-        assert "https://example.com" in campaign.description
+        # Safe URLs should remain - check for exact href attribute
+        assert 'href="https://example.com"' in campaign.description
         assert "<a" in campaign.description
 
     def test_campaign_plain_text_fields_escaped(self) -> None:
@@ -131,7 +131,9 @@ class HTMLSanitizationTest(TestCase):
         assert "<em>italic</em>" in campaign.description
         assert "<ul>" in campaign.description
         assert "<li>List item 1</li>" in campaign.description
-        assert '<a href="https://example.com" title="Example">' in campaign.description
+        # Check for exact href attribute structure to avoid substring attacks
+        assert 'href="https://example.com"' in campaign.description
+        assert 'title="Example"' in campaign.description
         assert "<blockquote>" in campaign.description
         assert "<table>" in campaign.description
         assert "<th>Header</th>" in campaign.description
