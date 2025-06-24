@@ -1926,14 +1926,14 @@ class RateLimitingIntegrationTests(TestCase):
                 requests.append(request)
 
             # Record attempts using the spam prevention service directly
-            # This simulates what happens in the actual endpoint (record-then-check pattern)
+            # This simulates the actual endpoint (record-then-check pattern)
             for i, request in enumerate(requests):
                 # Record the attempt first (like the API does)
                 SpamPreventionService.record_submission_attempt(request)
-                
+
                 # Then check the rate limit
                 result = SpamPreventionService.check_rate_limit(request)
-                
+
                 if i < 3:
                     # First 3 should be allowed
                     assert result["allowed"] is True

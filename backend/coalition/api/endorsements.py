@@ -67,7 +67,7 @@ def _validate_stakeholder_data_match(
         == (submitted_data.get("county") or "").lower()
         and existing_stakeholder.type == submitted_data["type"]
     )
-
+    
     if not data_matches:
         # Log the potential takeover attempt
         logger.warning(
@@ -148,6 +148,129 @@ def _handle_endorsement_update(
     endorsement.save()
 
 
+def _validate_and_prepare_endorsement_data(
+    request: HttpRequest,
+    data: EndorsementCreateSchema,
+) -> tuple[PolicyCampaign, str, dict, dict]:
+    """
+    Validate campaign and prepare endorsement data for spam checks.
+
+    Returns: (campaign, ip_address, stakeholder_data, form_data)
+    """
+    # Get client IP address with validation and spoofing protection
+    ip_address = get_client_ip(request)
+
+    # Verify campaign exists and allows endorsements
+    campaign = get_object_or_404(PolicyCampaign, id=data.campaign_id)
+    if not campaign.allow_endorsements:
+        raise HttpError(400, "This campaign is not accepting endorsements")
+
+    # Prepare stakeholder data for spam checks
+    stakeholder_data = {
+        "name": data.stakeholder.name,
+        "organization": data.stakeholder.organization,
+        "role": data.stakeholder.role,
+        "email": data.stakeholder.email,
+        "state": data.stakeholder.state,
+        "county": data.stakeholder.county,
+        "type": data.stakeholder.type,
+    }
+
+    # Get form metadata (honeypot fields, timing, etc.) - required field
+    form_data = data.form_metadata
+
+    return campaign, ip_address, stakeholder_data, form_data
+
+
+def _perform_spam_checks(
+    request: HttpRequest,
+    stakeholder_data: dict,
+    statement: str,
+    form_data: dict,
+    ip_address: str,
+) -> None:
+    """
+    Perform comprehensive spam checks and raise HttpError if spam detected.
+    """
+    # Record the submission attempt for rate limiting before spam checks
+    SpamPreventionService.record_submission_attempt(request)
+
+    # Check rate limiting after recording
+    rate_limit_result = SpamPreventionService.check_rate_limit(request)
+    if not rate_limit_result["allowed"]:
+        raise HttpError(429, "Too many requests. Please try again later.")
+
+    # Run spam prevention checks (without rate limiting since we handle it above)
+    spam_check = SpamPreventionService.comprehensive_spam_check(
+        request=request,
+        stakeholder_data=stakeholder_data,
+        statement=statement,
+        form_data=form_data,
+        user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        skip_rate_limiting=True,  # Handle rate limiting separately
+    )
+
+    # Handle spam detection
+    if spam_check["is_spam"]:
+        logger.warning(f"Spam detected from IP {ip_address}: {spam_check['reasons']}")
+        raise HttpError(400, "Submission rejected due to spam detection")
+
+    # Log suspicious activity for review
+    if spam_check["confidence_score"] > 0.2:
+        logger.info(
+            f"Suspicious endorsement from IP {ip_address}: {spam_check['reasons']}",
+        )
+
+
+def _create_endorsement_with_emails(
+    campaign: PolicyCampaign,
+    stakeholder_data: dict,
+    statement: str,
+    public_display: bool,
+    ip_address: str,
+) -> Endorsement:
+    """
+    Create endorsement and handle email notifications.
+    """
+    # Get or create stakeholder with security validation
+    stakeholder = _get_or_create_stakeholder(stakeholder_data, ip_address)
+
+    # Create endorsement (unique constraint prevents duplicates)
+    endorsement, created = Endorsement.objects.get_or_create(
+        stakeholder=stakeholder,
+        campaign=campaign,
+        defaults={
+            "statement": statement,
+            "public_display": public_display,
+            "status": "pending",  # Start as pending verification
+        },
+    )
+
+    # Handle existing endorsement updates with security validation
+    if not created:
+        _handle_endorsement_update(
+            endorsement,
+            statement,
+            public_display,
+            ip_address,
+        )
+
+    # Send verification email
+    email_sent = EndorsementEmailService.send_verification_email(endorsement)
+    if not email_sent:
+        # Log error with additional context for debugging
+        logger.error(
+            f"Failed to send verification email for endorsement "
+            f"{endorsement.id} to {stakeholder.email}. Email delivery failed.",
+        )
+
+    # Send admin notification for new endorsements
+    if created:
+        EndorsementEmailService.send_admin_notification(endorsement)
+
+    return endorsement
+
+
 @router.get("/", response=list[EndorsementOut])
 def list_endorsements(
     request: HttpRequest,
@@ -173,95 +296,29 @@ def create_endorsement(
     data: EndorsementCreateSchema,
 ) -> Endorsement:
     """Create a new endorsement with stakeholder deduplication and spam prevention"""
-    # Get client IP address with validation and spoofing protection
-    ip_address = get_client_ip(request)
-
-    # Verify campaign exists and allows endorsements
-    campaign = get_object_or_404(PolicyCampaign, id=data.campaign_id)
-    if not campaign.allow_endorsements:
-        raise HttpError(400, "This campaign is not accepting endorsements")
-
-    # Record the submission attempt for rate limiting before spam checks
-    SpamPreventionService.record_submission_attempt(request)
-
-    # Check rate limiting after recording
-    rate_limit_result = SpamPreventionService.check_rate_limit(request)
-    if not rate_limit_result["allowed"]:
-        raise HttpError(429, "Too many requests. Please try again later.")
-
-    # Run spam prevention checks (without rate limiting since we handle it above)
-    stakeholder_data = {
-        "name": data.stakeholder.name,
-        "organization": data.stakeholder.organization,
-        "role": data.stakeholder.role,
-        "email": data.stakeholder.email,
-        "state": data.stakeholder.state,
-        "county": data.stakeholder.county,
-        "type": data.stakeholder.type,
-    }
-
-    # Get form metadata (honeypot fields, timing, etc.) - required field
-    form_data = data.form_metadata
-
-    spam_check = SpamPreventionService.comprehensive_spam_check(
-        request=request,
-        stakeholder_data=stakeholder_data,
-        statement=data.statement,
-        form_data=form_data,
-        user_agent=request.META.get("HTTP_USER_AGENT", ""),
-        skip_rate_limiting=True,  # Handle rate limiting separately
+    # Validate campaign and prepare data for spam checks
+    campaign, ip_address, stakeholder_data, form_data = (
+        _validate_and_prepare_endorsement_data(request, data)
     )
 
-    # Handle spam detection
-    if spam_check["is_spam"]:
-        logger.warning(f"Spam detected from IP {ip_address}: {spam_check['reasons']}")
-        raise HttpError(400, "Submission rejected due to spam detection")
-
-    # Log suspicious activity for review
-    if spam_check["confidence_score"] > 0.2:
-        logger.info(
-            f"Suspicious endorsement from IP {ip_address}: {spam_check['reasons']}",
-        )
+    # Perform comprehensive spam checks
+    _perform_spam_checks(
+        request,
+        stakeholder_data,
+        data.statement,
+        form_data,
+        ip_address,
+    )
 
     try:
         with transaction.atomic():
-            # Get or create stakeholder with security validation
-            stakeholder = _get_or_create_stakeholder(stakeholder_data, ip_address)
-
-            # Create endorsement (unique constraint prevents duplicates)
-            endorsement, created = Endorsement.objects.get_or_create(
-                stakeholder=stakeholder,
-                campaign=campaign,
-                defaults={
-                    "statement": data.statement,
-                    "public_display": data.public_display,
-                    "status": "pending",  # Start as pending verification
-                },
+            return _create_endorsement_with_emails(
+                campaign,
+                stakeholder_data,
+                data.statement,
+                data.public_display,
+                ip_address,
             )
-
-            # Handle existing endorsement updates with security validation
-            if not created:
-                _handle_endorsement_update(
-                    endorsement,
-                    data.statement,
-                    data.public_display,
-                    ip_address,
-                )
-
-            # Send verification email
-            email_sent = EndorsementEmailService.send_verification_email(endorsement)
-            if not email_sent:
-                # Log error with additional context for debugging
-                logger.error(
-                    f"Failed to send verification email for endorsement "
-                    f"{endorsement.id} to {stakeholder.email}. Email delivery failed.",
-                )
-
-            # Send admin notification for new endorsements
-            if created:
-                EndorsementEmailService.send_admin_notification(endorsement)
-
-            return endorsement
 
     except IntegrityError as e:
         raise HttpError(400, f"Error creating endorsement: {str(e)}") from e

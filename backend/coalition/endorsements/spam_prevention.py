@@ -220,6 +220,87 @@ class SpamPreventionService:
             return True  # Allow if timing data is invalid
 
     @classmethod
+    def _validate_with_email_validator(cls, email: str) -> list[str]:
+        """
+        Validate email using email-validator library.
+        Returns list of validation failure reasons.
+        """
+        reasons = []
+        try:
+            # Validate email with deliverability and domain checks
+            validated_email = validate_email(
+                email,
+                check_deliverability=True,  # Check if domain has MX record
+            )
+
+            # Additional checks on the validated email
+            normalized_email = validated_email.email.lower()
+
+            # Check for test patterns in validated email
+            if "test" in normalized_email and "+" in normalized_email:
+                reasons.append("Test email pattern detected")
+
+            # Check for sequential numbers (common in spam)
+            if any(str(i) * 3 in normalized_email for i in range(10)):
+                reasons.append("Sequential number pattern in email")
+
+        except EmailNotValidError as e:
+            # Email is invalid according to email-validator
+            reasons.append(f"Invalid email address: {str(e)}")
+            logger.info(f"Email validation failed for {email}: {e}")
+        except Exception as e:
+            # Network or other errors - log but don't block
+            logger.warning(f"Email validation service error for {email}: {e}")
+            # Fall through to basic checks
+
+        return reasons
+
+    @classmethod
+    def _validate_with_basic_checks(cls, email: str) -> list[str]:
+        """
+        Perform basic email validation when email-validator is unavailable.
+        Returns list of validation failure reasons.
+        """
+        reasons = []
+
+        # Basic email format validation - must contain @ and have parts before/after
+        if "@" not in email:
+            reasons.append("Invalid email format: missing @ symbol")
+        elif email.count("@") != 1:
+            reasons.append("Invalid email format: multiple @ symbols")
+        else:
+            parts = email.split("@")
+            if not parts[0] or not parts[1]:
+                reasons.append("Invalid email format: missing local or domain part")
+            else:
+                domain = parts[1].lower()
+
+                # Check domain against known disposable email providers
+                if domain in cls.SUSPICIOUS_DOMAINS:
+                    reasons.append(f"Disposable email domain: {domain}")
+
+        return reasons
+
+    @classmethod
+    def _check_email_patterns(cls, email: str) -> list[str]:
+        """
+        Check email for suspicious patterns.
+        Returns list of pattern detection reasons.
+        """
+        reasons = []
+        email_lower = email.lower()
+
+        # Basic pattern checks
+        if "+" in email_lower and "test" in email_lower:
+            reasons.append("Test email pattern detected")
+
+        # Check for sequential numbers
+        if any(str(i) * 3 in email_lower for i in range(10)):
+            reasons.append("Sequential number pattern in email")
+
+        return reasons
+
+    @classmethod
     def check_email_reputation(cls, email: str) -> dict[str, Any]:
         """
         Check email address reputation using email-validator
@@ -228,62 +309,16 @@ class SpamPreventionService:
         """
         reasons = []
 
-        # Use email-validator for comprehensive validation
+        # Use email-validator for comprehensive validation if available
         if validate_email:
-            try:
-                # Validate email with deliverability and domain checks
-                validated_email = validate_email(
-                    email,
-                    check_deliverability=True,  # Check if domain has MX record
-                )
-
-                # Additional checks on the validated email
-                normalized_email = validated_email.email.lower()
-                domain = validated_email.domain.lower()
-
-                # Check for test patterns in validated email
-                if "test" in normalized_email and "+" in normalized_email:
-                    reasons.append("Test email pattern detected")
-
-                # Check for sequential numbers (common in spam)
-                if any(str(i) * 3 in normalized_email for i in range(10)):
-                    reasons.append("Sequential number pattern in email")
-
-            except EmailNotValidError as e:
-                # Email is invalid according to email-validator
-                reasons.append(f"Invalid email address: {str(e)}")
-                logger.info(f"Email validation failed for {email}: {e}")
-            except Exception as e:
-                # Network or other errors - log but don't block
-                logger.warning(f"Email validation service error for {email}: {e}")
-                # Fall through to basic checks below
+            reasons.extend(cls._validate_with_email_validator(email))
 
         # Fallback to basic domain checks if email-validator unavailable or failed
         if not validate_email or not reasons:
-            # Basic email format validation - must contain @ and have parts before/after
-            if "@" not in email:
-                reasons.append("Invalid email format: missing @ symbol")
-            elif email.count("@") != 1:
-                reasons.append("Invalid email format: multiple @ symbols")
-            else:
-                parts = email.split("@")
-                if not parts[0] or not parts[1]:
-                    reasons.append("Invalid email format: missing local or domain part")
-                else:
-                    domain = parts[1].lower()
-                    
-                    # Check domain against known disposable email providers
-                    if domain in cls.SUSPICIOUS_DOMAINS:
-                        reasons.append(f"Disposable email domain: {domain}")
+            reasons.extend(cls._validate_with_basic_checks(email))
 
-            # Basic pattern checks
-            email_lower = email.lower()
-            if "+" in email_lower and "test" in email_lower:
-                reasons.append("Test email pattern detected")
-
-            # Check for sequential numbers
-            if any(str(i) * 3 in email_lower for i in range(10)):
-                reasons.append("Sequential number pattern in email")
+        # Always check for suspicious patterns
+        reasons.extend(cls._check_email_patterns(email))
 
         return {
             "suspicious": len(reasons) > 0,
