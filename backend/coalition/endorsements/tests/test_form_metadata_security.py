@@ -13,7 +13,7 @@ from coalition.campaigns.models import PolicyCampaign
 
 class FormMetadataSecurityTests(TestCase):
     """Test security validations for form_metadata field."""
-    
+
     def setUp(self) -> None:
         self.client = Client()
         self.campaign = PolicyCampaign.objects.create(
@@ -22,7 +22,7 @@ class FormMetadataSecurityTests(TestCase):
             summary="Testing form metadata security",
             allow_endorsements=True,
         )
-    
+
     def test_honeypot_field_validation(self) -> None:
         """Test that honeypot fields must be empty."""
         base_data = {
@@ -43,16 +43,16 @@ class FormMetadataSecurityTests(TestCase):
                 "confirm_email": "",
             },
         }
-        
+
         response = self.client.post(
             "/api/endorsements/",
             data=json.dumps(base_data),
             content_type="application/json",
         )
-        
+
         # Should be rejected due to honeypot validation
         assert response.status_code == 422  # ValidationError
-    
+
     def test_form_timing_validation(self) -> None:
         """Test form timing field validation."""
         # Test with oversized timing data
@@ -60,7 +60,7 @@ class FormMetadataSecurityTests(TestCase):
             "campaign_id": self.campaign.id,
             "stakeholder": {
                 "name": "Test User",
-                "organization": "Test Org", 
+                "organization": "Test Org",
                 "email": "test@example.com",
                 "state": "MD",
                 "type": "individual",
@@ -73,16 +73,16 @@ class FormMetadataSecurityTests(TestCase):
                 "confirm_email": "",
             },
         }
-        
+
         response = self.client.post(
             "/api/endorsements/",
             data=json.dumps(base_data),
             content_type="application/json",
         )
-        
+
         # Should be rejected due to size validation
         assert response.status_code == 422  # ValidationError
-    
+
     def test_invalid_datetime_format(self) -> None:
         """Test invalid datetime format rejection."""
         base_data = {
@@ -90,7 +90,7 @@ class FormMetadataSecurityTests(TestCase):
             "stakeholder": {
                 "name": "Test User",
                 "organization": "Test Org",
-                "email": "test@example.com", 
+                "email": "test@example.com",
                 "state": "MD",
                 "type": "individual",
             },
@@ -102,16 +102,16 @@ class FormMetadataSecurityTests(TestCase):
                 "confirm_email": "",
             },
         }
-        
+
         response = self.client.post(
             "/api/endorsements/",
             data=json.dumps(base_data),
             content_type="application/json",
         )
-        
+
         # Should be rejected due to datetime validation
         assert response.status_code == 422  # ValidationError
-    
+
     def test_referrer_sanitization(self) -> None:
         """Test referrer field sanitization."""
         base_data = {
@@ -132,28 +132,28 @@ class FormMetadataSecurityTests(TestCase):
                 "referrer": "https://example.com<script>alert('xss')</script>",
             },
         }
-        
+
         response = self.client.post(
             "/api/endorsements/",
             data=json.dumps(base_data),
             content_type="application/json",
         )
-        
+
         # Should process successfully but sanitize dangerous content
         # The referrer field should have dangerous characters removed
         assert response.status_code == 200
-    
+
     def test_oversized_referrer_truncation(self) -> None:
         """Test that oversized referrer fields are truncated."""
         long_referrer = "https://example.com/" + "x" * 600  # Over 500 char limit
-        
+
         base_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
                 "name": "Test User",
                 "organization": "Test Org",
                 "email": "test@example.com",
-                "state": "MD", 
+                "state": "MD",
                 "type": "individual",
             },
             "form_metadata": {
@@ -165,16 +165,16 @@ class FormMetadataSecurityTests(TestCase):
                 "referrer": long_referrer,
             },
         }
-        
+
         response = self.client.post(
             "/api/endorsements/",
             data=json.dumps(base_data),
             content_type="application/json",
         )
-        
+
         # Should process successfully but truncate the referrer
         assert response.status_code == 200
-    
+
     def test_valid_form_metadata_acceptance(self) -> None:
         """Test that valid form metadata is accepted."""
         base_data = {
@@ -195,12 +195,12 @@ class FormMetadataSecurityTests(TestCase):
                 "referrer": "https://example.com",
             },
         }
-        
+
         response = self.client.post(
             "/api/endorsements/",
             data=json.dumps(base_data),
             content_type="application/json",
         )
-        
+
         # Should process successfully
         assert response.status_code == 200

@@ -14,7 +14,7 @@ TEST_PRIVATE_IP = "10.0.0.5"  # Private IP for simulating load balancers/proxies
 def get_valid_form_metadata() -> dict:
     """
     Helper function to generate valid form metadata for tests.
-    
+
     Returns structured metadata that passes SpamPreventionMetadata validation.
     """
     return {
