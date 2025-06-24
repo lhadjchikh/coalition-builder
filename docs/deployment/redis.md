@@ -11,6 +11,12 @@ Redis provides:
 - **General Caching**: Improved application performance
 - **Data Persistence**: Optional data durability across restarts
 
+## Version Information
+
+**Current Version**: Redis 8.x-alpine
+
+Redis 8.0 is the latest major release that unifies Redis Open Source with Redis Stack functionality, providing built-in vector search capabilities and enhanced performance improvements.
+
 ## Development Setup
 
 ### Docker Compose (Recommended)
@@ -19,7 +25,7 @@ Redis is automatically configured in the provided docker-compose.yml:
 
 ```yaml
 redis:
-  image: redis:7-alpine
+  image: redis:8-alpine
   ports:
     - "6379:6379"
   volumes:
@@ -70,12 +76,12 @@ sudo systemctl enable redis
 
 ### ECS Container Configuration
 
-Redis runs as a sidecar container in the ECS task definition:
+Redis runs as a sidecar container in the ECS task definition using a private ECR repository:
 
 ```json
 {
   "name": "redis",
-  "image": "redis:7-alpine",
+  "image": "{account-id}.dkr.ecr.{region}.amazonaws.com/{prefix}-redis:8-alpine",
   "essential": false,
   "cpu": 128,
   "memory": 128,
@@ -97,6 +103,48 @@ Redis runs as a sidecar container in the ECS task definition:
   ]
 }
 ```
+
+### Automated Image Management
+
+**ECR Repository Creation**: Terraform automatically creates a private ECR repository for Redis with:
+
+- Image scanning enabled for security
+- KMS encryption for data at rest
+- Immutable image tags for consistency
+
+**Automated Image Push**: A Terraform `null_resource` handles the Redis image deployment:
+
+```hcl
+resource "null_resource" "push_redis_to_ecr" {
+  triggers = {
+    ecr_repository_url = aws_ecr_repository.redis.repository_url
+    redis_version      = "8-alpine"
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOF
+      # Check if image exists to avoid unnecessary pushes
+      if aws ecr describe-images --repository-name ${aws_ecr_repository.redis.name} --image-ids imageTag=8-alpine >/dev/null 2>&1; then
+        echo "Redis image already exists, skipping push"
+        exit 0
+      fi
+
+      # Login, pull, tag, and push Redis image
+      aws ecr get-login-password | docker login --username AWS --password-stdin ${aws_ecr_repository.redis.repository_url}
+      docker pull redis:8-alpine
+      docker tag redis:8-alpine ${aws_ecr_repository.redis.repository_url}:8-alpine
+      docker push ${aws_ecr_repository.redis.repository_url}:8-alpine
+    EOF
+  }
+}
+```
+
+**Benefits**:
+
+- **Reliable Deployment**: Works from private subnets without NAT Gateway
+- **Cost Effective**: No internet charges for container pulls
+- **Security**: Images pulled from private registry within your VPC
+- **Idempotent**: Only pushes when image doesn't exist
 
 ### Resource Allocation
 

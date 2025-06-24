@@ -8,6 +8,11 @@ output "ssr_ecr_repository_url" {
   value       = aws_ecr_repository.ssr.repository_url
 }
 
+output "redis_ecr_repository_url" {
+  description = "URL of the Redis ECR repository"
+  value       = aws_ecr_repository.redis.repository_url
+}
+
 output "ecs_cluster_name" {
   description = "Name of the ECS cluster"
   value       = aws_ecs_cluster.main.name

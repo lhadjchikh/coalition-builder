@@ -29,6 +29,10 @@ output "ssr_ecr_repository_url" {
   value = module.compute.ssr_ecr_repository_url
 }
 
+output "redis_ecr_repository_url" {
+  value = module.compute.redis_ecr_repository_url
+}
+
 output "ecs_cluster_name" {
   value = module.compute.ecs_cluster_name
 }

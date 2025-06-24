@@ -5,7 +5,7 @@ locals {
   # Redis container definition (shared between SSR and API-only configurations)
   redis_container = {
     name      = "redis"
-    image     = "public.ecr.aws/docker/library/redis:8-alpine"
+    image     = "${aws_ecr_repository.redis.repository_url}:8-alpine"
     essential = false
     # Allocate minimal resources for Redis
     cpu    = var.redis_cpu
@@ -62,6 +62,62 @@ resource "aws_ecr_repository" "api" {
   tags = {
     Name = "${var.prefix}-api"
   }
+}
+
+# Redis ECR Repository
+resource "aws_ecr_repository" "redis" {
+  name                 = "${var.prefix}-redis"
+  image_tag_mutability = "IMMUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  encryption_configuration {
+    encryption_type = "KMS"
+  }
+
+  tags = {
+    Name = "${var.prefix}-redis"
+  }
+}
+
+# Push Redis image to ECR
+resource "null_resource" "push_redis_to_ecr" {
+  triggers = {
+    ecr_repository_url = aws_ecr_repository.redis.repository_url
+    redis_version      = "8-alpine"
+    # Trigger re-run if this resource changes
+    script_hash = filemd5("${path.module}/main.tf")
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOF
+      # Check if image already exists to avoid unnecessary pushes
+      if aws ecr describe-images --repository-name ${aws_ecr_repository.redis.name} --image-ids imageTag=8-alpine --region ${var.aws_region} >/dev/null 2>&1; then
+        echo "Redis image 8-alpine already exists in ECR, skipping push"
+        exit 0
+      fi
+
+      echo "Pushing Redis image to ECR..."
+      
+      # Login to ECR
+      aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${aws_ecr_repository.redis.repository_url}
+      
+      # Pull Redis image from Docker Hub
+      docker pull redis:8-alpine
+      
+      # Tag for ECR
+      docker tag redis:8-alpine ${aws_ecr_repository.redis.repository_url}:8-alpine
+      
+      # Push to ECR
+      docker push ${aws_ecr_repository.redis.repository_url}:8-alpine
+      
+      echo "Successfully pushed Redis image to ECR"
+    EOF
+  }
+
+  depends_on = [aws_ecr_repository.redis]
 }
 
 # ECS Cluster
