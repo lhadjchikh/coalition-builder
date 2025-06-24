@@ -5,7 +5,7 @@ locals {
   # Redis container definition (shared between SSR and API-only configurations)
   redis_container = {
     name      = "redis"
-    image     = "${aws_ecr_repository.redis.repository_url}:8-alpine"
+    image     = "${aws_ecr_repository.redis.repository_url}:${var.redis_version}"
     essential = false
     # Allocate minimal resources for Redis
     cpu    = var.redis_cpu
@@ -86,13 +86,13 @@ resource "aws_ecr_repository" "redis" {
 resource "null_resource" "push_redis_to_ecr" {
   triggers = {
     ecr_repository_url = aws_ecr_repository.redis.repository_url
-    redis_version      = "8-alpine"
+    redis_version      = var.redis_version
     # Trigger re-run only when the push script changes
     script_hash = filemd5("${path.module}/scripts/push-redis-to-ecr.sh")
   }
 
   provisioner "local-exec" {
-    command = "${path.module}/scripts/push-redis-to-ecr.sh ${aws_ecr_repository.redis.name} ${aws_ecr_repository.redis.repository_url} ${var.aws_region} 8-alpine"
+    command = "${path.module}/scripts/push-redis-to-ecr.sh ${aws_ecr_repository.redis.name} ${aws_ecr_repository.redis.repository_url} ${var.aws_region} ${var.redis_version}"
   }
 
   depends_on = [aws_ecr_repository.redis]
