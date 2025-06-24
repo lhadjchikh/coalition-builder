@@ -10,6 +10,7 @@ This package contains test modules organized by functionality:
 - test_spam_prevention: Spam prevention and IP validation tests
 - test_admin: Django admin interface tests
 - test_security: Security vulnerability and integration tests
+- test_form_metadata_security: Form metadata validation security tests
 
 Each module aims to keep file size under 250 lines for maintainability.
 """

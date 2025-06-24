@@ -176,8 +176,8 @@ def _validate_and_prepare_endorsement_data(
         "type": data.stakeholder.type,
     }
 
-    # Get form metadata (honeypot fields, timing, etc.) - required field
-    form_data = data.form_metadata
+    # Get validated form metadata (now structured with security validation)
+    form_data = data.form_metadata.dict()
 
     return campaign, ip_address, stakeholder_data, form_data
 
