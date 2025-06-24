@@ -166,7 +166,7 @@ class EndorsementVerificationTest(TestCase):
         assert endorsement.admin_notes == notes
 
     def test_verify_email_method(self) -> None:
-        """Test email verification method"""
+        """Test email verification method with default manual review"""
         endorsement = Endorsement.objects.create(
             stakeholder=self.stakeholder,
             campaign=self.campaign,
@@ -180,7 +180,26 @@ class EndorsementVerificationTest(TestCase):
 
         assert endorsement.email_verified
         assert endorsement.verified_at is not None
-        assert endorsement.status == "approved"  # Auto-approval after verification
+        assert endorsement.status == "verified"  # Verified but awaiting manual approval
+
+    def test_verify_email_with_auto_approval_enabled(self) -> None:
+        """Test email verification with auto-approval setting enabled"""
+        from django.test import override_settings
+
+        endorsement = Endorsement.objects.create(
+            stakeholder=self.stakeholder,
+            campaign=self.campaign,
+        )
+
+        assert endorsement.status == "pending"
+
+        # Test with auto-approval enabled
+        with override_settings(AUTO_APPROVE_VERIFIED_ENDORSEMENTS=True):
+            endorsement.verify_email()
+
+        assert endorsement.email_verified
+        assert endorsement.verified_at is not None
+        assert endorsement.status == "approved"  # Auto-approved when setting is True
 
     def test_string_representation_with_status(self) -> None:
         """Test string representation includes status"""

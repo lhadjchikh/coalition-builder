@@ -217,9 +217,11 @@ API_URL = os.getenv("API_URL", "http://localhost:8000")  # Backend URL
 ADMIN_NOTIFICATION_EMAILS = os.getenv("ADMIN_NOTIFICATION_EMAILS", "")
 
 # Endorsement moderation settings
+# Default to manual review for better content control in production
+# Set AUTO_APPROVE_VERIFIED_ENDORSEMENTS=true in environment to enable auto-approval
 AUTO_APPROVE_VERIFIED_ENDORSEMENTS = os.getenv(
     "AUTO_APPROVE_VERIFIED_ENDORSEMENTS",
-    "true",
+    "false",
 ).lower() in ("true", "1", "t")
 
 # Akismet spam detection
