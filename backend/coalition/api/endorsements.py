@@ -181,7 +181,15 @@ def create_endorsement(
     if not campaign.allow_endorsements:
         raise HttpError(400, "This campaign is not accepting endorsements")
 
-    # Run spam prevention checks
+    # Record the submission attempt for rate limiting before spam checks
+    SpamPreventionService.record_submission_attempt(request)
+
+    # Check rate limiting after recording
+    rate_limit_result = SpamPreventionService.check_rate_limit(request)
+    if not rate_limit_result["allowed"]:
+        raise HttpError(429, "Too many requests. Please try again later.")
+
+    # Run spam prevention checks (without rate limiting since we handle it above)
     stakeholder_data = {
         "name": data.stakeholder.name,
         "organization": data.stakeholder.organization,
@@ -201,10 +209,8 @@ def create_endorsement(
         statement=data.statement,
         form_data=form_data,
         user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        skip_rate_limiting=True,  # Handle rate limiting separately
     )
-
-    # Record the submission attempt for rate limiting
-    SpamPreventionService.record_submission_attempt(request)
 
     # Handle spam detection
     if spam_check["is_spam"]:
@@ -259,6 +265,9 @@ def create_endorsement(
 
     except IntegrityError as e:
         raise HttpError(400, f"Error creating endorsement: {str(e)}") from e
+    except HttpError:
+        # Re-raise HttpErrors (like 409 from verification checks) without modification
+        raise
     except Exception as e:
         raise HttpError(500, f"Unexpected error: {str(e)}") from e
 
@@ -266,13 +275,13 @@ def create_endorsement(
 @router.post("/verify/{token}/")
 def verify_endorsement(request: HttpRequest, token: str) -> dict:
     """Verify an endorsement using the verification token"""
+    # Record this attempt for rate limiting first
+    SpamPreventionService.record_submission_attempt(request)
+
     # Apply rate limiting to prevent token brute-force attacks
     spam_check = SpamPreventionService.check_rate_limit(request)
     if not spam_check["allowed"]:
         raise HttpError(429, "Too many verification attempts. Please try again later.")
-
-    # Record this attempt for rate limiting
-    SpamPreventionService.record_submission_attempt(request)
 
     try:
         # Parse token as UUID
@@ -311,13 +320,13 @@ def verify_endorsement(request: HttpRequest, token: str) -> dict:
 @router.post("/resend-verification/")
 def resend_verification(request: HttpRequest, data: EndorsementVerifySchema) -> dict:
     """Resend verification email for an endorsement"""
+    # Record this attempt for rate limiting first
+    SpamPreventionService.record_submission_attempt(request)
+
     # Apply rate limiting to prevent abuse
     spam_check = SpamPreventionService.check_rate_limit(request)
     if not spam_check["allowed"]:
         raise HttpError(429, "Too many verification requests. Please try again later.")
-
-    # Record this attempt for rate limiting
-    SpamPreventionService.record_submission_attempt(request)
 
     # Always return the same message to prevent information disclosure
     # This prevents enumeration of which emails have endorsed campaigns

@@ -295,17 +295,17 @@ class EndorsementAPITest(TestCase):
 
     def test_create_endorsement_existing_stakeholder(self) -> None:
         """Test POST /api/endorsements/ with existing stakeholder email"""
-        # Use existing stakeholder's email but different info
+        # Use existing stakeholder's email with EXACT matching info (security)
         endorsement_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": "Jane Smith Updated",
-                "organization": "Updated Green Coalition",
-                "role": "Senior Director",
+                "name": "Jane Smith",  # Exact match
+                "organization": "Green Farms Coalition",  # Exact match
+                "role": "Director",  # Exact match
                 "email": "jane@greenfarms.org",  # Same email as existing stakeholder
-                "state": "MD",
-                "county": "Montgomery County",
-                "type": "business",
+                "state": "VA",  # Exact match
+                "county": "Fairfax County",  # Exact match
+                "type": "nonprofit",  # Exact match
             },
             "statement": "Updated endorsement statement",
             "public_display": False,
@@ -320,11 +320,13 @@ class EndorsementAPITest(TestCase):
 
         assert response.status_code == 200
 
-        # Verify stakeholder info was updated
+        # Verify stakeholder info was NOT changed (security requirement)
         stakeholder = Stakeholder.objects.get(email="jane@greenfarms.org")
-        assert stakeholder.name == "Jane Smith Updated"
-        assert stakeholder.organization == "Updated Green Coalition"
-        assert stakeholder.state == "MD"
+        assert stakeholder.name == "Jane Smith"  # Original data preserved
+        assert (
+            stakeholder.organization == "Green Farms Coalition"
+        )  # Original data preserved
+        assert stakeholder.state == "VA"  # Original data preserved
 
         # Should still only have one stakeholder with this email
         assert Stakeholder.objects.filter(email="jane@greenfarms.org").count() == 1
