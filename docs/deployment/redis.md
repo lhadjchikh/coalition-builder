@@ -155,6 +155,20 @@ CACHES = {
 }
 ```
 
+### Known Warnings
+
+You may see this warning during startup:
+
+```
+django_ratelimit.W001: cache backend django.core.cache.backends.redis.RedisCache is not officially supported
+```
+
+**This warning can be safely ignored.** The django-ratelimit package works correctly with Redis but hasn't updated its validation to recognize the newer cache backend class name. To silence this warning, add to your settings:
+
+```python
+SILENCED_SYSTEM_CHECKS = ['django_ratelimit.W001']
+```
+
 ### Redis Configuration Options
 
 The Redis container uses optimized settings:
@@ -372,26 +386,7 @@ CACHES = {
 - Rate limiting doesn't work across multiple processes
 - No persistence across restarts
 - Cache not shared between containers
-
-### Database Cache
-
-Alternative cache backend:
-
-```python
-# Database cache (requires table creation)
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION': 'coalition_cache_table',
-    }
-}
-```
-
-Create cache table:
-
-```bash
-python manage.py createcachetable
-```
+- Not suitable for production use
 
 ## Migration
 
@@ -401,13 +396,6 @@ python manage.py createcachetable
 2. Set `CACHE_URL=redis://redis:6379/1`
 3. Restart application
 4. Verify rate limiting works
-
-### From Database Cache to Redis
-
-1. Deploy Redis container
-2. Update `CACHE_URL` environment variable
-3. Remove database cache table (optional)
-4. Monitor for improved performance
 
 ## Related Documentation
 
