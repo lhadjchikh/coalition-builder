@@ -83,7 +83,8 @@ class HTMLSanitizationTest(TestCase):
         assert "javascript:" not in campaign.description.lower()
         assert "vbscript:" not in campaign.description.lower()
         assert "data:text/html" not in campaign.description.lower()
-        # Links should still exist but without href attributes (bleach removes dangerous hrefs)
+        # Links should still exist but without href attributes
+        # (bleach removes dangerous hrefs)
         assert "<a>" in campaign.description
         # Link text content is preserved
         assert "Click1" in campaign.description

@@ -3,9 +3,11 @@ Email service for endorsement verification and notifications
 """
 
 import logging
+from smtplib import SMTPException
 
 from django.conf import settings
 from django.core.mail import send_mail
+from django.template.exceptions import TemplateDoesNotExist
 from django.template.loader import render_to_string
 from django.utils import timezone
 
@@ -82,9 +84,21 @@ class EndorsementEmailService:
                 )
                 return False
 
-        except Exception as e:
+        except TemplateDoesNotExist as e:
             logger.error(
-                f"Error sending verification email for endorsement "
+                f"Email template not found for endorsement "
+                f"{endorsement.id}: {str(e)}",
+            )
+            return False
+        except SMTPException as e:
+            logger.error(
+                f"SMTP error sending verification email for endorsement "
+                f"{endorsement.id}: {str(e)}",
+            )
+            return False
+        except (AttributeError, KeyError) as e:
+            logger.error(
+                f"Configuration error sending verification email for endorsement "
                 f"{endorsement.id}: {str(e)}",
             )
             return False
@@ -159,9 +173,21 @@ class EndorsementEmailService:
                 )
                 return False
 
-        except Exception as e:
+        except TemplateDoesNotExist as e:
             logger.error(
-                f"Error sending admin notification for endorsement "
+                f"Email template not found for admin notification "
+                f"{endorsement.id}: {str(e)}",
+            )
+            return False
+        except SMTPException as e:
+            logger.error(
+                f"SMTP error sending admin notification for endorsement "
+                f"{endorsement.id}: {str(e)}",
+            )
+            return False
+        except (AttributeError, KeyError) as e:
+            logger.error(
+                f"Configuration error sending admin notification for endorsement "
                 f"{endorsement.id}: {str(e)}",
             )
             return False
@@ -218,9 +244,21 @@ class EndorsementEmailService:
                 )
                 return False
 
-        except Exception as e:
+        except TemplateDoesNotExist as e:
             logger.error(
-                f"Error sending approval confirmation for endorsement "
+                f"Email template not found for approval confirmation "
+                f"{endorsement.id}: {str(e)}",
+            )
+            return False
+        except SMTPException as e:
+            logger.error(
+                f"SMTP error sending approval confirmation for endorsement "
+                f"{endorsement.id}: {str(e)}",
+            )
+            return False
+        except (AttributeError, KeyError) as e:
+            logger.error(
+                f"Configuration error sending approval confirmation for endorsement "
                 f"{endorsement.id}: {str(e)}",
             )
             return False

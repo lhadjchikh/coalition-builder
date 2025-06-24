@@ -2,9 +2,11 @@
 Tests for endorsement email service functionality.
 """
 
+from smtplib import SMTPException
 from unittest.mock import Mock, patch
 
 from django.core import mail
+from django.template.exceptions import TemplateDoesNotExist
 from django.test import TestCase
 
 from coalition.campaigns.models import PolicyCampaign
@@ -70,7 +72,16 @@ class EndorsementEmailServiceTest(TestCase):
     @patch("coalition.endorsements.email_service.send_mail")
     def test_send_verification_email_exception(self, mock_send_mail: Mock) -> None:
         """Test verification email sending with exception"""
-        mock_send_mail.side_effect = Exception("SMTP error")
+        mock_send_mail.side_effect = SMTPException("SMTP error")
+
+        result = EndorsementEmailService.send_verification_email(self.endorsement)
+
+        assert result is False
+
+    @patch("coalition.endorsements.email_service.render_to_string")
+    def test_send_verification_email_template_error(self, mock_render: Mock) -> None:
+        """Test verification email sending with template error"""
+        mock_render.side_effect = TemplateDoesNotExist("Template not found")
 
         result = EndorsementEmailService.send_verification_email(self.endorsement)
 
