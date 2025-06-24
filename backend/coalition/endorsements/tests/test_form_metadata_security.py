@@ -5,8 +5,11 @@ Tests the new SpamPreventionMetadata schema validation for security vulnerabilit
 """
 
 import json
+from datetime import timedelta
 
+from django.core.cache import cache
 from django.test import Client, TestCase
+from django.utils import timezone
 
 from coalition.campaigns.models import PolicyCampaign
 
@@ -15,6 +18,8 @@ class FormMetadataSecurityTests(TestCase):
     """Test security validations for form_metadata field."""
 
     def setUp(self) -> None:
+        cache.clear()  # Clear rate limiting cache between tests
+
         self.client = Client()
         self.campaign = PolicyCampaign.objects.create(
             name="test-campaign",
@@ -117,19 +122,20 @@ class FormMetadataSecurityTests(TestCase):
         base_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": "Test User",
-                "organization": "Test Org",
-                "email": "test@example.com",
+                "name": "Sarah Johnson",
+                "organization": "Johnson Consulting",
+                "email": "sarah@johnsonconsulting.com",
                 "state": "MD",
-                "type": "individual",
+                "type": "business",
             },
+            "statement": "This initiative aligns with our company values and goals.",
             "form_metadata": {
-                "form_start_time": "2023-01-01T12:00:00",
+                "form_start_time": (timezone.now() - timedelta(minutes=2)).isoformat(),
                 "website": "",
                 "url": "",
                 "homepage": "",
                 "confirm_email": "",
-                "referrer": "https://example.com<script>alert('xss')</script>",
+                "referrer": "https://johnsonconsulting.com<script>alert('xss')</script>",
             },
         }
 
@@ -143,21 +149,24 @@ class FormMetadataSecurityTests(TestCase):
         # The referrer field should have dangerous characters removed
         assert response.status_code == 200
 
-    def test_oversized_referrer_truncation(self) -> None:
-        """Test that oversized referrer fields are truncated."""
-        long_referrer = "https://example.com/" + "x" * 600  # Over 500 char limit
+    def test_oversized_referrer_validation(self) -> None:
+        """Test that oversized referrer fields are rejected by validation."""
+        long_referrer = "https://greenfarms.org/" + "x" * 600  # Over 500 char limit
 
         base_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": "Test User",
-                "organization": "Test Org",
-                "email": "test@example.com",
+                "name": "Michael Brown",
+                "organization": "Green Farms Coalition",
+                "email": "michael@greenfarms.org",
                 "state": "MD",
-                "type": "individual",
+                "type": "nonprofit",
             },
+            "statement": (
+                "Our organization fully supports this environmental initiative."
+            ),
             "form_metadata": {
-                "form_start_time": "2023-01-01T12:00:00",
+                "form_start_time": (timezone.now() - timedelta(minutes=2)).isoformat(),
                 "website": "",
                 "url": "",
                 "homepage": "",
@@ -172,27 +181,33 @@ class FormMetadataSecurityTests(TestCase):
             content_type="application/json",
         )
 
-        # Should process successfully but truncate the referrer
-        assert response.status_code == 200
+        # Should be rejected due to size validation (not truncated)
+        assert response.status_code == 422  # ValidationError
+        data = response.json()
+        assert "referrer" in str(data)
+        assert "too long" in str(data) or "max" in str(data)
 
     def test_valid_form_metadata_acceptance(self) -> None:
         """Test that valid form metadata is accepted."""
         base_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": "Test User",
-                "organization": "Test Org",
-                "email": "test@example.com",
+                "name": "John Smith",
+                "organization": "Smith Industries",
+                "email": "john.smith@smithindustries.com",
                 "state": "MD",
-                "type": "individual",
+                "type": "business",
             },
+            "statement": (
+                "I strongly support this important initiative for our community."
+            ),
             "form_metadata": {
-                "form_start_time": "2023-01-01T12:00:00",
+                "form_start_time": (timezone.now() - timedelta(minutes=2)).isoformat(),
                 "website": "",
                 "url": "",
                 "homepage": "",
                 "confirm_email": "",
-                "referrer": "https://example.com",
+                "referrer": "https://smithindustries.com",
             },
         }
 
