@@ -89,7 +89,8 @@ Redis runs as a sidecar container in the ECS task definition using a private ECR
     {
       "containerPort": 6379,
       "hostPort": 6379,
-      "protocol": "tcp"
+      "protocol": "tcp",
+      "name": "redis"
     }
   ],
   "command": [
@@ -100,7 +101,22 @@ Redis runs as a sidecar container in the ECS task definition using a private ECR
     "96mb",
     "--maxmemory-policy",
     "allkeys-lru"
-  ]
+  ],
+  "healthCheck": {
+    "command": ["CMD-SHELL", "redis-cli ping || exit 1"],
+    "interval": 30,
+    "timeout": 5,
+    "retries": 3,
+    "startPeriod": 10
+  },
+  "logConfiguration": {
+    "logDriver": "awslogs",
+    "options": {
+      "awslogs-group": "/ecs/{prefix}",
+      "awslogs-region": "{region}",
+      "awslogs-stream-prefix": "redis"
+    }
+  }
 }
 ```
 
@@ -112,31 +128,44 @@ Redis runs as a sidecar container in the ECS task definition using a private ECR
 - KMS encryption for data at rest
 - Immutable image tags for consistency
 
-**Automated Image Push**: A Terraform `null_resource` handles the Redis image deployment:
+**Automated Image Push**: A Terraform `null_resource` handles the Redis image deployment using an external script:
 
 ```hcl
 resource "null_resource" "push_redis_to_ecr" {
   triggers = {
     ecr_repository_url = aws_ecr_repository.redis.repository_url
-    redis_version      = "8-alpine"
+    redis_version      = var.redis_version
+    # Trigger re-run only when the push script changes
+    script_hash = filemd5("${path.module}/scripts/push-redis-to-ecr.sh")
   }
 
   provisioner "local-exec" {
-    command = <<-EOF
-      # Check if image exists to avoid unnecessary pushes
-      if aws ecr describe-images --repository-name ${aws_ecr_repository.redis.name} --image-ids imageTag=8-alpine >/dev/null 2>&1; then
-        echo "Redis image already exists, skipping push"
-        exit 0
-      fi
-
-      # Login, pull, tag, and push Redis image
-      aws ecr get-login-password | docker login --username AWS --password-stdin ${aws_ecr_repository.redis.repository_url}
-      docker pull redis:8-alpine
-      docker tag redis:8-alpine ${aws_ecr_repository.redis.repository_url}:8-alpine
-      docker push ${aws_ecr_repository.redis.repository_url}:8-alpine
-    EOF
+    command = "${path.module}/scripts/push-redis-to-ecr.sh ${aws_ecr_repository.redis.name} ${aws_ecr_repository.redis.repository_url} ${var.aws_region} ${var.redis_version}"
   }
+
+  depends_on = [aws_ecr_repository.redis]
 }
+```
+
+The push script (`scripts/push-redis-to-ecr.sh`) handles the image deployment process:
+
+```bash
+#!/bin/bash
+set -e
+
+# Check if image already exists to avoid unnecessary pushes
+if aws ecr describe-images --repository-name "${REPOSITORY_NAME}" --image-ids imageTag="${REDIS_VERSION}" --region "${AWS_REGION}" >/dev/null 2>&1; then
+  echo "Redis image ${REDIS_VERSION} already exists in ECR, skipping push"
+  exit 0
+fi
+
+# Login to ECR
+aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin "${REPOSITORY_URL}"
+
+# Pull, tag, and push Redis image
+docker pull "redis:${REDIS_VERSION}"
+docker tag "redis:${REDIS_VERSION}" "${REPOSITORY_URL}:${REDIS_VERSION}"
+docker push "${REPOSITORY_URL}:${REDIS_VERSION}"
 ```
 
 **Benefits**:
@@ -148,17 +177,33 @@ resource "null_resource" "push_redis_to_ecr" {
 
 ### Resource Allocation
 
-**Development:**
+Redis resources are configurable through Terraform variables with validation:
 
-- CPU: 128 CPU units
-- Memory: 128MB RAM
+**Default Configuration:**
+
+- CPU: 128 CPU units (configurable: 64-512)
+- Memory: 128MB RAM (configurable: 64-1024MB)
+- Max Redis Memory: 96MB (leaving 32MB for overhead)
+- Storage: ECS ephemeral storage with AOF persistence
+
+**Resource Constraints:**
+
+- Redis CPU must be less than total task CPU
+- Redis memory must be less than total task memory
+- Automatic memory calculation ensures sufficient resources for application containers
+
+**Development (Docker Compose):**
+
+- CPU: Unlimited (shared with host)
+- Memory: 128MB with LRU eviction
 - Storage: Docker volume with persistence
 
-**Production:**
+**Production (ECS):**
 
-- CPU: 128 CPU units
-- Memory: 128MB RAM (96MB max for Redis data)
-- Storage: ECS ephemeral storage with AOF persistence
+- CPU: Configurable via `redis_cpu` variable
+- Memory: Configurable via `redis_memory` variable
+- Health checks with 30s interval, 5s timeout, 3 retries
+- CloudWatch logging to `/ecs/{prefix}` log group
 
 ### Cost Estimation
 
@@ -172,15 +217,41 @@ Running Redis as a container vs managed service:
 
 ## Configuration
 
+### Terraform Variables
+
+Redis configuration is managed through Terraform variables:
+
+```hcl
+# Redis version (Docker image tag)
+variable "redis_version" {
+  description = "Redis Docker image version tag"
+  type        = string
+  default     = "8-alpine"
+}
+
+# Resource allocation
+variable "redis_cpu" {
+  description = "CPU units for Redis container"
+  type        = number
+  default     = 128
+}
+
+variable "redis_memory" {
+  description = "Memory in MiB for Redis container"
+  type        = number
+  default     = 128
+}
+```
+
 ### Environment Variables
 
 ```bash
 # Redis connection URL
 CACHE_URL=redis://redis:6379/1  # Docker Compose
-CACHE_URL=redis://localhost:6379/1  # Local Redis
+CACHE_URL=redis://localhost:6379/1  # ECS (same task network)
 
-# For production with authentication
-CACHE_URL=redis://:password@redis:6379/1
+# For production with authentication (if enabled)
+CACHE_URL=redis://:password@localhost:6379/1
 ```
 
 ### Django Settings
@@ -192,7 +263,7 @@ The cache configuration automatically detects Redis:
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': 'redis://redis:6379/1',
+        'LOCATION': 'redis://localhost:6379/1',  # ECS uses localhost
         'OPTIONS': {
             'CONNECTION_POOL_KWARGS': {
                 'max_connections': 20,
@@ -238,19 +309,30 @@ The Redis container uses optimized settings:
 
 ### Health Checks
 
-Redis health is monitored through:
+Redis health is monitored through ECS health checks and manual testing:
 
 ```bash
-# Container health check
-redis-cli ping  # Should return PONG
+# ECS health check (automatically runs every 30s)
+redis-cli ping || exit 1  # Should return PONG
 
-# Manual connection test
+# Manual connection test from application container
+redis-cli -h localhost -p 6379 ping
+
+# Docker Compose environment
 redis-cli -h redis -p 6379 ping
 
 # Check Redis info
 redis-cli info memory
 redis-cli info persistence
 ```
+
+**ECS Health Check Configuration:**
+
+- Command: `CMD-SHELL redis-cli ping || exit 1`
+- Interval: 30 seconds
+- Timeout: 5 seconds
+- Retries: 3
+- Start period: 10 seconds
 
 ### Performance Monitoring
 
@@ -279,8 +361,9 @@ Check Redis logs for issues:
 docker-compose logs redis
 
 # ECS logs (in CloudWatch)
-# Log group: /ecs/your-prefix
-# Log stream: redis/*
+# Log group: /ecs/{prefix}
+# Log stream: redis/{container-id}
+# Example: /ecs/coalition with stream prefix "redis"
 ```
 
 ## Data Persistence
@@ -339,11 +422,12 @@ CACHE_URL=redis://:your_secure_password@redis:6379/1
 
 ### Network Security
 
-In ECS, Redis only accepts connections from:
+In ECS, Redis security is provided by task-level isolation:
 
-- Application containers in the same task
-- No external network access
-- Security groups restrict access
+- **Task Network**: Redis only accepts connections from containers in the same ECS task
+- **No External Access**: Redis port 6379 is not exposed to the load balancer or internet
+- **Security Groups**: Application security group controls task-level network access
+- **VPC Isolation**: ECS tasks run in private subnets with no direct internet access
 
 ## Troubleshooting
 
@@ -365,14 +449,15 @@ df -h
 **Connection Refused:**
 
 ```bash
-# Verify Redis is running
+# Docker Compose environment
 docker-compose ps redis
-
-# Check network connectivity
 docker-compose exec app ping redis
-
-# Test Redis connection
 docker-compose exec app redis-cli -h redis ping
+
+# ECS environment (check CloudWatch logs)
+# Redis health check failures will appear in ECS console
+# Application containers should connect to localhost:6379
+# Check application logs for connection errors
 ```
 
 **Memory Issues:**
