@@ -260,11 +260,21 @@ class SpamPreventionService:
 
         # Fallback to basic domain checks if email-validator unavailable or failed
         if not validate_email or not reasons:
-            domain = email.split("@")[-1].lower() if "@" in email else ""
-
-            # Check domain against known disposable email providers
-            if domain in cls.SUSPICIOUS_DOMAINS:
-                reasons.append(f"Disposable email domain: {domain}")
+            # Basic email format validation - must contain @ and have parts before/after
+            if "@" not in email:
+                reasons.append("Invalid email format: missing @ symbol")
+            elif email.count("@") != 1:
+                reasons.append("Invalid email format: multiple @ symbols")
+            else:
+                parts = email.split("@")
+                if not parts[0] or not parts[1]:
+                    reasons.append("Invalid email format: missing local or domain part")
+                else:
+                    domain = parts[1].lower()
+                    
+                    # Check domain against known disposable email providers
+                    if domain in cls.SUSPICIOUS_DOMAINS:
+                        reasons.append(f"Disposable email domain: {domain}")
 
             # Basic pattern checks
             email_lower = email.lower()
@@ -365,6 +375,7 @@ class SpamPreventionService:
         statement: str,
         form_data: dict[str, Any],
         user_agent: str = None,
+        skip_rate_limiting: bool = False,
     ) -> dict[str, Any]:
         """
         Run comprehensive spam check
@@ -381,14 +392,19 @@ class SpamPreventionService:
             "recommendations": [],
         }
 
-        # Check rate limiting
-        rate_limit_result = cls.check_rate_limit(request)
-        results["rate_limit"] = rate_limit_result
-        if not rate_limit_result["allowed"]:
-            results["is_spam"] = True
-            results["confidence_score"] = 1.0
-            results["reasons"].append("Rate limit exceeded")
-            return results
+        # Handle rate limiting if not skipped
+        if not skip_rate_limiting:
+            # Record this attempt for rate limiting first
+            cls.record_submission_attempt(request)
+
+            # Check rate limiting
+            rate_limit_result = cls.check_rate_limit(request)
+            results["rate_limit"] = rate_limit_result
+            if not rate_limit_result["allowed"]:
+                results["is_spam"] = True
+                results["confidence_score"] = 1.0
+                results["reasons"].append("Rate limit exceeded")
+                return results
 
         # Check honeypot
         if not cls.validate_honeypot(form_data):
