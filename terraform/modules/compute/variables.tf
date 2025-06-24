@@ -198,3 +198,14 @@ variable "redis_memory" {
     error_message = "Redis memory allocation is too high for the minimum calculated memory allocation. Reduce redis_memory or increase task_cpu."
   }
 }
+
+variable "redis_version" {
+  description = "Redis Docker image version tag"
+  type        = string
+  default     = "8-alpine"
+
+  validation {
+    condition     = can(regex("^[a-zA-Z0-9.-]+$", var.redis_version))
+    error_message = "Redis version must be a valid Docker tag."
+  }
+}
