@@ -475,6 +475,7 @@ class EndorsementAPITest(TestCase):
             },
             "statement": "Test statement",
             "public_display": True,
+            "form_metadata": get_valid_form_metadata(),
         }
 
         # Mock the Endorsement.objects.get_or_create to raise an exception
@@ -492,8 +493,8 @@ class EndorsementAPITest(TestCase):
                 content_type="application/json",
             )
 
-            # Now expects 400 status (spam detection catches it first)
-            assert response.status_code == 400
+            # Should return 500 status for internal server error (simulated failure)
+            assert response.status_code == 500
 
             # Verify that the stakeholder was NOT created due to transaction rollback
             assert Stakeholder.objects.count() == initial_stakeholder_count
