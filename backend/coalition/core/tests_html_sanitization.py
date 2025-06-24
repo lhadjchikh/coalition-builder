@@ -63,6 +63,33 @@ class HTMLSanitizationTest(TestCase):
         assert 'href="https://example.com"' in campaign.description
         assert "<a" in campaign.description
 
+    def test_campaign_description_javascript_urls_case_insensitive(self) -> None:
+        """Test that javascript: URLs are sanitized regardless of case."""
+        campaign = PolicyCampaign.objects.create(
+            name="test-js-case",
+            title="Test Campaign",
+            summary="Test",
+            description=(
+                '<a href="JavaScript:alert(1)">Click1</a>'
+                '<a href="JAVASCRIPT:alert(2)">Click2</a>'
+                '<a href="JaVaScRiPt:alert(3)">Click3</a>'
+                '<a href="vbscript:msgbox()">VB</a>'
+                '<a href="VBScript:msgbox()">VB2</a>'
+                '<a href="DATA:text/html,<script>alert(4)</script>">Data</a>'
+            ),
+        )
+
+        # All case variations should be removed
+        assert "javascript:" not in campaign.description.lower()
+        assert "vbscript:" not in campaign.description.lower()
+        assert "data:text/html" not in campaign.description.lower()
+        # Links should still exist but without href attributes (bleach removes dangerous hrefs)
+        assert "<a>" in campaign.description
+        # Link text content is preserved
+        assert "Click1" in campaign.description
+        assert "Click2" in campaign.description
+        assert "VB" in campaign.description
+
     def test_campaign_plain_text_fields_escaped(self) -> None:
         """Test that plain text fields have all HTML escaped."""
         campaign = PolicyCampaign.objects.create(

@@ -2,6 +2,8 @@
 HTML sanitization utilities to prevent XSS attacks.
 """
 
+import re
+
 import bleach
 
 
@@ -109,9 +111,10 @@ class HTMLSanitizer:
         )
 
         # Additional safety: remove any sneaky javascript: URLs that might slip through
-        cleaned = cleaned.replace("javascript:", "")
-        cleaned = cleaned.replace("vbscript:", "")
-        cleaned = cleaned.replace("data:text/html", "")
+        # Use regex for case-insensitive replacement, also handle whitespace variations
+        cleaned = re.sub(r"javascript\s*:", "", cleaned, flags=re.IGNORECASE)
+        cleaned = re.sub(r"vbscript\s*:", "", cleaned, flags=re.IGNORECASE)
+        cleaned = re.sub(r"data\s*:\s*text/html", "", cleaned, flags=re.IGNORECASE)
 
         return cleaned
 
