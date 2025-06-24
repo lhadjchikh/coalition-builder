@@ -28,7 +28,9 @@ TEST_PRIVATE_IP = "10.0.0.5"  # Private IP for simulating load balancers/proxies
 def get_valid_form_metadata() -> dict:
     """Helper function to generate valid form metadata for tests"""
     return {
-        "form_start_time": "2024-01-01T12:00:00Z",
+        "form_start_time": (
+            timezone.now() - timedelta(minutes=2)
+        ).isoformat(),  # Recent timestamp
         "website": "",  # honeypot field (should be empty)
         "url": "",  # honeypot field (should be empty)
         "homepage": "",  # honeypot field (should be empty)
@@ -169,6 +171,7 @@ class EndorsementAPITest(TestCase):
     """Test the endorsement API endpoints"""
 
     def setUp(self) -> None:
+        cache.clear()  # Clear rate limiting cache between tests
         self.client = Client()
 
         # Create test campaign with endorsement fields
@@ -341,6 +344,7 @@ class EndorsementAPITest(TestCase):
                 "state": "VA",
                 "type": "other",
             },
+            "form_metadata": get_valid_form_metadata(),
         }
 
         response = self.client.post(
@@ -364,6 +368,7 @@ class EndorsementAPITest(TestCase):
                 "state": "VA",
                 "type": "other",
             },
+            "form_metadata": get_valid_form_metadata(),
         }
 
         response = self.client.post(
@@ -1366,12 +1371,15 @@ class EndorsementAPIEnhancedTest(TestCase):
         }
 
         # Make 4 requests - first 3 should succeed, 4th should be rate limited
+        # (record-then-check pattern: 4th request records to 4, then checks limit)
         responses = []
-        for _ in range(4):
+        for _i in range(4):
+            # Set consistent IP for rate limiting to work
             response = self.client.post(
                 "/api/endorsements/resend-verification/",
                 request_data,
                 content_type="application/json",
+                REMOTE_ADDR="127.0.0.1",  # Ensure consistent IP
             )
             responses.append(response)
 
@@ -1612,6 +1620,7 @@ class SecurityVulnerabilityTests(TestCase):
     """Test security fixes for data overwriting and rate limiting vulnerabilities"""
 
     def setUp(self) -> None:
+        cache.clear()  # Clear rate limiting cache between tests
         self.client = Client()
 
         # Create existing stakeholder
@@ -1659,6 +1668,7 @@ class SecurityVulnerabilityTests(TestCase):
                 },
                 "statement": "Updated statement",
                 "public_display": True,
+                "form_metadata": get_valid_form_metadata(),
             },
             content_type="application/json",
         )
@@ -1684,6 +1694,7 @@ class SecurityVulnerabilityTests(TestCase):
                 },
                 "statement": "Malicious update",
                 "public_display": True,
+                "form_metadata": get_valid_form_metadata(),
             },
             content_type="application/json",
         )
@@ -1710,6 +1721,7 @@ class SecurityVulnerabilityTests(TestCase):
                 },
                 "statement": "Attempting to change verified endorsement",
                 "public_display": False,
+                "form_metadata": get_valid_form_metadata(),
             },
             content_type="application/json",
         )
