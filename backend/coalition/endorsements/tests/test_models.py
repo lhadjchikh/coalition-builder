@@ -138,3 +138,64 @@ class EndorsementModelTest(TestCase):
         endorsements = self.campaign.endorsements.all()
         assert endorsements.count() == 1
         assert endorsements.first() == endorsement
+
+    def test_statement_html_sanitization(self) -> None:
+        """Test that HTML in statements is escaped for security"""
+        # Test script tag removal
+        malicious_statement = 'I support this <script>alert("xss")</script> policy!'
+        endorsement = Endorsement.objects.create(
+            stakeholder=self.stakeholder,
+            campaign=self.campaign,
+            statement=malicious_statement,
+        )
+
+        # HTML should be escaped
+        assert "&lt;script&gt;" in endorsement.statement
+        assert "<script>" not in endorsement.statement
+        assert "I support this" in endorsement.statement
+        assert "policy!" in endorsement.statement
+
+    def test_statement_dangerous_attributes_sanitization(self) -> None:
+        """Test that dangerous HTML attributes are escaped in statements"""
+        dangerous_statement = 'I support <a href="javascript:alert(1)">this</a> policy!'
+        endorsement = Endorsement.objects.create(
+            stakeholder=self.stakeholder,
+            campaign=self.campaign,
+            statement=dangerous_statement,
+        )
+
+        # HTML should be escaped (not executed)
+        assert "&lt;a" in endorsement.statement  # HTML should be escaped
+        assert "&gt;" in endorsement.statement  # Tags should be escaped
+        assert "this" in endorsement.statement  # Content preserved
+        assert "policy!" in endorsement.statement
+        # The dangerous content is escaped, making it safe
+        assert "<script>" not in endorsement.statement  # No executable HTML
+
+    def test_statement_empty_or_none_handling(self) -> None:
+        """Test that empty or None statements are handled gracefully"""
+        from coalition.stakeholders.models import Stakeholder
+
+        # Create another stakeholder to avoid unique constraint
+        stakeholder2 = Stakeholder.objects.create(
+            name="Jane Smith",
+            organization="Test Org 2",
+            email="jane@example.com",
+            state="CA",
+            type="individual",
+        )
+
+        # Test with empty string
+        endorsement1 = Endorsement.objects.create(
+            stakeholder=self.stakeholder,
+            campaign=self.campaign,
+            statement="",
+        )
+        assert endorsement1.statement == ""
+
+        # Test with None/default (should be handled by Django's blank=True)
+        endorsement2 = Endorsement.objects.create(
+            stakeholder=stakeholder2,
+            campaign=self.campaign,
+        )
+        assert endorsement2.statement == ""

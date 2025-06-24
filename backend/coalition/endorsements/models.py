@@ -1,11 +1,16 @@
 import uuid
 from datetime import timedelta
+from typing import TYPE_CHECKING
 
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 
+from coalition.core.html_sanitizer import HTMLSanitizer
 from coalition.stakeholders.models import Stakeholder
+
+if TYPE_CHECKING:
+    from typing import Any
 
 
 class Endorsement(models.Model):
@@ -55,6 +60,14 @@ class Endorsement(models.Model):
 
     def __str__(self) -> str:
         return f"{self.stakeholder} endorses {self.campaign} ({self.status})"
+
+    def save(self, *args: "Any", **kwargs: "Any") -> None:
+        """Sanitize statement field before saving to prevent XSS attacks."""
+        # Sanitize statement as plain text - endorsements should not contain HTML
+        if self.statement:
+            self.statement = HTMLSanitizer.sanitize_plain_text(self.statement)
+
+        super().save(*args, **kwargs)
 
     @property
     def is_verification_expired(self) -> bool:
