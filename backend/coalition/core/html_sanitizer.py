@@ -131,4 +131,5 @@ class HTMLSanitizer:
             return ""
 
         # This escapes ALL HTML, converting < to &lt; etc
-        return bleach.clean(text, tags=[], strip=True)
+        # Use strip=False to escape tags rather than remove them
+        return bleach.clean(text, tags=[], strip=False)
