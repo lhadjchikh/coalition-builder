@@ -67,7 +67,7 @@ def _validate_stakeholder_data_match(
         == (submitted_data.get("county") or "").lower()
         and existing_stakeholder.type == submitted_data["type"]
     )
-    
+
     if not data_matches:
         # Log the potential takeover attempt
         logger.warning(
