@@ -271,7 +271,7 @@ def _create_endorsement_with_emails(
     return endorsement
 
 
-@router.get("/", response=list[EndorsementOut])
+@router.get("/", response=list[EndorsementOut], auth=None)
 def list_endorsements(
     request: HttpRequest,
     campaign_id: int = None,
@@ -290,7 +290,7 @@ def list_endorsements(
     return list(queryset.order_by("-created_at").all())
 
 
-@router.post("/", response=EndorsementOut)
+@router.post("/", response=EndorsementOut, auth=None)
 def create_endorsement(
     request: HttpRequest,
     data: EndorsementCreateSchema,
@@ -329,7 +329,7 @@ def create_endorsement(
         raise HttpError(500, f"Unexpected error: {str(e)}") from e
 
 
-@router.post("/verify/{token}/")
+@router.post("/verify/{token}/", auth=None)
 def verify_endorsement(request: HttpRequest, token: str) -> dict:
     """Verify an endorsement using the verification token"""
     # Record this attempt for rate limiting first
@@ -374,7 +374,7 @@ def verify_endorsement(request: HttpRequest, token: str) -> dict:
     }
 
 
-@router.post("/resend-verification/")
+@router.post("/resend-verification/", auth=None)
 def resend_verification(request: HttpRequest, data: EndorsementVerifySchema) -> dict:
     """Resend verification email for an endorsement"""
     # Record this attempt for rate limiting first
@@ -420,7 +420,11 @@ def resend_verification(request: HttpRequest, data: EndorsementVerifySchema) -> 
 
 @router.post("/admin/approve/{endorsement_id}/")
 def admin_approve_endorsement(request: HttpRequest, endorsement_id: int) -> dict:
-    """Admin endpoint to approve an endorsement"""
+    """Admin endpoint to approve an endorsement
+
+    CSRF protected: This endpoint requires CSRF token validation to prevent
+    cross-site request forgery attacks against logged-in administrators.
+    """
     # Require staff/admin access for endorsement approval
     if not request.user.is_authenticated or not request.user.is_staff:
         raise HttpError(403, "Admin access required for endorsement approval")
@@ -447,7 +451,11 @@ def admin_approve_endorsement(request: HttpRequest, endorsement_id: int) -> dict
 
 @router.post("/admin/reject/{endorsement_id}/")
 def admin_reject_endorsement(request: HttpRequest, endorsement_id: int) -> dict:
-    """Admin endpoint to reject an endorsement"""
+    """Admin endpoint to reject an endorsement
+
+    CSRF protected: This endpoint requires CSRF token validation to prevent
+    cross-site request forgery attacks against logged-in administrators.
+    """
     # Require staff/admin access for endorsement rejection
     if not request.user.is_authenticated or not request.user.is_staff:
         raise HttpError(403, "Admin access required for endorsement rejection")
