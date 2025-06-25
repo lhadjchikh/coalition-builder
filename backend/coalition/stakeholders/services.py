@@ -180,21 +180,27 @@ class GeocodingService:
             return False
 
         if update_fields:
-            # Update location and assign districts
-            districts = self.assign_legislative_districts(point)
+            try:
+                # Update location and assign districts
+                districts = self.assign_legislative_districts(point)
 
-            stakeholder.location = point
-            stakeholder.congressional_district = districts["congressional_district"]
-            stakeholder.state_senate_district = districts["state_senate_district"]
-            stakeholder.state_house_district = districts["state_house_district"]
+                stakeholder.location = point
+                stakeholder.congressional_district = districts["congressional_district"]
+                stakeholder.state_senate_district = districts["state_senate_district"]
+                stakeholder.state_house_district = districts["state_house_district"]
 
-            stakeholder.save(
-                update_fields=[
-                    "location",
-                    "congressional_district",
-                    "state_senate_district",
-                    "state_house_district",
-                ],
-            )
+                stakeholder.save(
+                    update_fields=[
+                        "location",
+                        "congressional_district",
+                        "state_senate_district",
+                        "state_house_district",
+                    ],
+                )
+            except Exception as e:
+                logger.error(
+                    f"Failed to save geocoded stakeholder {stakeholder.id}: {e}",
+                )
+                return False
 
         return True
