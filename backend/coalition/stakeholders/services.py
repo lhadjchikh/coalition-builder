@@ -76,7 +76,7 @@ class GeocodingService:
                     SELECT EXISTS(
                         SELECT 1 FROM information_schema.routines 
                         WHERE routine_name = 'geocode' 
-                        AND routine_schema = 'public'
+                        AND routine_schema = 'tiger'
                     )
                     """,
                 )
