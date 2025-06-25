@@ -5,7 +5,7 @@ from coalition.regions.models import Region
 from coalition.stakeholders.models import Stakeholder
 
 
-class SpatialQueryManager:
+class SpatialQueryUtils:
     """Utility class for spatial queries related to stakeholders and districts"""
 
     @staticmethod
