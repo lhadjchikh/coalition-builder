@@ -45,7 +45,7 @@ cd "$PROJECT_ROOT/backend"
 # Install docs dependencies if not already installed
 if ! poetry show sphinx &>/dev/null; then
   log_info "Installing documentation dependencies..."
-  poetry install --with docs
+  poetry install --with docs --without gis
 fi
 
 # Build Sphinx documentation

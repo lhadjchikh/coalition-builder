@@ -73,7 +73,11 @@ backend/
 
    ```bash
    cd backend
+   # Install core dependencies
    poetry install
+
+   # For GIS/geographic data import functionality (optional)
+   poetry install --with gis
    ```
 
 2. **Run migrations**:
