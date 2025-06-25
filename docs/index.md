@@ -76,6 +76,16 @@ This architecture allows organizations to start simple (Django + React SPA) and 
 3. **[Development](development.md)** - Development workflow and contributing
 4. **[Deployment](deployment.md)** - Production deployment options
 
+## User Guides
+
+Comprehensive guides for managing your coalition platform:
+
+- **[Homepage Management](user-guides/homepage-management.md)** - Configure organization branding and homepage content
+- **[Campaign Management](user-guides/campaign-management.md)** - Create and manage policy advocacy campaigns
+- **[Stakeholder Management](user-guides/stakeholder-management.md)** - Organize and engage with supporters and partners
+- **[Endorsement Workflow](user-guides/endorsement-workflow.md)** - Collect and manage campaign endorsements
+- **[Content Management](user-guides/content-management.md)** - Complete guide to the Django admin interface
+
 ## Documentation
 
 - **[API Reference](api/)** - Auto-generated from Django models and views

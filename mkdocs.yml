@@ -37,6 +37,12 @@ nav:
   - Installation: installation.md
   - Configuration: configuration.md
   - Development: development.md
+  - User Guides:
+      - Homepage Management: user-guides/homepage-management.md
+      - Campaign Management: user-guides/campaign-management.md
+      - Stakeholder Management: user-guides/stakeholder-management.md
+      - Endorsement Workflow: user-guides/endorsement-workflow.md
+      - Content Management: user-guides/content-management.md
   - Deployment: deployment.md
   - Reference:
       - Environment Variables: reference/environment.md
