@@ -174,9 +174,10 @@ class GeocodingService:
         )
 
         if not point:
-            raise ValueError(
+            logger.warning(
                 f"Failed to geocode address for stakeholder {stakeholder.id}",
             )
+            return False
 
         if update_fields:
             # Update location and assign districts
