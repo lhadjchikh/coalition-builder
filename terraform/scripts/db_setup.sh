@@ -255,6 +255,9 @@ setup_database() {
 -- Enable PostGIS extension
 CREATE EXTENSION IF NOT EXISTS postgis;
 
+-- Enable PostGIS Tiger Geocoder extension
+CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder;
+
 -- Create or update application user with the generated password
 DO $
 BEGIN
@@ -314,6 +317,9 @@ database = """$database"""
 # Use triple quotes and proper escaping
 sql_content = f'''-- Enable PostGIS extension
 CREATE EXTENSION IF NOT EXISTS postgis;
+
+-- Enable PostGIS Tiger Geocoder extension
+CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder;
 
 -- Create or update application user with the generated password
 DO \$\$
