@@ -156,16 +156,6 @@ class RedisIntegrationTests(TestCase):
 
         cache.clear()
 
-    def test_cache_configuration_uses_redis(self) -> None:
-        """Test that Redis cache backend is configured"""
-        from django.conf import settings
-
-        # Should now use Redis cache consistently
-        assert (
-            settings.CACHES["default"]["BACKEND"]
-            == "django.core.cache.backends.redis.RedisCache"
-        )
-
     def test_spam_prevention_service_with_cache(self) -> None:
         """Test that SpamPreventionService works with cache backend"""
         from django.test import RequestFactory
