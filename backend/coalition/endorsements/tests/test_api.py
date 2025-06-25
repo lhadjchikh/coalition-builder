@@ -131,6 +131,16 @@ class EndorsementAPITest(TestCase):
             content_type="application/json",
         )
 
+        # Debug output for CI
+        if response.status_code != 200:
+            print(f"DEBUG: Response status: {response.status_code}")
+            print(f"DEBUG: Response content: {response.content.decode()}")
+            try:
+                response_json = response.json()
+                print(f"DEBUG: Response JSON: {response_json}")
+            except:
+                pass
+        
         assert response.status_code == 200
 
         # Verify stakeholder was created

@@ -182,6 +182,17 @@ class FormMetadataSecurityTests(TestCase):
 
         # Should process successfully but sanitize dangerous content
         # The referrer field should have dangerous characters removed
+        
+        # Debug output for CI
+        if response.status_code != 200:
+            print(f"DEBUG: Response status: {response.status_code}")
+            print(f"DEBUG: Response content: {response.content.decode()}")
+            try:
+                response_json = response.json()
+                print(f"DEBUG: Response JSON: {response_json}")
+            except:
+                pass
+        
         assert response.status_code == 200
 
     def test_oversized_referrer_validation(
@@ -267,4 +278,15 @@ class FormMetadataSecurityTests(TestCase):
         )
 
         # Should process successfully
+        
+        # Debug output for CI
+        if response.status_code != 200:
+            print(f"DEBUG: Response status: {response.status_code}")
+            print(f"DEBUG: Response content: {response.content.decode()}")
+            try:
+                response_json = response.json()
+                print(f"DEBUG: Response JSON: {response_json}")
+            except:
+                pass
+        
         assert response.status_code == 200
