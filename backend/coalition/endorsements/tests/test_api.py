@@ -39,7 +39,10 @@ class EndorsementAPITest(TestCase):
             organization="Green Farms Coalition",
             role="Director",
             email="jane@greenfarms.org",
+            street_address="123 Green St",
+            city="Alexandria",
             state="VA",
+            zip_code="22301",
             county="Fairfax County",
             type="nonprofit",
         )
@@ -110,7 +113,10 @@ class EndorsementAPITest(TestCase):
                 "organization": "Johnson Family Farm",
                 "role": "Owner",
                 "email": "bob@johnsonfarm.com",
+                "street_address": "123 Farm Road",
+                "city": "Westminster",
                 "state": "MD",
+                "zip_code": "21157",
                 "county": "Carroll County",
                 "type": "farmer",
             },
@@ -151,7 +157,10 @@ class EndorsementAPITest(TestCase):
                 "organization": "Green Farms Coalition",  # Exact match
                 "role": "Director",  # Exact match
                 "email": "jane@greenfarms.org",  # Same email as existing stakeholder
+                "street_address": "123 Green St",  # Exact match
+                "city": "Alexandria",  # Exact match
                 "state": "VA",  # Exact match
+                "zip_code": "22301",  # Exact match
                 "county": "Fairfax County",  # Exact match
                 "type": "nonprofit",  # Exact match
             },
@@ -191,7 +200,10 @@ class EndorsementAPITest(TestCase):
                 "name": "Test User",
                 "organization": "Test Org",
                 "email": "test@example.com",
+                "street_address": "123 Test St",
+                "city": "Richmond",
                 "state": "VA",
+                "zip_code": "23220",
                 "type": "other",
             },
             "form_metadata": get_valid_form_metadata(),
@@ -215,7 +227,10 @@ class EndorsementAPITest(TestCase):
                 "name": "Test User",
                 "organization": "Test Org",
                 "email": "test@example.com",
+                "street_address": "123 Test St",
+                "city": "Richmond",
                 "state": "VA",
+                "zip_code": "23220",
                 "type": "other",
             },
             "form_metadata": get_valid_form_metadata(),
@@ -238,7 +253,10 @@ class EndorsementAPITest(TestCase):
                 "organization": self.stakeholder.organization,
                 "role": self.stakeholder.role,
                 "email": self.stakeholder.email,
+                "street_address": self.stakeholder.street_address,
+                "city": self.stakeholder.city,
                 "state": self.stakeholder.state,
+                "zip_code": self.stakeholder.zip_code,
                 "county": self.stakeholder.county,
                 "type": self.stakeholder.type,
             },
@@ -315,7 +333,10 @@ class EndorsementAPITest(TestCase):
                 "organization": "New Organization",
                 "role": "Manager",
                 "email": "new@example.com",
+                "street_address": "456 Business Ave",
+                "city": "Norfolk",
                 "state": "VA",
+                "zip_code": "23510",
                 "county": "New County",
                 "type": "business",
             },

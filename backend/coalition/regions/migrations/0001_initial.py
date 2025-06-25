@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
                             ),
                         ],
                         db_index=True,
-                        max_length=20,
+                        max_length=30,
                     ),
                 ),
                 (
