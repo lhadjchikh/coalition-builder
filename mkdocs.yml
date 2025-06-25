@@ -38,7 +38,6 @@ nav:
   - Configuration: configuration.md
   - Development: development.md
   - Deployment: deployment.md
-
   - Reference:
       - Environment Variables: reference/environment.md
       - CLI Reference: reference/cli.md
