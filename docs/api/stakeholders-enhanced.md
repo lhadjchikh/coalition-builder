@@ -78,7 +78,6 @@ Creates a new stakeholder with automatic address validation and geocoding.
     "abbrev": "MD-HD-21A",
     "type": "state_house_district"
   },
-  "geocoded_at": "2025-06-24T15:30:45Z",
   "geocoding_failed": false,
   "created_at": "2025-06-24T15:30:45Z",
   "updated_at": "2025-06-24T15:30:45Z"
@@ -258,8 +257,6 @@ Geocoding happens automatically when:
 Check geocoding status via the API response fields:
 
 - `latitude`/`longitude`: Coordinates (null if not geocoded)
-- `geocoded_at`: Timestamp of last successful geocoding (null if never)
-- `geocoding_failed`: Boolean indicating if last attempt failed
 
 ### Manual Geocoding Endpoint
 
@@ -388,8 +385,8 @@ Same filtering options as list endpoint.
 #### CSV Columns
 
 ```csv
-name,organization,email,type,street_address,city,state,zip_code,county,latitude,longitude,congressional_district,state_senate_district,state_house_district,geocoded_at,created_at
-John Doe,Acme Corp,john@example.com,individual,123 Main St,Baltimore,MD,21201,Baltimore,39.2904,-76.6122,MD-03,MD-SD-21,MD-HD-21A,2025-06-24T15:30:45Z,2025-06-24T15:30:45Z
+name,organization,email,type,street_address,city,state,zip_code,county,latitude,longitude,congressional_district,state_senate_district,state_house_district,created_at
+John Doe,Acme Corp,john@example.com,individual,123 Main St,Baltimore,MD,21201,Baltimore,39.2904,-76.6122,MD-03,MD-SD-21,MD-HD-21A,2025-06-24T15:30:45Z
 ```
 
 #### JSON Format
@@ -411,7 +408,6 @@ John Doe,Acme Corp,john@example.com,individual,123 Main St,Baltimore,MD,21201,Ba
     "congressional_district": "MD-03",
     "state_senate_district": "MD-SD-21",
     "state_house_district": "MD-HD-21A",
-    "geocoded_at": "2025-06-24T15:30:45Z",
     "created_at": "2025-06-24T15:30:45Z"
   }
 ]

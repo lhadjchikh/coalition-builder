@@ -80,8 +80,6 @@ class Migration(migrations.Migration):
                         to="regions.region",
                     ),
                 ),
-                # Geocoding timestamp
-                ("geocoded_at", models.DateTimeField(auto_now_add=True)),
                 # Stakeholder type and metadata
                 (
                     "type",

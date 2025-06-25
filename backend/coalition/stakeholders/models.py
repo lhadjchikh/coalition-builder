@@ -59,9 +59,6 @@ class Stakeholder(models.Model):
         limit_choices_to={"type": "state_house_district"},
     )
 
-    # Geocoding status
-    geocoded_at = models.DateTimeField(auto_now_add=True)
-
     type = models.CharField(max_length=50, choices=STAKEHOLDER_TYPE_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

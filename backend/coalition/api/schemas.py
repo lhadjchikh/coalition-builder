@@ -59,7 +59,6 @@ class StakeholderOut(ModelSchema):
             "zip_code",
             "county",
             "type",
-            "geocoded_at",
             "created_at",
             "updated_at",
         ]

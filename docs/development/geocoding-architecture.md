@@ -293,8 +293,7 @@ def geocode_and_assign_districts(self, stakeholder) -> bool:
     # 3. Handle geocoding result
     if point:
         stakeholder.location = point
-        stakeholder.geocoded_at = timezone.now()
-        stakeholder.geocoding_failed = False
+        # Geocoding status tracked via presence of location field
 
         # 4. Assign legislative districts
         districts = self.assign_legislative_districts(point)
@@ -329,8 +328,6 @@ CREATE TABLE stakeholders_stakeholder (
     congressional_district_id INTEGER REFERENCES regions_region(id),
     state_legislative_upper_id INTEGER REFERENCES regions_region(id),
     state_legislative_lower_id INTEGER REFERENCES regions_region(id),
-    geocoded_at TIMESTAMP WITH TIME ZONE,
-    geocoding_failed BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

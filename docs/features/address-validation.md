@@ -82,7 +82,6 @@ The `Stakeholder` model has been extended with address and location fields:
 - `congressional_district`: Foreign key to congressional district Region
 - `state_senate_district`: Foreign key to state senate district Region
 - `state_house_district`: Foreign key to state house district Region
-- `geocoded_at`: Timestamp of geocoding (auto-populated)
 
 **Helper Properties:**
 

@@ -2,7 +2,7 @@ import time
 from typing import Any
 
 from django.core.management.base import BaseCommand
-from django.db.models import Q, QuerySet
+from django.db.models import QuerySet
 
 from coalition.stakeholders.models import Stakeholder
 from coalition.stakeholders.services import GeocodingService
@@ -167,9 +167,7 @@ class Command(BaseCommand):
 
         # All stakeholders have complete addresses now, so just check for missing
         # location
-        query = Stakeholder.objects.filter(
-            Q(location__isnull=True) | Q(geocoded_at__isnull=True),
-        )
+        query = Stakeholder.objects.filter(location__isnull=True)
 
         # Filter by state if provided
         if state_filter:

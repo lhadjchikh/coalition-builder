@@ -188,7 +188,6 @@ class TestGeocodingService(TestCase):
 
         assert success
         assert self.sample_stakeholder.location is not None
-        assert self.sample_stakeholder.geocoded_at is not None
         assert self.sample_stakeholder.congressional_district.abbrev == "TX-21"
         assert self.sample_stakeholder.state_senate_district.abbrev == "TX-SD-14"
         assert self.sample_stakeholder.state_house_district.abbrev == "TX-HD-46"

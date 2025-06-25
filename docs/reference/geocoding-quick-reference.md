@@ -172,9 +172,7 @@ stakeholder.zip_code       # CharField(max_length=10, blank=True)
 stakeholder.county         # CharField(max_length=100, blank=True)
 
 # Geographic fields
-stakeholder.location       # PointField(blank=True, null=True, spatial_index=True)
-stakeholder.geocoded_at    # DateTimeField(blank=True, null=True)
-stakeholder.geocoding_failed  # BooleanField(default=False)
+stakeholder.location       # PointField(geography=True, spatial_index=True)
 
 # District relationships (ForeignKey to Region)
 stakeholder.congressional_district    # Congressional district

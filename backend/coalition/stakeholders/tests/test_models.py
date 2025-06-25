@@ -107,22 +107,6 @@ class TestStakeholderModel(TestCase):
         assert stakeholder.state_senate_district.abbrev == "MD-SD-21"
         assert stakeholder.state_house_district.abbrev == "MD-HD-21A"
 
-    def test_geocoding_timestamp_field(self) -> None:
-        """Test geocoding timestamp field"""
-        stakeholder = Stakeholder.objects.create(
-            name="Geocode Test",
-            organization="Test Org",
-            email="geocode@example.com",
-            street_address="321 Test St",
-            city="Baltimore",
-            state="MD",
-            zip_code="21203",
-            location=Point(-76.6122, 39.2904),
-            type="individual",
-        )
-
-        assert stakeholder.geocoded_at is not None
-
     def test_full_address_formatting(self) -> None:
         """Test various full_address property scenarios"""
         # Full address (all fields required now)
