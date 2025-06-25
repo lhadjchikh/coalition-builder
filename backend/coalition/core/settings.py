@@ -81,12 +81,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_extensions",
     "django_ratelimit",
     "coalition.core.apps.CoreConfig",
     "coalition.campaigns.apps.CampaignsConfig",
     "coalition.legislators.apps.LegislatorsConfig",
     "coalition.regions.apps.RegionsConfig",
-    # New separate apps for stakeholders and endorsements
     "coalition.stakeholders",
     "coalition.endorsements",
 ]
