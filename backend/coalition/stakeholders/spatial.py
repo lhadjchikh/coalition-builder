@@ -35,7 +35,7 @@ class SpatialQueryUtils:
             | Q(type="state_senate_district")
             | Q(type="state_house_district"),
             geom__contains=point,
-        ).select_related()
+        )
 
         # Organize results by district type
         result = {
@@ -89,7 +89,7 @@ class SpatialQueryUtils:
             # Only include stakeholders with verified endorsements
             base_query = base_query.filter(endorsements__email_verified=True).distinct()
 
-        return list(base_query.select_related().all())
+        return list(base_query.all())
 
     @staticmethod
     def get_stakeholders_by_district_type(
@@ -140,11 +140,7 @@ class SpatialQueryUtils:
                     continue
 
             # Get stakeholders assigned to this district
-            stakeholders = (
-                Stakeholder.objects.filter(**{field_name: district})
-                .select_related()
-                .all()
-            )
+            stakeholders = Stakeholder.objects.filter(**{field_name: district}).all()
 
             result[district.name] = list(stakeholders)
 
@@ -234,7 +230,5 @@ class SpatialQueryUtils:
             Stakeholder.objects.filter(
                 location__isnull=False,
                 congressional_district__isnull=True,
-            )
-            .select_related()
-            .all(),
+            ).all(),
         )
