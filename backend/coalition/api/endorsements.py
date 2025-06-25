@@ -705,11 +705,7 @@ def export_endorsements_json(
                         else None
                     ),
                     "type": endorsement.stakeholder.type,
-                    "geocoded_at": (
-                        endorsement.stakeholder.geocoded_at.isoformat()
-                        if endorsement.stakeholder.geocoded_at
-                        else None
-                    ),
+                    "has_location": endorsement.stakeholder.location is not None,
                 },
                 "statement": endorsement.statement,
                 "public_display": endorsement.public_display,
