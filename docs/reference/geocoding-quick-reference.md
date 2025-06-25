@@ -67,15 +67,14 @@ from django.contrib.gis.geos import Point
 utils = SpatialQueryUtils()
 
 # Find stakeholders near a point
-nearby = utils.find_stakeholders_near_point(
-    latitude=39.2904,
-    longitude=-76.6122,
-    distance_km=5
+nearby = utils.find_nearby_stakeholders(
+    point=Point(-76.6122, 39.2904),
+    radius_miles=3.1  # ~5km
 )
 print(f"Found {len(nearby)} nearby stakeholders")
 
 # Get stakeholders by district type
-by_district = utils.get_stakeholders_by_district(
+by_district = utils.get_stakeholders_by_district_type(
     district_type="congressional_district",
     state_filter="MD"
 )
