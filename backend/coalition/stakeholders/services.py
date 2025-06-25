@@ -70,6 +70,20 @@ class GeocodingService:
         """Use PostGIS Tiger geocoder for US addresses"""
         try:
             with connection.cursor() as cursor:
+                # Check if geocode function exists before using it
+                cursor.execute(
+                    """
+                    SELECT EXISTS(
+                        SELECT 1 FROM information_schema.routines 
+                        WHERE routine_name = 'geocode' 
+                        AND routine_schema = 'public'
+                    )
+                    """,
+                )
+                if not cursor.fetchone()[0]:
+                    logger.info("Tiger geocode function not available")
+                    return None
+
                 # Format address for Tiger geocoder
                 address_string = (
                     f"{address_parts['street_address']}, "
