@@ -33,6 +33,17 @@ geopy = "^2.4.1"
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
 ruff = "^0.11.12"
+pytest = "^8.3.3"
+pytest-django = "^4.9.0"
+
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+sphinx = "^7.2.6"
+sphinx-autodoc-typehints = "^2.0.0"
+sphinx-autoapi = "^3.0.0"
+myst-parser = "^2.0.0"
 
 [tool.black]
 line-length = 88

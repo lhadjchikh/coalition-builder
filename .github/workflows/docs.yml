@@ -39,24 +39,58 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
-      - name: Cache dependencies
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Cache Poetry dependencies
         uses: actions/cache@v4
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('docs/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          path: backend/.venv
+          key: poetry-${{ runner.os }}-${{ hashFiles('backend/poetry.lock') }}
 
-      - name: Install dependencies
-        run: pip install -r docs/requirements.txt
+      - name: Install backend dependencies
+        working-directory: backend
+        run: poetry install --with docs
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install MkDocs dependencies
+        run: pip install mkdocs mkdocs-material
 
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v4
 
-      - name: Build documentation
+      - name: Build API documentation
+        working-directory: backend
+        run: |
+          export DJANGO_SETTINGS_MODULE=coalition.core.settings
+          poetry run sphinx-build -b html docs docs/_build/html
+
+      - name: Build frontend documentation
+        working-directory: frontend
+        run: npm run docs
+
+      - name: Copy API docs to site
+        run: |
+          mkdir -p docs/api
+          cp -r backend/docs/_build/html/* docs/api/
+
+      - name: Build main documentation
         run: mkdocs build --clean --strict
 
       - name: Upload artifact
