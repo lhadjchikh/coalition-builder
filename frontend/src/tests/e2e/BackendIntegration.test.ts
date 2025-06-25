@@ -67,24 +67,24 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
     ]);
 
     // Store for cleanup
-    API._originals = originalMethods;
+    (API as any)._originals = originalMethods;
 
     console.log('API endpoint being tested:', process.env.REACT_APP_API_URL || 'mocked API');
   });
 
   // Restore original methods
   afterEach(() => {
-    if (API._originals) {
-      API.getCampaigns = API._originals.getCampaigns;
-      API.getEndorsers = API._originals.getEndorsers;
-      API.getLegislators = API._originals.getLegislators;
-      delete API._originals;
+    if ((API as any)._originals) {
+      API.getCampaigns = (API as any)._originals.getCampaigns;
+      API.getEndorsers = (API as any)._originals.getEndorsers;
+      API.getLegislators = (API as any)._originals.getLegislators;
+      delete (API as any)._originals;
     }
   });
 
   test('Can fetch campaigns from the backend', async () => {
     // Get campaigns using the mocked API
-    let campaigns;
+    let campaigns: any;
 
     // Wrap API call in act
     await act(async () => {
@@ -96,10 +96,10 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
 
     // Verify we got an array response
     expect(Array.isArray(campaigns)).toBe(true);
-    expect(campaigns.length).toBeGreaterThan(0);
+    expect(campaigns!.length).toBeGreaterThan(0);
 
     // Verify campaign structure
-    const campaign = campaigns[0];
+    const campaign = campaigns![0];
     expect(campaign).toHaveProperty('id');
     expect(campaign).toHaveProperty('name');
     expect(campaign).toHaveProperty('title');
@@ -108,7 +108,7 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
 
   test('Can fetch endorsers from the backend', async () => {
     // Get endorsers using the mocked API
-    let endorsers;
+    let endorsers: any;
 
     // Wrap API call in act
     await act(async () => {
@@ -120,10 +120,10 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
 
     // Verify we got an array response
     expect(Array.isArray(endorsers)).toBe(true);
-    expect(endorsers.length).toBeGreaterThan(0);
+    expect(endorsers!.length).toBeGreaterThan(0);
 
     // Verify endorser structure
-    const endorser = endorsers[0];
+    const endorser = endorsers![0];
     expect(endorser).toHaveProperty('id');
     expect(endorser).toHaveProperty('name');
     expect(endorser).toHaveProperty('organization');
@@ -133,7 +133,7 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
 
   test('Can fetch legislators from the backend', async () => {
     // Get legislators using the mocked API
-    let legislators;
+    let legislators: any;
 
     // Wrap API call in act
     await act(async () => {
@@ -145,10 +145,10 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
 
     // Verify we got an array response
     expect(Array.isArray(legislators)).toBe(true);
-    expect(legislators.length).toBeGreaterThan(0);
+    expect(legislators!.length).toBeGreaterThan(0);
 
     // Verify legislator structure
-    const legislator = legislators[0];
+    const legislator = legislators![0];
     expect(legislator).toHaveProperty('id');
     expect(legislator).toHaveProperty('first_name');
     expect(legislator).toHaveProperty('last_name');
