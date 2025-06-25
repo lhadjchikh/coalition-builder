@@ -8,6 +8,7 @@ from geopy.exc import GeocoderServiceError, GeocoderTimedOut
 from geopy.geocoders import Nominatim
 
 from coalition.regions.models import Region
+from coalition.stakeholders.constants import DistrictType
 from coalition.stakeholders.spatial import SpatialQueryUtils
 from coalition.stakeholders.validators import AddressValidator
 
@@ -162,9 +163,9 @@ class GeocodingService:
         except Exception as e:
             logger.error(f"District assignment failed: {e}")
             return {
-                "congressional_district": None,
-                "state_senate_district": None,
-                "state_house_district": None,
+                DistrictType.CONGRESSIONAL: None,
+                DistrictType.STATE_SENATE: None,
+                DistrictType.STATE_HOUSE: None,
             }
 
     def geocode_and_assign_districts(

@@ -1,14 +1,25 @@
 from django.contrib.gis.db.models import MultiPolygonField, PointField
 from django.db import models
 
+from coalition.stakeholders.constants import DistrictType
+
 
 class Region(models.Model):
     REGION_TYPE_CHOICES = [
         ("state", "State"),
         ("county", "County"),
-        ("congressional_district", "Congressional District"),
-        ("state_senate_district", "State Senate District"),
-        ("state_house_district", "State House District"),
+        (
+            DistrictType.CONGRESSIONAL,
+            DistrictType.get_display_name(DistrictType.CONGRESSIONAL),
+        ),
+        (
+            DistrictType.STATE_SENATE,
+            DistrictType.get_display_name(DistrictType.STATE_SENATE),
+        ),
+        (
+            DistrictType.STATE_HOUSE,
+            DistrictType.get_display_name(DistrictType.STATE_HOUSE),
+        ),
     ]
 
     parent = models.ForeignKey(
