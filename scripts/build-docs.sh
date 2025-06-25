@@ -48,9 +48,19 @@ if ! command -v docker >/dev/null 2>&1; then
   exit 1
 fi
 
+# Detect Docker Compose command (V1 vs V2)
+if command -v docker-compose >/dev/null 2>&1; then
+  DOCKER_COMPOSE="docker-compose"
+elif docker compose version >/dev/null 2>&1; then
+  DOCKER_COMPOSE="docker compose"
+else
+  log_error "Docker Compose is required to build Django API documentation"
+  exit 1
+fi
+
 # Build documentation using Docker to ensure GDAL is available
 log_info "Using Docker to build Sphinx documentation with GDAL support..."
-if docker-compose run --rm backend sh -c "
+if $DOCKER_COMPOSE run --rm backend sh -c "
   cd /app &&
   poetry install --with docs &&
   poetry run sphinx-build -b html docs docs/_build/html

@@ -68,11 +68,11 @@ jobs:
         uses: actions/configure-pages@v4
 
       - name: Build Docker images
-        run: docker-compose build backend
+        run: docker compose build backend
 
       - name: Build API documentation using Docker
         run: |
-          docker-compose run --rm backend sh -c "
+          docker compose run --rm backend sh -c "
             cd /app &&
             poetry install --with docs &&
             export DJANGO_SETTINGS_MODULE=coalition.core.settings &&
