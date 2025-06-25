@@ -3,7 +3,7 @@
   "entryPoints": ["src"],
   "entryPointStrategy": "expand",
   "out": "../docs/frontend-api",
-  "plugin": ["typedoc-plugin-markdown"],
+  "plugins": ["typedoc-plugin-markdown"],
   "theme": "markdown",
   "readme": "none",
   "hideGenerator": true,
