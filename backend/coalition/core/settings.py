@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 import dj_database_url
+from urllib.parse import quote
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -131,7 +132,7 @@ WSGI_APPLICATION = "coalition.core.wsgi.application"
 # Use SQLite as a fallback if DATABASE_URL is not set
 if os.getenv("DATABASE_URL"):
     # Parse DATABASE_URL and ensure PostGIS is used for PostgreSQL
-    db_config = dj_database_url.config(default=os.getenv("DATABASE_URL"))
+    db_config = dj_database_url.config(default=quote(os.getenv("DATABASE_URL", "")))
 
     # If using PostgreSQL, make sure to use the PostGIS backend
     if db_config.get("ENGINE") == "django.db.backends.postgresql":
