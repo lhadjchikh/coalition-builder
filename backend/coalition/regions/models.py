@@ -26,7 +26,7 @@ class Region(models.Model):
         blank=True,
         null=True,
         db_index=True,
-        help_text="Abbreviation for the region (e.g., 'MD', 'MD-01', 'CA-12')",
+        help_text="Abbreviation for the region (e.g., 'MD', 'CA-12')",
     )
     type = models.CharField(choices=REGION_TYPE_CHOICES, max_length=30, db_index=True)
     coords = PointField(

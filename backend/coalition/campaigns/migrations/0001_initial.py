@@ -25,7 +25,13 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("title", models.CharField(max_length=200)),
-                ("slug", models.SlugField(unique=True)),
+                (
+                    "name",
+                    models.SlugField(
+                        help_text="Machine-readable name for the campaign",
+                        unique=True,
+                    ),
+                ),
                 ("summary", models.TextField()),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("active", models.BooleanField(default=True)),

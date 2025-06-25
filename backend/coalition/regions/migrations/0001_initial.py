@@ -43,14 +43,8 @@ class Migration(migrations.Migration):
                             ("state", "State"),
                             ("county", "County"),
                             ("congressional_district", "Congressional District"),
-                            (
-                                "state_senate_district",
-                                "State Legislative District - Upper Chamber",
-                            ),
-                            (
-                                "state_house_district",
-                                "State Legislative District - Lower Chamber",
-                            ),
+                            ("state_senate_district", "State Senate District"),
+                            ("state_house_district", "State House District"),
                         ],
                         db_index=True,
                         max_length=30,
