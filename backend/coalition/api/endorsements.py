@@ -71,8 +71,8 @@ def _validate_stakeholder_data_match(
         == (submitted_data.get("street_address") or "").lower()
         and (existing_stakeholder.city or "").lower()
         == (submitted_data.get("city") or "").lower()
-        and (existing_stakeholder.zip_code or "").replace("-", "")
-        == (submitted_data.get("zip_code") or "").replace("-", "")
+        and (existing_stakeholder.zip_code or "").strip().replace("-", "")
+        == (submitted_data.get("zip_code") or "").strip().replace("-", "")
     )
 
     if not data_matches:
