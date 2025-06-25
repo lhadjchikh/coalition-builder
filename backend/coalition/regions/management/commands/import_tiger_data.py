@@ -7,7 +7,11 @@ import zipfile
 from typing import Any
 from urllib.request import urlretrieve
 
-from django.contrib.gis.gdal import DataSource
+try:
+    from django.contrib.gis.gdal import DataSource
+except ImportError:
+    # GDAL not available - this is optional for docs builds
+    DataSource = None
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -97,15 +101,20 @@ class Command(BaseCommand):
             help="Clear existing data of this type before importing",
         )
 
-    def handle(self, **options: Any) -> None:
-        district_type = options["type"]
-        year = options["year"]
-        state_fips = options.get("state")
-        local_file = options.get("file")
-        dry_run = options["dry_run"]
-        clear_existing = options["clear"]
+    def _validate_gdal_availability(self) -> None:
+        """Check if GDAL is available."""
+        if DataSource is None:
+            msg = "GDAL is required for this command. "
+            msg += "Install with: poetry install --with gis"
+            raise CommandError(msg)
 
-        # Validate state requirement for state legislative districts
+    def _validate_state_requirement(
+        self,
+        district_type: str,
+        state_fips: str | None,
+        local_file: str | None,
+    ) -> None:
+        """Validate state requirement for state legislative districts."""
         if (
             district_type in ["state_senate", "state_house"]
             and not state_fips
@@ -116,59 +125,102 @@ class Command(BaseCommand):
                 "Use --state option (e.g., --state 24 for Maryland)",
             )
 
+    def _cleanup_temp_files(
+        self,
+        tiger_path: str,
+        carto_path: str | None,
+        local_file: str | None,
+    ) -> None:
+        """Clean up downloaded temporary files."""
+        if not local_file:
+            for path in [tiger_path, carto_path]:
+                if path:
+                    try:
+                        # Remove the shapefile
+                        os.unlink(path)
+                        # Remove the parent directory
+                        parent_dir = os.path.dirname(path)
+                        if parent_dir and os.path.exists(parent_dir):
+                            shutil.rmtree(parent_dir)
+                    except OSError:
+                        pass
+
+    def _process_import(
+        self,
+        tiger_path: str,
+        carto_path: str | None,
+        district_type: str,
+        dry_run: bool,
+    ) -> int:
+        """Process the import of shapefile data."""
+        imported_count = self._import_shapefile(
+            tiger_path,
+            carto_path,
+            district_type,
+            dry_run,
+        )
+
+        if dry_run:
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"DRY RUN: Would import {imported_count} "
+                    f"{district_type} districts",
+                ),
+            )
+        else:
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Successfully imported {imported_count} "
+                    f"{district_type} districts",
+                ),
+            )
+
+        return imported_count
+
+    def _get_shapefile_paths(
+        self,
+        district_type: str,
+        year: int,
+        state_fips: str | None,
+        local_file: str | None,
+    ) -> tuple[str, str | None]:
+        """Get or download shapefile paths."""
+        if local_file:
+            return local_file, None
+        else:
+            return self._download_shapefiles(district_type, year, state_fips)
+
+    def handle(self, **options: Any) -> None:
+        # Validate prerequisites
+        self._validate_gdal_availability()
+
+        district_type = options["type"]
+        year = options["year"]
+        state_fips = options.get("state")
+        local_file = options.get("file")
+        dry_run = options["dry_run"]
+        clear_existing = options["clear"]
+
+        # Validate inputs
+        self._validate_state_requirement(district_type, state_fips, local_file)
+
         # Clear existing data if requested
         if clear_existing and not dry_run:
             self._clear_existing_data(district_type)
 
         # Get or download shapefiles
-        if local_file:
-            tiger_path = local_file
-            carto_path = None  # No cartographic file provided
-        else:
-            tiger_path, carto_path = self._download_shapefiles(
-                district_type,
-                year,
-                state_fips,
-            )
+        tiger_path, carto_path = self._get_shapefile_paths(
+            district_type,
+            year,
+            state_fips,
+            local_file,
+        )
 
         try:
-            # Import the data
-            imported_count = self._import_shapefile(
-                tiger_path,
-                carto_path,
-                district_type,
-                dry_run,
-            )
-
-            if dry_run:
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        f"DRY RUN: Would import {imported_count} "
-                        f"{district_type} districts",
-                    ),
-                )
-            else:
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        f"Successfully imported {imported_count} "
-                        f"{district_type} districts",
-                    ),
-                )
+            self._process_import(tiger_path, carto_path, district_type, dry_run)
 
         finally:
-            # Clean up downloaded files if they were temporary
-            if not local_file:
-                for path in [tiger_path, carto_path]:
-                    if path:
-                        try:
-                            # Remove the shapefile
-                            os.unlink(path)
-                            # Remove the parent directory
-                            parent_dir = os.path.dirname(path)
-                            if parent_dir and os.path.exists(parent_dir):
-                                shutil.rmtree(parent_dir)
-                        except OSError:
-                            pass
+            self._cleanup_temp_files(tiger_path, carto_path, local_file)
 
     def _clear_existing_data(self, district_type: str) -> None:
         """Clear existing regions of the specified type"""
