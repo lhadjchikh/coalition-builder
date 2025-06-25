@@ -14,6 +14,7 @@ Comprehensive documentation generation script that builds all project documentat
 
 **Prerequisites:**
 
+- Git (for repository operations and version information)
 - Poetry (for Python documentation dependencies)
 - Node.js/npm (for TypeScript documentation)
 - MkDocs with mkdocs-material (optional, for main docs)
