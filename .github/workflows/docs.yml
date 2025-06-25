@@ -60,14 +60,6 @@ jobs:
           path: backend/.venv
           key: poetry-${{ runner.os }}-${{ hashFiles('backend/poetry.lock') }}
 
-      - name: Install backend dependencies
-        working-directory: backend
-        run: poetry install --with docs
-
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
-
       - name: Install MkDocs dependencies
         run: pip install mkdocs mkdocs-material
 
@@ -75,11 +67,21 @@ jobs:
         id: pages
         uses: actions/configure-pages@v4
 
-      - name: Build API documentation
-        working-directory: backend
+      - name: Build Docker images
+        run: docker-compose build backend
+
+      - name: Build API documentation using Docker
         run: |
-          export DJANGO_SETTINGS_MODULE=coalition.core.settings
-          poetry run sphinx-build -b html docs docs/_build/html
+          docker-compose run --rm backend sh -c "
+            cd /app &&
+            poetry install --with docs &&
+            export DJANGO_SETTINGS_MODULE=coalition.core.settings &&
+            poetry run sphinx-build -b html docs docs/_build/html
+          "
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
 
       - name: Build frontend documentation
         working-directory: frontend

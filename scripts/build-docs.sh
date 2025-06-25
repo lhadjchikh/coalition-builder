@@ -38,23 +38,28 @@ rm -rf "$PROJECT_ROOT/docs/api"
 rm -rf "$PROJECT_ROOT/docs/frontend-api"
 rm -rf "$PROJECT_ROOT/backend/docs/_build"
 
-# Build Django API documentation with Sphinx
+# Build Django API documentation with Sphinx using Docker
 log_info "Building Django API documentation..."
-cd "$PROJECT_ROOT/backend"
+cd "$PROJECT_ROOT"
 
-# Install docs dependencies if not already installed
-if ! poetry show sphinx &>/dev/null; then
-  log_info "Installing documentation dependencies..."
-  poetry install --with docs --without gis
+# Check if Docker is available
+if ! command -v docker >/dev/null 2>&1; then
+  log_error "Docker is required to build Django API documentation (for GDAL support)"
+  exit 1
 fi
 
-# Build Sphinx documentation
-if poetry run sphinx-build -b html docs docs/_build/html; then
+# Build documentation using Docker to ensure GDAL is available
+log_info "Using Docker to build Sphinx documentation with GDAL support..."
+if docker-compose run --rm backend sh -c "
+  cd /app &&
+  poetry install --with docs &&
+  poetry run sphinx-build -b html docs docs/_build/html
+"; then
   log_success "Django API documentation built successfully"
 
   # Copy to docs directory for GitHub Pages
   mkdir -p "$PROJECT_ROOT/docs/api"
-  cp -r docs/_build/html/* "$PROJECT_ROOT/docs/api/"
+  cp -r backend/docs/_build/html/* "$PROJECT_ROOT/docs/api/"
   log_success "Django API docs copied to docs/api/"
 else
   log_error "Failed to build Django API documentation"

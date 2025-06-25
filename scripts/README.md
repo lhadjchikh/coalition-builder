@@ -15,7 +15,7 @@ Comprehensive documentation generation script that builds all project documentat
 **Prerequisites:**
 
 - Git (for repository operations and version information)
-- Poetry (for Python documentation dependencies)
+- Docker and Docker Compose (for Django API documentation with GDAL support)
 - Node.js/npm (for TypeScript documentation)
 - MkDocs with mkdocs-material (optional, for main docs)
 
