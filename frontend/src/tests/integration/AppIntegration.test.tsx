@@ -5,9 +5,13 @@ import API from '../../services/api';
 
 // Mock the API module
 jest.mock('../../services/api', () => ({
-  getCampaigns: jest.fn(),
-  getEndorsers: jest.fn(),
-  getLegislators: jest.fn(),
+  __esModule: true,
+  default: {
+    getCampaigns: jest.fn(),
+    getEndorsers: jest.fn(),
+    getLegislators: jest.fn(),
+    getBaseUrl: jest.fn(() => ''),
+  },
 }));
 
 describe('App Integration Test', () => {

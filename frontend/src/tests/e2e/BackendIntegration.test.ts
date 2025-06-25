@@ -8,7 +8,7 @@
  * cd ../backend && python manage.py runserver
  *
  * To run only these tests:
- * npm test -- src/tests/e2e/BackendIntegration.test.js
+ * npm test -- src/tests/e2e/BackendIntegration.test.ts
  */
 
 import { act } from '@testing-library/react';
