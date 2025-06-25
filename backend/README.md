@@ -13,9 +13,9 @@ policy campaigns, stakeholders, endorsements, legislators, and dynamic homepage 
 
 Quick links:
 
-- [Backend Development Guide](../docs/development/backend.md)
-- [API Reference](../docs/api/index.md)
-- [Development Setup](../docs/development/setup.md)
+- [Development Guide](https://lhadjchikh.github.io/coalition-builder/development/)
+- [API Reference](https://lhadjchikh.github.io/coalition-builder/api/)
+- [Installation Guide](https://lhadjchikh.github.io/coalition-builder/installation/)
 
 ## Technology Stack
 

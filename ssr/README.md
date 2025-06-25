@@ -8,8 +8,8 @@ This directory contains the Next.js application that provides server-side render
 
 Quick links:
 
-- [SSR Development Guide](../docs/development/ssr.md)
-- [Development Setup](../docs/development/setup.md)
+- [Development Guide](https://lhadjchikh.github.io/coalition-builder/development/)
+- [Installation Guide](https://lhadjchikh.github.io/coalition-builder/installation/)
 
 ## Architecture
 

@@ -177,7 +177,7 @@ When modifying scripts:
 
 ## 🔗 Related Documentation
 
-- [Backend Scripts](../backend/scripts/README.md) - Django-specific utilities
+- [Backend Scripts](../backend/scripts/) - Django-specific utilities
 - [Frontend Package Scripts](../frontend/package.json) - npm scripts for frontend
-- [Terraform Testing](../terraform/tests/README.md) - Infrastructure testing
-- [CI/CD Workflows](../.github/workflows/README.md) - Automated pipeline scripts
+- [Terraform Testing](../terraform/tests/) - Infrastructure testing
+- [Development Guide](https://lhadjchikh.github.io/coalition-builder/development/) - Complete development workflow
