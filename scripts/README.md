@@ -8,6 +8,31 @@ This directory contains project-wide scripts that operate across multiple compon
 
 Comprehensive linting and formatting script that processes the entire codebase.
 
+### `build-docs.sh`
+
+Comprehensive documentation generation script that builds all project documentation.
+
+**Prerequisites:**
+
+- Poetry (for Python documentation dependencies)
+- Node.js/npm (for TypeScript documentation)
+- MkDocs with mkdocs-material (optional, for main docs)
+
+**Usage:**
+
+```bash
+# Build all documentation
+./scripts/build-docs.sh
+```
+
+**Generated Documentation:**
+
+- **Django API**: `docs/api/` - Sphinx-generated backend API documentation
+- **React Components**: `docs/frontend-api/` - TypeDoc-generated frontend documentation
+- **Main Documentation**: `site/` - MkDocs-generated project documentation
+
+**Output:** The script provides colored logging and will exit with non-zero status if critical builds fail.
+
 ### `setup_dev_env.py`
 
 Cross-platform development environment setup script that installs and configures all tools needed for linting.
@@ -177,7 +202,7 @@ When modifying scripts:
 
 ## 🔗 Related Documentation
 
-- [Backend Scripts](../backend/scripts/) - Django-specific utilities
+- [Backend Scripts](../backend/scripts/README.md) - Django-specific utilities
 - [Frontend Package Scripts](../frontend/package.json) - npm scripts for frontend
 - [Terraform Testing](../terraform/tests/) - Infrastructure testing
 - [Development Guide](https://lhadjchikh.github.io/coalition-builder/development/) - Complete development workflow
