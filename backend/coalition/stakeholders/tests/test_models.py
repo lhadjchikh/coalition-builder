@@ -19,6 +19,7 @@ class TestStakeholderModel(TestCase):
             state="MD",
             zip_code="21201",
             county="Baltimore",
+            location=Point(-76.6122, 39.2904),
             type="individual",
         )
 
