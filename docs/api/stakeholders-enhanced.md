@@ -498,12 +498,12 @@ const stakeholder = await fetch("/api/stakeholders/", {
 }).then((r) => r.json());
 
 console.log(
-  `Assigned to district: ${stakeholder.congressional_district.abbrev}`
+  `Assigned to district: ${stakeholder.congressional_district.abbrev}`,
 );
 
 // Find nearby stakeholders
 const nearby = await fetch(
-  `/api/stakeholders/?near_lat=30.2672&near_lng=-97.7431&distance_km=5`
+  `/api/stakeholders/?near_lat=30.2672&near_lng=-97.7431&distance_km=5`,
 ).then((r) => r.json());
 ```
 
