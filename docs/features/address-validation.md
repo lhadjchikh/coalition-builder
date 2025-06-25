@@ -13,7 +13,7 @@ This feature provides:
 
 ## Components
 
-### Address Validator (`coalition/stakeholders/validators.py`)
+### Address Validator {#address-validator}
 
 The `AddressValidator` utility class provides validation for US addresses:
 
@@ -40,7 +40,7 @@ address_data = AddressValidator.validate_complete_address(
 - **Street Addresses**: Length validation (5-255 characters)
 - **Cities**: Character validation, proper case formatting
 
-### Geocoding Service (`coalition/stakeholders/services.py`)
+### Geocoding Service {#geocoding-service}
 
 The `GeocodingService` class handles address geocoding and district assignment:
 

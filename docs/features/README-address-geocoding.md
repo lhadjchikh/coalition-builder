@@ -125,10 +125,10 @@ python manage.py migrate
 
 ### 📚 Documentation
 
-- **[Feature Guide](docs/features/address-validation.md)** - Comprehensive feature documentation
-- **[API Reference](docs/api/stakeholders-enhanced.md)** - Enhanced API endpoints
-- **[Architecture Guide](docs/development/geocoding-architecture.md)** - Technical implementation details
-- **[Quick Reference](docs/reference/geocoding-quick-reference.md)** - Code examples and common patterns
+- **[Feature Guide](address-validation.md)** - Comprehensive feature documentation
+- **[API Reference](../api/stakeholders-enhanced.md)** - Enhanced API endpoints
+- **[Architecture Guide](../development/geocoding-architecture.md)** - Technical implementation details
+- **[Quick Reference](../reference/geocoding-quick-reference.md)** - Code examples and common patterns
 
 ### 🔧 Advanced Usage
 
@@ -205,7 +205,7 @@ The geocoding system is designed to be extensible:
 - **New District Types**: Support for municipal or special districts
 - **Enhanced Analytics**: Add more spatial analysis capabilities
 
-See the [Architecture Guide](docs/development/geocoding-architecture.md) for implementation details.
+See the [Architecture Guide](../development/geocoding-architecture.md) for implementation details.
 
 ---
 
