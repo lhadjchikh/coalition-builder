@@ -13,16 +13,27 @@ if TYPE_CHECKING:
 class RegionAdmin(admin.ModelAdmin):
     """Admin interface for Region model"""
 
-    list_display = ("name", "label", "type", "geoid", "parent", "has_geometry")
+    list_display = (
+        "name",
+        "label",
+        "abbrev",
+        "type",
+        "geoid",
+        "parent",
+        "has_geometry",
+    )
 
     list_filter = ("type", "parent")
 
-    search_fields = ("name", "label", "geoid")
+    search_fields = ("name", "label", "abbrev", "geoid")
 
     readonly_fields = ("geoid", "coords", "geom", "geojson")
 
     fieldsets = (
-        ("Basic Information", {"fields": ("name", "label", "type", "geoid", "parent")}),
+        (
+            "Basic Information",
+            {"fields": ("name", "label", "abbrev", "type", "geoid", "parent")},
+        ),
         (
             "Geographic Data",
             {

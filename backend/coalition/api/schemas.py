@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 from ninja import ModelSchema, Schema
 from pydantic import Field, validator
 
+from coalition.stakeholders.validators import AddressValidator
+
 if TYPE_CHECKING:
     from django.db.models import QuerySet
 
@@ -33,6 +35,16 @@ class PolicyCampaignOut(ModelSchema):
 
 
 class StakeholderOut(ModelSchema):
+    # Additional computed fields
+    latitude: float = None
+    longitude: float = None
+    congressional_district_name: str | None = None
+    congressional_district_abbrev: str | None = None
+    state_senate_district_name: str | None = None
+    state_senate_district_abbrev: str | None = None
+    state_house_district_name: str | None = None
+    state_house_district_abbrev: str | None = None
+
     class Meta:
         model = Stakeholder
         fields = [
@@ -41,12 +53,48 @@ class StakeholderOut(ModelSchema):
             "organization",
             "role",
             "email",
+            "street_address",
+            "city",
             "state",
+            "zip_code",
             "county",
             "type",
+            "geocoded_at",
             "created_at",
             "updated_at",
         ]
+
+    @staticmethod
+    def resolve_latitude(obj: "Stakeholder") -> float:
+        return obj.latitude
+
+    @staticmethod
+    def resolve_longitude(obj: "Stakeholder") -> float:
+        return obj.longitude
+
+    @staticmethod
+    def resolve_congressional_district_name(obj: "Stakeholder") -> str | None:
+        return obj.congressional_district.name if obj.congressional_district else None
+
+    @staticmethod
+    def resolve_state_senate_district_name(obj: "Stakeholder") -> str | None:
+        return obj.state_senate_district.name if obj.state_senate_district else None
+
+    @staticmethod
+    def resolve_state_house_district_name(obj: "Stakeholder") -> str | None:
+        return obj.state_house_district.name if obj.state_house_district else None
+
+    @staticmethod
+    def resolve_congressional_district_abbrev(obj: "Stakeholder") -> str | None:
+        return obj.congressional_district.abbrev if obj.congressional_district else None
+
+    @staticmethod
+    def resolve_state_senate_district_abbrev(obj: "Stakeholder") -> str | None:
+        return obj.state_senate_district.abbrev if obj.state_senate_district else None
+
+    @staticmethod
+    def resolve_state_house_district_abbrev(obj: "Stakeholder") -> str | None:
+        return obj.state_house_district.abbrev if obj.state_house_district else None
 
 
 class EndorsementOut(ModelSchema):
@@ -239,9 +287,38 @@ class StakeholderCreateSchema(Schema):
     organization: str = Field(max_length=200, description="Organization name")
     role: str = Field(default="", max_length=100, description="Role/title")
     email: str = Field(max_length=100, description="Email address")
-    state: str = Field(max_length=5, description="State abbreviation")
+
+    # Address fields (required)
+    street_address: str = Field(
+        max_length=255,
+        description="Street address",
+    )
+    city: str = Field(max_length=100, description="City")
+    state: str = Field(max_length=2, description="State abbreviation")
+    zip_code: str = Field(max_length=10, description="ZIP code")
     county: str = Field(default="", max_length=100, description="County name")
+
     type: str = Field(max_length=50, description="Stakeholder type")
+
+    @validator("state")
+    def validate_state(cls, v: str) -> str:  # noqa: N805
+        """Validate US state abbreviation"""
+        return AddressValidator.validate_state(v)
+
+    @validator("zip_code")
+    def validate_zip_code(cls, v: str) -> str:  # noqa: N805
+        """Validate ZIP code format"""
+        return AddressValidator.validate_zip_code(v)
+
+    @validator("street_address")
+    def validate_street_address(cls, v: str) -> str:  # noqa: N805
+        """Validate street address"""
+        return AddressValidator.validate_street_address(v)
+
+    @validator("city")
+    def validate_city(cls, v: str) -> str:  # noqa: N805
+        """Validate city name"""
+        return AddressValidator.validate_city(v)
 
 
 class EndorsementCreateSchema(Schema):

@@ -5,7 +5,10 @@ from django.db import models
 class Region(models.Model):
     REGION_TYPE_CHOICES = [
         ("state", "State"),
-        ("cd119", "Congressional District 119th Congress"),
+        ("county", "County"),
+        ("congressional_district", "Congressional District"),
+        ("state_senate_district", "State Senate District"),
+        ("state_house_district", "State House District"),
     ]
 
     parent = models.ForeignKey(
@@ -18,7 +21,14 @@ class Region(models.Model):
     geoid = models.CharField(max_length=100, db_index=True)
     name = models.CharField(unique=True, max_length=255)
     label = models.CharField(max_length=255, blank=True, null=True)
-    type = models.CharField(choices=REGION_TYPE_CHOICES, max_length=20, db_index=True)
+    abbrev = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        db_index=True,
+        help_text="Abbreviation for the region (e.g., 'MD', 'MD-01', 'CA-12')",
+    )
+    type = models.CharField(choices=REGION_TYPE_CHOICES, max_length=30, db_index=True)
     coords = PointField(
         blank=True,
         null=True,
