@@ -8,6 +8,7 @@ from geopy.exc import GeocoderServiceError, GeocoderTimedOut
 from geopy.geocoders import Nominatim
 
 from coalition.regions.models import Region
+from coalition.stakeholders.spatial import SpatialQueryUtils
 from coalition.stakeholders.validators import AddressValidator
 
 if TYPE_CHECKING:
@@ -142,37 +143,8 @@ class GeocodingService:
         Find congressional and state legislative districts for a given point
         using spatial queries
         """
-        if not point:
-            return {
-                "congressional_district": None,
-                "state_senate_district": None,
-                "state_house_district": None,
-            }
-
         try:
-            # Find congressional district
-            congressional_district = Region.objects.filter(
-                type="congressional_district",
-                geom__contains=point,
-            ).first()
-
-            # Find state legislative districts
-            state_senate = Region.objects.filter(
-                type="state_senate_district",
-                geom__contains=point,
-            ).first()
-
-            state_house = Region.objects.filter(
-                type="state_house_district",
-                geom__contains=point,
-            ).first()
-
-            return {
-                "congressional_district": congressional_district,
-                "state_senate_district": state_senate,
-                "state_house_district": state_house,
-            }
-
+            return SpatialQueryUtils.find_districts_for_point(point)
         except Exception as e:
             logger.error(f"District assignment failed: {e}")
             return {
