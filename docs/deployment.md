@@ -18,6 +18,7 @@ docker-compose up -d
 
 - Docker 20.10+
 - Docker Compose 2.0+
+- Node.js 22+ (for local development)
 
 ### Configuration
 

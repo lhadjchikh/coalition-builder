@@ -27,6 +27,7 @@ Coalition Builder uses a flexible frontend architecture that supports both tradi
 The `/frontend` directory contains a React application built with Vite that serves as the primary user interface. This single codebase works in two different deployment modes:
 
 **Without SSR (Default Mode):**
+
 1. React app is built into static files (JS/CSS with cache-busting hashes)
 2. Django serves these files through a template (`index.html`)
 3. Django's `home` view reads `asset-manifest.json` to inject correct file paths
@@ -34,6 +35,7 @@ The `/frontend` directory contains a React application built with Vite that serv
 5. API calls go to Django backend via `/api/*` routes
 
 **With SSR (Optional Mode):**
+
 1. Next.js handles server-side rendering for better SEO
 2. Django serves only API endpoints (`/api/*`, `/admin/*`)
 3. nginx routes frontend requests (`/*`) to Next.js instead of Django
@@ -42,6 +44,7 @@ The `/frontend` directory contains a React application built with Vite that serv
 #### Request Routing
 
 **SSR Disabled:**
+
 ```
 /* → Django home view → React SPA
 /api/* → Django API
@@ -49,9 +52,10 @@ The `/frontend` directory contains a React application built with Vite that serv
 ```
 
 **SSR Enabled:**
+
 ```
 /* → Next.js SSR
-/api/* → Django API  
+/api/* → Django API
 /admin/* → Django Admin
 ```
 

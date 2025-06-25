@@ -7,7 +7,7 @@ This guide covers setting up Coalition Builder for development and production.
 ### Prerequisites
 
 - Python 3.13+
-- Node.js 18+
+- Node.js 22+
 - PostgreSQL 13+ with PostGIS extension
 - Redis (for caching)
 

@@ -43,15 +43,16 @@ RUN poetry install --no-root
 
 # Stage 3: Build React frontend
 # This stage is separate and can be rebuilt without affecting the Python base
-FROM node:18 AS frontend-builder
+FROM node:22 AS frontend-builder
 
 WORKDIR /app
 
 # Copy package files first to leverage caching
-COPY frontend/package.json frontend/package-lock.json /app/
+COPY frontend/package.json /app/
 
-# Install npm dependencies
-RUN npm install
+# Clean install npm dependencies with Node.js 22 compatibility
+RUN npm cache clean --force && \
+    npm install --legacy-peer-deps --no-audit --no-fund
 
 # Copy the rest of the frontend code
 COPY frontend/ /app/
