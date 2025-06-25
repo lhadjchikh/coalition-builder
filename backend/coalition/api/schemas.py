@@ -285,7 +285,7 @@ class StakeholderCreateSchema(Schema):
     name: str = Field(max_length=200, description="Stakeholder full name")
     organization: str = Field(max_length=200, description="Organization name")
     role: str = Field(default="", max_length=100, description="Role/title")
-    email: str = Field(max_length=100, description="Email address")
+    email: str = Field(max_length=254, description="Email address")
 
     # Address fields (required)
     street_address: str = Field(
