@@ -83,7 +83,8 @@ for district_name, stakeholders in by_district.items():
 
 # Find district for a point
 point = Point(-76.6122, 39.2904)
-district = utils.find_district_for_point(point, "congressional_district")
+districts = utils.find_districts_for_point(point)
+district = districts["congressional_district"]
 print(f"Point is in: {district.name if district else 'Unknown district'}")
 ```
 
@@ -204,8 +205,8 @@ region.geojson    # JSONField - Simplified boundary for maps
 "state"                    # US States
 "county"                   # Counties
 "congressional_district"   # Congressional Districts
-"state_district_upper"     # State Senate Districts
-"state_district_lower"     # State House Districts
+"state_senate_district"    # State Senate Districts
+"state_house_district"     # State House Districts
 ```
 
 ## Common Patterns
