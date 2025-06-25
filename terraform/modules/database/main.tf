@@ -150,7 +150,7 @@ resource "aws_db_parameter_group" "postgres_static" {
   # Include static parameters with pending-reboot apply method
   parameter {
     name         = "shared_preload_libraries"
-    value        = "pg_stat_statements"
+    value        = "pg_stat_statements,postgis-3"
     apply_method = "pending-reboot"
   }
 
@@ -176,7 +176,7 @@ resource "aws_db_parameter_group" "postgres_static_testing" {
   # Include static parameters with pending-reboot apply method
   parameter {
     name         = "shared_preload_libraries"
-    value        = "pg_stat_statements"
+    value        = "pg_stat_statements,postgis-3"
     apply_method = "pending-reboot"
   }
 

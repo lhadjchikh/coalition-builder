@@ -27,17 +27,27 @@ class Migration(migrations.Migration):
                 ("name", models.CharField(max_length=255, unique=True)),
                 ("label", models.CharField(blank=True, max_length=255, null=True)),
                 (
+                    "abbrev",
+                    models.CharField(
+                        blank=True,
+                        db_index=True,
+                        help_text="Abbreviation for the region (e.g., 'MD', 'CA-12')",
+                        max_length=10,
+                        null=True,
+                    ),
+                ),
+                (
                     "type",
                     models.CharField(
                         choices=[
                             ("state", "State"),
-                            (
-                                "cd119",
-                                "Congressional District 119th Congress",
-                            ),
+                            ("county", "County"),
+                            ("congressional_district", "Congressional District"),
+                            ("state_senate_district", "State Senate District"),
+                            ("state_house_district", "State House District"),
                         ],
                         db_index=True,
-                        max_length=20,
+                        max_length=30,
                     ),
                 ),
                 (

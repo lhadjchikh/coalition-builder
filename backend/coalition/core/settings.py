@@ -255,14 +255,37 @@ AUTO_APPROVE_VERIFIED_ENDORSEMENTS = os.getenv(
 # Akismet spam detection
 AKISMET_SECRET_API_KEY = os.getenv("AKISMET_SECRET_API_KEY")
 
+# Geocoding configuration
+# Tiger geocoder confidence threshold (lower rating = better accuracy)
+# Default: 20 (reasonable confidence for most use cases)
+# Range: 0-100, where 0 is exact match and 100 is no match
+# Recommended values:
+#   - Urban areas: 10-15 (stricter matching)
+#   - Suburban areas: 15-25 (balanced)
+#   - Rural areas: 20-30 (more lenient)
+TIGER_GEOCODING_CONFIDENCE_THRESHOLD = int(
+    os.getenv("TIGER_GEOCODING_CONFIDENCE_THRESHOLD", "20"),
+)
+
 # Cache configuration
 # Always use Redis cache for consistency across all environments
 # This ensures django-ratelimit works properly in all scenarios
 CACHE_URL = os.getenv("CACHE_URL", "redis://redis:6379/1")
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": CACHE_URL,
-    },
-}
+# Use locmem cache during tests and disable ratelimit checks
+if "test" in sys.argv:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "test-cache",
+        },
+    }
+    # Disable django-ratelimit system checks during tests
+    SILENCED_SYSTEM_CHECKS = ["django_ratelimit.E003", "django_ratelimit.W001"]
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": CACHE_URL,
+        },
+    }

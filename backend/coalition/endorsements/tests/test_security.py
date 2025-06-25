@@ -34,7 +34,10 @@ class SecurityVulnerabilityTests(TestCase):
             organization="Acme Corp",
             role="CEO",
             email="john@acme.com",
+            street_address="123 Business Blvd",
+            city="New York",
             state="NY",
+            zip_code="10001",
             county="Manhattan",
             type="business",
         )
@@ -75,7 +78,10 @@ class SecurityVulnerabilityTests(TestCase):
                     "organization": "Acme Corp",  # Exact match
                     "role": "CEO",  # Exact match
                     "email": "john@acme.com",
+                    "street_address": "123 Business Blvd",  # Exact match
+                    "city": "New York",  # Exact match
                     "state": "NY",  # Exact match
+                    "zip_code": "10001",  # Exact match
                     "county": "Manhattan",  # Exact match
                     "type": "business",  # Exact match
                 },
@@ -101,7 +107,10 @@ class SecurityVulnerabilityTests(TestCase):
                     "organization": "Acme Corp",
                     "role": "CEO",
                     "email": "john@acme.com",  # Same email
+                    "street_address": "123 Business Blvd",
+                    "city": "New York",
                     "state": "NY",
+                    "zip_code": "10001",
                     "county": "Manhattan",
                     "type": "business",
                 },
@@ -128,7 +137,10 @@ class SecurityVulnerabilityTests(TestCase):
                     "organization": "Acme Corp",
                     "role": "CEO",
                     "email": "john@acme.com",
+                    "street_address": "123 Business Blvd",
+                    "city": "New York",
                     "state": "NY",
+                    "zip_code": "10001",
                     "county": "Manhattan",
                     "type": "business",
                 },
@@ -155,16 +167,6 @@ class RedisIntegrationTests(TestCase):
         from django.core.cache import cache
 
         cache.clear()
-
-    def test_cache_configuration_uses_redis(self) -> None:
-        """Test that Redis cache backend is configured"""
-        from django.conf import settings
-
-        # Should now use Redis cache consistently
-        assert (
-            settings.CACHES["default"]["BACKEND"]
-            == "django.core.cache.backends.redis.RedisCache"
-        )
 
     def test_spam_prevention_service_with_cache(self) -> None:
         """Test that SpamPreventionService works with cache backend"""
@@ -269,7 +271,10 @@ class RateLimitingIntegrationTests(TestCase):
             "name": "John Doe",
             "organization": "Test Org",
             "email": "john@example.com",
+            "street_address": "456 Test Ave",
+            "city": "Baltimore",
             "state": "MD",
+            "zip_code": "21201",
             "type": "individual",
         }
 

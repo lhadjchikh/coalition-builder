@@ -15,6 +15,7 @@ from coalition.endorsements.email_service import EndorsementEmailService
 from coalition.endorsements.models import Endorsement
 from coalition.endorsements.spam_prevention import SpamPreventionService, get_client_ip
 from coalition.stakeholders.models import Stakeholder
+from coalition.stakeholders.services import GeocodingService
 
 from .schemas import EndorsementCreateSchema, EndorsementOut, EndorsementVerifySchema
 
@@ -66,6 +67,12 @@ def _validate_stakeholder_data_match(
         and (existing_stakeholder.county or "").lower()
         == (submitted_data.get("county") or "").lower()
         and existing_stakeholder.type == submitted_data["type"]
+        and (existing_stakeholder.street_address or "").lower()
+        == (submitted_data.get("street_address") or "").lower()
+        and (existing_stakeholder.city or "").lower()
+        == (submitted_data.get("city") or "").lower()
+        and (existing_stakeholder.zip_code or "").strip().replace("-", "")
+        == (submitted_data.get("zip_code") or "").strip().replace("-", "")
     )
 
     if not data_matches:
@@ -88,7 +95,7 @@ def _get_or_create_stakeholder(
     ip_address: str,
 ) -> Stakeholder:
     """
-    Get or create stakeholder with security validation.
+    Get or create stakeholder with security validation and geocoding.
 
     Prevents unauthorized overwriting of existing stakeholder data.
     """
@@ -99,8 +106,11 @@ def _get_or_create_stakeholder(
             "organization": stakeholder_data["organization"],
             "role": stakeholder_data.get("role"),
             "email": stakeholder_data["email"].lower(),  # Normalized in save()
+            "street_address": stakeholder_data.get("street_address", ""),
+            "city": stakeholder_data.get("city", ""),
             "state": stakeholder_data["state"].upper(),
-            "county": stakeholder_data.get("county"),
+            "zip_code": stakeholder_data.get("zip_code", ""),
+            "county": stakeholder_data.get("county", ""),
             "type": stakeholder_data["type"],
         },
     )
@@ -109,6 +119,21 @@ def _get_or_create_stakeholder(
     # to prevent unauthorized overwriting of existing user data
     if not created:
         _validate_stakeholder_data_match(stakeholder, stakeholder_data, ip_address)
+    else:
+        # Geocode all new stakeholders (all have complete addresses now)
+        try:
+            geocoding_service = GeocodingService()
+            geocoding_success = geocoding_service.geocode_and_assign_districts(
+                stakeholder,
+            )
+
+            if geocoding_success:
+                logger.info(f"Geocoded new stakeholder {stakeholder.id}")
+            else:
+                logger.warning(f"Failed to geocode stakeholder {stakeholder.id}")
+        except Exception as e:
+            logger.error(f"Geocoding error for stakeholder {stakeholder.id}: {e}")
+            # Continue without geocoding - the location field is nullable
 
     return stakeholder
 
@@ -171,7 +196,10 @@ def _validate_and_prepare_endorsement_data(
         "organization": data.stakeholder.organization,
         "role": data.stakeholder.role,
         "email": data.stakeholder.email,
+        "street_address": data.stakeholder.street_address,
+        "city": data.stakeholder.city,
         "state": data.stakeholder.state,
+        "zip_code": data.stakeholder.zip_code,
         "county": data.stakeholder.county,
         "type": data.stakeholder.type,
     }
@@ -531,8 +559,16 @@ def export_endorsements_csv(
             "Organization",
             "Role",
             "Email",
+            "Street Address",
+            "City",
             "State",
+            "ZIP Code",
             "County",
+            "Latitude",
+            "Longitude",
+            "Congressional District",
+            "State Senate District",
+            "State House District",
             "Type",
             "Statement",
             "Public Display",
@@ -554,8 +590,34 @@ def export_endorsements_csv(
                 sanitize_csv_field(endorsement.stakeholder.organization),
                 sanitize_csv_field(endorsement.stakeholder.role),
                 sanitize_csv_field(endorsement.stakeholder.email),
+                sanitize_csv_field(endorsement.stakeholder.street_address),
+                sanitize_csv_field(endorsement.stakeholder.city),
                 sanitize_csv_field(endorsement.stakeholder.state),
+                sanitize_csv_field(endorsement.stakeholder.zip_code),
                 sanitize_csv_field(endorsement.stakeholder.county),
+                endorsement.stakeholder.latitude or "",  # Numeric, safe
+                endorsement.stakeholder.longitude or "",  # Numeric, safe
+                sanitize_csv_field(
+                    (
+                        endorsement.stakeholder.congressional_district.name
+                        if endorsement.stakeholder.congressional_district
+                        else ""
+                    ),
+                ),
+                sanitize_csv_field(
+                    (
+                        endorsement.stakeholder.state_senate_district.name
+                        if endorsement.stakeholder.state_senate_district
+                        else ""
+                    ),
+                ),
+                sanitize_csv_field(
+                    (
+                        endorsement.stakeholder.state_house_district.name
+                        if endorsement.stakeholder.state_house_district
+                        else ""
+                    ),
+                ),
                 sanitize_csv_field(endorsement.stakeholder.get_type_display()),
                 sanitize_csv_field(endorsement.statement),
                 "Yes" if endorsement.public_display else "No",  # Safe boolean
@@ -626,9 +688,30 @@ def export_endorsements_json(
                     "organization": endorsement.stakeholder.organization,
                     "role": endorsement.stakeholder.role,
                     "email": endorsement.stakeholder.email,
+                    "street_address": endorsement.stakeholder.street_address,
+                    "city": endorsement.stakeholder.city,
                     "state": endorsement.stakeholder.state,
+                    "zip_code": endorsement.stakeholder.zip_code,
                     "county": endorsement.stakeholder.county,
+                    "latitude": endorsement.stakeholder.latitude,
+                    "longitude": endorsement.stakeholder.longitude,
+                    "congressional_district": (
+                        endorsement.stakeholder.congressional_district.name
+                        if endorsement.stakeholder.congressional_district
+                        else None
+                    ),
+                    "state_senate_district": (
+                        endorsement.stakeholder.state_senate_district.name
+                        if endorsement.stakeholder.state_senate_district
+                        else None
+                    ),
+                    "state_house_district": (
+                        endorsement.stakeholder.state_house_district.name
+                        if endorsement.stakeholder.state_house_district
+                        else None
+                    ),
                     "type": endorsement.stakeholder.type,
+                    "has_location": endorsement.stakeholder.location is not None,
                 },
                 "statement": endorsement.statement,
                 "public_display": endorsement.public_display,
