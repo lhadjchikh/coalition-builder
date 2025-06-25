@@ -157,10 +157,13 @@ class GeocodingService:
         self,
         stakeholder: "Stakeholder",
         update_fields: bool = True,
-    ) -> None:
+    ) -> bool:
         """
         Geocode stakeholder address and assign legislative districts
         Assumes all stakeholders have complete addresses
+
+        Returns:
+            True if geocoding and district assignment succeeded, False otherwise
         """
         # Geocode the address
         point = self.geocode_address(
@@ -193,4 +196,4 @@ class GeocodingService:
                 ],
             )
 
-            logger.info(f"Successfully geocoded stakeholder {stakeholder.id}")
+        return True
