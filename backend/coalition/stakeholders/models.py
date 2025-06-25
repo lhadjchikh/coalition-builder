@@ -27,6 +27,8 @@ class Stakeholder(models.Model):
 
     # Geographic coordinates
     location = PointField(
+        null=True,
+        blank=True,
         spatial_index=True,
         geography=True,
         verbose_name="Geographic Location",
@@ -89,14 +91,14 @@ class Stakeholder(models.Model):
         return ", ".join(parts)
 
     @property
-    def latitude(self) -> float:
+    def latitude(self) -> float | None:
         """Get latitude from location point"""
-        return self.location.y
+        return self.location.y if self.location else None
 
     @property
-    def longitude(self) -> float:
+    def longitude(self) -> float | None:
         """Get longitude from location point"""
-        return self.location.x
+        return self.location.x if self.location else None
 
     def __str__(self) -> str:
         return f"{self.organization} – {self.name}"

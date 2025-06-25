@@ -35,12 +35,14 @@ class Migration(migrations.Migration):
                 ("state", models.CharField(max_length=2)),
                 ("zip_code", models.CharField(max_length=10)),
                 ("county", models.CharField(blank=True, max_length=100)),
-                # Required geographic coordinates
+                # Geographic coordinates (nullable since geocoding can fail)
                 (
                     "location",
                     django.contrib.gis.db.models.fields.PointField(
+                        blank=True,
                         geography=True,
                         help_text="Latitude and longitude coordinates",
+                        null=True,
                         srid=4326,
                         spatial_index=True,
                         verbose_name="Geographic Location",

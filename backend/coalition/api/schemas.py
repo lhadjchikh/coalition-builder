@@ -36,8 +36,8 @@ class PolicyCampaignOut(ModelSchema):
 
 class StakeholderOut(ModelSchema):
     # Additional computed fields
-    latitude: float = None
-    longitude: float = None
+    latitude: float | None = None
+    longitude: float | None = None
     congressional_district_name: str | None = None
     congressional_district_abbrev: str | None = None
     state_senate_district_name: str | None = None
@@ -64,11 +64,11 @@ class StakeholderOut(ModelSchema):
         ]
 
     @staticmethod
-    def resolve_latitude(obj: "Stakeholder") -> float:
+    def resolve_latitude(obj: "Stakeholder") -> float | None:
         return obj.latitude
 
     @staticmethod
-    def resolve_longitude(obj: "Stakeholder") -> float:
+    def resolve_longitude(obj: "Stakeholder") -> float | None:
         return obj.longitude
 
     @staticmethod

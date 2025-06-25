@@ -260,9 +260,20 @@ AKISMET_SECRET_API_KEY = os.getenv("AKISMET_SECRET_API_KEY")
 # This ensures django-ratelimit works properly in all scenarios
 CACHE_URL = os.getenv("CACHE_URL", "redis://redis:6379/1")
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": CACHE_URL,
-    },
-}
+# Use locmem cache during tests and disable ratelimit checks
+if "test" in sys.argv:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "test-cache",
+        },
+    }
+    # Disable django-ratelimit system checks during tests
+    SILENCED_SYSTEM_CHECKS = ["django_ratelimit.E003", "django_ratelimit.W001"]
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": CACHE_URL,
+        },
+    }
