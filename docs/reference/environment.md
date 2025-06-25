@@ -97,6 +97,30 @@ SITE_URL="https://yourdomain.com"
 API_URL="https://api.yourdomain.com"
 ```
 
+### Geocoding Configuration
+
+| Variable                               | Description                                                 | Default | Required |
+| -------------------------------------- | ----------------------------------------------------------- | ------- | -------- |
+| `TIGER_GEOCODING_CONFIDENCE_THRESHOLD` | Maximum rating for accepting Tiger geocoder results (0-100) | `20`    | No       |
+
+**Tiger Geocoder Rating Scale:**
+
+- `0`: Exact match
+- `1-10`: Very high confidence (recommended for urban areas)
+- `10-20`: High confidence (default, good for most use cases)
+- `20-30`: Moderate confidence (recommended for rural areas)
+- `30+`: Low confidence (may produce inaccurate results)
+
+**Example:**
+
+```bash
+# Stricter matching for urban areas with high-quality address data
+TIGER_GEOCODING_CONFIDENCE_THRESHOLD=10
+
+# More lenient matching for rural areas or incomplete addresses
+TIGER_GEOCODING_CONFIDENCE_THRESHOLD=25
+```
+
 ### Storage Configuration
 
 | Variable                  | Description                       | Default     | Required |

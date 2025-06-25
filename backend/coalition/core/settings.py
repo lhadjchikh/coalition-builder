@@ -255,6 +255,18 @@ AUTO_APPROVE_VERIFIED_ENDORSEMENTS = os.getenv(
 # Akismet spam detection
 AKISMET_SECRET_API_KEY = os.getenv("AKISMET_SECRET_API_KEY")
 
+# Geocoding configuration
+# Tiger geocoder confidence threshold (lower rating = better accuracy)
+# Default: 20 (reasonable confidence for most use cases)
+# Range: 0-100, where 0 is exact match and 100 is no match
+# Recommended values:
+#   - Urban areas: 10-15 (stricter matching)
+#   - Suburban areas: 15-25 (balanced)
+#   - Rural areas: 20-30 (more lenient)
+TIGER_GEOCODING_CONFIDENCE_THRESHOLD = int(
+    os.getenv("TIGER_GEOCODING_CONFIDENCE_THRESHOLD", "20"),
+)
+
 # Cache configuration
 # Always use Redis cache for consistency across all environments
 # This ensures django-ratelimit works properly in all scenarios

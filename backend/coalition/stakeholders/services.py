@@ -1,6 +1,7 @@
 import logging
 from typing import TYPE_CHECKING
 
+from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.core.exceptions import ValidationError
 from django.db import connection
@@ -112,7 +113,8 @@ class GeocodingService:
                 if result:
                     longitude, latitude, rating = result
                     # Only accept results with reasonable confidence
-                    if rating <= 20:  # Tiger rating: lower is better
+                    # Tiger rating: lower is better (0 = exact match, 100 = no match)
+                    if rating <= settings.TIGER_GEOCODING_CONFIDENCE_THRESHOLD:
                         return Point(longitude, latitude, srid=4326)
 
             return None
