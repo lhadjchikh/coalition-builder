@@ -34,54 +34,14 @@ theme:
 
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
-
-  - Features:
-      - Address Validation: features/address-validation.md
-      - Geocoding Overview: features/geocoding-index.md
-
-  - User Guides:
-      - Content Management: user-guides/content-management.md
-      - API Usage: user-guides/api-usage.md
-      - Homepage Management: user-guides/homepage.md
-      - Endorsement Workflow: user-guides/endorsement-workflow.md
-
-  - Development:
-      - Setup: development/setup.md
-      - Backend: development/backend.md
-      - Frontend: development/frontend.md
-      - SSR: development/ssr.md
-      - Testing: development/testing.md
-      - Geocoding Architecture: development/geocoding-architecture.md
-
-  - Architecture:
-      - Overview: architecture/overview.md
-      - API Design: architecture/api.md
-      - Database: architecture/database.md
-
-  - Deployment:
-      - AWS Deployment: deployment/aws.md
-      - Docker: deployment/docker.md
-      - Health Monitoring: deployment/health.md
-      - CSRF Security: deployment/csrf-security.md
-      - Redis Configuration: deployment/redis.md
-
-  - Administration:
-      - Troubleshooting: admin/troubleshooting.md
-      - Security: admin/security.md
-
-  - Contributing:
-      - Contributing Guide: contributing/guide.md
-
-  - Customization:
-      - Forking Guide: customization/forking.md
+  - Installation: installation.md
+  - Configuration: configuration.md
+  - Development: development.md
+  - Deployment: deployment.md
 
   - Reference:
-      - API Reference: api/index.md
-      - Enhanced Stakeholders API: api/stakeholders-enhanced.md
       - Environment Variables: reference/environment.md
       - CLI Reference: reference/cli.md
-      - Geocoding Quick Reference: reference/geocoding-quick-reference.md
 
 markdown_extensions:
   - admonition
