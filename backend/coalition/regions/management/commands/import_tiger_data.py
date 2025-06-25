@@ -173,8 +173,8 @@ class Command(BaseCommand):
         """Clear existing regions of the specified type"""
         type_mapping = {
             "congressional": "congressional_district",
-            "state_senate": "state_district_upper",
-            "state_house": "state_district_lower",
+            "state_senate": "state_senate_district",
+            "state_house": "state_house_district",
             "counties": "county",
             "states": "state",
         }
@@ -297,8 +297,8 @@ class Command(BaseCommand):
         # Type mapping
         type_mapping = {
             "congressional": "congressional_district",
-            "state_senate": "state_district_upper",
-            "state_house": "state_district_lower",
+            "state_senate": "state_senate_district",
+            "state_house": "state_house_district",
             "counties": "county",
             "states": "state",
         }

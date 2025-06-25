@@ -308,18 +308,18 @@ District assignments are included in stakeholder responses:
     "type": "congressional_district",
     "geoid": "2403"
   },
-  "state_legislative_upper": {
+  "state_senate_district": {
     "id": 78,
     "name": "Maryland Senate District 21",
     "abbrev": "MD-SD-21",
-    "type": "state_district_upper",
+    "type": "state_senate_district",
     "geoid": "24021"
   },
-  "state_legislative_lower": {
+  "state_house_district": {
     "id": 134,
     "name": "Maryland House District 21A",
     "abbrev": "MD-HD-21A",
-    "type": "state_district_lower",
+    "type": "state_house_district",
     "geoid": "2421A"
   }
 }
@@ -498,12 +498,12 @@ const stakeholder = await fetch("/api/stakeholders/", {
 }).then((r) => r.json());
 
 console.log(
-  `Assigned to district: ${stakeholder.congressional_district.abbrev}`,
+  `Assigned to district: ${stakeholder.congressional_district.abbrev}`
 );
 
 // Find nearby stakeholders
 const nearby = await fetch(
-  `/api/stakeholders/?near_lat=30.2672&near_lng=-97.7431&distance_km=5`,
+  `/api/stakeholders/?near_lat=30.2672&near_lng=-97.7431&distance_km=5`
 ).then((r) => r.json());
 ```
 
