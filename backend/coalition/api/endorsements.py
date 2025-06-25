@@ -121,13 +121,13 @@ def _get_or_create_stakeholder(
         _validate_stakeholder_data_match(stakeholder, stakeholder_data, ip_address)
     else:
         # Geocode all new stakeholders (all have complete addresses now)
-        try:
-            geocoding_service = GeocodingService()
-            geocoding_service.geocode_and_assign_districts(stakeholder)
+        geocoding_service = GeocodingService()
+        geocoding_success = geocoding_service.geocode_and_assign_districts(stakeholder)
+
+        if geocoding_success:
             logger.info(f"Geocoded new stakeholder {stakeholder.id}")
-        except Exception as e:
-            logger.error(f"Failed to geocode stakeholder {stakeholder.id}: {e}")
-            raise
+        else:
+            logger.warning(f"Failed to geocode stakeholder {stakeholder.id}")
 
     return stakeholder
 
