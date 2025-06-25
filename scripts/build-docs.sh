@@ -60,8 +60,8 @@ fi
 
 # Build documentation using Docker to ensure GDAL is available
 log_info "Using Docker to build Sphinx documentation with GDAL support..."
-if $DOCKER_COMPOSE run --rm backend sh -c "
-  cd /app &&
+if $DOCKER_COMPOSE run --rm api sh -c "
+  cd /app/backend &&
   poetry install --with docs &&
   poetry run sphinx-build -b html docs docs/_build/html
 "; then

@@ -19,6 +19,8 @@ Comprehensive documentation generation script that builds all project documentat
 - Node.js/npm (for TypeScript documentation)
 - MkDocs with mkdocs-material (optional, for main docs)
 
+**Note:** The script uses the `api` service from docker-compose.yml to build Django documentation with GDAL support.
+
 **Usage:**
 
 ```bash
