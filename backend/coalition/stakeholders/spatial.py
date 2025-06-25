@@ -1,6 +1,9 @@
 from django.contrib.gis.db.models import Q
+from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point
+from django.db.models import Count
 
+from coalition.regions.constants import STATE_TO_FIPS
 from coalition.regions.models import Region
 from coalition.stakeholders.models import Stakeholder
 
@@ -42,12 +45,13 @@ class SpatialQueryUtils:
         }
 
         for district in districts:
-            if district.type == "congressional_district":
-                result["congressional_district"] = district
-            elif district.type == "state_senate_district":
-                result["state_senate_district"] = district
-            elif district.type == "state_house_district":
-                result["state_house_district"] = district
+            match district.type:
+                case "congressional_district":
+                    result["congressional_district"] = district
+                case "state_senate_district":
+                    result["state_senate_district"] = district
+                case "state_house_district":
+                    result["state_house_district"] = district
 
         return result
 
@@ -66,7 +70,20 @@ class SpatialQueryUtils:
         Returns:
             List of Stakeholder objects in the district
         """
-        base_query = Stakeholder.objects.filter(location__within=district.geom)
+        # Use foreign key relationship for efficiency
+        filter_kwargs = {}
+        match district.type:
+            case "congressional_district":
+                filter_kwargs["congressional_district"] = district
+            case "state_senate_district":
+                filter_kwargs["state_senate_district"] = district
+            case "state_house_district":
+                filter_kwargs["state_house_district"] = district
+            case _:
+                # Fall back to spatial query for other district types
+                filter_kwargs["location__within"] = district.geom
+
+        base_query = Stakeholder.objects.filter(**filter_kwargs)
 
         if not include_unverified:
             # Only include stakeholders with verified endorsements
@@ -94,27 +111,33 @@ class SpatialQueryUtils:
         districts_query = Region.objects.filter(type=district_type)
 
         if state_filter:
-            # For congressional districts, filter by state in the geoid
+            # Convert state abbreviation to FIPS code if needed
+            fips_code = STATE_TO_FIPS.get(state_filter, state_filter)
+
             if district_type == "congressional_district":
-                districts_query = districts_query.filter(geoid__startswith=state_filter)
-            # For state legislative districts, filter by parent state or geoid
-            else:
+                # Filter congressional districts by state FIPS code in geoid
                 districts_query = districts_query.filter(
-                    Q(parent__geoid=state_filter) | Q(geoid__startswith=state_filter),
+                    geoid__startswith=fips_code,
+                )
+            else:
+                # For state legislative districts, filter by parent state or geoid
+                districts_query = districts_query.filter(
+                    Q(parent__geoid=fips_code) | Q(geoid__startswith=fips_code),
                 )
 
         result = {}
 
         for district in districts_query:
             # Get field name based on district type
-            if district_type == "congressional_district":
-                field_name = "congressional_district"
-            elif district_type == "state_senate_district":
-                field_name = "state_senate_district"
-            elif district_type == "state_house_district":
-                field_name = "state_house_district"
-            else:
-                continue
+            match district_type:
+                case "congressional_district":
+                    field_name = "congressional_district"
+                case "state_senate_district":
+                    field_name = "state_senate_district"
+                case "state_house_district":
+                    field_name = "state_house_district"
+                case _:
+                    continue
 
             # Get stakeholders assigned to this district
             stakeholders = (
@@ -155,7 +178,8 @@ class SpatialQueryUtils:
                 "state_senate_district",
                 "state_house_district",
             )
-            .order_by("location__distance")  # Order by distance from point
+            .annotate(distance=Distance("location", point))
+            .order_by("distance")
             .all(),
         )
 
@@ -167,8 +191,6 @@ class SpatialQueryUtils:
         Returns:
             Dictionary with district types and their stakeholder counts
         """
-        from django.db.models import Count
-
         stats = {}
 
         # Congressional district statistics
