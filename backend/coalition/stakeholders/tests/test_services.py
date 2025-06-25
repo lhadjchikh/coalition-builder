@@ -157,8 +157,8 @@ class TestGeocodingService(TestCase):
         districts = self.geocoding_service.assign_legislative_districts(point)
 
         assert districts["congressional_district"].abbrev == "TX-21"
-        assert districts["state_legislative_upper"].abbrev == "TX-SD-14"
-        assert districts["state_legislative_lower"].abbrev == "TX-HD-46"
+        assert districts["state_senate_district"].abbrev == "TX-SD-14"
+        assert districts["state_house_district"].abbrev == "TX-HD-46"
 
     def test_assign_legislative_districts_no_match(self) -> None:
         """Test district assignment when point doesn't match any districts"""
@@ -168,8 +168,8 @@ class TestGeocodingService(TestCase):
         districts = self.geocoding_service.assign_legislative_districts(point)
 
         assert districts["congressional_district"] is None
-        assert districts["state_legislative_upper"] is None
-        assert districts["state_legislative_lower"] is None
+        assert districts["state_senate_district"] is None
+        assert districts["state_house_district"] is None
 
     @patch("coalition.stakeholders.services.connection")
     def test_geocode_and_assign_districts_success(self, mock_connection: Any) -> None:
