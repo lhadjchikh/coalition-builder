@@ -35,26 +35,21 @@ export default async function HomePage() {
   let homepageError: string | null = null;
   let campaignsError: string | null = null;
 
+  // Try to fetch homepage and campaigns separately for better error handling
   try {
-    // Try to fetch homepage and campaigns separately for better error handling
-    try {
-      homepage = await apiClient.getHomepage();
-    } catch (err) {
-      homepageError =
-        err instanceof Error ? err.message : "Failed to fetch homepage";
-      console.error("Error fetching homepage:", err);
-    }
-
-    try {
-      campaigns = await apiClient.getCampaigns();
-    } catch (err) {
-      campaignsError =
-        err instanceof Error ? err.message : "Failed to fetch campaigns";
-      console.error("Error fetching campaigns:", err);
-    }
+    homepage = await apiClient.getHomepage();
   } catch (err) {
-    // This should not happen since we're handling errors above
-    console.error("Unexpected error:", err);
+    homepageError =
+      err instanceof Error ? err.message : "Failed to fetch homepage";
+    console.error("Error fetching homepage:", err);
+  }
+
+  try {
+    campaigns = await apiClient.getCampaigns();
+  } catch (err) {
+    campaignsError =
+      err instanceof Error ? err.message : "Failed to fetch campaigns";
+    console.error("Error fetching campaigns:", err);
   }
 
   // Fallback homepage data if API fails
