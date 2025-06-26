@@ -35,21 +35,32 @@ export default async function HomePage() {
   let homepageError: string | null = null;
   let campaignsError: string | null = null;
 
-  // Try to fetch homepage and campaigns separately for better error handling
-  try {
-    homepage = await apiClient.getHomepage();
-  } catch (err) {
+  // Fetch homepage and campaigns in parallel for better performance
+  const [homepageResult, campaignsResult] = await Promise.allSettled([
+    apiClient.getHomepage(),
+    apiClient.getCampaigns(),
+  ]);
+
+  // Handle homepage result
+  if (homepageResult.status === "fulfilled") {
+    homepage = homepageResult.value;
+  } else {
     homepageError =
-      err instanceof Error ? err.message : "Failed to fetch homepage";
-    console.error("Error fetching homepage:", err);
+      homepageResult.reason instanceof Error
+        ? homepageResult.reason.message
+        : "Failed to fetch homepage";
+    console.error("Error fetching homepage:", homepageResult.reason);
   }
 
-  try {
-    campaigns = await apiClient.getCampaigns();
-  } catch (err) {
+  // Handle campaigns result
+  if (campaignsResult.status === "fulfilled") {
+    campaigns = campaignsResult.value;
+  } else {
     campaignsError =
-      err instanceof Error ? err.message : "Failed to fetch campaigns";
-    console.error("Error fetching campaigns:", err);
+      campaignsResult.reason instanceof Error
+        ? campaignsResult.reason.message
+        : "Failed to fetch campaigns";
+    console.error("Error fetching campaigns:", campaignsResult.reason);
   }
 
   // Fallback homepage data if API fails
