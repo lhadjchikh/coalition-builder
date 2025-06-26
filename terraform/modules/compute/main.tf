@@ -656,3 +656,24 @@ resource "aws_instance" "bastion" {
     create_before_destroy = true
   }
 }
+
+# Elastic IP for Bastion Host
+resource "aws_eip" "bastion" {
+  domain = "vpc"
+
+  tags = {
+    Name = "${var.prefix}-bastion-eip"
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# Associate Elastic IP with Bastion Instance
+resource "aws_eip_association" "bastion" {
+  instance_id   = aws_instance.bastion.id
+  allocation_id = aws_eip.bastion.id
+
+  depends_on = [aws_instance.bastion]
+}
