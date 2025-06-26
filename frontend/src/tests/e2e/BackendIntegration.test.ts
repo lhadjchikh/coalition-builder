@@ -39,19 +39,22 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
       {
         id: 1,
         name: 'Test Endorser',
+        organization: 'Test Organization',
+        email: 'test@example.org',
+        state: 'MD',
         type: 'nonprofit',
-        website: 'https://example.org',
-        description: 'Test endorsing organization',
       },
     ]);
 
     jest.spyOn(API, 'getLegislators').mockResolvedValue([
       {
         id: 1,
-        name: 'Test Legislator',
-        district: 'District 01',
-        party: 'Democratic',
-        contact_info: 'test@legislature.gov',
+        first_name: 'Test',
+        last_name: 'Legislator',
+        chamber: 'House',
+        state: 'MD',
+        district: '01',
+        is_senior: false,
       },
     ]);
 
@@ -107,9 +110,10 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
     const endorser = endorsers![0];
     expect(endorser).toHaveProperty('id');
     expect(endorser).toHaveProperty('name');
+    expect(endorser).toHaveProperty('organization');
+    expect(endorser).toHaveProperty('email');
+    expect(endorser).toHaveProperty('state');
     expect(endorser).toHaveProperty('type');
-    expect(endorser).toHaveProperty('website');
-    expect(endorser).toHaveProperty('description');
   });
 
   test('Can fetch legislators from the backend', async () => {
@@ -131,9 +135,11 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
     // Verify legislator structure
     const legislator = legislators![0];
     expect(legislator).toHaveProperty('id');
-    expect(legislator).toHaveProperty('name');
+    expect(legislator).toHaveProperty('first_name');
+    expect(legislator).toHaveProperty('last_name');
+    expect(legislator).toHaveProperty('chamber');
+    expect(legislator).toHaveProperty('state');
     expect(legislator).toHaveProperty('district');
-    expect(legislator).toHaveProperty('party');
-    expect(legislator).toHaveProperty('contact_info');
+    expect(legislator).toHaveProperty('is_senior');
   });
 });
