@@ -2,6 +2,11 @@ import { Campaign, Endorser, Legislator, Endorsement, EndorsementCreate, HomePag
 
 // Determine the API base URL
 const getBaseUrl = (): string => {
+  // Check for Next.js/SSR environment variable first
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+
   // In CI/E2E tests with Docker, use the service name from docker-compose
   if (process.env.REACT_APP_API_URL) {
     return process.env.REACT_APP_API_URL;
