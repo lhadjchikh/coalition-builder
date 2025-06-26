@@ -42,12 +42,12 @@ npm test
 coalition-builder/
 ├── backend/           # Django API
 │   ├── coalition/     # Main app
-│   ├── docs/         # Sphinx API docs
-│   └── scripts/      # Backend scripts
-├── frontend/         # React frontend
-├── ssr/             # Next.js SSR
-├── terraform/       # Infrastructure
-└── docs/           # Main documentation
+│   ├── docs/          # Sphinx API docs
+│   └── scripts/       # Backend scripts
+├── frontend/          # React frontend
+├── ssr/               # Next.js SSR
+├── terraform/         # Infrastructure
+└── docs/              # Main documentation
 ```
 
 ## Key Technologies
