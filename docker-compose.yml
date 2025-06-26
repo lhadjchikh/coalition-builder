@@ -64,7 +64,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.ssr
-      target: deps # Use deps stage for development
     depends_on:
       - api
     environment:
@@ -76,6 +75,7 @@ services:
       - "3000:3000"
     volumes:
       - ./ssr:/app
+      - ./frontend/src:/app/frontend/src:ro
       - /app/node_modules
       - /app/.next
     command: ["npm", "run", "dev"]
