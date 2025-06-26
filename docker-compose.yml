@@ -37,6 +37,7 @@ services:
       - app-network
 
   api:
+    image: coalition_api:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -46,39 +47,31 @@ services:
       redis:
         condition: service_healthy
     environment:
-      - DEBUG=True
+      - DEBUG=False
       - SECRET_KEY=dev_secret_key_replace_in_production
       - DATABASE_URL=postgis://${APP_DB_USERNAME:-coalition_app}:${APP_DB_PASSWORD:-app_password}@db:5432/${DB_NAME:-coalition}
       - CACHE_URL=redis://redis:6379/1
       - ALLOWED_HOSTS=localhost,127.0.0.1,api,ssr,nginx
-      - PYTHONPATH=/app/backend
+      - PYTHONPATH=/app
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend:/app/backend
-    command: ["python", "/app/backend/manage.py", "runserver", "0.0.0.0:8000"]
     networks:
       - app-network
 
   ssr:
+    image: coalition_ssr:latest
     build:
-      context: ./ssr
-      dockerfile: Dockerfile
-      target: deps # Use deps stage for development
+      context: .
+      dockerfile: Dockerfile.ssr
     depends_on:
       - api
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - API_URL=http://api:8000
       - NEXT_PUBLIC_API_URL=http://localhost:8000
       - PORT=3000
     ports:
       - "3000:3000"
-    volumes:
-      - ./ssr:/app
-      - /app/node_modules
-      - /app/.next
-    command: ["npm", "run", "dev"]
     healthcheck:
       test: ["CMD", "node", "healthcheck.js"]
       interval: 10s

@@ -1,28 +1,64 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./*"]
-    },
+    // Basic compilation settings
+    "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
-    "noEmit": true,
-    "incremental": true,
-    "esModuleInterop": true,
+    "noImplicitAny": true,
+
+    // Module resolution
     "module": "esnext",
     "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "@frontend/*": ["./frontend/src/*", "../frontend/src/*"],
+      "@frontend/types": [
+        "./frontend/src/types/index.ts",
+        "../frontend/src/types/index.ts"
+      ],
+      "@frontend/components/*": [
+        "./frontend/src/components/*",
+        "../frontend/src/components/*"
+      ]
+    },
+    "typeRoots": ["./node_modules/@types"],
+    "types": ["node", "react", "react-dom"],
     "resolveJsonModule": true,
-    "isolatedModules": true,
+    "esModuleInterop": true,
+
+    // JSX and React
     "jsx": "preserve",
+    "isolatedModules": true,
+
+    // Output and build
+    "noEmit": true,
+    "incremental": true,
+
+    // Plugins
     "plugins": [
       {
         "name": "next"
       }
-    ],
-    "target": "ES2017"
+    ]
   },
-  "include": ["next-env.d.ts", ".next/types/**/*.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "./frontend/src/types/**/*.ts",
+    "./frontend/src/components/**/*.tsx",
+    "./frontend/src/services/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "./frontend/src/**/*.test.tsx",
+    "./frontend/src/**/*.test.ts",
+    "./frontend/src/tests/**/*",
+    "./frontend/src/App.test.tsx",
+    "./frontend/src/setupTests.ts"
+  ]
 }

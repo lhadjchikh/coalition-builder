@@ -1,7 +1,12 @@
-import { Campaign, Endorser, Legislator, Endorsement, EndorsementCreate } from '../types';
+import { Campaign, Endorser, Legislator, Endorsement, EndorsementCreate, HomePage } from '../types';
 
 // Determine the API base URL
 const getBaseUrl = (): string => {
+  // Check for Next.js/SSR environment variable first
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+
   // In CI/E2E tests with Docker, use the service name from docker-compose
   if (process.env.REACT_APP_API_URL) {
     return process.env.REACT_APP_API_URL;
@@ -131,6 +136,20 @@ const API = {
       return (await response.json()) as Campaign;
     } catch (error) {
       console.error('Error fetching campaign by name:', error);
+      throw error;
+    }
+  },
+
+  // Homepage
+  getHomepage: async (): Promise<HomePage> => {
+    try {
+      const response = await fetch(`${getBaseUrl()}/api/homepage/`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return (await response.json()) as HomePage;
+    } catch (error) {
+      console.error('Error fetching homepage:', error);
       throw error;
     }
   },

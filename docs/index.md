@@ -39,7 +39,8 @@ The `/frontend` directory contains a React application built with Vite that serv
 1. Next.js handles server-side rendering for better SEO
 2. Django serves only API endpoints (`/api/*`, `/admin/*`)
 3. nginx routes frontend requests (`/*`) to Next.js instead of Django
-4. Same React components can be used in both modes
+4. Next.js imports and renders the same React components from `/frontend/src/components/`
+5. Shared error handling logic ensures consistent behavior in both modes
 
 #### Request Routing
 

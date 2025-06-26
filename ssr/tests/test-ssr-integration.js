@@ -304,7 +304,53 @@ async function testContainerCommunication() {
   return true; // Default pass if we reach here
 }
 
-// Test 7: Performance Test
+// Test 7: Error Handling and Fallback UI Test
+async function testSSRErrorHandlingAndFallback() {
+  console.log("🔍 Testing SSR error handling and fallback UI...");
+
+  const response = await fetchWithRetry(TEST_CONFIG.SSR_URL);
+
+  if (!response.ok) {
+    throw new Error(
+      `SSR architecture test failed: ${response.status} ${response.statusText}`,
+    );
+  }
+
+  const html = await response.text();
+
+  // Verify the page structure is intact
+  if (!html.includes("<html") || !html.includes("</html>")) {
+    throw new Error("Page structure compromised");
+  }
+
+  // Check that the SSR is actually rendering homepage content
+  const homepageIndicators = [
+    "Welcome to Coalition Builder", // Should show hero title from fallback
+    "About Our Mission", // Should show about section
+    "Policy Campaigns", // Should show campaigns section
+    "Coalition Builder", // Should show organization name
+  ];
+
+  let foundHomepageIndicators = 0;
+  for (const indicator of homepageIndicators) {
+    if (html.includes(indicator)) {
+      foundHomepageIndicators++;
+    }
+  }
+
+  if (foundHomepageIndicators < 2) {
+    throw new Error(
+      `SSR homepage rendering failed - only found ${foundHomepageIndicators}/4 expected indicators: ${homepageIndicators.join(", ")}`,
+    );
+  }
+
+  console.log(
+    `✅ SSR homepage rendering test passed - found ${foundHomepageIndicators}/4 homepage indicators`,
+  );
+  return true;
+}
+
+// Test 8: Performance Test
 async function testPerformance() {
   console.log("🔍 Running basic performance test...");
 
@@ -353,6 +399,7 @@ async function runIntegrationTests() {
     { name: "API Routing", fn: testAPIRouting },
     { name: "SSR API Integration", fn: testSSRAPIIntegration },
     { name: "Container Communication", fn: testContainerCommunication },
+    { name: "SSR Error Handling", fn: testSSRErrorHandlingAndFallback },
     { name: "Performance Test", fn: testPerformance },
   ];
 
@@ -456,5 +503,6 @@ module.exports = {
   testAPIRouting,
   testSSRAPIIntegration,
   testContainerCommunication,
+  testSSRErrorHandlingAndFallback,
   testPerformance,
 };

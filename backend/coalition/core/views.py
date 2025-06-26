@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 def _get_manifest_paths() -> list[str]:
     """Get possible locations for the asset manifest file"""
     return [
+        # Docker container path with mounted frontend build
+        "/app/frontend/build/asset-manifest.json",
         # Docker container path (copied from frontend build)
         os.path.join(settings.STATIC_ROOT, "asset-manifest.json"),
         os.path.join(settings.STATIC_ROOT, "frontend", "asset-manifest.json"),

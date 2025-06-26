@@ -10,11 +10,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # Configure apt sources and install system dependencies including GDAL
 # Combining these operations into a single layer reduces image size
-RUN echo "deb https://deb.debian.org/debian unstable main contrib" >> /etc/apt/sources.list && \
+# Clean apt cache first to avoid Hash Sum mismatch errors
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    echo "deb https://deb.debian.org/debian unstable main contrib" >> /etc/apt/sources.list && \
     echo "Package: *" >> /etc/apt/preferences && \
     echo "Pin: release a=unstable" >> /etc/apt/preferences && \
     echo "Pin-Priority: 10" >> /etc/apt/preferences && \
-    apt-get update && \
+    apt-get update --allow-releaseinfo-change && \
     apt-get install --yes --no-install-recommends curl g++ python3-dev && \
     apt-get install --yes -t unstable gdal-bin libgdal-dev && \
     apt-get clean && \

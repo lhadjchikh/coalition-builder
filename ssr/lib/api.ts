@@ -1,10 +1,10 @@
-import {
+import type {
   Campaign,
   Endorser,
   Legislator,
   HomePage,
   ContentBlock,
-} from "@/types";
+} from "@frontend/types";
 
 const API_URL =
   process.env.API_URL ||

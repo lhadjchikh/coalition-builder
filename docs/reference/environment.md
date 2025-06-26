@@ -190,48 +190,48 @@ SENTRY_ENVIRONMENT=production
 
 ### API Configuration
 
-| Variable            | Description          | Default                     | Required |
-| ------------------- | -------------------- | --------------------------- | -------- |
-| `REACT_APP_API_URL` | Backend API base URL | `http://localhost:8000/api` | No       |
-| `REACT_APP_DEBUG`   | Enable debug logging | `false`                     | No       |
+| Variable              | Description          | Default                     | Required |
+| --------------------- | -------------------- | --------------------------- | -------- |
+| `NEXT_PUBLIC_API_URL` | Backend API base URL | `http://localhost:8000/api` | No       |
+| `REACT_APP_DEBUG`     | Enable debug logging | `false`                     | No       |
 
 **Example:**
 
 ```bash
-REACT_APP_API_URL=https://api.yourdomain.com/api
+NEXT_PUBLIC_API_URL=https://api.yourdomain.com/api
 REACT_APP_DEBUG=true
 ```
 
 ### Organization Branding
 
-| Variable                  | Description          | Default                          | Required |
-| ------------------------- | -------------------- | -------------------------------- | -------- |
-| `REACT_APP_ORG_NAME`      | Organization name    | `Coalition Builder`              | No       |
-| `REACT_APP_TAGLINE`       | Organization tagline | `Building advocacy partnerships` | No       |
-| `REACT_APP_PRIMARY_COLOR` | Primary brand color  | `#1976d2`                        | No       |
-| `REACT_APP_LOGO_URL`      | Logo image URL       | -                                | No       |
+| Variable                        | Description          | Default                          | Required |
+| ------------------------------- | -------------------- | -------------------------------- | -------- |
+| `NEXT_PUBLIC_ORGANIZATION_NAME` | Organization name    | `Coalition Builder`              | No       |
+| `NEXT_PUBLIC_TAGLINE`           | Organization tagline | `Building advocacy partnerships` | No       |
+| `NEXT_PUBLIC_PRIMARY_COLOR`     | Primary brand color  | `#1976d2`                        | No       |
+| `NEXT_PUBLIC_LOGO_URL`          | Logo image URL       | -                                | No       |
 
 **Example:**
 
 ```bash
-REACT_APP_ORG_NAME="Environmental Coalition"
-REACT_APP_TAGLINE="Protecting our planet"
-REACT_APP_PRIMARY_COLOR="#2e7d32"
-REACT_APP_LOGO_URL="https://yourdomain.com/logo.png"
+NEXT_PUBLIC_ORGANIZATION_NAME="Environmental Coalition"
+NEXT_PUBLIC_TAGLINE="Protecting our planet"
+NEXT_PUBLIC_PRIMARY_COLOR="#2e7d32"
+NEXT_PUBLIC_LOGO_URL="https://yourdomain.com/logo.png"
 ```
 
 ### Analytics and Tracking
 
-| Variable                   | Description                  | Default | Required |
-| -------------------------- | ---------------------------- | ------- | -------- |
-| `REACT_APP_GA_TRACKING_ID` | Google Analytics tracking ID | -       | No       |
-| `REACT_APP_HOTJAR_ID`      | Hotjar site ID               | -       | No       |
+| Variable                     | Description                  | Default | Required |
+| ---------------------------- | ---------------------------- | ------- | -------- |
+| `NEXT_PUBLIC_GA_TRACKING_ID` | Google Analytics tracking ID | -       | No       |
+| `NEXT_PUBLIC_HOTJAR_ID`      | Hotjar site ID               | -       | No       |
 
 **Example:**
 
 ```bash
-REACT_APP_GA_TRACKING_ID=GA_MEASUREMENT_ID
-REACT_APP_HOTJAR_ID=1234567
+NEXT_PUBLIC_GA_TRACKING_ID=GA_MEASUREMENT_ID
+NEXT_PUBLIC_HOTJAR_ID=1234567
 ```
 
 ## SSR Environment Variables
@@ -354,7 +354,7 @@ ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS=3
 CACHE_URL=redis://redis:6379/1
 
 # Frontend
-REACT_APP_API_URL=http://localhost:8000/api
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
 REACT_APP_DEBUG=true
 
 # SSR
@@ -404,7 +404,7 @@ USE_S3=True
 AWS_STORAGE_BUCKET_NAME=${S3_BUCKET_NAME}
 
 # Frontend
-REACT_APP_API_URL=https://api.yourdomain.com/api
+NEXT_PUBLIC_API_URL=https://api.yourdomain.com/api
 
 # SSR
 API_URL=http://backend:8000
@@ -452,7 +452,7 @@ ORG_TAGLINE="Testing advocacy partnerships"
 CONTACT_EMAIL="test@example.com"
 
 # Frontend Test Settings
-REACT_APP_API_URL=http://localhost:8000/api
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
 REACT_APP_DEBUG=true
 
 # SSR Test Settings

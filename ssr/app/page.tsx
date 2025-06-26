@@ -1,14 +1,21 @@
-import { apiClient } from "../lib/api";
-import type { Campaign, HomePage } from "../types";
+import React from "react";
 import Link from "next/link";
-import HeroSection from "./components/HeroSection";
-import ContentBlock from "./components/ContentBlock";
-import SocialLinks from "./components/SocialLinks";
+import { ssrApiClient } from "../lib/frontend-api-adapter";
+import type {
+  Campaign,
+  HomePage as HomePageType,
+  ContentBlock as ContentBlockType,
+} from "@frontend/types";
 import type { Metadata } from "next";
+
+// Import shared components
+import HeroSection from "@frontend/components/HeroSection";
+import ContentBlock from "@frontend/components/ContentBlock";
+import SocialLinks from "@frontend/components/SocialLinks";
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
-    const homepage = await apiClient.getHomepage();
+    const homepage = await ssrApiClient.getHomepage();
     return {
       title: homepage.organization_name,
       description: homepage.tagline,
@@ -31,28 +38,46 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   let campaigns: Campaign[] = [];
-  let homepage: HomePage | null = null;
-  let error: string | null = null;
+  let homepage: HomePageType | null = null;
+  let homepageError: string | null = null;
+  let campaignsError: string | null = null;
 
-  try {
-    // Fetch both homepage content and campaigns in parallel
-    const [homepageData, campaignsData] = await Promise.all([
-      apiClient.getHomepage(),
-      apiClient.getCampaigns(),
-    ]);
+  // Fetch homepage and campaigns in parallel for better performance (server-side)
+  const [homepageResult, campaignsResult] = await Promise.allSettled([
+    ssrApiClient.getHomepage(),
+    ssrApiClient.getCampaigns(),
+  ]);
 
-    homepage = homepageData;
-    campaigns = campaignsData;
-  } catch (err) {
-    error = err instanceof Error ? err.message : "Failed to fetch content";
-    console.error("Error fetching content:", err);
+  // Handle homepage result
+  if (homepageResult.status === "fulfilled") {
+    homepage = homepageResult.value;
+  } else {
+    homepageError =
+      homepageResult.reason instanceof Error
+        ? homepageResult.reason.message
+        : "Failed to fetch homepage";
+    console.error("Error fetching homepage:", homepageResult.reason);
   }
 
-  // Fallback homepage data if API fails
-  const fallbackHomepage: HomePage = {
+  // Handle campaigns result
+  if (campaignsResult.status === "fulfilled") {
+    campaigns = campaignsResult.value;
+  } else {
+    campaignsError =
+      campaignsResult.reason instanceof Error
+        ? campaignsResult.reason.message
+        : "Failed to fetch campaigns";
+    console.error("Error fetching campaigns:", campaignsResult.reason);
+  }
+
+  // Fallback homepage data if API fails (same as frontend)
+  const fallbackHomepage: HomePageType = {
     id: 0,
-    organization_name: process.env.ORGANIZATION_NAME || "Coalition Builder",
-    tagline: process.env.TAGLINE || "Building strong advocacy partnerships",
+    organization_name:
+      process.env.NEXT_PUBLIC_ORGANIZATION_NAME || "Coalition Builder",
+    tagline:
+      process.env.NEXT_PUBLIC_TAGLINE ||
+      "Building strong advocacy partnerships",
     hero_title: "Welcome to Coalition Builder",
     hero_subtitle: "Empowering advocates to build strong policy coalitions",
     hero_background_image: "",
@@ -80,21 +105,18 @@ export default async function HomePage() {
 
   const currentHomepage = homepage || fallbackHomepage;
 
-  if (error && !homepage) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="max-w-md mx-auto">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            <p className="font-bold">Error loading page content</p>
-            <p className="text-sm mt-1">{error}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-white">
+      {/* Development notice when using fallback data */}
+      {process.env.NODE_ENV === "development" && homepageError && (
+        <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4">
+          <p className="font-bold">Development Notice</p>
+          <p className="text-sm">
+            Using fallback homepage data due to API error: {homepageError}
+          </p>
+        </div>
+      )}
+
       {/* Hero Section */}
       <HeroSection homepage={currentHomepage} />
 
@@ -123,9 +145,11 @@ export default async function HomePage() {
         currentHomepage.content_blocks.length > 0 && (
           <>
             {currentHomepage.content_blocks
-              .filter((block) => block.is_visible)
-              .sort((a, b) => a.order - b.order)
-              .map((block) => (
+              .filter((block: ContentBlockType) => block.is_visible)
+              .sort(
+                (a: ContentBlockType, b: ContentBlockType) => a.order - b.order,
+              )
+              .map((block: ContentBlockType) => (
                 <ContentBlock key={block.id} block={block} />
               ))}
           </>
@@ -147,9 +171,12 @@ export default async function HomePage() {
             </div>
 
             <div className="mt-12">
-              {error && !campaigns.length ? (
+              {campaignsError && !campaigns.length ? (
                 <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
                   <p>Unable to load campaigns at this time.</p>
+                  {process.env.NODE_ENV === "development" && (
+                    <p className="text-sm mt-1">{campaignsError}</p>
+                  )}
                 </div>
               ) : campaigns.length === 0 ? (
                 <div className="text-center text-gray-600">
@@ -167,7 +194,7 @@ export default async function HomePage() {
                       </h3>
                       <p className="text-gray-600 mb-4">{campaign.summary}</p>
                       <Link
-                        href={`/campaigns/${campaign.slug}`}
+                        href={`/campaigns/${campaign.name}`}
                         className="text-blue-600 hover:text-blue-800 font-medium"
                       >
                         Learn more →

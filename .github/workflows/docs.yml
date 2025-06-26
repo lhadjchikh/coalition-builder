@@ -72,8 +72,8 @@ jobs:
 
       - name: Build API documentation using Docker
         run: |
-          docker compose run --rm api sh -c "
-            cd /app/backend &&
+          mkdir -p backend/docs/_build
+          docker compose run --rm -v $(pwd)/backend/docs/_build:/app/docs/_build api sh -c "
             poetry install --with docs &&
             export DJANGO_SETTINGS_MODULE=coalition.core.settings &&
             poetry run sphinx-build -b html docs docs/_build/html
