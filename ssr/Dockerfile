@@ -7,7 +7,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+COPY ssr/package.json ssr/yarn.lock* ssr/package-lock.json* ssr/pnpm-lock.yaml* ./
 RUN \
   if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
   elif [ -f package-lock.json ]; then npm ci; \
@@ -19,9 +19,9 @@ RUN \
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-# Copy frontend source files needed for shared components
-COPY ../frontend/src ./frontend/src
+COPY ssr/ .
+# Copy frontend source files needed for shared components  
+COPY frontend/src ./frontend/src
 
 RUN mkdir -p ./public
 
