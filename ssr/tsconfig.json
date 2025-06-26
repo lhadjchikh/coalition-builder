@@ -3,12 +3,15 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@frontend/*": ["../frontend/src/*"]
+      "@frontend/*": ["../frontend/src/*"],
+      "@frontend/types": ["../frontend/src/types/index.ts"],
+      "@frontend/components/*": ["../frontend/src/components/*"]
     },
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
+    "noImplicitAny": false,
     "noEmit": true,
     "incremental": true,
     "esModuleInterop": true,
@@ -17,6 +20,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
+    "types": ["node"],
     "plugins": [
       {
         "name": "next"
@@ -29,8 +33,16 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx",
-    "../frontend/src/**/*.ts",
-    "../frontend/src/**/*.tsx"
+    "../frontend/src/types/**/*.ts",
+    "../frontend/src/components/**/*.tsx",
+    "../frontend/src/services/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "../frontend/src/**/*.test.tsx",
+    "../frontend/src/**/*.test.ts",
+    "../frontend/src/tests/**/*",
+    "../frontend/src/App.test.tsx",
+    "../frontend/src/setupTests.ts"
+  ]
 }
