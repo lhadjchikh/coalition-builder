@@ -285,7 +285,11 @@ resource "aws_ecs_task_definition" "app" {
         },
         {
           name  = "ALLOWED_HOSTS"
-          value = "*"
+          value = "${var.domain_name},*.${var.domain_name}"
+        },
+        {
+          name  = "CSRF_TRUSTED_ORIGINS"
+          value = "https://${var.domain_name},https://www.${var.domain_name}"
         },
         {
           name  = "CACHE_URL"
@@ -414,7 +418,11 @@ resource "aws_ecs_task_definition" "app" {
         },
         {
           name  = "ALLOWED_HOSTS"
-          value = "*"
+          value = "${var.domain_name},*.${var.domain_name}"
+        },
+        {
+          name  = "CSRF_TRUSTED_ORIGINS"
+          value = "https://${var.domain_name},https://www.${var.domain_name}"
         },
         {
           name  = "CACHE_URL"
