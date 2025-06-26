@@ -36,12 +36,10 @@ const req = http.request(options, (res) => {
         // Parse the JSON response
         const healthData = JSON.parse(data);
 
-        // Check if the status is healthy and API is connected
-        if (
-          healthData.status === "healthy" &&
-          healthData.api?.status === "connected"
-        ) {
-          console.log("✅ Health check passed - API connection verified");
+        // For Docker health check, only verify SSR service is healthy
+        // ALB health checks can still see API status via the /health endpoint
+        if (healthData.status === "healthy") {
+          console.log(`✅ Health check passed - SSR healthy, API: ${healthData.api?.status || 'unknown'}`);
           process.exit(0);
         } else {
           console.error(
