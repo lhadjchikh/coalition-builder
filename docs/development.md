@@ -8,6 +8,29 @@ This guide covers the development workflow, testing, and contributing to Coaliti
 
 For most developers, the [Installation guide](installation.md) provides everything needed. For detailed development environment setup including automated tooling installation, see the [Development Setup guide](development/setup.md).
 
+### Docker Compose Configurations
+
+Coalition Builder uses two Docker Compose configurations:
+
+#### Production Configuration (`docker-compose.yml`)
+
+- **Purpose**: Production deployments and CI/CD pipelines
+- **Features**: Optimized builds, production environment variables, no volume mounts
+- **Usage**: `docker compose up -d`
+
+#### Development Configuration (`docker-compose.dev.yml`)
+
+- **Purpose**: Local development with live code reload
+- **Features**: Volume mounts for instant code changes, development build targets, debug mode
+- **Usage**: `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d`
+
+**Key Differences:**
+
+- **Build Targets**: Production uses full builds, development uses `target: deps` for faster rebuilds
+- **Volume Mounts**: Development mounts source code for live reload
+- **Environment Variables**: `DEBUG=True` and `NODE_ENV=development` in dev mode
+- **Commands**: Development uses `npm run dev` and `runserver`, production uses optimized startup commands
+
 ### Code Style
 
 - Python: Black formatting, Ruff linting

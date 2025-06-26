@@ -98,10 +98,20 @@ The recommended way to run the application is using Docker Compose:
 
 ```bash
 # From the project root
-docker-compose up
+
+# Production/CI mode (optimized builds)
+docker compose up -d
+
+# Development mode (live code reload)
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 ```
 
-This will start both the backend and frontend applications, along with a PostGIS database.
+**Docker Compose Files:**
+
+- `docker-compose.yml`: Production configuration used by CI/CD
+- `docker-compose.dev.yml`: Development overrides with volume mounts and live reload
+
+This will start the backend, SSR frontend, and database services with a PostGIS database.
 
 ## API Endpoints
 

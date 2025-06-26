@@ -4,14 +4,44 @@ This guide covers setting up Coalition Builder for development and production.
 
 ## Quick Start
 
-### Prerequisites
+### Option 1: Docker (Recommended)
+
+**Prerequisites:**
+
+- Docker and Docker Compose
+
+```bash
+# Clone the repository
+git clone https://github.com/lhadjchikh/coalition-builder.git
+cd coalition-builder
+
+# For production/CI (optimized builds)
+docker compose up -d
+
+# For development (live code reload)
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+# Create test data
+docker compose exec api python scripts/create_test_data.py
+
+# Create admin user
+docker compose exec api python manage.py createsuperuser
+```
+
+**Access Points:**
+
+- Frontend (SSR): http://localhost:3000
+- API: http://localhost:8000/api/
+- Admin: http://localhost:8000/admin/
+
+### Option 2: Manual Setup
+
+**Prerequisites:**
 
 - Python 3.13+
 - Node.js 22+
 - PostgreSQL 13+ with PostGIS extension
 - Redis (for caching)
-
-### Development Setup
 
 1. **Clone and setup backend:**
 

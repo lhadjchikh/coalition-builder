@@ -15,15 +15,20 @@ git clone https://github.com/lhadjchikh/coalition-builder.git
 cd coalition-builder
 
 # Start with Docker (recommended)
-docker-compose up -d
+# For production/CI
+docker compose up -d
+
+# For local development with live code reload
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 
 # Create test data
-docker-compose exec backend python scripts/create_test_data.py
+docker compose exec api python scripts/create_test_data.py
 
 # Access the application
-# Frontend: http://localhost:3000
-# API: http://localhost:8000
-# Admin: http://localhost:8000/admin
+# Frontend: http://localhost:3000 (SSR)
+# Frontend SPA: http://localhost:8000 (Django serves React)
+# API: http://localhost:8000/api/
+# Admin: http://localhost:8000/admin/
 ```
 
 ## 📚 Documentation

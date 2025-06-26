@@ -47,7 +47,7 @@ services:
       redis:
         condition: service_healthy
     environment:
-      - DEBUG=True
+      - DEBUG=False
       - SECRET_KEY=dev_secret_key_replace_in_production
       - DATABASE_URL=postgis://${APP_DB_USERNAME:-coalition_app}:${APP_DB_PASSWORD:-app_password}@db:5432/${DB_NAME:-coalition}
       - CACHE_URL=redis://redis:6379/1
@@ -55,10 +55,6 @@ services:
       - PYTHONPATH=/app/backend
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend:/app/backend
-      - ./frontend/build:/app/frontend/build:ro
-    command: ["python", "/app/backend/manage.py", "runserver", "0.0.0.0:8000"]
     networks:
       - app-network
 
@@ -70,18 +66,12 @@ services:
     depends_on:
       - api
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - API_URL=http://api:8000
       - NEXT_PUBLIC_API_URL=http://localhost:8000
       - PORT=3000
     ports:
       - "3000:3000"
-    volumes:
-      - ./ssr:/app
-      - ./frontend/src:/app/frontend/src:ro
-      - /app/node_modules
-      - /app/.next
-    command: ["npm", "run", "dev"]
     healthcheck:
       test: ["CMD", "node", "healthcheck.js"]
       interval: 10s
