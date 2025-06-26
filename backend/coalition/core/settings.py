@@ -205,6 +205,8 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # Static files directories - where Django will look for static files during development
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
+    # Add frontend build directory for local development
+    os.path.join(BASE_DIR.parent, "frontend", "build", "static"),
 ]
 
 # Additional static file finder configuration
