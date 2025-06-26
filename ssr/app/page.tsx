@@ -32,20 +32,29 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HomePage() {
   let campaigns: Campaign[] = [];
   let homepage: HomePage | null = null;
-  let error: string | null = null;
+  let homepageError: string | null = null;
+  let campaignsError: string | null = null;
 
   try {
-    // Fetch both homepage content and campaigns in parallel
-    const [homepageData, campaignsData] = await Promise.all([
-      apiClient.getHomepage(),
-      apiClient.getCampaigns(),
-    ]);
+    // Try to fetch homepage and campaigns separately for better error handling
+    try {
+      homepage = await apiClient.getHomepage();
+    } catch (err) {
+      homepageError =
+        err instanceof Error ? err.message : "Failed to fetch homepage";
+      console.error("Error fetching homepage:", err);
+    }
 
-    homepage = homepageData;
-    campaigns = campaignsData;
+    try {
+      campaigns = await apiClient.getCampaigns();
+    } catch (err) {
+      campaignsError =
+        err instanceof Error ? err.message : "Failed to fetch campaigns";
+      console.error("Error fetching campaigns:", err);
+    }
   } catch (err) {
-    error = err instanceof Error ? err.message : "Failed to fetch content";
-    console.error("Error fetching content:", err);
+    // This should not happen since we're handling errors above
+    console.error("Unexpected error:", err);
   }
 
   // Fallback homepage data if API fails
@@ -80,21 +89,18 @@ export default async function HomePage() {
 
   const currentHomepage = homepage || fallbackHomepage;
 
-  if (error && !homepage) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="max-w-md mx-auto">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            <p className="font-bold">Error loading page content</p>
-            <p className="text-sm mt-1">{error}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-white">
+      {/* Development notice when using fallback data */}
+      {process.env.NODE_ENV === "development" && homepageError && (
+        <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4">
+          <p className="font-bold">Development Notice</p>
+          <p className="text-sm">
+            Using fallback homepage data due to API error: {homepageError}
+          </p>
+        </div>
+      )}
+
       {/* Hero Section */}
       <HeroSection homepage={currentHomepage} />
 
@@ -147,9 +153,12 @@ export default async function HomePage() {
             </div>
 
             <div className="mt-12">
-              {error && !campaigns.length ? (
+              {campaignsError && !campaigns.length ? (
                 <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
                   <p>Unable to load campaigns at this time.</p>
+                  {process.env.NODE_ENV === "development" && (
+                    <p className="text-sm mt-1">{campaignsError}</p>
+                  )}
                 </div>
               ) : campaigns.length === 0 ? (
                 <div className="text-center text-gray-600">
