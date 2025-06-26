@@ -7,9 +7,9 @@ This module creates and manages the networking infrastructure for the Coalition 
 - **VPC Creation**: Creates a new VPC or uses an existing one
 - **Multi-AZ Subnets**: Creates subnets across multiple availability zones
 - **Public Subnets**: For internet-facing resources like load balancers
-- **Private Application Subnets**: For application containers (ECS tasks)
+- **Private Application Subnets**: For application containers (ECS tasks) - **no internet access, VPC endpoints only**
 - **Private Database Subnets**: Isolated subnets for database instances
-- **NAT Gateway**: Allows private resources to access the internet
+- **VPC Endpoints**: Cost-effective alternative to NAT Gateway for AWS service access
 - **VPC Endpoints**: Provides private connectivity to AWS services:
   - S3 Gateway Endpoint: For S3 access without going through the internet
   - Interface Endpoints: For ECR, CloudWatch Logs, and Secrets Manager
@@ -35,21 +35,36 @@ module "networking" {
 }
 ```
 
-## VPC Endpoints
+## Network Architecture
 
-The module creates the following VPC endpoints to allow private resources to access AWS services without going through the internet:
+### Private Subnet Design
 
-1. **S3 Gateway Endpoint**: Provides access to S3 using the AWS network instead of the internet
+Private application subnets are configured for **VPC endpoints only** networking:
+
+- **No default route (0.0.0.0/0)** to the internet
+- **No NAT Gateway required** - saving ~$45/month per AZ
+- All AWS service communication goes through VPC endpoints
+- Load balancers can still reach private subnet resources directly
+
+### VPC Endpoints
+
+The module creates the following VPC endpoints to allow private resources to access AWS services:
+
+1. **S3 Gateway Endpoint**: For ECR image layers and static content
 2. **Interface Endpoints**:
-   - **ECR API**: For pulling container images
+   - **ECR API**: For container registry authentication
    - **ECR DKR**: For Docker registry operations
-   - **CloudWatch Logs**: For sending logs to CloudWatch
-   - **Secrets Manager**: For accessing secrets
+   - **CloudWatch Logs**: For application logging
+   - **Secrets Manager**: For secure credential access
 
-A dedicated security group is created for interface endpoints with the following rules:
+A dedicated security group controls interface endpoint access:
 
 - Inbound: HTTPS (443) from within the VPC
 - Outbound: Return traffic and DNS queries within the VPC
+
+### Important: No Internet Access
+
+Resources in private subnets **cannot reach the internet** and must use VPC endpoints for all AWS service communication. This design prioritizes security and cost savings over general internet connectivity.
 
 ## Inputs
 

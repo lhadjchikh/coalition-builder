@@ -54,3 +54,8 @@ output "interface_endpoints" {
     for name, endpoint in aws_vpc_endpoint.interface : name => endpoint.id
   }
 }
+
+output "private_app_route_table_id" {
+  description = "ID of the private app route table (for testing purposes)"
+  value       = length(aws_route_table.private_app) > 0 ? aws_route_table.private_app[0].id : null
+}

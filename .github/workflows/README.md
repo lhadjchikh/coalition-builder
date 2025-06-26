@@ -26,6 +26,13 @@ This project uses a structured CI/CD pipeline with the following key workflows:
 - Runs the Django tests inside a Docker container
 - Can be manually triggered with `workflow_dispatch`
 
+#### SSR Tests (`test_ssr.yml`)
+
+- Triggered by changes to files in the `ssr/` directory
+- Runs unit tests for the Server-Side Rendering (SSR) Next.js application
+- Tests SSR functionality and API integration
+- Can be manually triggered with `workflow_dispatch`
+
 #### Full Stack Integration Tests (`test_fullstack.yml`)
 
 - Runs on pushes to main branch, pull requests that affect both frontend and backend, or manual triggers
@@ -50,33 +57,93 @@ This project uses a structured CI/CD pipeline with the following key workflows:
 - **Integration Tests (Full)**: Complete infrastructure deployment with real AWS resources
 - **Cost Monitoring**: Checks for leftover resources and creates alerts
 
-### Deployment Workflow (`deploy-to-ecs.yml`)
+### Deployment Workflows
+
+#### Application Deployment (`deploy_app.yml`)
 
 - Deploys the application to Amazon ECS
 - Triggered automatically after all test workflows complete successfully
 - Can be manually triggered with an option to skip tests
-- No longer runs redundant tests (as of May 2025)
+- Builds and pushes Docker images to ECR
+- Updates ECS services with new task definitions
 
-### Infrastructure Workflow (`infrastructure.yml`)
+#### Infrastructure Deployment (`deploy_infra.yml`)
 
 - Manages AWS infrastructure changes using Terraform
+- Triggered by changes to `terraform/` directory on main branch
 - Runs independently of application code changes
+- Includes Terraform planning and apply steps
+- Manages AWS resources like VPC, ECS clusters, RDS, and load balancers
 
-### Code Style Checks
+### Documentation Workflow (`docs.yml`)
 
-- `python-lint.yml`: Runs Python linters
-- `prettier-lint.yml`: Runs prettier for formatting
-- `ts-typecheck.yml`: Checks TypeScript types
-- `terraform-lint.yml`: Validates Terraform files
+#### Documentation Generation and Deployment
+
+- Triggered by changes to `docs/` directory or `mkdocs.yml`
+- Builds comprehensive documentation from multiple sources:
+  - **API Documentation**: Generated from Django backend using Sphinx
+  - **Frontend Documentation**: Generated from TypeScript/React code using TypeDoc
+  - **User Guides**: Written in Markdown and processed by MkDocs
+- Deploys to GitHub Pages automatically on main branch pushes
+- Combines backend API docs, frontend component docs, and user documentation into a unified site
+
+### Code Quality and Linting Workflows
+
+#### Python Linting (`lint_python.yml`)
+
+- Runs Black code formatter and Ruff linter
+- Triggered by changes to Python files
+- Ensures consistent Python code style
+
+#### Prettier Formatting (`lint_prettier.yml`)
+
+- Runs Prettier for JavaScript, TypeScript, CSS, and Markdown files
+- Ensures consistent formatting across frontend code
+- Triggered by changes to relevant file types
+
+#### TypeScript Linting (`lint_typescript.yml`)
+
+- Runs ESLint and TypeScript compiler checks
+- Validates TypeScript code quality and type safety
+- Triggered by changes to TypeScript files
+
+#### Terraform Linting (`lint_terraform.yml`)
+
+- Runs `terraform fmt` and `tflint` for Terraform files
+- Validates infrastructure code quality and formatting
+- Triggered by changes to Terraform configurations
+
+#### Go Linting (`lint_go.yml`)
+
+- Runs various Go linters including `golangci-lint`, `staticcheck`, and `gosec`
+- Ensures Go code quality in test modules
+- Triggered by changes to Go files
+
+#### Shell Script Linting (`lint_shellcheck.yml`)
+
+- Runs ShellCheck for shell script validation
+- Ensures shell scripts follow best practices
+- Triggered by changes to shell script files
 
 ## Workflow Dependencies
 
 ```
-Frontend Tests ─┐
-Backend Tests ──┼─► Deploy to ECS ─► Amazon ECS
-Full Stack Tests┘
+Frontend Tests ────┐
+Backend Tests ─────┼─► Application Deployment ─► Amazon ECS
+SSR Tests ─────────┤
+Full Stack Tests ──┘
 
-Terraform Tests ─► Infrastructure Changes ─► AWS Resources
+Terraform Tests ──► Infrastructure Deployment ─► AWS Resources
+
+Documentation ────► GitHub Pages
+
+Linting Workflows:
+├── Python Linting
+├── Prettier Formatting
+├── TypeScript Linting
+├── Terraform Linting
+├── Go Linting
+└── Shell Script Linting
 ```
 
 ## Manual Triggers
@@ -111,11 +178,54 @@ cd backend
 python manage.py test    # Run Django tests
 ```
 
+### SSR Tests
+
+```bash
+cd ssr
+npm test                 # Run SSR unit tests
+npm run test:integration # Run integration tests with backend
+```
+
+### Terraform Tests
+
+```bash
+cd terraform/tests
+go test ./...            # Run unit tests
+go test -tags=integration ./...  # Run integration tests (requires AWS credentials)
+```
+
+### Linting and Code Quality
+
+```bash
+# Run all linters
+python scripts/lint.py
+
+# Individual linters
+cd frontend && npm run lint    # TypeScript/JavaScript
+cd backend && poetry run ruff check .  # Python
+terraform fmt -check -recursive terraform/  # Terraform
+shellcheck scripts/*.sh       # Shell scripts
+```
+
+## Documentation
+
+The documentation workflow automatically builds and deploys comprehensive documentation that includes:
+
+- **API Documentation**: Auto-generated from Django models, views, and serializers
+- **Frontend Documentation**: Generated from TypeScript interfaces and React components
+- **User Guides**: Markdown files covering installation, configuration, and usage
+- **Infrastructure Documentation**: Terraform module documentation
+
+The documentation is available at the GitHub Pages URL for this repository and is automatically updated when changes are pushed to the main branch.
+
 ## Adding New Workflows
 
 When adding new workflows, please follow these conventions:
 
 1. Name your workflow file descriptively (e.g., `component-name-action.yml`)
-2. Include clear step names
+2. Include clear step names and descriptions
 3. Group related jobs logically
-4. Add the workflow to this README
+4. Add appropriate triggers and path filters
+5. Include the workflow in this README with description
+6. Follow security best practices (minimal permissions, environment restrictions)
+7. Add manual trigger capability where appropriate (`workflow_dispatch`)

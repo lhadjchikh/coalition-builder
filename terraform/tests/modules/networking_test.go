@@ -1,12 +1,17 @@
 package modules
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
 	"terraform-tests/common"
 
-	"github.com/gruntwork-io/terratest/modules/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	terratestaws "github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 )
@@ -35,7 +40,7 @@ func TestNetworkingModuleCreatesVPCAndSubnets(t *testing.T) {
 	vpcID := terraform.Output(t, terraformOptions, "vpc_id")
 	assert.NotEmpty(t, vpcID)
 
-	vpc := aws.GetVpcById(t, vpcID, testConfig.AWSRegion)
+	vpc := terratestaws.GetVpcById(t, vpcID, testConfig.AWSRegion)
 	// Note: VPC detailed validation simplified due to Terratest API limitations
 	assert.NotNil(t, vpc)
 
@@ -225,7 +230,7 @@ func TestNetworkingModuleValidatesResourceNaming(t *testing.T) {
 
 	// Validate VPC naming
 	vpcID := terraform.Output(t, terraformOptions, "vpc_id")
-	vpc := aws.GetVpcById(t, vpcID, testConfig.AWSRegion)
+	vpc := terratestaws.GetVpcById(t, vpcID, testConfig.AWSRegion)
 
 	if nameTag, exists := vpc.Tags["Name"]; exists {
 		common.ValidateResourceNaming(t, nameTag, testConfig.Prefix, "vpc")
@@ -238,4 +243,164 @@ func TestNetworkingModuleValidatesResourceNaming(t *testing.T) {
 		// Note: Tag validation simplified - EC2 tags use complex structure
 		assert.NotNil(t, subnet)
 	}
+}
+
+// TestPrivateSubnetRouting verifies that private app subnets have no default route (0.0.0.0/0)
+// and rely solely on VPC endpoints for AWS service access
+func TestPrivateSubnetRouting(t *testing.T) {
+	common.SkipIfShortTest(t)
+
+	testConfig := common.NewTestConfig("../../modules/networking")
+	testVars := common.GetNetworkingTestVars()
+	testVars["create_private_subnets"] = true
+	testVars["create_vpc_endpoints"] = true
+
+	terraformOptions := testConfig.GetModuleTerraformOptions("../../modules/networking", testVars)
+	defer common.CleanupResources(t, terraformOptions)
+
+	terraform.InitAndApply(t, terraformOptions)
+
+	// Get the private app route table ID
+	privateAppRouteTableID := terraform.Output(t, terraformOptions, "private_app_route_table_id")
+	assert.NotEmpty(t, privateAppRouteTableID)
+
+	// Create AWS client to examine route table directly
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(testConfig.AWSRegion))
+	assert.NoError(t, err)
+
+	ec2Client := ec2.NewFromConfig(cfg)
+
+	// Get route table details
+	input := &ec2.DescribeRouteTablesInput{
+		RouteTableIds: []string{privateAppRouteTableID},
+	}
+
+	result, err := ec2Client.DescribeRouteTables(context.TODO(), input)
+	assert.NoError(t, err)
+	assert.Len(t, result.RouteTables, 1)
+
+	routeTable := result.RouteTables[0]
+
+	// Check that no default route (0.0.0.0/0) exists
+	hasDefaultRoute := false
+	for _, route := range routeTable.Routes {
+		if route.DestinationCidrBlock != nil && *route.DestinationCidrBlock == "0.0.0.0/0" {
+			hasDefaultRoute = true
+			break
+		}
+	}
+
+	assert.False(t, hasDefaultRoute, "Private app route table should not have a default route (0.0.0.0/0)")
+
+	// Verify VPC endpoints are created
+	s3EndpointID := terraform.Output(t, terraformOptions, "s3_endpoint_id")
+	assert.NotEmpty(t, s3EndpointID, "S3 VPC endpoint should be created")
+
+	endpointsSecurityGroupID := terraform.Output(t, terraformOptions, "endpoints_security_group_id")
+	assert.NotEmpty(t, endpointsSecurityGroupID, "VPC endpoints security group should be created")
+}
+
+// TestVPCEndpointsConfiguration verifies VPC endpoints are properly configured for private subnet access
+func TestVPCEndpointsConfiguration(t *testing.T) {
+	common.SkipIfShortTest(t)
+
+	testConfig := common.NewTestConfig("../../modules/networking")
+	testVars := common.GetNetworkingTestVars()
+	testVars["create_vpc_endpoints"] = true
+	testVars["create_private_subnets"] = true
+
+	terraformOptions := testConfig.GetModuleTerraformOptions("../../modules/networking", testVars)
+	defer common.CleanupResources(t, terraformOptions)
+
+	terraform.InitAndApply(t, terraformOptions)
+
+	vpcID := terraform.Output(t, terraformOptions, "vpc_id")
+
+	// Create AWS client
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(testConfig.AWSRegion))
+	assert.NoError(t, err)
+
+	ec2Client := ec2.NewFromConfig(cfg)
+
+	// Check S3 Gateway endpoint
+	s3EndpointID := terraform.Output(t, terraformOptions, "s3_endpoint_id")
+	assert.NotEmpty(t, s3EndpointID, "S3 Gateway endpoint ID should not be empty")
+
+	s3Input := &ec2.DescribeVpcEndpointsInput{
+		VpcEndpointIds: []string{s3EndpointID},
+	}
+	s3Result, err := ec2Client.DescribeVpcEndpoints(context.TODO(), s3Input)
+	assert.NoError(t, err)
+	assert.Len(t, s3Result.VpcEndpoints, 1)
+
+	s3Endpoint := s3Result.VpcEndpoints[0]
+	assert.Equal(t, vpcID, *s3Endpoint.VpcId)
+	assert.Equal(t, string(types.VpcEndpointTypeGateway), string(s3Endpoint.VpcEndpointType))
+	assert.Contains(t, *s3Endpoint.ServiceName, "s3")
+
+	// Check interface endpoints
+	interfaceEndpoints := terraform.OutputMap(t, terraformOptions, "interface_endpoints")
+	assert.NotEmpty(t, interfaceEndpoints, "Interface endpoints should be created")
+
+	// Verify expected endpoints exist
+	expectedServices := []string{"ecr_api", "ecr_dkr", "logs", "secretsmanager"}
+	for _, service := range expectedServices {
+		endpointID, exists := interfaceEndpoints[service]
+		assert.True(t, exists, fmt.Sprintf("Interface endpoint for %s should exist", service))
+
+		if endpointID != "" {
+			input := &ec2.DescribeVpcEndpointsInput{
+				VpcEndpointIds: []string{endpointID},
+			}
+			result, err := ec2Client.DescribeVpcEndpoints(context.TODO(), input)
+			assert.NoError(t, err)
+			assert.Len(t, result.VpcEndpoints, 1)
+
+			endpoint := result.VpcEndpoints[0]
+			assert.Equal(t, vpcID, *endpoint.VpcId)
+			assert.Equal(t, string(types.VpcEndpointTypeInterface), string(endpoint.VpcEndpointType))
+			assert.True(t, *endpoint.PrivateDnsEnabled)
+		}
+	}
+}
+
+// TestCostOptimization verifies the design avoids NAT Gateway costs
+func TestCostOptimization(t *testing.T) {
+	common.SkipIfShortTest(t)
+
+	testConfig := common.NewTestConfig("../../modules/networking")
+	testVars := common.GetNetworkingTestVars()
+	testVars["create_private_subnets"] = true
+	testVars["create_vpc_endpoints"] = true
+
+	terraformOptions := testConfig.GetModuleTerraformOptions("../../modules/networking", testVars)
+	defer common.CleanupResources(t, terraformOptions)
+
+	terraform.InitAndApply(t, terraformOptions)
+
+	vpcID := terraform.Output(t, terraformOptions, "vpc_id")
+
+	// Create AWS client
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(testConfig.AWSRegion))
+	assert.NoError(t, err)
+
+	ec2Client := ec2.NewFromConfig(cfg)
+
+	// Verify no NAT Gateways exist in this VPC
+	natInput := &ec2.DescribeNatGatewaysInput{
+		Filter: []types.Filter{
+			{
+				Name:   aws.String("vpc-id"),
+				Values: []string{vpcID},
+			},
+		},
+	}
+
+	natResult, err := ec2Client.DescribeNatGateways(context.TODO(), natInput)
+	assert.NoError(t, err)
+	assert.Empty(t, natResult.NatGateways, "No NAT Gateways should exist - cost optimization through VPC endpoints")
+
+	// Verify VPC endpoints are created as cost-effective alternative
+	s3EndpointID := terraform.Output(t, terraformOptions, "s3_endpoint_id")
+	assert.NotEmpty(t, s3EndpointID, "S3 VPC endpoint should replace NAT Gateway for AWS service access")
 }
