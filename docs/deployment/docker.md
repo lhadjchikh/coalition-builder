@@ -669,4 +669,4 @@ docker-compose ps
 docker inspect <container_id>
 ```
 
-For more detailed troubleshooting, see the [main troubleshooting guide](../admin/troubleshooting.md).
+For more detailed troubleshooting, see the [main deployment troubleshooting guide](../deployment.md#troubleshooting).
