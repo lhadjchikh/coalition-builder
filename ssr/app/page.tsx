@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { ssrApiClient } from "../lib/frontend-api-adapter";
 import type { Campaign, HomePage as HomePageType } from "@frontend/types";
 import type { Metadata } from "next";
@@ -183,12 +184,12 @@ export default async function HomePage() {
                         {campaign.title}
                       </h3>
                       <p className="text-gray-600 mb-4">{campaign.summary}</p>
-                      <a
-                        href={`/campaigns/${campaign.id}`}
+                      <Link
+                        href={`/campaigns/${campaign.name}`}
                         className="text-blue-600 hover:text-blue-800 font-medium"
                       >
                         Learn more →
-                      </a>
+                      </Link>
                     </div>
                   ))}
                 </div>
