@@ -1,7 +1,11 @@
 import React from "react";
 import Link from "next/link";
 import { ssrApiClient } from "../lib/frontend-api-adapter";
-import type { Campaign, HomePage as HomePageType, ContentBlock as ContentBlockType } from "@frontend/types";
+import type {
+  Campaign,
+  HomePage as HomePageType,
+  ContentBlock as ContentBlockType,
+} from "@frontend/types";
 import type { Metadata } from "next";
 
 // Import shared components
@@ -142,7 +146,9 @@ export default async function HomePage() {
           <>
             {currentHomepage.content_blocks
               .filter((block: ContentBlockType) => block.is_visible)
-              .sort((a: ContentBlockType, b: ContentBlockType) => a.order - b.order)
+              .sort(
+                (a: ContentBlockType, b: ContentBlockType) => a.order - b.order,
+              )
               .map((block: ContentBlockType) => (
                 <ContentBlock key={block.id} block={block} />
               ))}
