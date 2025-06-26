@@ -8,7 +8,7 @@
  * cd ../backend && python manage.py runserver
  *
  * To run only these tests:
- * npm test -- src/tests/e2e/BackendIntegration.test.js
+ * npm test -- src/tests/e2e/BackendIntegration.test.ts
  */
 
 import { act } from '@testing-library/react';
@@ -23,19 +23,10 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
   // Set a longer timeout for these tests since they require network calls
   jest.setTimeout(10000);
 
-  // Setup test with mock API methods to test directly instead of using fetch
+  // Setup test with Jest spies for cleaner mocking
   beforeEach(() => {
-    // Mock the API object directly instead of mocking fetch
-    // This avoids issues with window.fetch not being available in Jest
-    const originalMethods = {
-      getCampaigns: API.getCampaigns,
-      getEndorsers: API.getEndorsers,
-      getLegislators: API.getLegislators,
-    };
-
-    // If REACT_APP_API_URL is set, use mock methods that return the expected structure
-    // This way we don't need to make actual HTTP requests in the test environment
-    API.getCampaigns = jest.fn().mockResolvedValue([
+    // Use Jest spies to mock API methods
+    jest.spyOn(API, 'getCampaigns').mockResolvedValue([
       {
         id: 1,
         name: 'test-campaign',
@@ -44,17 +35,18 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
       },
     ]);
 
-    API.getEndorsers = jest.fn().mockResolvedValue([
+    jest.spyOn(API, 'getEndorsers').mockResolvedValue([
       {
         id: 1,
         name: 'Test Endorser',
         organization: 'Test Organization',
+        email: 'test@example.org',
         state: 'MD',
-        type: 'other',
+        type: 'nonprofit',
       },
     ]);
 
-    API.getLegislators = jest.fn().mockResolvedValue([
+    jest.spyOn(API, 'getLegislators').mockResolvedValue([
       {
         id: 1,
         first_name: 'Test',
@@ -66,25 +58,17 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
       },
     ]);
 
-    // Store for cleanup
-    API._originals = originalMethods;
-
     console.log('API endpoint being tested:', process.env.REACT_APP_API_URL || 'mocked API');
   });
 
-  // Restore original methods
+  // Restore all mocks after each test
   afterEach(() => {
-    if (API._originals) {
-      API.getCampaigns = API._originals.getCampaigns;
-      API.getEndorsers = API._originals.getEndorsers;
-      API.getLegislators = API._originals.getLegislators;
-      delete API._originals;
-    }
+    jest.restoreAllMocks();
   });
 
   test('Can fetch campaigns from the backend', async () => {
     // Get campaigns using the mocked API
-    let campaigns;
+    let campaigns: any;
 
     // Wrap API call in act
     await act(async () => {
@@ -96,10 +80,10 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
 
     // Verify we got an array response
     expect(Array.isArray(campaigns)).toBe(true);
-    expect(campaigns.length).toBeGreaterThan(0);
+    expect(campaigns!.length).toBeGreaterThan(0);
 
     // Verify campaign structure
-    const campaign = campaigns[0];
+    const campaign = campaigns![0];
     expect(campaign).toHaveProperty('id');
     expect(campaign).toHaveProperty('name');
     expect(campaign).toHaveProperty('title');
@@ -108,7 +92,7 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
 
   test('Can fetch endorsers from the backend', async () => {
     // Get endorsers using the mocked API
-    let endorsers;
+    let endorsers: any;
 
     // Wrap API call in act
     await act(async () => {
@@ -120,20 +104,21 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
 
     // Verify we got an array response
     expect(Array.isArray(endorsers)).toBe(true);
-    expect(endorsers.length).toBeGreaterThan(0);
+    expect(endorsers!.length).toBeGreaterThan(0);
 
     // Verify endorser structure
-    const endorser = endorsers[0];
+    const endorser = endorsers![0];
     expect(endorser).toHaveProperty('id');
     expect(endorser).toHaveProperty('name');
     expect(endorser).toHaveProperty('organization');
+    expect(endorser).toHaveProperty('email');
     expect(endorser).toHaveProperty('state');
     expect(endorser).toHaveProperty('type');
   });
 
   test('Can fetch legislators from the backend', async () => {
     // Get legislators using the mocked API
-    let legislators;
+    let legislators: any;
 
     // Wrap API call in act
     await act(async () => {
@@ -145,10 +130,10 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
 
     // Verify we got an array response
     expect(Array.isArray(legislators)).toBe(true);
-    expect(legislators.length).toBeGreaterThan(0);
+    expect(legislators!.length).toBeGreaterThan(0);
 
     // Verify legislator structure
-    const legislator = legislators[0];
+    const legislator = legislators![0];
     expect(legislator).toHaveProperty('id');
     expect(legislator).toHaveProperty('first_name');
     expect(legislator).toHaveProperty('last_name');

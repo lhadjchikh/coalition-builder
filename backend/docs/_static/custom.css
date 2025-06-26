@@ -1,0 +1,30 @@
+/* Custom styles for Coalition Builder API docs */
+
+/* Make code blocks more readable */
+.highlight pre {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+/* Style for Django model fields */
+.py.attribute {
+  margin-bottom: 0.5rem;
+}
+
+/* Better spacing for API endpoints */
+.py.method {
+  border-left: 3px solid #007bff;
+  padding-left: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Highlight important sections */
+.admonition.note {
+  border-left: 4px solid #17a2b8;
+}
+
+.admonition.warning {
+  border-left: 4px solid #ffc107;
+}

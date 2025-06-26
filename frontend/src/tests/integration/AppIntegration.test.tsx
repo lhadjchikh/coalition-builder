@@ -5,9 +5,13 @@ import API from '../../services/api';
 
 // Mock the API module
 jest.mock('../../services/api', () => ({
-  getCampaigns: jest.fn(),
-  getEndorsers: jest.fn(),
-  getLegislators: jest.fn(),
+  __esModule: true,
+  default: {
+    getCampaigns: jest.fn(),
+    getEndorsers: jest.fn(),
+    getLegislators: jest.fn(),
+    getBaseUrl: jest.fn(() => ''),
+  },
 }));
 
 describe('App Integration Test', () => {
@@ -32,7 +36,7 @@ describe('App Integration Test', () => {
     jest.clearAllMocks();
 
     // Mock implementation of getCampaigns
-    API.getCampaigns.mockResolvedValue(mockCampaigns);
+    (API.getCampaigns as jest.Mock).mockResolvedValue(mockCampaigns);
   });
 
   test('fetches and displays campaigns in the app', async () => {
@@ -79,7 +83,7 @@ describe('App Integration Test', () => {
 
   test('handles API error in the app context', async () => {
     // Override the mock for this specific test to simulate an error
-    API.getCampaigns.mockRejectedValueOnce(new Error('Failed to fetch data'));
+    (API.getCampaigns as jest.Mock).mockRejectedValueOnce(new Error('Failed to fetch data'));
 
     // Act - Render the App
     render(<App />);

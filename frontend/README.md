@@ -13,8 +13,8 @@ that interacts with the Django backend API to provide campaign management and st
 
 Quick links:
 
-- [Frontend Development Guide](../docs/development/frontend.md)
-- [Development Setup](../docs/development/setup.md)
+- [Development Guide](https://lhadjchikh.github.io/coalition-builder/development/)
+- [Installation Guide](https://lhadjchikh.github.io/coalition-builder/installation/)
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app) and has been
 migrated to TypeScript.

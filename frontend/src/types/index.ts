@@ -12,22 +12,40 @@ export interface Campaign {
   updated_at?: string;
 }
 
-// Endorser type definition
+// Endorser type definition (matches StakeholderOut schema)
 export interface Endorser {
   id: number;
   name: string;
-  type: string;
-  website?: string;
-  description?: string;
+  organization: string;
+  role?: string;
+  email: string;
+  street_address?: string;
+  city?: string;
+  state: string;
+  zip_code?: string;
+  county?: string;
+  type: 'farmer' | 'waterman' | 'business' | 'nonprofit' | 'individual' | 'government' | 'other';
+  created_at?: string;
+  updated_at?: string;
+  latitude?: number;
+  longitude?: number;
+  congressional_district_name?: string;
+  congressional_district_abbrev?: string;
+  state_senate_district_name?: string;
+  state_senate_district_abbrev?: string;
+  state_house_district_name?: string;
+  state_house_district_abbrev?: string;
 }
 
-// Legislator type definition
+// Legislator type definition (matches LegislatorOut schema)
 export interface Legislator {
   id: number;
-  name: string;
-  district: string;
-  party?: string;
-  contact_info?: string;
+  first_name: string;
+  last_name: string;
+  chamber: string;
+  state: string;
+  district?: string;
+  is_senior?: boolean;
 }
 
 // Stakeholder type definition (for endorsements)

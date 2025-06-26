@@ -32,11 +32,11 @@ docker-compose exec backend python scripts/create_test_data.py
 
 ### Quick Links
 
-- [📖 Getting Started](docs/getting-started.md) - Installation and setup
-- [🔧 Development Setup](docs/development/setup.md) - Local development environment
-- [🎯 Content Management](docs/user-guides/content-management.md) - Managing homepage content
-- [📡 API Reference](docs/api/index.md) - Complete API documentation
-- [🚀 AWS Deployment](docs/deployment/aws.md) - Production deployment guide
+- [📖 Installation Guide](https://lhadjchikh.github.io/coalition-builder/installation/) - Quick setup for development
+- [🔧 Configuration](https://lhadjchikh.github.io/coalition-builder/configuration/) - Environment variables and settings
+- [💻 Development Guide](https://lhadjchikh.github.io/coalition-builder/development/) - Development workflow
+- [📡 API Reference](https://lhadjchikh.github.io/coalition-builder/api/) - Auto-generated API documentation
+- [🚀 Deployment Guide](https://lhadjchikh.github.io/coalition-builder/deployment/) - Production deployment options
 
 ## 🌟 Features
 

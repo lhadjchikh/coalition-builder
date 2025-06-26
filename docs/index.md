@@ -1,181 +1,100 @@
-# Coalition Builder Documentation
+# Coalition Builder
 
-Coalition Builder is a comprehensive platform for organizing and managing policy advocacy campaigns, bringing together stakeholders, legislators, and advocates to drive meaningful policy change.
+A modern platform for organizing and managing policy advocacy campaigns with stakeholder engagement tracking, endorsement collection, and geographic intelligence.
 
-## 🚀 Quick Start
+## Overview
 
-- [Getting Started](getting-started.md) - Installation and initial setup
-- [Development Setup](development/setup.md) - Local development environment
-- [API Reference](api/index.md) - Complete API documentation
+Coalition Builder enables organizations to:
 
-## 👥 User Guides
+- **Build Coalitions**: Manage advocacy campaigns and stakeholder engagement
+- **Collect Endorsements**: Streamlined collection with verification and moderation
+- **Manage Content**: Dynamic homepage with customizable content blocks
+- **Geographic Intelligence**: PostGIS integration for address geocoding and district assignment
 
-Learn how to use Coalition Builder effectively:
+## Architecture
 
-- [Content Management](user-guides/content-management.md) - Managing homepage content via Django admin
-- [API Usage](user-guides/api-usage.md) - How to use the Coalition Builder API
-- [Homepage Management](user-guides/homepage.md) - Creating and customizing your organization's homepage
+- **Backend**: Django API with PostgreSQL/PostGIS
+- **Frontend**: React with TypeScript
+- **SSR**: Next.js for SEO optimization (optional)
+- **Infrastructure**: Terraform-managed AWS deployment
 
-## 💻 Development
+### Frontend Architecture
 
-Comprehensive guides for developers:
+Coalition Builder uses a flexible frontend architecture that supports both traditional SPA deployment and optional server-side rendering (SSR).
 
-- [Setup](development/setup.md) - Development environment configuration
-- [Backend Development](development/backend.md) - Django API development
-- [Frontend Development](development/frontend.md) - React TypeScript frontend
-- [SSR Development](development/ssr.md) - Next.js server-side rendering
-- [Testing Guide](development/testing.md) - Comprehensive testing strategies
+#### How the Frontend Works
 
-## 🏗️ Architecture
+The `/frontend` directory contains a React application built with Vite that serves as the primary user interface. This single codebase works in two different deployment modes:
 
-Understanding the system design:
+**Without SSR (Default Mode):**
 
-- [System Overview](architecture/overview.md) - High-level architecture and components
-- [API Design](architecture/api.md) - REST API patterns and best practices
-- [Database Design](architecture/database.md) - PostgreSQL + PostGIS data architecture
+1. React app is built into static files (JS/CSS with cache-busting hashes)
+2. Django serves these files through a template (`index.html`)
+3. Django's `home` view reads `asset-manifest.json` to inject correct file paths
+4. React takes over as a single-page application in the browser
+5. API calls go to Django backend via `/api/*` routes
 
-## 🚀 Deployment
+**With SSR (Optional Mode):**
 
-Production deployment guides:
+1. Next.js handles server-side rendering for better SEO
+2. Django serves only API endpoints (`/api/*`, `/admin/*`)
+3. nginx routes frontend requests (`/*`) to Next.js instead of Django
+4. Same React components can be used in both modes
 
-- [AWS Deployment](deployment/aws.md) - Deploy to AWS with Terraform
-- [Docker Deployment](deployment/docker.md) - Containerized deployment guide
-- [Health Monitoring](deployment/health.md) - Health checks and monitoring
+#### Request Routing
 
-## 🔧 Administration
+**SSR Disabled:**
 
-Administrative guides and troubleshooting:
+```
+/* → Django home view → React SPA
+/api/* → Django API
+/admin/* → Django Admin
+```
 
-- [Troubleshooting](admin/troubleshooting.md) - Common issues and solutions
+**SSR Enabled:**
 
-## 🤝 Contributing
+```
+/* → Next.js SSR
+/api/* → Django API
+/admin/* → Django Admin
+```
 
-Help improve Coalition Builder:
+#### Key Benefits
 
-- [Contributing Guide](contributing/guide.md) - How to contribute to the project
+- **Single Frontend Codebase**: Write once, deploy with or without SSR
+- **Django Integration**: Static files served through Django's static system
+- **Asset Management**: Automatic cache-busting via asset manifest
+- **Deployment Flexibility**: Choose complexity vs. performance trade-offs
+- **Fallback Strategy**: Can disable SSR without losing frontend functionality
 
-## 🔧 Customization
+This architecture allows organizations to start simple (Django + React SPA) and add SSR later for improved SEO without rewriting their frontend code.
 
-Adapt Coalition Builder for your organization:
+## Getting Started
 
-- [Forking Guide](customization/forking.md) - Fork and customize for your organization
+1. **[Installation](installation.md)** - Quick setup for development
+2. **[Configuration](configuration.md)** - Environment variables and settings
+3. **[Development](development.md)** - Development workflow and contributing
+4. **[Deployment](deployment.md)** - Production deployment options
 
-## 📚 Reference
+## User Guides
 
-Complete reference documentation:
+Comprehensive guides for managing your coalition platform:
 
-- [API Reference](api/index.md) - Complete API documentation
-- [Environment Variables](reference/environment.md) - Configuration reference
-- [CLI Reference](reference/cli.md) - Command-line tools and scripts
+- **[Homepage Management](user-guides/homepage-management.md)** - Configure organization branding and homepage content
+- **[Campaign Management](user-guides/campaign-management.md)** - Create and manage policy advocacy campaigns
+- **[Stakeholder Management](user-guides/stakeholder-management.md)** - Organize and engage with supporters and partners
+- **[Endorsement Workflow](user-guides/endorsement-workflow.md)** - Collect and manage campaign endorsements
+- **[Content Management](user-guides/content-management.md)** - Complete guide to the Django admin interface
 
----
+## Documentation
 
-## 🌟 Features
+- **[API Reference](api/)** - Auto-generated from Django models and views
+- **[Frontend Components](frontend-api/)** - Auto-generated from React components
+- **[Environment Variables](reference/environment.md)** - Complete configuration reference
+- **[CLI Reference](reference/cli.md)** - Command-line tools and Django management commands
 
-Coalition Builder provides a comprehensive set of tools for advocacy organizations:
+## Support
 
-### **Campaign Management**
-
-- Create and manage policy campaigns with rich content
-- Track campaign status and progress
-- SEO-friendly URLs and metadata
-- Public campaign visibility controls
-
-### **Stakeholder Engagement**
-
-- Manage diverse stakeholder types (farmers, businesses, nonprofits, individuals)
-- Geographic tracking with PostGIS integration
-- Contact information and bio management
-- Public/private stakeholder profiles
-
-### **Endorsement System**
-
-- Collect and display campaign endorsements
-- Optional endorsement statements
-- Public endorsement visibility
-- Automated endorsement counting
-
-### **Content Management**
-
-- Database-driven homepage content
-- Flexible content blocks with ordering
-- Rich text editing with HTML support
-- Social media integration
-- Customizable branding and messaging
-
-### **Technical Excellence**
-
-- Modern React TypeScript frontend
-- Django REST API with type-safe endpoints
-- Optional Next.js SSR for improved SEO
-- PostgreSQL with PostGIS for spatial data
-- Comprehensive test coverage
-- Production-ready AWS deployment
-
-## 🛠️ Technology Stack
-
-### Backend
-
-- **Django 5.2** - Web framework with admin interface
-- **Django Ninja** - FastAPI-inspired API framework
-- **PostgreSQL 16** - Database with PostGIS extension
-- **Poetry** - Dependency management
-- **Docker** - Containerization
-
-### Frontend
-
-- **React 19** - UI library with TypeScript
-- **Next.js 14** - Optional SSR framework
-- **Material-UI** - Component library
-- **Axios** - HTTP client
-
-### Infrastructure
-
-- **AWS ECS** - Container orchestration
-- **Terraform** - Infrastructure as code
-- **GitHub Actions** - CI/CD pipeline
-- **Docker Compose** - Local development
-
-## 🏃 Getting Started
-
-### For Users
-
-1. Start with the [Getting Started](getting-started.md) guide
-2. Learn [Content Management](user-guides/content-management.md) for day-to-day usage
-3. Explore [Homepage Management](user-guides/homepage.md) for customization
-
-### For Developers
-
-1. Set up your [Development Environment](development/setup.md)
-2. Understand the [System Architecture](architecture/overview.md)
-3. Follow [Backend Development](development/backend.md) and [Frontend Development](development/frontend.md) guides
-4. Review the [Testing Guide](development/testing.md) for quality assurance
-
-### For Deployment
-
-1. Review [Docker Deployment](deployment/docker.md) for containerized deployment
-2. Follow [AWS Deployment](deployment/aws.md) for production infrastructure
-3. Set up [Health Monitoring](deployment/health.md) for operational excellence
-
-## 🆘 Support
-
-### Getting Help
-
-- **Troubleshooting**: Check our [troubleshooting guide](admin/troubleshooting.md)
-- **API Questions**: Review the [API reference](api/index.md) and [usage guide](user-guides/api-usage.md)
-- **Development Issues**: See [development guides](development/setup.md) and [CLI reference](reference/cli.md)
-- **Configuration**: Check [environment variables](reference/environment.md) reference
-
-### Community
-
-- **Issues**: Report bugs and request features on GitHub
-- **Contributing**: Read our [contributing guide](contributing/guide.md)
-- **Customization**: See our [forking guide](customization/forking.md) for organization-specific setups
-
-## 📄 License
-
-Coalition Builder is open source software designed to empower advocacy organizations. See the project repository for license details.
-
----
-
-**Ready to build your coalition?** Start with our [Getting Started](getting-started.md) guide and join the movement for effective advocacy through technology.
+- Issues and feature requests: [GitHub Issues](https://github.com/lhadjchikh/coalition-builder/issues)
+- Development questions: See [Development Guide](development.md)
+- Deployment help: See [Deployment Guide](deployment.md)

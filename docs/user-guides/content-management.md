@@ -1,270 +1,428 @@
 # Content Management Guide
 
-This guide explains how to manage content in Coalition Builder using the Django admin interface.
+This comprehensive guide covers all aspects of content management in Coalition Builder, including using the Django admin interface, managing different content types, and best practices for maintaining your organization's digital presence.
 
-## Getting Started
+## Overview
+
+Coalition Builder provides a powerful content management system that enables you to:
+
+- **Manage dynamic homepage content** with flexible content blocks
+- **Create and organize policy campaigns** with rich content
+- **Handle stakeholder information** and engagement data
+- **Control user access and permissions** across different content areas
+- **Maintain media assets** including images, documents, and resources
+- **Ensure content quality** through editorial workflows
+
+## Django Admin Interface
 
 ### Accessing the Admin Interface
 
-1. Navigate to `http://localhost:8000/admin/` (or your production domain + `/admin/`)
-2. Log in with your superuser credentials
-3. You'll see the main admin dashboard with different sections
+1. **Login Process**:
 
-### Creating Your First Homepage
+   - Navigate to `http://your-domain.com/admin/`
+   - Enter your username and password
+   - Click "Log in" to access the admin dashboard
 
-1. Click on **"Homepage Configurations"** under the **Core** section
-2. Click **"Add Homepage Configuration"**
-3. Fill out the required fields:
-   - **Organization name**: Your organization's name
-   - **Tagline**: A brief description or slogan
-   - **Hero title**: Main headline for your homepage
-   - **About section content**: Description of your mission
-   - **Contact email**: Primary contact email address
+2. **Admin Dashboard Overview**:
+   - **Homepage Management**: Control site-wide homepage settings
+   - **Campaigns**: Create and manage policy campaigns
+   - **Stakeholders**: Manage organizations and individuals
+   - **Endorsements**: Review and approve campaign endorsements
+   - **Content Blocks**: Manage homepage content sections
+   - **User Management**: Control user access and permissions
 
-## Homepage Configuration
+### Navigation and Layout
 
-### Organization Information
+**Main Navigation Sections**:
 
-**Organization name**: This appears in the browser title, header, and footer of your site.
+- **Core**: Homepage configuration and content blocks
+- **Campaigns**: Campaign and bill management
+- **Stakeholders**: Organization and individual management
+- **Endorsements**: Endorsement workflow management
+- **Authentication**: User and group management
+- **Sites**: Site configuration (advanced)
 
-**Tagline**: A brief slogan that describes your organization's mission. This appears in the meta description and various locations on the site.
+**Interface Elements**:
 
-**Contact email**: Primary email address for your organization. This is used for contact forms and appears in the footer.
+- **Add buttons**: Create new content entries
+- **Filter sidebar**: Filter content by various criteria
+- **Search bar**: Find specific content quickly
+- **Breadcrumb navigation**: Track your location in the admin
+- **Action dropdown**: Perform bulk operations
 
-**Contact phone**: Optional phone number that appears in the footer.
+## Content Types and Management
 
-### Hero Section
+### Homepage Content Management
 
-The hero section is the large banner area at the top of your homepage.
+**Homepage Configuration**:
 
-**Hero title**: The main headline visitors see first. Keep it compelling and action-oriented.
+- **Organization Settings**: Name, tagline, contact information
+- **Hero Section**: Main banner content and imagery
+- **About Section**: Organization description and mission
+- **Call-to-Action**: Buttons and links to encourage engagement
+- **Social Media Links**: Connect to external social platforms
 
-**Hero subtitle**: Additional context or call-to-action. This should explain what your organization does or invite visitors to take action.
+**Content Blocks**:
 
-**Hero background image**: Optional URL to a background image. Use high-quality images (1920x1080 or larger) with good contrast for text readability.
+- **Text Blocks**: Rich formatted text content
+- **Image Blocks**: Photos, graphics, and visual elements
+- **Mixed Blocks**: Combination of text and images
+- **Quote Blocks**: Highlighted testimonials or statements
+- **Statistics Blocks**: Numerical data and metrics
+- **Custom HTML**: Advanced formatting and custom elements
 
-### About Section
+### Campaign Content Management
 
-**About section title**: Defaults to "About Our Mission" but can be customized.
+**Campaign Information**:
 
-**About section content**: This is where you explain your organization's mission, goals, and approach. HTML is supported for formatting.
+- **Basic Details**: Title, description, and overview
+- **Rich Content**: Detailed campaign information with formatting
+- **Status Management**: Control campaign visibility and progression
+- **Resource Attachment**: Associate documents, links, and media
 
-### Call-to-Action (CTA)
+**Associated Bills**:
 
-**CTA title**: Defaults to "Get Involved" - the title for your main call-to-action section.
+- **Bill Details**: Number, title, and description
+- **Legislative Status**: Track progress through legislative process
+- **Position Tracking**: Support, oppose, or monitor stance
+- **External Links**: Connect to legislative websites and resources
 
-**CTA content**: Description encouraging visitors to take action.
+### Stakeholder Content Management
 
-**CTA button text**: Text that appears on the action button (e.g., "Learn More", "Join Us", "View Campaigns").
+**Organization Profiles**:
 
-**CTA button URL**: Where the button links to (e.g., `/campaigns/`, `mailto:info@yourorg.org`, external URLs).
+- **Basic Information**: Name, type, and contact details
+- **Classification**: Categorize by sector, size, and influence
+- **Relationship Tracking**: Note partnerships and connections
+- **Communication History**: Track interactions and engagement
 
-### Social Media
+**Individual Profiles**:
 
-Add URLs for your organization's social media profiles:
+- **Personal Information**: Name, title, and professional background
+- **Expertise Areas**: Policy knowledge and specializations
+- **Contact Preferences**: Communication methods and frequency
+- **Engagement History**: Track participation in campaigns and events
 
-- Facebook URL
-- Twitter/X URL
-- Instagram URL
-- LinkedIn URL
+### Endorsement Content Management
 
-These create social media icons in the footer.
+**Endorsement Review**:
 
-### Campaign Section
+- **Verification Status**: Confirm email verification completion
+- **Content Review**: Assess endorsement statements and information
+- **Approval Workflow**: Approve, reject, or request modifications
+- **Public Display**: Control which endorsements appear publicly
 
-**Campaigns section title**: Title for the section showing your policy campaigns (defaults to "Policy Campaigns").
+## Rich Text Editing
 
-**Campaigns section subtitle**: Optional description for the campaigns section.
+### Using the Rich Text Editor
 
-**Show campaigns section**: Toggle to show/hide the entire campaigns section on the homepage.
+**Formatting Options**:
 
-## Content Blocks
+- **Basic Formatting**: Bold, italic, underline, strikethrough
+- **Lists**: Bulleted and numbered lists
+- **Links**: Internal and external link creation
+- **Images**: Inline image insertion and positioning
+- **Tables**: Data tables with formatting options
+- **Code**: Code blocks and inline code formatting
 
-Content blocks allow you to add flexible sections to your homepage beyond the standard layout.
+**Best Practices for Rich Text**:
 
-### Adding Content Blocks
+- **Use headings consistently** to create clear content hierarchy
+- **Keep paragraphs concise** for better readability
+- **Use lists** to break up dense information
+- **Add links strategically** to provide additional context
+- **Optimize images** before insertion to maintain page speed
 
-1. When editing a homepage configuration, scroll down to the **Content blocks** section
-2. Click **"Add another Content block"**
-3. Choose a block type and configure the content
+### HTML and Advanced Formatting
 
-### Block Types
+**When to Use Custom HTML**:
 
-**Text Block**: Rich text content with HTML support
+- Complex layouts that can't be achieved with rich text editor
+- Integration with external services or widgets
+- Custom styling for specific design requirements
+- Advanced interactive elements
 
-- Use for additional information sections
-- Supports headings, paragraphs, lists, and basic styling
-- Good for mission statements, program descriptions
+**HTML Best Practices**:
 
-**Image Block**: Display images with optional captions
+- **Use semantic HTML** elements for accessibility
+- **Avoid inline styles** when possible
+- **Test across devices** to ensure responsive behavior
+- **Validate HTML** to prevent display issues
 
-- Use for photos, infographics, or visual content
-- Include descriptive alt text for accessibility
-- Image URL should point to web-accessible images
+## Media Management
 
-**Text + Image Block**: Combined text and image layout
+### Image Management
 
-- Use for feature highlights or program descriptions
-- Balances visual and textual content
-- Good for showcasing specific initiatives
+**Image Guidelines**:
 
-**Quote Block**: Highlighted testimonials or quotes
+- **File Formats**: JPEG, PNG, WebP for web compatibility
+- **File Sizes**: Keep under 2MB for optimal loading speeds
+- **Dimensions**: Use appropriate sizes for intended display
+- **Compression**: Optimize images without sacrificing quality
 
-- Use for member testimonials or impactful statements
-- Creates visual emphasis with special styling
-- Include attribution in the content
+**Image Organization**:
 
-**Statistics Block**: Display metrics or achievements
+- **Descriptive Filenames**: Use clear, descriptive file names
+- **Alt Text**: Always include alt text for accessibility
+- **Copyright Compliance**: Ensure proper rights to use images
+- **Consistent Style**: Maintain visual consistency across site
 
-- Use for impact numbers, membership stats, or milestones
-- Supports custom HTML for flexible layouts
-- Great for demonstrating organizational impact
+### Document Management
 
-**Custom HTML Block**: Advanced layouts and custom content
+**Document Types**:
 
-- Use for complex layouts not covered by other types
-- Requires HTML knowledge
-- Allows maximum flexibility
+- **PDFs**: Policy documents, fact sheets, reports
+- **Word Documents**: Editable templates and drafts
+- **Spreadsheets**: Data files and analysis
+- **Presentations**: Slide decks and visual materials
 
-### Content Block Settings
+**Document Best Practices**:
 
-**Title**: Optional title that appears above the content block.
+- **Version Control**: Use clear version numbering
+- **Descriptive Names**: Include date and content description
+- **Regular Updates**: Keep documents current and relevant
+- **Access Control**: Ensure appropriate viewing permissions
 
-**Order**: Controls the sequence of blocks on the page. Lower numbers appear first.
+## User Management and Permissions
 
-**Is visible**: Toggle to show/hide blocks without deleting them.
+### User Roles and Permissions
 
-**CSS classes**: Additional styling classes (requires CSS knowledge).
+**Admin Roles**:
 
-**Background color**: Hex color code for the block background (e.g., #f0f0f0).
+- **Superuser**: Full access to all admin functions
+- **Staff User**: Access to admin interface with specific permissions
+- **Content Editor**: Can edit content but not user management
+- **Moderator**: Can review and approve endorsements
 
-## Managing Multiple Organizations
+**Permission Levels**:
 
-### Single Active Homepage
+- **View**: Can see content but not edit
+- **Add**: Can create new content entries
+- **Change**: Can edit existing content
+- **Delete**: Can remove content (use carefully)
 
-Only one homepage configuration can be active at a time. This ensures:
+### Managing User Access
 
-- Consistent branding across the site
-- No confusion about which content to display
-- Clear organizational identity
+**Adding New Users**:
 
-### Switching Organizations
+1. Navigate to "Users" in the Authentication section
+2. Click "Add user" and enter username and password
+3. Set user details including name and email
+4. Assign appropriate groups and permissions
+5. Save the user account
 
-To switch to a different organization's homepage:
+**User Groups**:
 
-1. Deactivate the current homepage:
+- **Content Managers**: Can edit campaigns, stakeholders, and homepage
+- **Moderators**: Can review and approve endorsements
+- **Viewers**: Read-only access to admin interface
+- **Custom Groups**: Create specific permission sets as needed
 
-   - Edit the current active homepage
-   - Uncheck **"Is active"**
-   - Save
+## Content Workflows
 
-2. Activate the new homepage:
-   - Edit the desired homepage configuration
-   - Check **"Is active"**
-   - Save
+### Editorial Process
 
-### Environment Variables as Fallbacks
+**Content Creation Workflow**:
 
-If no active homepage exists, the system falls back to environment variables:
+1. **Draft Creation**: Initial content development
+2. **Internal Review**: Review by team members or supervisors
+3. **Revision Process**: Incorporate feedback and make improvements
+4. **Final Approval**: Final sign-off from designated approver
+5. **Publication**: Make content live on public website
+6. **Maintenance**: Regular updates and quality checks
 
-- `ORGANIZATION_NAME`
-- `ORG_TAGLINE`
-- `CONTACT_EMAIL`
+**Quality Control**:
 
-This ensures the site always displays some content.
+- **Fact Checking**: Verify accuracy of all information
+- **Proofreading**: Check for spelling, grammar, and formatting errors
+- **Link Testing**: Ensure all links work properly
+- **Mobile Testing**: Verify content displays well on mobile devices
+- **Accessibility Review**: Ensure content is accessible to all users
 
-## Content Guidelines
+### Publication Management
 
-### Writing Effective Content
+**Content Visibility Control**:
 
-**Be Clear and Concise**: Visitors should quickly understand your mission and how they can get involved.
+- **Draft Status**: Keep content private during development
+- **Publication Toggle**: Control when content goes live
+- **Featured Content**: Highlight important content on homepage
+- **Archive System**: Manage old or outdated content
 
-**Use Action-Oriented Language**: Encourage engagement with words like "join", "support", "advocate", "protect".
+**Scheduling and Planning**:
 
-**Tell Your Story**: Explain why your organization exists and what makes it unique.
+- **Content Calendar**: Plan content publication schedules
+- **Campaign Coordination**: Align content with campaign timelines
+- **Event Integration**: Coordinate content with events and activities
+- **Regular Maintenance**: Schedule periodic content reviews
 
-**Include Calls-to-Action**: Make it easy for visitors to take the next step.
+## SEO and Discoverability
 
-**Heading Structure**: Use proper heading hierarchy in content blocks.
+### Search Engine Optimization
 
-**Color Contrast**: Ensure sufficient contrast between text and background colors.
+**On-Page SEO**:
 
-**Link Text**: Use descriptive text for links, avoid "click here".
+- **Page Titles**: Descriptive, keyword-rich page titles
+- **Meta Descriptions**: Compelling descriptions for search results
+- **Header Structure**: Proper use of H1, H2, H3 tags
+- **Internal Linking**: Connect related content across the site
+- **Image Alt Text**: Descriptive alt text for all images
+
+### Accessibility Requirements
+
+!!! info "ADA Compliance"
+Organizations may be required to ensure their websites comply with the Americans with Disabilities Act (ADA) and Web Content Accessibility Guidelines (WCAG).
+
+**Essential Accessibility Practices**:
+
+- **Alt Text**: Provide descriptive alt text for all images
+- **Heading Structure**: Use proper heading hierarchy (H1, H2, H3)
+- **Color Contrast**: Ensure sufficient contrast between text and background colors
+- **Keyboard Navigation**: Ensure all functions work with keyboard-only navigation
+- **Screen Reader Compatibility**: Test content with screen reading software
+
+**Content Guidelines**:
+
+- Use clear, simple language when possible
+- Provide captions or transcripts for video content
+- Ensure links have descriptive text (avoid "click here")
+- Structure content with proper headings and lists
+- Test with accessibility checking tools
+
+**Legal Considerations**: ADA compliance requirements may vary by organization type and size. Consult legal counsel for specific compliance requirements.
+
+**Content Optimization**:
+
+- **Keyword Strategy**: Use relevant keywords naturally in content
+- **Content Quality**: Create valuable, informative content
+- **Regular Updates**: Keep content fresh and current
+- **User Experience**: Ensure content is easy to read and navigate
+
+### Analytics and Performance
+
+**Content Performance Metrics**:
+
+- **Page Views**: Track which content is most popular
+- **Time on Page**: Measure user engagement with content
+- **Bounce Rate**: Monitor whether users stay to read content
+- **Conversion Rates**: Track how content leads to desired actions
+
+## Backup and Security
+
+### Content Backup
+
+**Regular Backup Procedures**:
+
+- **Database Backups**: Regular automated database backups
+- **Media File Backups**: Backup uploaded images and documents
+- **Version Control**: Maintain history of content changes
+- **Testing Restores**: Regularly test backup restoration procedures
+
+**Content Recovery**:
+
+- **Accidental Deletion**: Procedures for recovering deleted content
+- **Version History**: Access to previous versions of content
+- **Rollback Procedures**: Steps to revert problematic changes
+- **Emergency Procedures**: Rapid response for critical issues
+
+### Security Best Practices
+
+**Access Security**:
+
+- **Strong Passwords**: Require complex passwords for all users
+- **Two-Factor Authentication**: Enable 2FA where possible
+- **Regular Password Updates**: Periodically update passwords
+- **Access Audits**: Regularly review user access and permissions
+
+**Content Security**:
+
+- **Input Validation**: Prevent malicious code injection
+- **File Upload Security**: Scan uploaded files for security threats
+- **Regular Updates**: Keep system software current with security patches
+- **Activity Monitoring**: Track user activity for suspicious behavior
 
 ## Troubleshooting
 
-### Common Issues
+### Common Content Issues
 
-**"Only one homepage configuration can be active" Error**:
+**Content Display Problems**:
 
-- Deactivate the existing homepage before activating a new one
-- Check that no other homepage has "Is active" checked
+- **Formatting Issues**: Check rich text editor output and HTML
+- **Image Problems**: Verify image file format and size
+- **Link Errors**: Test all internal and external links
+- **Mobile Display**: Check content on various screen sizes
 
-**Content Not Appearing**:
+**Performance Issues**:
 
-- Verify the homepage configuration is marked as active
-- Check that content blocks are marked as visible
-- Ensure content blocks have reasonable order values
+- **Slow Loading**: Optimize images and reduce content size
+- **Database Issues**: Check for content causing database problems
+- **Memory Usage**: Monitor system resources during content operations
+- **Cache Problems**: Clear cache if content updates aren't visible
 
-**Images Not Loading**:
+### Administrative Issues
 
-- Verify image URLs are publicly accessible
-- Use full URLs including https://
-- Check image file formats (JPG, PNG, WebP recommended)
+**User Access Problems**:
 
-**Styling Issues**:
+- **Login Issues**: Verify username, password, and account status
+- **Permission Problems**: Check user groups and individual permissions
+- **Content Access**: Ensure users have appropriate content permissions
+- **System Errors**: Check error logs for technical issues
 
-- CSS classes require corresponding styles in the frontend
-- Background colors should use hex format (#ffffff)
-- Test changes on different screen sizes
+**Data Integrity Issues**:
 
-### Getting Help
-
-1. Check the error messages in the Django admin interface
-2. Verify your content follows the guidelines in this document
-3. Test changes in a development environment first
-4. Contact your technical team for complex styling or functionality issues
+- **Content Corruption**: Check for damaged or incomplete content
+- **Relationship Problems**: Verify links between related content items
+- **Duplicate Content**: Identify and resolve duplicate entries
+- **Missing Content**: Investigate and recover missing content
 
 ## Advanced Features
 
-### Custom HTML Content
+### Integration Capabilities
 
-For advanced users, custom HTML blocks allow complex layouts:
+**External System Integration**:
 
-```html
-<div class="grid grid-cols-2 gap-6">
-  <div>
-    <h3 class="text-xl font-bold mb-2">Our Approach</h3>
-    <p>We bring together diverse stakeholders...</p>
-  </div>
-  <div>
-    <h3 class="text-xl font-bold mb-2">Our Impact</h3>
-    <p>Since 2020, we've successfully...</p>
-  </div>
-</div>
-```
+- **Email Marketing**: Connect with email marketing platforms
+- **Social Media**: Integrate with social media management tools
+- **Analytics**: Connect with web analytics services
+- **CRM Systems**: Integrate with customer relationship management tools
 
-### Statistics Block Examples
+### Customization Options
 
-```html
-<div class="text-center">
-  <div class="text-4xl font-bold text-blue-600 mb-2">150+</div>
-  <div class="text-gray-600">Member Organizations</div>
-</div>
-```
+**Template Customization**:
 
-### Rich Text Formatting
+- **Custom Content Types**: Create specialized content types
+- **Field Customization**: Add custom fields to existing content types
+- **Workflow Customization**: Modify editorial and approval workflows
+- **Interface Customization**: Customize admin interface for organization needs
 
-Most text fields support HTML formatting:
+### Automation Features
 
-```html
-<p>
-  This is a paragraph with <strong>bold text</strong> and <em>italic text</em>.
-</p>
-<ul>
-  <li>First bullet point</li>
-  <li>Second bullet point</li>
-</ul>
-```
+**Automated Content Management**:
 
-Remember to test all content changes to ensure they display correctly on both desktop and mobile devices.
+- **Scheduled Publishing**: Automatically publish content at specified times
+- **Content Archiving**: Automatically archive old content
+- **Notification Systems**: Alert users to content requiring attention
+- **Backup Automation**: Automated backup procedures and monitoring
+
+## Best Practices Summary
+
+### Content Strategy
+
+**Effective Content Management**:
+
+- **Plan Ahead**: Develop content calendars and strategic plans
+- **Stay Consistent**: Maintain consistent voice, style, and quality
+- **Monitor Performance**: Regularly review content effectiveness
+- **User Focus**: Always consider the end user experience
+- **Continuous Improvement**: Regularly refine processes and procedures
+
+### Team Collaboration
+
+**Collaborative Content Management**:
+
+- **Clear Roles**: Define clear responsibilities for team members
+- **Communication**: Maintain open communication about content needs
+- **Training**: Provide adequate training for all content contributors
+- **Documentation**: Document processes and procedures clearly
+- **Regular Reviews**: Conduct periodic reviews of content and processes
+
+This comprehensive guide covers all major aspects of content management in Coalition Builder. For specific technical questions or advanced customization needs, consult your system administrator or development team.

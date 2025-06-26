@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 import sys
 from pathlib import Path
+from urllib.parse import quote
 
 import dj_database_url
 
@@ -80,12 +81,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_extensions",
     "django_ratelimit",
     "coalition.core.apps.CoreConfig",
     "coalition.campaigns.apps.CampaignsConfig",
     "coalition.legislators.apps.LegislatorsConfig",
     "coalition.regions.apps.RegionsConfig",
-    # New separate apps for stakeholders and endorsements
     "coalition.stakeholders",
     "coalition.endorsements",
 ]
@@ -131,7 +132,7 @@ WSGI_APPLICATION = "coalition.core.wsgi.application"
 # Use SQLite as a fallback if DATABASE_URL is not set
 if os.getenv("DATABASE_URL"):
     # Parse DATABASE_URL and ensure PostGIS is used for PostgreSQL
-    db_config = dj_database_url.config(default=os.getenv("DATABASE_URL"))
+    db_config = dj_database_url.config(default=quote(os.getenv("DATABASE_URL", "")))
 
     # If using PostgreSQL, make sure to use the PostGIS backend
     if db_config.get("ENGINE") == "django.db.backends.postgresql":
