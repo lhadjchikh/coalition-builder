@@ -324,19 +324,19 @@ func TestVPCEndpointsConfiguration(t *testing.T) {
 
 	// Check S3 Gateway endpoint
 	s3EndpointID := terraform.Output(t, terraformOptions, "s3_endpoint_id")
-	if s3EndpointID != "" {
-		s3Input := &ec2.DescribeVpcEndpointsInput{
-			VpcEndpointIds: []string{s3EndpointID},
-		}
-		s3Result, err := ec2Client.DescribeVpcEndpoints(context.TODO(), s3Input)
-		assert.NoError(t, err)
-		assert.Len(t, s3Result.VpcEndpoints, 1)
+	assert.NotEmpty(t, s3EndpointID, "S3 Gateway endpoint ID should not be empty")
 
-		s3Endpoint := s3Result.VpcEndpoints[0]
-		assert.Equal(t, vpcID, *s3Endpoint.VpcId)
-		assert.Equal(t, string(types.VpcEndpointTypeGateway), string(s3Endpoint.VpcEndpointType))
-		assert.Contains(t, *s3Endpoint.ServiceName, "s3")
+	s3Input := &ec2.DescribeVpcEndpointsInput{
+		VpcEndpointIds: []string{s3EndpointID},
 	}
+	s3Result, err := ec2Client.DescribeVpcEndpoints(context.TODO(), s3Input)
+	assert.NoError(t, err)
+	assert.Len(t, s3Result.VpcEndpoints, 1)
+
+	s3Endpoint := s3Result.VpcEndpoints[0]
+	assert.Equal(t, vpcID, *s3Endpoint.VpcId)
+	assert.Equal(t, string(types.VpcEndpointTypeGateway), string(s3Endpoint.VpcEndpointType))
+	assert.Contains(t, *s3Endpoint.ServiceName, "s3")
 
 	// Check interface endpoints
 	interfaceEndpoints := terraform.OutputMap(t, terraformOptions, "interface_endpoints")
