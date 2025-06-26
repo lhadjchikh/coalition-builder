@@ -37,6 +37,7 @@ services:
       - app-network
 
   api:
+    image: coalition_app:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -61,9 +62,11 @@ services:
       - app-network
 
   ssr:
+    image: coalition_ssr:latest
     build:
       context: .
       dockerfile: Dockerfile.ssr
+      target: deps
     depends_on:
       - api
     environment:
