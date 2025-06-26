@@ -80,12 +80,6 @@ fi
 log_info "Building React component documentation..."
 cd "$PROJECT_ROOT/frontend"
 
-# Install TypeDoc if not already installed
-if ! npm list typedoc &>/dev/null; then
-  log_info "Installing TypeDoc documentation dependencies..."
-  npm install --save-dev typedoc typedoc-plugin-markdown
-fi
-
 # Build TypeDoc documentation
 if npm run docs; then
   log_success "React component documentation built successfully"
