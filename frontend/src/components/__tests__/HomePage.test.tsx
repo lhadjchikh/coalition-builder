@@ -63,8 +63,8 @@ describe('HomePage Error Handling', () => {
 
   afterEach(() => {
     // Clean up environment variables
-    delete process.env.REACT_APP_ORGANIZATION_NAME;
-    delete process.env.REACT_APP_TAGLINE;
+    delete process.env.NEXT_PUBLIC_ORGANIZATION_NAME;
+    delete process.env.NEXT_PUBLIC_TAGLINE;
   });
 
   afterAll(() => {
@@ -156,8 +156,8 @@ describe('HomePage Error Handling', () => {
   });
 
   it('uses environment variables for fallback data', async () => {
-    process.env.REACT_APP_ORGANIZATION_NAME = 'Custom Org';
-    process.env.REACT_APP_TAGLINE = 'Custom tagline';
+    process.env.NEXT_PUBLIC_ORGANIZATION_NAME = 'Custom Org';
+    process.env.NEXT_PUBLIC_TAGLINE = 'Custom tagline';
 
     mockAPI.getHomepage.mockRejectedValue(new Error('Homepage API failed'));
     mockAPI.getCampaigns.mockResolvedValue([]);
