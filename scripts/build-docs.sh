@@ -51,7 +51,7 @@ fi
 # Detect Docker Compose command (V1 vs V2)
 if command -v docker-compose >/dev/null 2>&1; then
   DOCKER_COMPOSE="docker-compose"
-elif docker compose version >/dev/null 2>&1; then
+elif command -v docker >/dev/null 2>&1 && docker compose --help >/dev/null 2>&1; then
   DOCKER_COMPOSE="docker compose"
 else
   log_error "Docker Compose is required to build Django API documentation"
