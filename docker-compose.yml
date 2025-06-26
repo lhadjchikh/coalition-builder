@@ -37,7 +37,7 @@ services:
       - app-network
 
   api:
-    image: coalition_app:latest
+    image: coalition_api:latest
     build:
       context: .
       dockerfile: Dockerfile

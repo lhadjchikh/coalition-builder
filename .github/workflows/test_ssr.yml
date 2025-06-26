@@ -93,7 +93,7 @@ jobs:
             --cache-from=type=local,src=/tmp/.buildx-cache \
             --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
             --load \
-            -t coalition_app:latest \
+            -t coalition_api:latest \
             .
 
       - name: Start all containers
