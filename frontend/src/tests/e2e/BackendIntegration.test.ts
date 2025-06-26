@@ -23,19 +23,10 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
   // Set a longer timeout for these tests since they require network calls
   jest.setTimeout(10000);
 
-  // Setup test with mock API methods to test directly instead of using fetch
+  // Setup test with Jest spies for cleaner mocking
   beforeEach(() => {
-    // Mock the API object directly instead of mocking fetch
-    // This avoids issues with window.fetch not being available in Jest
-    const originalMethods = {
-      getCampaigns: API.getCampaigns,
-      getEndorsers: API.getEndorsers,
-      getLegislators: API.getLegislators,
-    };
-
-    // If REACT_APP_API_URL is set, use mock methods that return the expected structure
-    // This way we don't need to make actual HTTP requests in the test environment
-    API.getCampaigns = jest.fn().mockResolvedValue([
+    // Use Jest spies to mock API methods
+    jest.spyOn(API, 'getCampaigns').mockResolvedValue([
       {
         id: 1,
         name: 'test-campaign',
@@ -44,7 +35,7 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
       },
     ]);
 
-    API.getEndorsers = jest.fn().mockResolvedValue([
+    jest.spyOn(API, 'getEndorsers').mockResolvedValue([
       {
         id: 1,
         name: 'Test Endorser',
@@ -54,7 +45,7 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
       },
     ]);
 
-    API.getLegislators = jest.fn().mockResolvedValue([
+    jest.spyOn(API, 'getLegislators').mockResolvedValue([
       {
         id: 1,
         first_name: 'Test',
@@ -66,20 +57,12 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
       },
     ]);
 
-    // Store for cleanup
-    (API as any)._originals = originalMethods;
-
     console.log('API endpoint being tested:', process.env.REACT_APP_API_URL || 'mocked API');
   });
 
-  // Restore original methods
+  // Restore all mocks after each test
   afterEach(() => {
-    if ((API as any)._originals) {
-      API.getCampaigns = (API as any)._originals.getCampaigns;
-      API.getEndorsers = (API as any)._originals.getEndorsers;
-      API.getLegislators = (API as any)._originals.getLegislators;
-      delete (API as any)._originals;
-    }
+    jest.restoreAllMocks();
   });
 
   test('Can fetch campaigns from the backend', async () => {
