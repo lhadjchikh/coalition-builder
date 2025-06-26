@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "tsc": "tsc --noEmit",
     "test": "node tests/test-ssr-integration.js",
     "test:simple": "node tests/test-ssr-integration-simple.js",
     "test:ci": "node tests/test-ssr-integration-simple.js",

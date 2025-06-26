@@ -41,6 +41,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Copy frontend files for TypeScript resolution
+        run: |
+          mkdir -p frontend/src
+          cp -r ../frontend/src/types ./frontend/src/
+          cp -r ../frontend/src/components ./frontend/src/
+          cp -r ../frontend/src/services ./frontend/src/
+
       - name: Run TypeScript check
         run: npm run typecheck || npm run tsc || echo "Typecheck not available, skipping"
 
