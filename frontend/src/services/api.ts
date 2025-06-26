@@ -1,4 +1,4 @@
-import { Campaign, Endorser, Legislator, Endorsement, EndorsementCreate } from '../types';
+import { Campaign, Endorser, Legislator, Endorsement, EndorsementCreate, HomePage } from '../types';
 
 // Determine the API base URL
 const getBaseUrl = (): string => {
@@ -131,6 +131,20 @@ const API = {
       return (await response.json()) as Campaign;
     } catch (error) {
       console.error('Error fetching campaign by name:', error);
+      throw error;
+    }
+  },
+
+  // Homepage
+  getHomepage: async (): Promise<HomePage> => {
+    try {
+      const response = await fetch(`${getBaseUrl()}/api/homepage/`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return (await response.json()) as HomePage;
+    } catch (error) {
+      console.error('Error fetching homepage:', error);
       throw error;
     }
   },

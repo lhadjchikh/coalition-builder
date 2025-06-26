@@ -1,13 +1,14 @@
-import { HomePage } from "../../types";
+import React from 'react';
+import { HomePage } from '../types';
 
 interface SocialLinksProps {
   homepage: HomePage;
 }
 
-export default function SocialLinks({ homepage }: SocialLinksProps) {
+const SocialLinks: React.FC<SocialLinksProps> = ({ homepage }) => {
   const socialLinks = [
     {
-      name: "Facebook",
+      name: 'Facebook',
       url: homepage.facebook_url,
       icon: (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -16,7 +17,7 @@ export default function SocialLinks({ homepage }: SocialLinksProps) {
       ),
     },
     {
-      name: "Twitter",
+      name: 'Twitter',
       url: homepage.twitter_url,
       icon: (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -25,7 +26,7 @@ export default function SocialLinks({ homepage }: SocialLinksProps) {
       ),
     },
     {
-      name: "Instagram",
+      name: 'Instagram',
       url: homepage.instagram_url,
       icon: (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -34,7 +35,7 @@ export default function SocialLinks({ homepage }: SocialLinksProps) {
       ),
     },
     {
-      name: "LinkedIn",
+      name: 'LinkedIn',
       url: homepage.linkedin_url,
       icon: (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -44,9 +45,7 @@ export default function SocialLinks({ homepage }: SocialLinksProps) {
     },
   ];
 
-  const availableLinks = socialLinks.filter(
-    (link) => link.url && link.url.trim() !== "",
-  );
+  const availableLinks = socialLinks.filter(link => link.url && link.url.trim() !== '');
 
   if (availableLinks.length === 0) {
     return null;
@@ -54,7 +53,7 @@ export default function SocialLinks({ homepage }: SocialLinksProps) {
 
   return (
     <div className="flex justify-center space-x-6">
-      {availableLinks.map((link) => (
+      {availableLinks.map(link => (
         <a
           key={link.name}
           href={link.url}
@@ -68,4 +67,6 @@ export default function SocialLinks({ homepage }: SocialLinksProps) {
       ))}
     </div>
   );
-}
+};
+
+export default SocialLinks;

@@ -84,9 +84,40 @@ The API is automatically documented from code. When adding new endpoints:
 
 ## Component Development
 
-For React components:
+### Shared Component Architecture
 
-1. Use TypeScript interfaces
-2. Add JSDoc comments
-3. Write component tests
-4. Export types for reuse
+Coalition Builder uses a shared component architecture where:
+
+- **Components**: All React components live in `/frontend/src/components/`
+- **Types**: Shared TypeScript interfaces are in `/frontend/src/types/`
+- **SSR Integration**: Next.js imports components from `/frontend` using `@frontend` aliases
+- **Testing**: Unit tests are in `/frontend/src/components/__tests__/`
+
+### Guidelines for React Components
+
+1. **Create components in `/frontend/src/components/`** - they'll be used by both SPA and SSR
+2. **Use TypeScript interfaces** from `/frontend/src/types/`
+3. **Add JSDoc comments** for better documentation
+4. **Write Jest unit tests** in `__tests__/` subdirectories
+5. **Export types for reuse** across both frontend and SSR
+6. **Handle errors gracefully** with fallback UI and user-friendly messages
+
+### Error Handling Pattern
+
+When creating components that fetch data:
+
+```typescript
+// Use Promise.allSettled for parallel API calls
+const [dataResult, otherResult] = await Promise.allSettled([
+  API.getData(),
+  API.getOtherData(),
+]);
+
+// Handle each result separately
+if (dataResult.status === "fulfilled") {
+  setData(dataResult.value);
+} else {
+  setError("Failed to load data");
+  // Show fallback UI, don't expose raw errors
+}
+```

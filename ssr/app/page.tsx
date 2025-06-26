@@ -1,14 +1,16 @@
-import { apiClient } from "../lib/api";
-import type { Campaign, HomePage } from "../types";
-import Link from "next/link";
-import HeroSection from "./components/HeroSection";
-import ContentBlock from "./components/ContentBlock";
-import SocialLinks from "./components/SocialLinks";
+import React from "react";
+import { ssrApiClient } from "../lib/frontend-api-adapter";
+import type { Campaign, HomePage as HomePageType } from "@frontend/types";
 import type { Metadata } from "next";
+
+// Import shared components
+import HeroSection from "@frontend/components/HeroSection";
+import ContentBlock from "@frontend/components/ContentBlock";
+import SocialLinks from "@frontend/components/SocialLinks";
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
-    const homepage = await apiClient.getHomepage();
+    const homepage = await ssrApiClient.getHomepage();
     return {
       title: homepage.organization_name,
       description: homepage.tagline,
@@ -31,14 +33,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   let campaigns: Campaign[] = [];
-  let homepage: HomePage | null = null;
+  let homepage: HomePageType | null = null;
   let homepageError: string | null = null;
   let campaignsError: string | null = null;
 
-  // Fetch homepage and campaigns in parallel for better performance
+  // Fetch homepage and campaigns in parallel for better performance (server-side)
   const [homepageResult, campaignsResult] = await Promise.allSettled([
-    apiClient.getHomepage(),
-    apiClient.getCampaigns(),
+    ssrApiClient.getHomepage(),
+    ssrApiClient.getCampaigns(),
   ]);
 
   // Handle homepage result
@@ -63,8 +65,8 @@ export default async function HomePage() {
     console.error("Error fetching campaigns:", campaignsResult.reason);
   }
 
-  // Fallback homepage data if API fails
-  const fallbackHomepage: HomePage = {
+  // Fallback homepage data if API fails (same as frontend)
+  const fallbackHomepage: HomePageType = {
     id: 0,
     organization_name: process.env.ORGANIZATION_NAME || "Coalition Builder",
     tagline: process.env.TAGLINE || "Building strong advocacy partnerships",
@@ -181,12 +183,12 @@ export default async function HomePage() {
                         {campaign.title}
                       </h3>
                       <p className="text-gray-600 mb-4">{campaign.summary}</p>
-                      <Link
-                        href={`/campaigns/${campaign.slug}`}
+                      <a
+                        href={`/campaigns/${campaign.id}`}
                         className="text-blue-600 hover:text-blue-800 font-medium"
                       >
                         Learn more →
-                      </Link>
+                      </a>
                     </div>
                   ))}
                 </div>
