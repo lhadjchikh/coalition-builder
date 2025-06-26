@@ -99,7 +99,7 @@ const HomePage: React.FC<HomePageProps> = ({ onCampaignSelect }) => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white" role="main">
       {/* Development notice when using fallback data */}
       {process.env.NODE_ENV === 'development' && homepageError && (
         <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4">
@@ -262,7 +262,7 @@ const HomePage: React.FC<HomePageProps> = ({ onCampaignSelect }) => {
           </div>
         </div>
       </footer>
-    </div>
+    </main>
   );
 };
 
