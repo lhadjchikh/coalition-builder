@@ -5,6 +5,11 @@ const nextConfig = {
   // Enable standalone output for Docker
   output: "standalone",
 
+  // Experimental features
+  experimental: {
+    externalDir: true, // Allow importing from outside the project directory
+  },
+
   // Webpack configuration to enable importing from frontend directory
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
     // Add alias for importing from frontend
@@ -12,20 +17,6 @@ const nextConfig = {
       ...config.resolve.alias,
       "@frontend": path.resolve(__dirname, "../frontend/src"),
     };
-
-    // Allow importing TypeScript files from frontend
-    config.module.rules.push({
-      test: /\.(ts|tsx)$/,
-      include: [path.resolve(__dirname, "../frontend/src")],
-      use: [
-        {
-          loader: "next/dist/compiled/babel/loader",
-          options: {
-            presets: ["next/babel"],
-          },
-        },
-      ],
-    });
 
     return config;
   },
