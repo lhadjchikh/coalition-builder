@@ -188,7 +188,7 @@ const HomePage: React.FC<HomePageProps> = ({ onCampaignSelect }) => {
                         </button>
                       ) : (
                         <a
-                          href={`/campaigns/${campaign.id}`}
+                          href={`/campaigns/${campaign.name}`}
                           className="text-blue-600 hover:text-blue-800 font-medium"
                         >
                           Learn more →

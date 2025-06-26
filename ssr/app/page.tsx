@@ -69,8 +69,11 @@ export default async function HomePage() {
   // Fallback homepage data if API fails (same as frontend)
   const fallbackHomepage: HomePageType = {
     id: 0,
-    organization_name: process.env.ORGANIZATION_NAME || "Coalition Builder",
-    tagline: process.env.TAGLINE || "Building strong advocacy partnerships",
+    organization_name:
+      process.env.NEXT_PUBLIC_ORGANIZATION_NAME || "Coalition Builder",
+    tagline:
+      process.env.NEXT_PUBLIC_TAGLINE ||
+      "Building strong advocacy partnerships",
     hero_title: "Welcome to Coalition Builder",
     hero_subtitle: "Empowering advocates to build strong policy coalitions",
     hero_background_image: "",

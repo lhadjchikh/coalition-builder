@@ -305,10 +305,8 @@ async function testContainerCommunication() {
 }
 
 // Test 7: Error Handling and Fallback UI Test
-async function testSSRArchitecture() {
-  console.log(
-    "🔍 Testing SSR architecture and shared component integration...",
-  );
+async function testSSRErrorHandlingAndFallback() {
+  console.log("🔍 Testing SSR error handling and fallback UI...");
 
   const response = await fetchWithRetry(TEST_CONFIG.SSR_URL);
 
@@ -401,7 +399,7 @@ async function runIntegrationTests() {
     { name: "API Routing", fn: testAPIRouting },
     { name: "SSR API Integration", fn: testSSRAPIIntegration },
     { name: "Container Communication", fn: testContainerCommunication },
-    { name: "SSR Architecture", fn: testSSRArchitecture },
+    { name: "SSR Error Handling", fn: testSSRErrorHandlingAndFallback },
     { name: "Performance Test", fn: testPerformance },
   ];
 
@@ -505,6 +503,6 @@ module.exports = {
   testAPIRouting,
   testSSRAPIIntegration,
   testContainerCommunication,
-  testSSRArchitecture,
+  testSSRErrorHandlingAndFallback,
   testPerformance,
 };
