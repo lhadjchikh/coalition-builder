@@ -360,8 +360,9 @@ async function testErrorHandlingFallback() {
     }
 
     if (!foundErrorHandling) {
-      console.warn(
-        "⚠️  Warning: No graceful error handling messages found in fallback UI",
+      throw new Error(
+        "No graceful error handling messages found in fallback UI. Expected one of: " +
+          errorMessages.join(", "),
       );
     }
 
