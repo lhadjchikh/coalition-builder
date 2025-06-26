@@ -57,6 +57,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app/backend
+      - ./frontend/build:/app/frontend/build:ro
     command: ["python", "/app/backend/manage.py", "runserver", "0.0.0.0:8000"]
     networks:
       - app-network
