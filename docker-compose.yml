@@ -62,8 +62,8 @@ services:
 
   ssr:
     build:
-      context: ./ssr
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile.ssr
       target: deps # Use deps stage for development
     depends_on:
       - api
