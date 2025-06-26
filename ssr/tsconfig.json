@@ -1,5 +1,16 @@
 {
   "compilerOptions": {
+    // Basic compilation settings
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noImplicitAny": false,
+
+    // Module resolution
+    "module": "esnext",
+    "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
@@ -7,26 +18,25 @@
       "@frontend/types": ["../frontend/src/types/index.ts"],
       "@frontend/components/*": ["../frontend/src/components/*"]
     },
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": false,
-    "noImplicitAny": false,
+    "typeRoots": ["./node_modules/@types"],
+    "types": ["node", "react", "react-dom"],
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+
+    // JSX and React
+    "jsx": "preserve",
+    "isolatedModules": true,
+
+    // Output and build
     "noEmit": true,
     "incremental": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "types": ["node"],
+
+    // Plugins
     "plugins": [
       {
         "name": "next"
       }
-    ],
-    "target": "ES2017"
+    ]
   },
   "include": [
     "next-env.d.ts",
