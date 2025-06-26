@@ -14,9 +14,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@frontend/*": ["../frontend/src/*"],
-      "@frontend/types": ["../frontend/src/types/index.ts"],
-      "@frontend/components/*": ["../frontend/src/components/*"]
+      "@frontend/*": ["./frontend/src/*"],
+      "@frontend/types": ["./frontend/src/types/index.ts"],
+      "@frontend/components/*": ["./frontend/src/components/*"]
     },
     "typeRoots": ["./node_modules/@types"],
     "types": ["node", "react", "react-dom"],
@@ -43,16 +43,16 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx",
-    "../frontend/src/types/**/*.ts",
-    "../frontend/src/components/**/*.tsx",
-    "../frontend/src/services/**/*.ts"
+    "./frontend/src/types/**/*.ts",
+    "./frontend/src/components/**/*.tsx",
+    "./frontend/src/services/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "../frontend/src/**/*.test.tsx",
-    "../frontend/src/**/*.test.ts",
-    "../frontend/src/tests/**/*",
-    "../frontend/src/App.test.tsx",
-    "../frontend/src/setupTests.ts"
+    "./frontend/src/**/*.test.tsx",
+    "./frontend/src/**/*.test.ts",
+    "./frontend/src/tests/**/*",
+    "./frontend/src/App.test.tsx",
+    "./frontend/src/setupTests.ts"
   ]
 }

@@ -22,7 +22,9 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY ssr/ .
 # Copy frontend source files needed for shared components
 # NOTE: Build context must be project root: docker build -f ssr/Dockerfile .
-COPY frontend/src ./frontend/src
+COPY frontend/src/types ./frontend/src/types
+COPY frontend/src/components ./frontend/src/components
+COPY frontend/src/services ./frontend/src/services
 
 RUN mkdir -p ./public
 
@@ -63,7 +65,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Copy health check files to avoid any conflicts
-COPY --chown=nextjs:nodejs healthcheck*.js /app/
+COPY --from=builder --chown=nextjs:nodejs /app/healthcheck*.js /app/
 
 USER nextjs
 

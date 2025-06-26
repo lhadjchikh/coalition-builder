@@ -15,7 +15,7 @@ const nextConfig = {
     // Add alias for importing from frontend
     config.resolve.alias = {
       ...config.resolve.alias,
-      "@frontend": path.resolve(__dirname, "../frontend/src"),
+      "@frontend": path.resolve(__dirname, "./frontend/src"),
     };
 
     return config;
