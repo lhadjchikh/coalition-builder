@@ -140,11 +140,14 @@ class HomepageAPITest(TestCase):
         self.homepage.save()
 
         response = self.client.get("/api/homepage/")
-        assert response.status_code == 404
+        assert response.status_code == 200
 
         data = response.json()
-        assert "detail" in data
-        assert data["detail"] == "Not Found"
+        # Verify default homepage was created
+        assert data["organization_name"] == "Coalition Builder"
+        assert data["tagline"] == "Building strong advocacy partnerships"
+        assert data["hero_title"] == "Welcome to Coalition Builder"
+        assert data["is_active"] is True
 
     def test_get_homepage_no_homepage_exists(self) -> None:
         """Test homepage retrieval when no homepage exists at all"""
@@ -152,11 +155,22 @@ class HomepageAPITest(TestCase):
         self.homepage.delete()
 
         response = self.client.get("/api/homepage/")
-        assert response.status_code == 404
+        assert response.status_code == 200
 
         data = response.json()
-        assert "detail" in data
-        assert data["detail"] == "Not Found"
+        # Verify default homepage was created
+        assert data["organization_name"] == "Coalition Builder"
+        assert data["tagline"] == "Building strong advocacy partnerships"
+        assert data["hero_title"] == "Welcome to Coalition Builder"
+        assert (
+            data["hero_subtitle"]
+            == "Empowering advocates to build strong policy coalitions"
+        )
+        assert data["about_section_title"] == "About Our Mission"
+        assert data["is_active"] is True
+
+        # Verify a new homepage was actually created in the database
+        assert HomePage.objects.filter(is_active=True).exists()
 
     def test_get_homepage_multiple_active_returns_most_recent(self) -> None:
         """Test that when multiple active homepages exist, most recent is returned"""
