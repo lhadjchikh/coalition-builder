@@ -20,7 +20,8 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY ssr/ .
-# Copy frontend source files needed for shared components  
+# Copy frontend source files needed for shared components
+# NOTE: Build context must be project root: docker build -f ssr/Dockerfile .
 COPY frontend/src ./frontend/src
 
 RUN mkdir -p ./public
