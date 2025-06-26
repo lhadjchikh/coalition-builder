@@ -304,7 +304,85 @@ async function testContainerCommunication() {
   return true; // Default pass if we reach here
 }
 
-// Test 7: Performance Test
+// Test 7: Error Handling and Fallback UI Test
+async function testErrorHandlingFallback() {
+  console.log("🔍 Testing error handling and fallback UI...");
+
+  // Test 1: Homepage with broken API endpoints
+  // We'll temporarily break the API by pointing to a non-existent endpoint
+  const originalApiUrl = process.env.API_URL;
+  process.env.NEXT_PUBLIC_API_URL = "http://localhost:9999"; // Non-existent port
+
+  try {
+    const response = await fetchWithRetry(TEST_CONFIG.SSR_URL);
+
+    if (!response.ok) {
+      throw new Error(
+        `Error handling test failed: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const html = await response.text();
+
+    // Verify fallback content is rendered
+    const fallbackContent = [
+      "Coalition Builder", // Should use fallback organization name
+      "Building strong advocacy partnerships", // Should use fallback tagline
+      "Welcome to Coalition Builder", // Should use fallback hero title
+    ];
+
+    let missingFallbackContent = [];
+    for (const content of fallbackContent) {
+      if (!html.includes(content)) {
+        missingFallbackContent.push(content);
+      }
+    }
+
+    if (missingFallbackContent.length > 0) {
+      throw new Error(
+        `Fallback content missing: ${missingFallbackContent.join(", ")}`,
+      );
+    }
+
+    // Check for graceful error handling messages
+    const errorMessages = [
+      "Unable to load campaigns",
+      "No campaigns are currently available",
+      "Development Notice", // Should appear in dev mode when API fails
+    ];
+
+    let foundErrorHandling = false;
+    for (const message of errorMessages) {
+      if (html.includes(message)) {
+        foundErrorHandling = true;
+        break;
+      }
+    }
+
+    if (!foundErrorHandling) {
+      console.warn(
+        "⚠️  Warning: No graceful error handling messages found in fallback UI",
+      );
+    }
+
+    // Verify the page still renders properly
+    if (!html.includes("<html") || !html.includes("</html>")) {
+      throw new Error("Page structure compromised during API failure");
+    }
+
+    console.log("✅ Error handling and fallback UI test passed");
+    return true;
+  } finally {
+    // Restore original API URL
+    if (originalApiUrl) {
+      process.env.API_URL = originalApiUrl;
+    } else {
+      delete process.env.NEXT_PUBLIC_API_URL;
+    }
+  }
+}
+
+// Test 8: Performance Test
 async function testPerformance() {
   console.log("🔍 Running basic performance test...");
 
@@ -353,6 +431,7 @@ async function runIntegrationTests() {
     { name: "API Routing", fn: testAPIRouting },
     { name: "SSR API Integration", fn: testSSRAPIIntegration },
     { name: "Container Communication", fn: testContainerCommunication },
+    { name: "Error Handling and Fallback UI", fn: testErrorHandlingFallback },
     { name: "Performance Test", fn: testPerformance },
   ];
 
@@ -456,5 +535,6 @@ module.exports = {
   testAPIRouting,
   testSSRAPIIntegration,
   testContainerCommunication,
+  testErrorHandlingFallback,
   testPerformance,
 };
