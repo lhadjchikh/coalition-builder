@@ -44,7 +44,7 @@ jobs:
             --cache-from=type=local,src=/tmp/.buildx-cache \
             --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
             --load \
-            -t coalition_app:latest \
+            -t coalition_api:latest \
             .
 
       - name: Start database container
@@ -88,12 +88,12 @@ jobs:
         if: steps.check_tests.outputs.skip_full_tests == 'true'
         run: |
           echo "Skipping intensive tests for non-relevant changes to ensure deployment workflow gets triggered"
-          docker compose run --rm -e PYTHONUNBUFFERED=1 api sh -c "cd /app/backend && python -c 'print(\"Minimal test passed, allowing deployment workflow to trigger\")'"
+          docker compose run --rm -e PYTHONUNBUFFERED=1 api sh -c "python -c 'print(\"Minimal test passed, allowing deployment workflow to trigger\")'"
 
       - name: Run backend tests
         if: steps.check_tests.outputs.skip_full_tests != 'true'
         run: |
-          docker compose run --rm -e PYTHONUNBUFFERED=1 api sh -c "cd /app/backend && python manage.py test"
+          docker compose run --rm -e PYTHONUNBUFFERED=1 api sh -c "python manage.py test"
 
       - name: Stop containers
         if: always()

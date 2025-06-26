@@ -133,8 +133,8 @@ jobs:
         run: |
           # Create test data for API
           docker compose exec -T api bash -c '
-          export PYTHONPATH="${PYTHONPATH}:/app/backend"
-          python backend/scripts/create_test_data.py
+          export PYTHONPATH="${PYTHONPATH}:/app"
+          python scripts/create_test_data.py
           if [ $? -ne 0 ]; then
             echo "Failed to create test data"
             exit 1
