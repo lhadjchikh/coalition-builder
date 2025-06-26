@@ -310,7 +310,7 @@ async function testErrorHandlingFallback() {
 
   // Test 1: Homepage with broken API endpoints
   // We'll temporarily break the API by pointing to a non-existent endpoint
-  const originalApiUrl = process.env.API_URL;
+  const originalApiUrl = process.env.NEXT_PUBLIC_API_URL;
   process.env.NEXT_PUBLIC_API_URL = "http://localhost:9999"; // Non-existent port
 
   try {
@@ -375,7 +375,7 @@ async function testErrorHandlingFallback() {
   } finally {
     // Restore original API URL
     if (originalApiUrl) {
-      process.env.API_URL = originalApiUrl;
+      process.env.NEXT_PUBLIC_API_URL = originalApiUrl;
     } else {
       delete process.env.NEXT_PUBLIC_API_URL;
     }
