@@ -194,28 +194,8 @@ resource "aws_route_table" "private_app" {
   }
 }
 
-# Routes for the private app route table
-# Route for the newly created IGW
-resource "aws_route" "private_app_internet_gateway_new" {
-  count = var.create_private_subnets && var.create_vpc ? 1 : 0
-
-  route_table_id         = aws_route_table.private_app[0].id
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.igw[0].id
-
-  depends_on = [aws_route_table.private_app, aws_internet_gateway.igw]
-}
-
-# Route for the existing IGW
-resource "aws_route" "private_app_internet_gateway_existing" {
-  count = var.create_private_subnets && !var.create_vpc ? 1 : 0
-
-  route_table_id         = aws_route_table.private_app[0].id
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = data.aws_internet_gateway.existing[0].id
-
-  depends_on = [aws_route_table.private_app, data.aws_internet_gateway.existing]
-}
+# Private subnets use VPC endpoints only - no default route to internet
+# This allows ECS tasks to communicate with AWS services without NAT Gateway costs
 
 # Database subnet route table - isolated - only created if create_db_subnets is true
 resource "aws_route_table" "private_db" {
