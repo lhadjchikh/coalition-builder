@@ -51,16 +51,24 @@ const mockCampaigns: Campaign[] = [
 ];
 
 describe('HomePage Error Handling', () => {
+  const OLD_ENV = process.env;
+
   beforeEach(() => {
+    jest.resetModules(); // Clears the cache
     jest.clearAllMocks();
-    // Reset environment to test
-    process.env.NODE_ENV = 'test';
+    process.env = { ...OLD_ENV }; // Make a mutable copy
+    // Set environment to test
+    process.env = { ...process.env, NODE_ENV: 'test' };
   });
 
   afterEach(() => {
     // Clean up environment variables
     delete process.env.REACT_APP_ORGANIZATION_NAME;
     delete process.env.REACT_APP_TAGLINE;
+  });
+
+  afterAll(() => {
+    process.env = OLD_ENV; // Restore old env
   });
 
   it('renders successfully with API data', async () => {
@@ -185,7 +193,7 @@ describe('HomePage Error Handling', () => {
   });
 
   it('shows development notices in development mode', async () => {
-    process.env.NODE_ENV = 'development';
+    process.env = { ...process.env, NODE_ENV: 'development' };
 
     mockAPI.getHomepage.mockRejectedValue(new Error('Homepage API failed'));
     mockAPI.getCampaigns.mockRejectedValue(new Error('Campaigns API failed'));
