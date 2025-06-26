@@ -56,7 +56,7 @@ jobs:
             --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
             --load \
             -t coalition_ssr:latest \
-            -f ssr/Dockerfile \
+            -f Dockerfile.ssr \
             .
 
       - name: Start all containers
