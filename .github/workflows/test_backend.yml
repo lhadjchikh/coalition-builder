@@ -93,7 +93,7 @@ jobs:
       - name: Run backend tests
         if: steps.check_tests.outputs.skip_full_tests != 'true'
         run: |
-          docker compose run --rm -e PYTHONUNBUFFERED=1 api sh -c "python manage.py test"
+          docker compose run --rm -e PYTHONUNBUFFERED=1 -e DEBUG=True api sh -c "python manage.py test"
 
       - name: Stop containers
         if: always()
