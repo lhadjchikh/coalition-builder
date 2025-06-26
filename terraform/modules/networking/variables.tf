@@ -55,25 +55,25 @@ variable "public_subnet_b_cidr" {
 
 # Variables for private app subnets
 variable "create_private_subnets" {
-  description = "Whether to create new private app subnets (true) or use existing ones (false). Private subnets use VPC endpoints only - no internet access or NAT Gateway required."
+  description = "Whether to create new private app subnets (true) or use existing ones (false)"
   type        = bool
   default     = true
 }
 
 variable "private_subnet_ids" {
-  description = "IDs of existing private app subnets to use (if create_private_subnets is false). These subnets must rely on VPC endpoints for AWS service access."
+  description = "IDs of existing private app subnets to use (if create_private_subnets is false)"
   type        = list(string)
   default     = []
 }
 
 variable "private_subnet_a_cidr" {
-  description = "CIDR block for private app subnet in AZ a (if create_private_subnets is true). Will have no default route - VPC endpoints only."
+  description = "CIDR block for private app subnet in AZ a (if create_private_subnets is true)"
   type        = string
   default     = "10.0.3.0/24"
 }
 
 variable "private_subnet_b_cidr" {
-  description = "CIDR block for private app subnet in AZ b (if create_private_subnets is true). Will have no default route - VPC endpoints only."
+  description = "CIDR block for private app subnet in AZ b (if create_private_subnets is true)"
   type        = string
   default     = "10.0.4.0/24"
 }

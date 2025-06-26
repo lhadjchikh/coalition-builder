@@ -64,19 +64,36 @@ resource "null_resource" "assert_no_default_route" {
 # Output for verification
 output "test_results" {
   value = {
-    private_app_route_table_id = module.networking_integration_test.private_app_route_table_id
-    total_routes               = length(data.aws_route_table.private_app_test.routes)
-    has_default_route          = local.has_default_route
-    default_routes_count       = length(local.default_routes)
-    vpc_endpoints_created      = module.networking_integration_test.s3_endpoint_id != null
+    private_app_route_table_id  = module.networking_integration_test.private_app_route_table_id
+    total_routes                = length(data.aws_route_table.private_app_test.routes)
+    has_default_route           = local.has_default_route
+    default_routes_count        = length(local.default_routes)
+    s3_endpoint_created         = module.networking_integration_test.s3_endpoint_id != null
+    interface_endpoints_created = length(module.networking_integration_test.interface_endpoints) > 0
+    interface_endpoints_count   = length(module.networking_integration_test.interface_endpoints)
+    required_endpoints_exist = alltrue([
+      contains(keys(module.networking_integration_test.interface_endpoints), "ecr_api"),
+      contains(keys(module.networking_integration_test.interface_endpoints), "ecr_dkr"),
+      contains(keys(module.networking_integration_test.interface_endpoints), "logs"),
+      contains(keys(module.networking_integration_test.interface_endpoints), "secretsmanager")
+    ])
   }
 }
 
-# Assert that VPC endpoints are created
-resource "null_resource" "assert_vpc_endpoints_created" {
+# Assert that S3 VPC endpoint is created
+resource "null_resource" "assert_s3_endpoint_created" {
   count = module.networking_integration_test.s3_endpoint_id == null ? 1 : 0
 
   provisioner "local-exec" {
-    command = "echo 'ERROR: VPC endpoints should be created for private subnet connectivity' && exit 1"
+    command = "echo 'ERROR: S3 VPC endpoint should be created for private subnet connectivity' && exit 1"
+  }
+}
+
+# Assert that interface VPC endpoints are created
+resource "null_resource" "assert_interface_endpoints_created" {
+  count = length(module.networking_integration_test.interface_endpoints) < 4 ? 1 : 0
+
+  provisioner "local-exec" {
+    command = "echo 'ERROR: All required interface VPC endpoints (ECR API, ECR DKR, CloudWatch Logs, Secrets Manager) should be created' && exit 1"
   }
 }

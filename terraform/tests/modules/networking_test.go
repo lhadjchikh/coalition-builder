@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	awsgo "github.com/gruntwork-io/terratest/modules/aws"
+	terratestaws "github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 )
@@ -40,7 +40,7 @@ func TestNetworkingModuleCreatesVPCAndSubnets(t *testing.T) {
 	vpcID := terraform.Output(t, terraformOptions, "vpc_id")
 	assert.NotEmpty(t, vpcID)
 
-	vpc := awsgo.GetVpcById(t, vpcID, testConfig.AWSRegion)
+	vpc := terratestaws.GetVpcById(t, vpcID, testConfig.AWSRegion)
 	// Note: VPC detailed validation simplified due to Terratest API limitations
 	assert.NotNil(t, vpc)
 
@@ -230,7 +230,7 @@ func TestNetworkingModuleValidatesResourceNaming(t *testing.T) {
 
 	// Validate VPC naming
 	vpcID := terraform.Output(t, terraformOptions, "vpc_id")
-	vpc := awsgo.GetVpcById(t, vpcID, testConfig.AWSRegion)
+	vpc := terratestaws.GetVpcById(t, vpcID, testConfig.AWSRegion)
 
 	if nameTag, exists := vpc.Tags["Name"]; exists {
 		common.ValidateResourceNaming(t, nameTag, testConfig.Prefix, "vpc")
