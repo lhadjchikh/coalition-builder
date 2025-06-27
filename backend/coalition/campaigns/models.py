@@ -77,7 +77,7 @@ class Bill(models.Model):
     number = models.CharField(max_length=50)
     title = models.CharField(max_length=255)
     chamber = models.CharField(max_length=10, choices=CHAMBER_CHOICES)
-    congress_session = models.CharField(max_length=10)
+    congress_session = models.CharField(max_length=3)
     introduced_date = models.DateField()
     status = models.CharField(max_length=100, blank=True)
     url = models.URLField(blank=True)

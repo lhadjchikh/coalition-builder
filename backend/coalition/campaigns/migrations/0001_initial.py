@@ -58,7 +58,7 @@ class Migration(migrations.Migration):
                         max_length=10,
                     ),
                 ),
-                ("congress_session", models.CharField(max_length=10)),
+                ("congress_session", models.CharField(max_length=3)),
                 ("introduced_date", models.DateField()),
                 ("status", models.CharField(blank=True, max_length=100)),
                 ("url", models.URLField(blank=True)),
