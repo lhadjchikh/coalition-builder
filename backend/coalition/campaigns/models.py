@@ -94,4 +94,5 @@ class Bill(models.Model):
     )
 
     def __str__(self) -> str:
-        return f"{self.number} ({self.chamber}, {self.congress_session})"
+        prefix = "H.R." if self.chamber == "House" else "S."
+        return f"{prefix} {self.number}"
