@@ -181,6 +181,7 @@ const HomePage: React.FC<HomePageProps> = ({ onCampaignSelect }) => {
                     {campaigns.map(campaign => (
                       <div
                         key={campaign.id}
+                        data-testid={`campaign-${campaign.id}`}
                         className="bg-theme-bg-card rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border border-theme-secondary/20"
                       >
                         <h3 className="text-lg font-semibold text-theme-heading font-theme-heading mb-2">
