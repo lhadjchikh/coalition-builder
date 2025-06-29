@@ -114,14 +114,40 @@ class EndorsementOut(ModelSchema):
         ]
 
 
+class BillOut(Schema):
+    id: int
+    level: str = "federal"
+    policy_id: int
+    number: str
+    title: str
+    chamber: str
+    session: str
+    state_id: int | None = None
+    state_name: str | None = None
+    introduced_date: str
+    status: str = ""
+    url: str = ""
+    is_primary: bool = False
+    related_bill_id: int | None = None
+    sponsors: list[int] = []
+    cosponsors: list[int] = []
+    display_name: str
+
+
 class LegislatorOut(Schema):
     id: int
+    level: str = "federal"
+    bioguide_id: str | None = None
+    state_id: str = ""
     first_name: str
     last_name: str
     chamber: str
     state: str
     district: str | None = None
     is_senior: bool | None = None
+    party: str
+    in_office: bool = True
+    url: str = ""
 
 
 class ContentBlockOut(Schema):
