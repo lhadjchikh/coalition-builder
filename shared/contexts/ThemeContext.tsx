@@ -125,17 +125,13 @@ export const useThemeColors = () => {
     secondary: currentTheme.secondary_color,
     accent: currentTheme.accent_color,
     background: currentTheme.background_color,
-    sectionBackground: currentTheme.background_section_color,
-    cardBackground: currentTheme.background_card_color,
-    heading: currentTheme.text_heading_color,
-    bodyText: currentTheme.text_body_color,
-    mutedText: currentTheme.text_muted_color,
-    link: currentTheme.text_link_color,
-    linkHover: currentTheme.text_link_hover_color,
-    success: currentTheme.success_color,
-    warning: currentTheme.warning_color,
-    error: currentTheme.error_color,
-    info: currentTheme.info_color,
+    sectionBackground: currentTheme.section_background_color,
+    cardBackground: currentTheme.card_background_color,
+    heading: currentTheme.heading_color,
+    bodyText: currentTheme.body_text_color,
+    mutedText: currentTheme.muted_text_color,
+    link: currentTheme.link_color,
+    linkHover: currentTheme.link_hover_color,
   };
 };
 
@@ -153,8 +149,8 @@ export const useThemeTypography = () => {
   return {
     headingFont: currentTheme.heading_font_family,
     bodyFont: currentTheme.body_font_family,
-    sizeBase: `${currentTheme.base_font_size}px`,
-    sizeSmall: `${currentTheme.base_font_size * 0.875}px`,
-    sizeLarge: `${currentTheme.base_font_size * 1.125}px`,
+    sizeBase: `${currentTheme.font_size_base}rem`,
+    sizeSmall: `${currentTheme.font_size_small}rem`,
+    sizeLarge: `${currentTheme.font_size_large}rem`,
   };
 };
