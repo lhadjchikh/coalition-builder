@@ -66,6 +66,10 @@
     "./frontend/src/App.test.tsx",
     "./frontend/src/setupTests.ts",
     "./frontend/src/components/HomePage.tsx",
-    "./frontend/src/components/StyledHomePage.tsx"
+    "./frontend/src/components/StyledHomePage.tsx",
+    "./frontend/src/components/styled/**/*",
+    "./frontend/src/contexts/StyledThemeProvider.tsx",
+    "./frontend/src/hooks/useStyledTheme.ts",
+    "./frontend/src/styles/styled.d.ts"
   ]
 }
