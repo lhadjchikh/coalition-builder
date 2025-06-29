@@ -15,20 +15,24 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
       }
     : {};
 
-  const textColorClass = homepage.hero_background_image ? 'text-white' : 'text-gray-900';
+  const textColorClass = homepage.hero_background_image ? 'text-white' : 'text-theme-heading';
 
   return (
     <div
-      className={`relative py-24 sm:py-32 ${homepage.hero_background_image ? 'text-white' : 'bg-gray-50'}`}
+      className={`relative py-24 sm:py-32 ${homepage.hero_background_image ? 'text-white' : 'bg-theme-bg-section'}`}
       style={heroStyle}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h1 className={`text-4xl font-bold ${textColorClass} sm:text-5xl lg:text-6xl`}>
+          <h1
+            className={`text-4xl font-bold font-theme-heading ${textColorClass} sm:text-5xl lg:text-6xl`}
+          >
             {homepage.hero_title}
           </h1>
           {homepage.hero_subtitle && (
-            <p className={`mt-6 text-xl ${textColorClass} max-w-3xl mx-auto leading-relaxed`}>
+            <p
+              className={`mt-6 text-xl font-theme-body ${textColorClass} max-w-3xl mx-auto leading-relaxed`}
+            >
               {homepage.hero_subtitle}
             </p>
           )}
@@ -40,8 +44,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
                 href={homepage.cta_button_url}
                 className={`inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md transition-colors duration-200 ${
                   homepage.hero_background_image
-                    ? 'text-gray-900 bg-white hover:bg-gray-50'
-                    : 'text-white bg-blue-600 hover:bg-blue-700'
+                    ? 'text-theme-heading bg-white hover:bg-theme-bg-section'
+                    : 'text-white bg-theme-primary hover:bg-theme-primary/90'
                 }`}
               >
                 {homepage.cta_button_text}
