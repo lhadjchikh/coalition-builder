@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Theme } from '../types';
+import { Theme } from '@shared/utils/theme';
 
 interface ThemeContextType {
   theme: Theme | null;
