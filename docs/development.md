@@ -105,6 +105,16 @@ The API is automatically documented from code. When adding new endpoints:
 3. Update API tests
 4. Regenerate documentation
 
+## Data Models
+
+Key models include:
+
+- **Bill**: Tracks federal and state legislative bills with chamber-specific formatting
+- **Legislator**: Manages federal and state legislators with appropriate validation
+- **PolicyCampaign**: Organizes advocacy campaigns with endorsement support
+- **Stakeholder**: Stores supporter information with geographic data
+- **Endorsement**: Handles campaign endorsements with verification workflow
+
 ## Component Development
 
 ### Shared Component Architecture

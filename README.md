@@ -48,9 +48,10 @@ docker compose exec api python scripts/create_test_data.py
 ### Core Functionality
 
 - **Dynamic Homepage Management** - Database-driven content with flexible blocks
-- **Campaign Management** - Create and track policy advocacy campaigns
+- **Campaign Management** - Create and track policy advocacy campaigns at federal and state levels
+- **Multi-Level Bill Tracking** - Support for both federal (H.R./S.) and state legislative bills
 - **Stakeholder Management** - Organize supporters and endorsers with detailed profiles
-- **Legislator Tracking** - Monitor representatives and their positions
+- **Legislator Tracking** - Monitor federal and state representatives and their positions
 - **Content Management** - Easy-to-use Django admin interface
 - **API Integration** - RESTful API for custom integrations
 - **SEO Optimized** - Server-side rendering with Next.js

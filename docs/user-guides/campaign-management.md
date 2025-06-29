@@ -97,13 +97,24 @@ A campaign in Coalition Builder represents a coordinated effort to advocate for 
 
 2. **Bill Information**:
 
-   - **Bill Number**: Official legislative identifier (e.g., "HB 123")
+   - **Level**: Choose between "Federal" or "State"
+   - **Bill Number**: Official legislative identifier (e.g., "123" for federal, "456" for state)
    - **Title**: Official bill title
-   - **Description**: Summary of bill contents
+   - **Chamber**: Select the appropriate legislative chamber:
+     - Federal: U.S. House or U.S. Senate
+     - State: State House, State Senate, Assembly, House of Delegates, etc.
+   - **Session**: Congressional session (e.g., "119") or state session (e.g., "2023-2024")
+   - **State**: For state bills only - select the state where the bill was introduced
    - **Status**: Current legislative status
    - **URL**: Link to official bill text or legislative page
+   - **Related Bill**: Optional - link to companion bill in the other chamber
 
-3. **Bill Relationship**:
+3. **Bill Display**:
+
+   - Federal bills display as: "H.R. 123" or "S. 456"
+   - State bills display as: "California AB 789" or "Texas HB 100"
+
+4. **Bill Relationship**:
    - **Position**: Support, Oppose, or Monitor
    - **Priority**: How central this bill is to the campaign
    - **Notes**: Internal notes about the bill's relevance
@@ -113,9 +124,20 @@ A campaign in Coalition Builder represents a coordinated effort to advocate for 
 **When Campaigns Involve Multiple Bills**:
 
 - Use consistent naming conventions
-- Clearly indicate the relationship between bills
+- Clearly indicate the relationship between bills (especially companion bills)
 - Set appropriate priorities for each bill
 - Keep bill status information current
+- Track both federal and state versions of similar legislation
+- Use the "Related Bill" field to link companion bills across chambers
+
+**Multi-Level Campaign Coordination**:
+
+When your campaign involves both federal and state legislation:
+
+- Create separate bill entries for each level of government
+- Clearly distinguish between federal and state bills in your campaign materials
+- Track different legislative calendars (Congress vs. state legislatures)
+- Note that state legislative sessions vary significantly in timing and duration
 
 **Bill Status Tracking**:
 
@@ -125,6 +147,8 @@ A campaign in Coalition Builder represents a coordinated effort to advocate for 
 - **Passed**: Approved by chamber
 - **Signed**: Enacted into law
 - **Failed**: Did not advance
+
+Note: State legislative processes may have additional or different status options depending on the state.
 
 ## Campaign Status Management
 
