@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import StyledComponentsRegistry from "../lib/registry";
 
 const org = process.env.ORGANIZATION_NAME || "Coalition Builder";
 
@@ -29,9 +30,11 @@ export default function RootLayout({
             but we include it explicitly to ensure it's present for SSR tests */}
       </head>
       <body>
-        <div data-ssr="true" id="app-root">
-          {children}
-        </div>
+        <StyledComponentsRegistry>
+          <div data-ssr="true" id="app-root">
+            {children}
+          </div>
+        </StyledComponentsRegistry>
       </body>
     </html>
   );

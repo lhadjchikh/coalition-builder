@@ -1,5 +1,4 @@
 import React from "react";
-import Link from "next/link";
 import { ssrApiClient } from "../lib/frontend-api-adapter";
 import type {
   Campaign,
@@ -7,6 +6,13 @@ import type {
   ContentBlock as ContentBlockType,
 } from "@frontend/types";
 import type { Metadata } from "next";
+import {
+  fetchHomepage,
+  fetchCampaigns,
+  getFallbackHomepage,
+} from "../../shared/utils/homepage-data";
+import { generateCSSVariables } from "../../shared/utils/theme";
+import SharedHomePageLayout from "../../shared/components/SharedHomePageLayout";
 
 // Import shared components
 import HeroSection from "@frontend/components/HeroSection";
@@ -70,206 +76,26 @@ export default async function HomePage() {
     console.error("Error fetching campaigns:", campaignsResult.reason);
   }
 
-  // Fallback homepage data if API fails (same as frontend)
-  const fallbackHomepage: HomePageType = {
-    id: 0,
-    organization_name:
-      process.env.NEXT_PUBLIC_ORGANIZATION_NAME || "Coalition Builder",
-    tagline:
-      process.env.NEXT_PUBLIC_TAGLINE ||
-      "Building strong advocacy partnerships",
-    hero_title: "Welcome to Coalition Builder",
-    hero_subtitle: "Empowering advocates to build strong policy coalitions",
-    hero_background_image: "",
-    about_section_title: "About Our Mission",
-    about_section_content:
-      "We believe in the power of collective action to drive meaningful policy change.",
-    cta_title: "Get Involved",
-    cta_content: "Join our coalition and help make a difference.",
-    cta_button_text: "Learn More",
-    cta_button_url: "",
-    contact_email: "info@example.org",
-    contact_phone: "",
-    facebook_url: "",
-    twitter_url: "",
-    instagram_url: "",
-    linkedin_url: "",
-    campaigns_section_title: "Policy Campaigns",
-    campaigns_section_subtitle: "",
-    show_campaigns_section: true,
-    content_blocks: [],
-    is_active: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-
-  const currentHomepage = homepage || fallbackHomepage;
+  const currentHomepage = homepage || getFallbackHomepage();
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Development notice when using fallback data */}
-      {process.env.NODE_ENV === "development" && homepageError && (
-        <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4">
-          <p className="font-bold">Development Notice</p>
-          <p className="text-sm">
-            Using fallback homepage data due to API error: {homepageError}
-          </p>
-        </div>
-      )}
+    <>
+      {/* Inject theme CSS variables for SSR */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: generateCSSVariables(currentHomepage.theme),
+        }}
+      />
 
-      {/* Hero Section */}
-      <HeroSection homepage={currentHomepage} />
-
-      {/* About Section */}
-      {currentHomepage.about_section_content && (
-        <section className="py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-                {currentHomepage.about_section_title}
-              </h2>
-              <div className="mt-6 text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: currentHomepage.about_section_content,
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Dynamic Content Blocks */}
-      {currentHomepage.content_blocks &&
-        currentHomepage.content_blocks.length > 0 && (
-          <>
-            {currentHomepage.content_blocks
-              .filter((block: ContentBlockType) => block.is_visible)
-              .sort(
-                (a: ContentBlockType, b: ContentBlockType) => a.order - b.order,
-              )
-              .map((block: ContentBlockType) => (
-                <ContentBlock key={block.id} block={block} />
-              ))}
-          </>
-        )}
-
-      {/* Campaigns Section */}
-      {currentHomepage.show_campaigns_section && (
-        <section className="py-16 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-                {currentHomepage.campaigns_section_title}
-              </h2>
-              {currentHomepage.campaigns_section_subtitle && (
-                <p className="mt-4 text-xl text-gray-600">
-                  {currentHomepage.campaigns_section_subtitle}
-                </p>
-              )}
-            </div>
-
-            <div className="mt-12">
-              {campaignsError && !campaigns.length ? (
-                <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
-                  <p>Unable to load campaigns at this time.</p>
-                  {process.env.NODE_ENV === "development" && (
-                    <p className="text-sm mt-1">{campaignsError}</p>
-                  )}
-                </div>
-              ) : campaigns.length === 0 ? (
-                <div className="text-center text-gray-600">
-                  <p>No campaigns are currently available.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {campaigns.map((campaign) => (
-                    <div
-                      key={campaign.id}
-                      className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
-                    >
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        {campaign.title}
-                      </h3>
-                      <p className="text-gray-600 mb-4">{campaign.summary}</p>
-                      <Link
-                        href={`/campaigns/${campaign.name}`}
-                        className="text-blue-600 hover:text-blue-800 font-medium"
-                      >
-                        Learn more →
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Call to Action Section */}
-      {currentHomepage.cta_content && (
-        <section className="py-16 bg-blue-600">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold text-white sm:text-4xl">
-              {currentHomepage.cta_title}
-            </h2>
-            <p className="mt-4 text-xl text-blue-100">
-              {currentHomepage.cta_content}
-            </p>
-            {currentHomepage.cta_button_url &&
-              currentHomepage.cta_button_text && (
-                <div className="mt-8">
-                  <a
-                    href={currentHomepage.cta_button_url}
-                    className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-gray-50 transition-colors duration-200"
-                  >
-                    {currentHomepage.cta_button_text}
-                  </a>
-                </div>
-              )}
-          </div>
-        </section>
-      )}
-
-      {/* Footer */}
-      <footer className="bg-gray-900">
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold text-white mb-4">
-              {currentHomepage.organization_name}
-            </h3>
-            <p className="text-gray-300 mb-6">{currentHomepage.tagline}</p>
-
-            {/* Contact Information */}
-            <div className="mb-6">
-              <p className="text-gray-300">
-                <a
-                  href={`mailto:${currentHomepage.contact_email}`}
-                  className="hover:text-white transition-colors"
-                >
-                  {currentHomepage.contact_email}
-                </a>
-                {currentHomepage.contact_phone && (
-                  <>
-                    {" • "}
-                    <a
-                      href={`tel:${currentHomepage.contact_phone}`}
-                      className="hover:text-white transition-colors"
-                    >
-                      {currentHomepage.contact_phone}
-                    </a>
-                  </>
-                )}
-              </p>
-            </div>
-
-            {/* Social Links */}
-            <SocialLinks homepage={currentHomepage} />
-          </div>
-        </div>
-      </footer>
-    </div>
+      <SharedHomePageLayout
+        homepage={currentHomepage}
+        campaigns={campaigns}
+        homepageError={homepageError}
+        campaignsError={campaignsError}
+        HeroComponent={HeroSection}
+        ContentBlockComponent={ContentBlock}
+        SocialLinksComponent={SocialLinks}
+      />
+    </>
   );
 }
