@@ -95,6 +95,44 @@ npm run build
 - Configure email delivery
 - Enable security headers
 
+## Post-Deployment Setup
+
+After deploying Coalition Builder, complete the initial setup:
+
+**Automated on startup:**
+
+- ✅ Database users and PostGIS setup (`init-db.sh`)
+- ✅ Django migrations (`entrypoint.sh`)
+- ✅ Static file collection (`entrypoint.sh`)
+
+### 1. Create Django Admin User
+
+Create a Django superuser to access the admin interface:
+
+```bash
+# Docker deployment
+docker compose run --rm api python manage.py createsuperuser
+
+# AWS deployment (using ECS exec)
+aws ecs execute-command --cluster coalition-cluster \
+  --task <task-id> --container api \
+  --command "python manage.py createsuperuser" --interactive
+```
+
+### 2. Configure Initial Theme
+
+1. Access Django admin at `/admin/`
+2. Navigate to **Core** → **Themes** → **Add Theme**
+3. Configure your organization's colors and branding
+4. Mark the theme as "Active"
+
+### 3. Load Sample Data (Optional)
+
+```bash
+# Load sample campaigns and content
+docker compose run --rm api python manage.py loaddata sample_data/fixtures.json
+```
+
 ## Health Monitoring
 
 All deployments include health check endpoints:

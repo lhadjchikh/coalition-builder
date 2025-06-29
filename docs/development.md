@@ -114,6 +114,109 @@ Key models include:
 - **PolicyCampaign**: Organizes advocacy campaigns with endorsement support
 - **Stakeholder**: Stores supporter information with geographic data
 - **Endorsement**: Handles campaign endorsements with verification workflow
+- **Theme**: Manages visual branding and customization settings
+
+## Theme System Development
+
+Coalition Builder includes a comprehensive theme system for visual customization:
+
+### Architecture
+
+- **Backend**: Django model with color validation and CSS generation
+- **Frontend**: Styled-components with theme provider for React components
+- **SSR**: Full theme support in Next.js server-side rendering
+- **API**: REST endpoints for programmatic theme management
+
+### Key Components
+
+#### Backend (`/backend/coalition/core/`)
+
+- `models.py`: Theme model with hex color validation
+- `theme_service.py`: CSS variable generation service
+- `/api/themes.py`: Theme management API endpoints
+
+#### Frontend (`/frontend/src/`)
+
+- `contexts/ThemeContext.tsx`: React context for theme data
+- `contexts/StyledThemeProvider.tsx`: Styled-components theme provider
+- `styles/theme.ts`: Theme type definitions and utilities
+- `components/styled/`: Reusable styled components library
+
+#### Shared (`/shared/`)
+
+- `utils/theme.ts`: Common theme utilities for both frontend and SSR
+- `components/`: Shared components with theme support
+
+### Development Guidelines
+
+#### Adding Styled Components
+
+```typescript
+import styled from "styled-components";
+
+const MyComponent = styled.div<{ variant?: "primary" | "secondary" }>`
+  background-color: ${(props) =>
+    props.variant === "secondary"
+      ? props.theme.colors.secondary
+      : props.theme.colors.primary};
+  color: ${(props) => props.theme.colors.white};
+  padding: ${(props) => props.theme.spacing[4]};
+  border-radius: ${(props) => props.theme.radii.md};
+`;
+```
+
+#### Using Theme Context
+
+```typescript
+import { useTheme } from '../contexts/ThemeContext';
+
+const MyComponent = () => {
+  const { theme, loading } = useTheme();
+
+  if (loading) return <div>Loading theme...</div>;
+
+  return (
+    <div style={{ color: theme?.primary_color }}>
+      Themed content
+    </div>
+  );
+};
+```
+
+#### API Integration
+
+```typescript
+// Fetch active theme
+const response = await fetch("/api/theme/active/");
+const theme = await response.json();
+
+// Update theme
+const updatedTheme = await fetch(`/api/theme/${id}/`, {
+  method: "PUT",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(themeData),
+});
+```
+
+### Testing Themes
+
+#### Backend Tests
+
+- Model validation (hex colors, required fields)
+- CSS generation functionality
+- API endpoint responses
+
+#### Frontend Tests
+
+- Theme provider functionality
+- Component rendering with different themes
+- API integration tests
+
+#### Integration Tests
+
+- End-to-end theme switching
+- SSR theme rendering
+- CSS variable generation
 
 ## Component Development
 

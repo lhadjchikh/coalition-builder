@@ -9,12 +9,13 @@ Coalition Builder enables organizations to:
 - **Build Coalitions**: Manage advocacy campaigns and stakeholder engagement
 - **Collect Endorsements**: Streamlined collection with verification and moderation
 - **Manage Content**: Dynamic homepage with customizable content blocks
+- **Custom Branding**: Comprehensive theme system for visual customization
 - **Geographic Intelligence**: PostGIS integration for address geocoding and district assignment
 
 ## Architecture
 
 - **Backend**: Django API with PostgreSQL/PostGIS
-- **Frontend**: React with TypeScript
+- **Frontend**: React with TypeScript and styled-components
 - **SSR**: Next.js for SEO optimization (optional)
 - **Infrastructure**: Terraform-managed AWS deployment
 
@@ -81,6 +82,7 @@ This architecture allows organizations to start simple (Django + React SPA) and 
 
 Comprehensive guides for managing your coalition platform:
 
+- **[Theme Management](user-guides/theme-management.md)** - Customize branding, colors, and visual appearance
 - **[Homepage Management](user-guides/homepage-management.md)** - Configure organization branding and homepage content
 - **[Campaign Management](user-guides/campaign-management.md)** - Create and manage policy advocacy campaigns
 - **[Stakeholder Management](user-guides/stakeholder-management.md)** - Organize and engage with supporters and partners
