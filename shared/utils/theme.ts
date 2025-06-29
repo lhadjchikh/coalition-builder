@@ -3,26 +3,41 @@
 export interface Theme {
   id: number;
   name: string;
+  description?: string;
+
+  // Brand colors
   primary_color: string;
   secondary_color: string;
   accent_color: string;
+
+  // Background colors
   background_color: string;
-  background_section_color: string;
-  background_card_color: string;
-  text_heading_color: string;
-  text_body_color: string;
-  text_muted_color: string;
-  text_link_color: string;
-  text_link_hover_color: string;
-  success_color: string;
-  warning_color: string;
-  error_color: string;
-  info_color: string;
+  section_background_color: string;
+  card_background_color: string;
+
+  // Text colors
+  heading_color: string;
+  body_text_color: string;
+  muted_text_color: string;
+  link_color: string;
+  link_hover_color: string;
+
+  // Typography
   heading_font_family: string;
   body_font_family: string;
-  base_font_size: number;
+  font_size_base: number;
+  font_size_small: number;
+  font_size_large: number;
+
+  // Brand assets
   logo_url?: string;
+  logo_alt_text?: string;
   favicon_url?: string;
+
+  // Custom CSS
+  custom_css?: string;
+
+  // Status
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -30,28 +45,29 @@ export interface Theme {
 
 export const DEFAULT_THEME: Omit<Theme, "id" | "created_at" | "updated_at"> = {
   name: "Default Theme",
+  description: "Default theme configuration",
   primary_color: "#2563eb",
   secondary_color: "#64748b",
   accent_color: "#f59e0b",
   background_color: "#ffffff",
-  background_section_color: "#f8fafc",
-  background_card_color: "#ffffff",
-  text_heading_color: "#1f2937",
-  text_body_color: "#374151",
-  text_muted_color: "#6b7280",
-  text_link_color: "#2563eb",
-  text_link_hover_color: "#1d4ed8",
-  success_color: "#10b981",
-  warning_color: "#f59e0b",
-  error_color: "#ef4444",
-  info_color: "#3b82f6",
+  section_background_color: "#f8fafc",
+  card_background_color: "#ffffff",
+  heading_color: "#1f2937",
+  body_text_color: "#374151",
+  muted_text_color: "#6b7280",
+  link_color: "#2563eb",
+  link_hover_color: "#1d4ed8",
   heading_font_family:
     'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
   body_font_family:
     'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
-  base_font_size: 16,
+  font_size_base: 1.0,
+  font_size_small: 0.875,
+  font_size_large: 1.125,
   logo_url: "",
+  logo_alt_text: "",
   favicon_url: "",
+  custom_css: "",
   is_active: true,
 };
 
@@ -81,25 +97,20 @@ export function generateCSSVariables(theme: Theme | null): string {
       --theme-accent-dark: ${darkenColor(currentTheme.accent_color, 0.1)};
       
       --theme-bg: ${currentTheme.background_color};
-      --theme-bg-section: ${currentTheme.background_section_color};
-      --theme-bg-card: ${currentTheme.background_card_color};
+      --theme-bg-section: ${currentTheme.section_background_color};
+      --theme-bg-card: ${currentTheme.card_background_color};
       
-      --theme-text-heading: ${currentTheme.text_heading_color};
-      --theme-text-body: ${currentTheme.text_body_color};
-      --theme-text-muted: ${currentTheme.text_muted_color};
-      --theme-text-link: ${currentTheme.text_link_color};
-      --theme-text-link-hover: ${currentTheme.text_link_hover_color};
-      
-      --theme-success: ${currentTheme.success_color};
-      --theme-warning: ${currentTheme.warning_color};
-      --theme-error: ${currentTheme.error_color};
-      --theme-info: ${currentTheme.info_color};
+      --theme-text-heading: ${currentTheme.heading_color};
+      --theme-text-body: ${currentTheme.body_text_color};
+      --theme-text-muted: ${currentTheme.muted_text_color};
+      --theme-text-link: ${currentTheme.link_color};
+      --theme-text-link-hover: ${currentTheme.link_hover_color};
       
       --theme-font-heading: ${currentTheme.heading_font_family};
       --theme-font-body: ${currentTheme.body_font_family};
-      --theme-font-size-base: ${currentTheme.base_font_size}px;
-      --theme-font-size-small: ${currentTheme.base_font_size * 0.875}px;
-      --theme-font-size-large: ${currentTheme.base_font_size * 1.125}px;
+      --theme-font-size-base: ${currentTheme.font_size_base}rem;
+      --theme-font-size-small: ${currentTheme.font_size_small}rem;
+      --theme-font-size-large: ${currentTheme.font_size_large}rem;
     }
   `.trim();
 }
