@@ -165,6 +165,51 @@ class ContentBlockOut(Schema):
     updated_at: datetime
 
 
+class ThemeOut(Schema):
+    """Response schema for Theme model"""
+
+    id: int
+    name: str
+    description: str | None = None
+
+    # Brand colors
+    primary_color: str
+    secondary_color: str
+    accent_color: str
+
+    # Background colors
+    background_color: str
+    section_background_color: str
+    card_background_color: str
+
+    # Text colors
+    heading_color: str
+    body_text_color: str
+    muted_text_color: str
+    link_color: str
+    link_hover_color: str
+
+    # Typography
+    heading_font_family: str
+    body_font_family: str
+    font_size_base: float
+    font_size_small: float
+    font_size_large: float
+
+    # Brand assets
+    logo_url: str | None = None
+    logo_alt_text: str | None = None
+    favicon_url: str | None = None
+
+    # Custom CSS
+    custom_css: str | None = None
+
+    # Status
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+
 class HomePageOut(Schema):
     id: int
     # Organization info
@@ -204,6 +249,9 @@ class HomePageOut(Schema):
     # Content blocks
     content_blocks: list[ContentBlockOut]
 
+    # Theme information
+    theme: ThemeOut | None = None
+
     # Meta information
     is_active: bool
     created_at: datetime
@@ -213,6 +261,12 @@ class HomePageOut(Schema):
     def resolve_content_blocks(obj: "HomePage") -> "QuerySet[ContentBlock]":
         """Only return visible content blocks, ordered by order field"""
         return obj.content_blocks.filter(is_visible=True).order_by("order")
+
+    @staticmethod
+    def resolve_theme(obj: "HomePage") -> "ThemeOut | None":
+        """Get the effective theme for this homepage"""
+        theme = obj.get_theme()
+        return theme if theme else None
 
 
 # Spam prevention metadata schema with comprehensive validation

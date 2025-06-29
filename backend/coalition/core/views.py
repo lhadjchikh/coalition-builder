@@ -10,6 +10,9 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 
+from .models import Theme
+from .theme_service import ThemeService
+
 logger = logging.getLogger(__name__)
 
 
@@ -294,3 +297,31 @@ def health_check(request: HttpRequest) -> JsonResponse:
         status=status_code,
         headers={"Cache-Control": "no-store, max-age=0"},
     )
+
+
+def theme_css(request: HttpRequest, theme_id: int = None) -> HttpResponse:
+    """
+    Serve dynamic CSS for a specific theme or the active theme.
+
+    This view generates CSS on-the-fly based on theme configuration.
+    Useful for including in HTML templates via <link> tags.
+
+    Usage:
+        /theme.css - Serves CSS for the active theme
+        /theme/{id}.css - Serves CSS for a specific theme
+    """
+    if theme_id:
+        try:
+            theme = Theme.objects.get(id=theme_id)
+        except Theme.DoesNotExist:
+            # Return empty CSS for non-existent themes
+            theme = None
+    else:
+        theme = Theme.get_active()
+
+    return ThemeService.get_theme_css_response(theme)
+
+
+def active_theme_css(request: HttpRequest) -> HttpResponse:
+    """Serve CSS for the currently active theme"""
+    return theme_css(request)

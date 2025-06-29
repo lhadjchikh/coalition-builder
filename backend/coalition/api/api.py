@@ -10,6 +10,7 @@ from . import (
     homepage,
     legislators,
     stakeholders,
+    themes,
 )
 
 # Enable CSRF protection for all endpoints by default
@@ -22,6 +23,7 @@ api.add_router("/endorsements/", endorsements.router)
 api.add_router("/legislators/", legislators.router)
 api.add_router("/homepage/", homepage.router)
 api.add_router("/content-blocks/", content_blocks.router)
+api.add_router("/themes/", themes.router)
 
 
 @api.get("/health/", tags=["Health"])
