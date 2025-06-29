@@ -41,7 +41,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({ onCampaignSelect }) => {
             <div
               key={campaign.id}
               className="campaign-card"
-              data-testid={`campaign-${campaign.id}`}
+              data-testid={`campaigns-list-campaign-${campaign.id}`}
             >
               <h3>{campaign.title}</h3>
               <p className="campaign-summary">{campaign.summary}</p>

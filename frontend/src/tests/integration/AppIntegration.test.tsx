@@ -88,13 +88,13 @@ describe('App Integration Test', () => {
     // Check that the API was called
     expect(API.getCampaigns).toHaveBeenCalled();
 
-    // Verify both campaigns are displayed using test IDs
-    expect(screen.getByTestId('campaign-1')).toBeInTheDocument();
-    expect(screen.getByTestId('campaign-2')).toBeInTheDocument();
+    // Verify both campaigns are displayed using test IDs from CampaignsList
+    expect(screen.getByTestId('campaigns-list-campaign-1')).toBeInTheDocument();
+    expect(screen.getByTestId('campaigns-list-campaign-2')).toBeInTheDocument();
 
     // Verify both campaigns are rendered with their content
-    const campaign1 = screen.getByTestId('campaign-1');
-    const campaign2 = screen.getByTestId('campaign-2');
+    const campaign1 = screen.getByTestId('campaigns-list-campaign-1');
+    const campaign2 = screen.getByTestId('campaigns-list-campaign-2');
     expect(campaign1).toBeInTheDocument();
     expect(campaign2).toBeInTheDocument();
   });
@@ -114,7 +114,7 @@ describe('App Integration Test', () => {
     // Verify that app title and campaigns list exist together
     expect(screen.getByText('Coalition Builder')).toBeInTheDocument();
     expect(screen.getByText('Policy Campaigns')).toBeInTheDocument();
-    expect(screen.getByTestId('campaign-1')).toBeInTheDocument();
+    expect(screen.getByTestId('campaigns-list-campaign-1')).toBeInTheDocument();
   });
 
   test('handles API error in the app context', async () => {

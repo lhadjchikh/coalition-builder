@@ -348,7 +348,11 @@ const StyledHomePage: React.FC<StyledHomePageProps> = ({ onCampaignSelect }) => 
                 ) : (
                   <CampaignGrid>
                     {campaigns.map(campaign => (
-                      <CampaignCard key={campaign.id} variant="elevated">
+                      <CampaignCard
+                        key={campaign.id}
+                        variant="elevated"
+                        data-testid={`styled-homepage-campaign-${campaign.id}`}
+                      >
                         <CampaignContent>
                           <CampaignTitle>{campaign.title}</CampaignTitle>
                           <CampaignSummary>{campaign.summary}</CampaignSummary>
