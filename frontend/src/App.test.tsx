@@ -127,7 +127,7 @@ describe('App component', () => {
     expect(API.getCampaigns).toHaveBeenCalled();
 
     // Verify campaign data is displayed in campaigns list
-    expect(screen.getByTestId('campaign-1')).toBeInTheDocument();
+    expect(screen.getByTestId('campaigns-list-campaign-1')).toBeInTheDocument();
   });
 
   test('handles API errors gracefully', async () => {
