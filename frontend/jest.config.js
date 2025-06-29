@@ -4,6 +4,7 @@ module.exports = {
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '\\.(gif|ttf|eot|svg|png)$': '<rootDir>/src/__mocks__/fileMock.js',
+    '@shared/(.*)': '<rootDir>/../shared/$1',
   },
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest',
