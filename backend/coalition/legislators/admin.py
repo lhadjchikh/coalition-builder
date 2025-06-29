@@ -15,6 +15,7 @@ class LegislatorAdmin(admin.ModelAdmin):
 
     list_display = (
         "display_name_short",
+        "level",
         "party",
         "chamber",
         "state",
@@ -24,29 +25,40 @@ class LegislatorAdmin(admin.ModelAdmin):
         "cosponsored_bills_count",
     )
 
-    list_filter = ("chamber", "party", "state", "in_office", "is_senior")
+    list_filter = ("level", "chamber", "party", "state", "in_office", "is_senior")
 
-    search_fields = ("first_name", "last_name", "bioguide_id", "state")
+    search_fields = ("first_name", "last_name", "bioguide_id", "state_id", "state")
 
     list_editable = ("in_office",)
 
-    readonly_fields = ("bioguide_id",)
-
     fieldsets = (
         (
-            "Personal Information",
-            {"fields": ("bioguide_id", "first_name", "last_name")},
+            "Basic Information",
+            {"fields": ("level", "first_name", "last_name", "party", "in_office")},
         ),
         (
-            "Congressional Information",
+            "Federal Information",
+            {
+                "fields": ("bioguide_id", "is_senior"),
+                "classes": ("collapse",),
+                "description": "Information specific to federal legislators",
+            },
+        ),
+        (
+            "State Information",
+            {
+                "fields": ("state_id", "state_region"),
+                "classes": ("collapse",),
+                "description": "Information specific to state legislators",
+            },
+        ),
+        (
+            "Legislative Information",
             {
                 "fields": (
                     "chamber",
                     "state",
                     "district",
-                    "is_senior",
-                    "party",
-                    "in_office",
                 ),
             },
         ),

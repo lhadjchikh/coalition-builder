@@ -14,8 +14,17 @@ class BillInline(admin.TabularInline):
 
     model = Bill
     extra = 0
-    fields = ("number", "title", "chamber", "congress_session", "status", "is_primary")
-    readonly_fields = ("congress_session",)
+    fields = (
+        "level",
+        "title",
+        "chamber",
+        "number",
+        "session",
+        "state",
+        "introduced_date",
+        "status",
+        "is_primary",
+    )
 
 
 @admin.register(PolicyCampaign)
@@ -91,19 +100,22 @@ class BillAdmin(admin.ModelAdmin):
     """Admin interface for Bill model"""
 
     list_display = (
-        "number",
-        "title",
         "policy",
+        "level",
         "chamber",
-        "congress_session",
+        "number",
+        "session",
+        "state",
+        "title",
         "status",
         "is_primary",
         "introduced_date",
     )
 
     list_filter = (
+        "level",
         "chamber",
-        "congress_session",
+        "session",
         "is_primary",
         "policy",
         "introduced_date",
@@ -113,7 +125,7 @@ class BillAdmin(admin.ModelAdmin):
 
     list_editable = ("is_primary",)
 
-    readonly_fields = ("congress_session",)
+    readonly_fields = ()
 
     filter_horizontal = ("sponsors", "cosponsors")
 
@@ -123,21 +135,18 @@ class BillAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "policy",
+                    "level",
+                    "chamber",
                     "number",
                     "title",
-                    "chamber",
+                    "session",
+                    "state",
                     "introduced_date",
                     "status",
                     "url",
                     "is_primary",
+                    "related_bill",
                 ),
-            },
-        ),
-        (
-            "Congressional Information",
-            {
-                "fields": ("congress_session",),
-                "classes": ("collapse",),
             },
         ),
         (
