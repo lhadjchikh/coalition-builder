@@ -24,7 +24,7 @@ Coalition Builder uses a flexible frontend architecture that supports both tradi
 
 #### How the Frontend Works
 
-The `/frontend` directory contains a React application built with Vite that serves as the primary user interface. This single codebase works in two different deployment modes:
+The `/frontend` directory contains a React application built with Webpack that serves as the primary user interface. This single codebase works in two different deployment modes:
 
 **Without SSR (Default Mode):**
 
