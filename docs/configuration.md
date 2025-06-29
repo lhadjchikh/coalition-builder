@@ -43,6 +43,23 @@ ORG_TAGLINE="Your mission statement"
 CONTACT_EMAIL="contact@yourdomain.com"
 ```
 
+### Theme System
+
+The theme system allows for visual customization through the admin interface. Optional fallback values:
+
+```bash
+# Default theme colors (used when no active theme exists)
+DEFAULT_PRIMARY_COLOR="#2563eb"
+DEFAULT_SECONDARY_COLOR="#64748b"
+DEFAULT_ACCENT_COLOR="#059669"
+
+# Organization branding for fallback theme
+DEFAULT_LOGO_URL="https://example.com/logo.png"
+DEFAULT_FAVICON_URL="https://example.com/favicon.ico"
+```
+
+**Note**: These variables provide fallbacks only. The primary theme configuration is done through the Django admin interface or Theme API.
+
 ## Complete Reference
 
 For a comprehensive list of all environment variables, see:

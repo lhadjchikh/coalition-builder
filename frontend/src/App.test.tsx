@@ -10,6 +10,7 @@ jest.mock('./services/api', () => ({
     getCampaigns: jest.fn(),
     getEndorsers: jest.fn(),
     getLegislators: jest.fn(),
+    getHomepage: jest.fn(),
     getBaseUrl: jest.fn(() => ''),
   },
 }));
@@ -23,8 +24,39 @@ describe('App component', () => {
         name: 'test-campaign',
         title: 'Test Campaign',
         summary: 'This is a test campaign',
+        active: true,
+        created_at: '2024-01-01T00:00:00Z',
       },
     ]);
+
+    // Mock homepage API to prevent errors in components that call it
+    (API.getHomepage as jest.Mock).mockResolvedValue({
+      id: 1,
+      organization_name: 'Test Coalition',
+      tagline: 'Building partnerships',
+      hero_title: 'Welcome to Coalition Builder',
+      hero_subtitle: 'Building strong advocacy partnerships',
+      hero_background_image: '',
+      about_section_title: 'About Our Mission',
+      about_section_content: 'Test content',
+      cta_title: 'Get Involved',
+      cta_content: 'Join our coalition',
+      cta_button_text: 'Join Now',
+      cta_button_url: '/join',
+      contact_email: 'contact@test.org',
+      contact_phone: '',
+      facebook_url: '',
+      twitter_url: '',
+      instagram_url: '',
+      linkedin_url: '',
+      campaigns_section_title: 'Our Campaigns',
+      campaigns_section_subtitle: 'Current initiatives',
+      show_campaigns_section: true,
+      content_blocks: [],
+      is_active: true,
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-01T00:00:00Z',
+    });
   });
 
   afterEach(() => {
@@ -81,6 +113,8 @@ describe('App component', () => {
         name: 'test-campaign',
         title: 'Test Campaign',
         summary: 'This is a test campaign',
+        active: true,
+        created_at: '2024-01-01T00:00:00Z',
       },
     ]);
 
@@ -89,11 +123,11 @@ describe('App component', () => {
       expect(screen.getByTestId('campaigns-list')).toBeInTheDocument();
     });
 
-    // Verify API was called
-    expect(API.getCampaigns).toHaveBeenCalledTimes(1);
+    // Verify API was called (may be called multiple times by different components)
+    expect(API.getCampaigns).toHaveBeenCalled();
 
-    // Verify campaign data is displayed
-    expect(screen.getByText('Test Campaign')).toBeInTheDocument();
+    // Verify campaign data is displayed in campaigns list
+    expect(screen.getByTestId('campaigns-list-campaign-1')).toBeInTheDocument();
   });
 
   test('handles API errors gracefully', async () => {

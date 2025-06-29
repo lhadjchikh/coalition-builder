@@ -25,6 +25,9 @@ COPY ssr/ .
 COPY frontend/src/types ./frontend/src/types
 COPY frontend/src/components ./frontend/src/components
 COPY frontend/src/services ./frontend/src/services
+COPY frontend/src/contexts ./frontend/src/contexts
+COPY frontend/src/styles ./frontend/src/styles
+COPY shared/ ../shared/
 
 RUN mkdir -p ./public
 

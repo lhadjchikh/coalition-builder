@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import API from '../services/api';
 import { Campaign, HomePage as HomePageType } from '../types';
+import { Theme } from '@shared/utils/theme';
 import HeroSection from './HeroSection';
 import ContentBlock from './ContentBlock';
 import SocialLinks from './SocialLinks';
 import CampaignsList from './CampaignsList';
+import { ThemeProvider } from '../contexts/ThemeContext';
+import { ThemeStyles } from './ThemeStyles';
 
 interface HomePageProps {
   onCampaignSelect?: (campaign: Campaign) => void;
@@ -89,180 +92,190 @@ const HomePage: React.FC<HomePageProps> = ({ onCampaignSelect }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-theme-bg flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-theme-primary mx-auto"></div>
+          <p className="mt-4 text-theme-muted">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-white" role="main">
-      {/* Development notice when using fallback data */}
-      {process.env.NODE_ENV === 'development' && homepageError && (
-        <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4">
-          <p className="font-bold">Development Notice</p>
-          <p className="text-sm">Using fallback homepage data due to API error: {homepageError}</p>
-        </div>
-      )}
+    <ThemeProvider initialTheme={currentHomepage.theme}>
+      <ThemeStyles theme={currentHomepage.theme} />
+      <main className="min-h-screen bg-theme-bg" role="main">
+        {/* Development notice when using fallback data */}
+        {process.env.NODE_ENV === 'development' && homepageError && (
+          <div className="bg-theme-primary/10 border-l-4 border-theme-primary text-theme-primary p-4">
+            <p className="font-bold">Development Notice</p>
+            <p className="text-sm">
+              Using fallback homepage data due to API error: {homepageError}
+            </p>
+          </div>
+        )}
 
-      {/* Hero Section */}
-      <HeroSection homepage={currentHomepage} />
+        {/* Hero Section */}
+        <HeroSection homepage={currentHomepage} />
 
-      {/* About Section */}
-      {currentHomepage.about_section_content && (
-        <section className="py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-                {currentHomepage.about_section_title}
-              </h2>
-              <div className="mt-6 text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: currentHomepage.about_section_content,
-                  }}
-                />
+        {/* About Section */}
+        {currentHomepage.about_section_content && (
+          <section className="py-16 bg-theme-bg">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-theme-heading font-theme-heading sm:text-4xl">
+                  {currentHomepage.about_section_title}
+                </h2>
+                <div className="mt-6 text-xl text-theme-body font-theme-body max-w-4xl mx-auto leading-relaxed">
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: currentHomepage.about_section_content,
+                    }}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
-      {/* Dynamic Content Blocks */}
-      {currentHomepage.content_blocks && currentHomepage.content_blocks.length > 0 && (
-        <>
-          {currentHomepage.content_blocks
-            .filter(block => block.is_visible)
-            .sort((a, b) => a.order - b.order)
-            .map(block => (
-              <ContentBlock key={block.id} block={block} />
-            ))}
-        </>
-      )}
+        {/* Dynamic Content Blocks */}
+        {currentHomepage.content_blocks && currentHomepage.content_blocks.length > 0 && (
+          <>
+            {currentHomepage.content_blocks
+              .filter(block => block.is_visible)
+              .sort((a, b) => a.order - b.order)
+              .map(block => (
+                <ContentBlock key={block.id} block={block} />
+              ))}
+          </>
+        )}
 
-      {/* Campaigns Section */}
-      {currentHomepage.show_campaigns_section && (
-        <section className="py-16 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-                {currentHomepage.campaigns_section_title}
-              </h2>
-              {currentHomepage.campaigns_section_subtitle && (
-                <p className="mt-4 text-xl text-gray-600">
-                  {currentHomepage.campaigns_section_subtitle}
-                </p>
-              )}
-            </div>
-
-            <div className="mt-12">
-              {campaignsError && !campaigns.length ? (
-                <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
-                  <p>Unable to load campaigns at this time.</p>
-                  {process.env.NODE_ENV === 'development' && (
-                    <p className="text-sm mt-1">{campaignsError}</p>
-                  )}
-                </div>
-              ) : campaigns.length === 0 ? (
-                <div className="text-center text-gray-600">
-                  <p>No campaigns are currently available.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {campaigns.map(campaign => (
-                    <div
-                      key={campaign.id}
-                      className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
-                    >
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{campaign.title}</h3>
-                      <p className="text-gray-600 mb-4">{campaign.summary}</p>
-                      {onCampaignSelect ? (
-                        <button
-                          onClick={() => onCampaignSelect(campaign)}
-                          className="text-blue-600 hover:text-blue-800 font-medium"
-                        >
-                          Learn more →
-                        </button>
-                      ) : (
-                        <a
-                          href={`/campaigns/${campaign.name}`}
-                          className="text-blue-600 hover:text-blue-800 font-medium"
-                        >
-                          Learn more →
-                        </a>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Call to Action Section */}
-      {currentHomepage.cta_content && (
-        <section className="py-16 bg-blue-600">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold text-white sm:text-4xl">
-              {currentHomepage.cta_title}
-            </h2>
-            <p className="mt-4 text-xl text-blue-100">{currentHomepage.cta_content}</p>
-            {currentHomepage.cta_button_url && currentHomepage.cta_button_text && (
-              <div className="mt-8">
-                <a
-                  href={currentHomepage.cta_button_url}
-                  className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-gray-50 transition-colors duration-200"
-                >
-                  {currentHomepage.cta_button_text}
-                </a>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Footer */}
-      <footer className="bg-gray-900">
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold text-white mb-4">
-              {currentHomepage.organization_name}
-            </h3>
-            <p className="text-gray-300 mb-6">{currentHomepage.tagline}</p>
-
-            {/* Contact Information */}
-            <div className="mb-6">
-              <p className="text-gray-300">
-                <a
-                  href={`mailto:${currentHomepage.contact_email}`}
-                  className="hover:text-white transition-colors"
-                >
-                  {currentHomepage.contact_email}
-                </a>
-                {currentHomepage.contact_phone && (
-                  <>
-                    {' • '}
-                    <a
-                      href={`tel:${currentHomepage.contact_phone}`}
-                      className="hover:text-white transition-colors"
-                    >
-                      {currentHomepage.contact_phone}
-                    </a>
-                  </>
+        {/* Campaigns Section */}
+        {currentHomepage.show_campaigns_section && (
+          <section className="py-16 bg-theme-bg-section">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-theme-heading font-theme-heading sm:text-4xl">
+                  {currentHomepage.campaigns_section_title}
+                </h2>
+                {currentHomepage.campaigns_section_subtitle && (
+                  <p className="mt-4 text-xl text-theme-body font-theme-body">
+                    {currentHomepage.campaigns_section_subtitle}
+                  </p>
                 )}
-              </p>
-            </div>
+              </div>
 
-            {/* Social Links */}
-            <SocialLinks homepage={currentHomepage} />
+              <div className="mt-12">
+                {campaignsError && !campaigns.length ? (
+                  <div className="bg-theme-accent/10 border border-theme-accent text-theme-accent px-4 py-3 rounded">
+                    <p>Unable to load campaigns at this time.</p>
+                    {process.env.NODE_ENV === 'development' && (
+                      <p className="text-sm mt-1">{campaignsError}</p>
+                    )}
+                  </div>
+                ) : campaigns.length === 0 ? (
+                  <div className="text-center text-theme-muted">
+                    <p>No campaigns are currently available.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {campaigns.map(campaign => (
+                      <div
+                        key={campaign.id}
+                        data-testid={`homepage-campaign-${campaign.id}`}
+                        className="bg-theme-bg-card rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border border-theme-secondary/20"
+                      >
+                        <h3 className="text-lg font-semibold text-theme-heading font-theme-heading mb-2">
+                          {campaign.title}
+                        </h3>
+                        <p className="text-theme-body font-theme-body mb-4">{campaign.summary}</p>
+                        {onCampaignSelect ? (
+                          <button
+                            onClick={() => onCampaignSelect(campaign)}
+                            className="text-theme-text-link hover:text-theme-text-link-hover font-medium transition-colors"
+                          >
+                            Learn more →
+                          </button>
+                        ) : (
+                          <a
+                            href={`/campaigns/${campaign.name}`}
+                            className="text-theme-text-link hover:text-theme-text-link-hover font-medium transition-colors"
+                          >
+                            Learn more →
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Call to Action Section */}
+        {currentHomepage.cta_content && (
+          <section className="py-16 bg-theme-primary">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+              <h2 className="text-3xl font-bold text-white font-theme-heading sm:text-4xl">
+                {currentHomepage.cta_title}
+              </h2>
+              <p className="mt-4 text-xl text-white/90 font-theme-body">
+                {currentHomepage.cta_content}
+              </p>
+              {currentHomepage.cta_button_url && currentHomepage.cta_button_text && (
+                <div className="mt-8">
+                  <a
+                    href={currentHomepage.cta_button_url}
+                    className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-theme-primary bg-white hover:bg-theme-bg-section transition-colors duration-200"
+                  >
+                    {currentHomepage.cta_button_text}
+                  </a>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Footer */}
+        <footer className="bg-theme-secondary">
+          <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-white font-theme-heading mb-4">
+                {currentHomepage.organization_name}
+              </h3>
+              <p className="text-white/70 font-theme-body mb-6">{currentHomepage.tagline}</p>
+
+              {/* Contact Information */}
+              <div className="mb-6">
+                <p className="text-white/70 font-theme-body">
+                  <a
+                    href={`mailto:${currentHomepage.contact_email}`}
+                    className="hover:text-white transition-colors"
+                  >
+                    {currentHomepage.contact_email}
+                  </a>
+                  {currentHomepage.contact_phone && (
+                    <>
+                      {' • '}
+                      <a
+                        href={`tel:${currentHomepage.contact_phone}`}
+                        className="hover:text-white transition-colors"
+                      >
+                        {currentHomepage.contact_phone}
+                      </a>
+                    </>
+                  )}
+                </p>
+              </div>
+
+              {/* Social Links */}
+              <SocialLinks homepage={currentHomepage} />
+            </div>
           </div>
-        </div>
-      </footer>
-    </main>
+        </footer>
+      </main>
+    </ThemeProvider>
   );
 };
 

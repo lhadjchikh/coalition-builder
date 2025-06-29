@@ -21,13 +21,21 @@ from django.contrib import admin
 from django.urls import path
 
 from coalition.api.api import api
-from coalition.core.views import health_check, home, robots_txt
+from coalition.core.views import (
+    active_theme_css,
+    health_check,
+    home,
+    robots_txt,
+    theme_css,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", api.urls),
     path("health/", health_check, name="health_check"),
     path("robots.txt", robots_txt, name="robots_txt"),
+    path("theme.css", active_theme_css, name="active_theme_css"),
+    path("theme/<int:theme_id>.css", theme_css, name="theme_css"),
     path("", home, name="home"),
 ]
 

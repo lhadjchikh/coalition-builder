@@ -19,8 +19,8 @@ describe('EndorsementForm', () => {
     endorsement_statement: 'I support this test campaign',
     allow_endorsements: true,
     endorsement_form_instructions: 'Please fill out all fields',
-    created_at: '2024-01-01',
-    updated_at: '2024-01-01',
+    active: true,
+    created_at: '2024-01-01T00:00:00Z',
   };
 
   beforeEach(() => {

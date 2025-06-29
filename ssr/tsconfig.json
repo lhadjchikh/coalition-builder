@@ -22,7 +22,12 @@
       "@frontend/components/*": [
         "./frontend/src/components/*",
         "../frontend/src/components/*"
-      ]
+      ],
+      "@frontend/contexts/*": [
+        "./lib/contexts/*",
+        "../frontend/src/contexts/*"
+      ],
+      "@shared/*": ["../shared/*"]
     },
     "typeRoots": ["./node_modules/@types"],
     "types": ["node", "react", "react-dom"],
@@ -59,6 +64,12 @@
     "./frontend/src/**/*.test.ts",
     "./frontend/src/tests/**/*",
     "./frontend/src/App.test.tsx",
-    "./frontend/src/setupTests.ts"
+    "./frontend/src/setupTests.ts",
+    "./frontend/src/components/HomePage.tsx",
+    "./frontend/src/components/StyledHomePage.tsx",
+    "./frontend/src/components/styled/**/*",
+    "./frontend/src/contexts/StyledThemeProvider.tsx",
+    "./frontend/src/hooks/useStyledTheme.ts",
+    "./frontend/src/styles/styled.d.ts"
   ]
 }

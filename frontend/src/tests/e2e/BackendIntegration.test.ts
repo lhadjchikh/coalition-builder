@@ -32,6 +32,8 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
         name: 'test-campaign',
         title: 'Test Campaign',
         summary: 'This is a test campaign for integration testing',
+        active: true,
+        created_at: '2024-01-01T00:00:00Z',
       },
     ]);
 

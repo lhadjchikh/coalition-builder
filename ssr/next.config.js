@@ -51,6 +51,7 @@ const nextConfig = {
   // Optimize for production
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
+    styledComponents: true,
   },
 
   // Images configuration

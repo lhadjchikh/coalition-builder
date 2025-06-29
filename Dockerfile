@@ -57,8 +57,9 @@ COPY frontend/package.json /app/
 RUN npm cache clean --force && \
     npm install --legacy-peer-deps --no-audit --no-fund
 
-# Copy the rest of the frontend code
+# Copy the rest of the frontend code and shared directory
 COPY frontend/ /app/
+COPY shared/ /app/../shared/
 
 # Build the frontend
 RUN npm run build
