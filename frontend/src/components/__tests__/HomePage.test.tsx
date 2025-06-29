@@ -45,8 +45,8 @@ const mockCampaigns: Campaign[] = [
     title: 'Test Campaign',
     summary: 'A test campaign',
     description: 'Test description',
+    active: true,
     created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z',
   },
 ];
 

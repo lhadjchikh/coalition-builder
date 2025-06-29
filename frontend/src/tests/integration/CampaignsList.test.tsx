@@ -29,6 +29,8 @@ describe('CampaignsList Integration', () => {
         name: 'test-campaign',
         title: 'Test Campaign',
         summary: 'This is a test campaign',
+        active: true,
+        created_at: '2024-01-01T00:00:00Z',
       },
     ];
 
@@ -104,6 +106,8 @@ describe('CampaignsList Integration', () => {
         name: 'test-campaign',
         title: 'Test Campaign',
         summary: 'This is a test campaign',
+        active: true,
+        created_at: '2024-01-01T00:00:00Z',
       },
     ];
 
@@ -142,6 +146,8 @@ describe('CampaignsList Integration', () => {
         name: 'test-campaign',
         title: 'Test Campaign',
         summary: 'This is a test campaign',
+        active: true,
+        created_at: '2024-01-01T00:00:00Z',
       },
     ];
 

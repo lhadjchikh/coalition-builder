@@ -8,8 +8,8 @@ export interface Campaign {
   endorsement_statement?: string;
   allow_endorsements?: boolean;
   endorsement_form_instructions?: string;
-  created_at?: string;
-  updated_at?: string;
+  active: boolean;
+  created_at: string;
 }
 
 // Endorser type definition (matches StakeholderOut schema)
@@ -96,6 +96,50 @@ export interface EndorsementCreate {
   form_metadata?: SpamPreventionMetadata; // For spam prevention
 }
 
+// Theme and styling types
+export interface Theme {
+  id: number;
+  name: string;
+  description?: string;
+
+  // Brand colors
+  primary_color: string;
+  secondary_color: string;
+  accent_color: string;
+
+  // Background colors
+  background_color: string;
+  section_background_color: string;
+  card_background_color: string;
+
+  // Text colors
+  heading_color: string;
+  body_text_color: string;
+  muted_text_color: string;
+  link_color: string;
+  link_hover_color: string;
+
+  // Typography
+  heading_font_family: string;
+  body_font_family: string;
+  font_size_base: number;
+  font_size_small: number;
+  font_size_large: number;
+
+  // Brand assets
+  logo_url?: string;
+  logo_alt_text?: string;
+  favicon_url?: string;
+
+  // Custom CSS
+  custom_css?: string;
+
+  // Status
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 // Homepage and content management types
 export interface ContentBlock {
   id: number;
@@ -150,6 +194,9 @@ export interface HomePage {
 
   // Content blocks
   content_blocks: ContentBlock[];
+
+  // Theme information
+  theme?: Theme;
 
   // Meta information
   is_active: boolean;
