@@ -73,7 +73,7 @@ func (tc *TestConfig) GetTerraformOptions(vars map[string]interface{}) *terrafor
 		TerraformBinary: "terraform", // Explicitly use terraform instead of auto-detecting tofu
 		Vars:            defaultVars,
 		BackendConfig: map[string]interface{}{
-			"bucket":         fmt.Sprintf("coalition-terraform-state-%s", tc.getAccountID()),
+			"bucket":         fmt.Sprintf("coalition-terraform-state-%s", tc.mustGetAccountID()),
 			"key":            fmt.Sprintf("tests/terraform-test-%s.tfstate", tc.UniqueID),
 			"region":         tc.AWSRegion,
 			"encrypt":        true,
@@ -87,25 +87,35 @@ func (tc *TestConfig) GetTerraformOptions(vars map[string]interface{}) *terrafor
 }
 
 // getAccountID returns the AWS account ID for backend configuration
-func (tc *TestConfig) getAccountID() string {
+func (tc *TestConfig) getAccountID() (string, error) {
 	// First try from environment variable (set in CI)
 	if accountID := os.Getenv("AWS_ACCOUNT_ID"); accountID != "" {
-		return accountID
+		return accountID, nil
 	}
 
 	// Fallback to STS call (for local development)
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(tc.AWSRegion))
 	if err != nil {
-		log.Fatalf("Failed to load AWS configuration: %v. Please ensure AWS credentials are configured.", err)
+		return "", fmt.Errorf("failed to load AWS configuration: %v. Please ensure AWS credentials are configured", err)
 	}
 
 	stsClient := sts.NewFromConfig(cfg)
 	result, err := stsClient.GetCallerIdentity(context.TODO(), &sts.GetCallerIdentityInput{})
 	if err != nil {
-		log.Fatalf("Failed to get AWS caller identity: %v. Please ensure AWS credentials are valid.", err)
+		return "", fmt.Errorf("failed to get AWS caller identity: %v. Please ensure AWS credentials are valid", err)
 	}
 
-	return *result.Account
+	return *result.Account, nil
+}
+
+// mustGetAccountID is a helper that panics if getAccountID fails
+// This is used in contexts where we can't return an error
+func (tc *TestConfig) mustGetAccountID() string {
+	accountID, err := tc.getAccountID()
+	if err != nil {
+		log.Fatalf("Failed to get AWS account ID: %v", err)
+	}
+	return accountID
 }
 
 // GetModuleTerraformOptions returns terraform options for testing individual modules
