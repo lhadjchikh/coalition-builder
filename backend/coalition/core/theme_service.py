@@ -38,7 +38,7 @@ class ThemeService:
             # Cache for 1 hour, but allow revalidation
             response["Cache-Control"] = "max-age=3600, must-revalidate"
             # Use theme's updated_at timestamp for ETag
-            response["ETag"] = f'"{theme.id}-{theme.updated_at.timestamp()}"'
+            response["ETag"] = f'"{theme.id}-{int(theme.updated_at.timestamp())}"'
         else:
             # Don't cache if no theme
             response["Cache-Control"] = "no-cache"

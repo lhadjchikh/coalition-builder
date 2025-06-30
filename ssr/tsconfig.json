@@ -27,7 +27,7 @@
         "./lib/contexts/*",
         "../frontend/src/contexts/*"
       ],
-      "@shared/*": ["../shared/*"]
+      "@shared/*": ["./shared/*"]
     },
     "typeRoots": ["./node_modules/@types"],
     "types": ["node", "react", "react-dom"],
