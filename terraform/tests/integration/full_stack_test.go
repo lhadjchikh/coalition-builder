@@ -57,9 +57,9 @@ func TestFullStackDeploymentWithoutSSR(t *testing.T) {
 			}
 		}
 	}()
+	defer close(done)
 
 	terraform.InitAndApply(t, terraformOptions)
-	close(done)
 	t.Logf("Terraform init and apply completed at %s", time.Now().Format("15:04:05"))
 
 	// Validate VPC and networking
