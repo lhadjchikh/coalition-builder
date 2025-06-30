@@ -83,7 +83,9 @@ jobs:
       - name: Test SSR Docker build
         run: |
           echo "Testing SSR Docker build to catch deployment issues early..."
-          docker build -f Dockerfile.ssr -t test-ssr .
+          docker build -f Dockerfile.ssr -t test-ssr . \
+            --build-arg NEXT_PUBLIC_API_URL=http://localhost:8000 \
+            --build-arg API_URL=http://localhost:8000
           echo "✅ SSR Docker build successful"
 
       - name: Test SSR container startup
