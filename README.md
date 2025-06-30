@@ -76,7 +76,7 @@ docker compose exec api python scripts/create_test_data.py
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](docs/contributing/guide.md) for details.
+We welcome contributions! Please see our [Contributing Guide](docs/development.md#contributing) for details.
 
 ## 📄 License
 
