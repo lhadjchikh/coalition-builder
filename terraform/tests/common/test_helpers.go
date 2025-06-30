@@ -101,13 +101,13 @@ func (tc *TestConfig) getAccountID() (string, error) {
 	}
 
 	// Fallback to STS call (for local development)
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(tc.AWSRegion))
+	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(tc.AWSRegion))
 	if err != nil {
 		return "", fmt.Errorf("failed to load AWS configuration: %w. Please ensure AWS credentials are configured", err)
 	}
 
 	stsClient := sts.NewFromConfig(cfg)
-	result, err := stsClient.GetCallerIdentity(context.TODO(), &sts.GetCallerIdentityInput{})
+	result, err := stsClient.GetCallerIdentity(context.Background(), &sts.GetCallerIdentityInput{})
 	if err != nil {
 		return "", fmt.Errorf("failed to get AWS caller identity: %w. Please ensure AWS credentials are valid", err)
 	}
@@ -225,11 +225,11 @@ func (tc *TestConfig) getModuleSpecificVars(
 
 // GetSubnetById gets a subnet by ID using AWS SDK v2 directly
 func GetSubnetById(t *testing.T, subnetID, region string) *types.Subnet {
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(region))
 	assert.NoError(t, err)
 
 	svc := ec2.NewFromConfig(cfg)
-	result, err := svc.DescribeSubnets(context.TODO(), &ec2.DescribeSubnetsInput{
+	result, err := svc.DescribeSubnets(context.Background(), &ec2.DescribeSubnetsInput{
 		SubnetIds: []string{subnetID},
 	})
 	assert.NoError(t, err)
@@ -240,11 +240,11 @@ func GetSubnetById(t *testing.T, subnetID, region string) *types.Subnet {
 
 // GetSecurityGroupById gets a security group by ID using AWS SDK v2 directly
 func GetSecurityGroupById(t *testing.T, sgID, region string) *types.SecurityGroup {
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(region))
 	assert.NoError(t, err)
 
 	svc := ec2.NewFromConfig(cfg)
-	result, err := svc.DescribeSecurityGroups(context.TODO(), &ec2.DescribeSecurityGroupsInput{
+	result, err := svc.DescribeSecurityGroups(context.Background(), &ec2.DescribeSecurityGroupsInput{
 		GroupIds: []string{sgID},
 	})
 	assert.NoError(t, err)
@@ -255,11 +255,11 @@ func GetSecurityGroupById(t *testing.T, sgID, region string) *types.SecurityGrou
 
 // GetInternetGatewaysForVpc gets internet gateways for a VPC using AWS SDK v2 directly
 func GetInternetGatewaysForVpc(t *testing.T, vpcID, region string) []types.InternetGateway {
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(region))
 	assert.NoError(t, err)
 
 	svc := ec2.NewFromConfig(cfg)
-	result, err := svc.DescribeInternetGateways(context.TODO(), &ec2.DescribeInternetGatewaysInput{
+	result, err := svc.DescribeInternetGateways(context.Background(), &ec2.DescribeInternetGatewaysInput{
 		Filters: []types.Filter{
 			{
 				Name:   aws.String("attachment.vpc-id"),
@@ -274,11 +274,11 @@ func GetInternetGatewaysForVpc(t *testing.T, vpcID, region string) []types.Inter
 
 // GetEc2InstanceById gets an EC2 instance by ID using AWS SDK v2 directly
 func GetEc2InstanceById(t *testing.T, instanceID, region string) *types.Instance {
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(region))
 	assert.NoError(t, err)
 
 	svc := ec2.NewFromConfig(cfg)
-	result, err := svc.DescribeInstances(context.TODO(), &ec2.DescribeInstancesInput{
+	result, err := svc.DescribeInstances(context.Background(), &ec2.DescribeInstancesInput{
 		InstanceIds: []string{instanceID},
 	})
 	assert.NoError(t, err)
