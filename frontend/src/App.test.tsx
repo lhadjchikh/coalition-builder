@@ -1,7 +1,8 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import App from './App';
 import API from './services/api';
 import { Campaign } from './types';
+import { resolvePromiseInTest, rejectPromiseInTest } from './tests/utils/testUtils';
 
 // Mock the API calls
 jest.mock('./services/api', () => ({
@@ -107,7 +108,7 @@ describe('App component', () => {
     expect(screen.getByTestId('loading')).toBeInTheDocument();
 
     // Resolve the promise after checking loading state
-    resolvePromise!([
+    await resolvePromiseInTest(resolvePromise!, [
       {
         id: 1,
         name: 'test-campaign',
@@ -145,7 +146,7 @@ describe('App component', () => {
     expect(screen.getByTestId('loading')).toBeInTheDocument();
 
     // Trigger the rejection after checking loading state
-    rejectPromise!(new Error('API Error'));
+    await rejectPromiseInTest(rejectPromise!, new Error('API Error'));
 
     // Wait for the error message
     await waitFor(() => {
