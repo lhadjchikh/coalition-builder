@@ -92,11 +92,23 @@ jobs:
           # Start container in background
           docker run -d --name test-ssr -p 3000:3000 test-ssr
 
-          # Wait for container to start
-          echo "Waiting for SSR container to start..."
-          sleep 30
+          # Wait for container to start with dynamic timeout
+          echo "Waiting for SSR container to be ready..."
+          timeout=60
+          until docker exec test-ssr node healthcheck.js 2>/dev/null || [ $timeout -le 0 ]; do
+            echo "Waiting for SSR container readiness... ($timeout seconds remaining)"
+            sleep 5
+            timeout=$((timeout-5))
+          done
 
-          # Test health endpoint
+          if [ $timeout -le 0 ]; then
+            echo "❌ SSR container failed to become ready in time"
+            echo "Container logs:"
+            docker logs test-ssr
+            exit 1
+          fi
+
+          # Test health endpoint one final time
           echo "Testing health endpoint..."
           docker exec test-ssr node healthcheck.js
 
