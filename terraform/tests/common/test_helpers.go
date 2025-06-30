@@ -3,6 +3,8 @@ package common
 import (
 	"context"
 	"fmt"
+	"log"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -11,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 	terratest_aws "github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
@@ -22,6 +25,7 @@ type TestConfig struct {
 	AWSRegion    string
 	Prefix       string
 	UniqueID     string
+	accountID    string // cached account ID to avoid repeated STS calls
 }
 
 // NewTestConfig creates a new test configuration with a unique ID
@@ -67,13 +71,63 @@ func (tc *TestConfig) GetTerraformOptions(vars map[string]interface{}) *terrafor
 
 	return &terraform.Options{
 		TerraformDir:    tc.TerraformDir,
-		TerraformBinary: "terraform", // Explicitly use terraform instead of auto-detecting tofu
+		TerraformBinary: "terraform", // Explicitly use terraform instead of auto-detecting OpenTofu
 		Vars:            defaultVars,
+		BackendConfig: map[string]interface{}{
+			"bucket":         fmt.Sprintf("coalition-terraform-state-%s", tc.mustGetAccountID()),
+			"key":            fmt.Sprintf("tests/terraform-test-%s.tfstate", tc.UniqueID),
+			"region":         tc.AWSRegion,
+			"encrypt":        true,
+			"dynamodb_table": "coalition-terraform-locks",
+		},
 		EnvVars: map[string]string{
 			"AWS_DEFAULT_REGION":  tc.AWSRegion,
 			"TERRATEST_TERRAFORM": "terraform", // Force Terratest to use terraform
 		},
 	}
+}
+
+// getAccountID returns the AWS account ID for backend configuration
+func (tc *TestConfig) getAccountID() (string, error) {
+	// Return cached value if available
+	if tc.accountID != "" {
+		return tc.accountID, nil
+	}
+
+	// First try from environment variable (set in CI)
+	if accountID := os.Getenv("AWS_ACCOUNT_ID"); accountID != "" {
+		tc.accountID = accountID // cache the value
+		return accountID, nil
+	}
+
+	// Fallback to STS call (for local development)
+	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(tc.AWSRegion))
+	if err != nil {
+		return "", fmt.Errorf("failed to load AWS configuration: %w. Please ensure AWS credentials are configured", err)
+	}
+
+	stsClient := sts.NewFromConfig(cfg)
+	result, err := stsClient.GetCallerIdentity(context.Background(), &sts.GetCallerIdentityInput{})
+	if err != nil {
+		return "", fmt.Errorf("failed to get AWS caller identity: %w. Please ensure AWS credentials are valid", err)
+	}
+
+	if result == nil || result.Account == nil {
+		return "", fmt.Errorf("AWS STS API returned nil result or account field. Please ensure AWS credentials are valid")
+	}
+
+	tc.accountID = *result.Account // cache the value
+	return *result.Account, nil
+}
+
+// mustGetAccountID is a helper that panics if getAccountID fails
+// This is used in contexts where we can't return an error
+func (tc *TestConfig) mustGetAccountID() string {
+	accountID, err := tc.getAccountID()
+	if err != nil {
+		log.Fatalf("Failed to get AWS account ID: %v", err)
+	}
+	return accountID
 }
 
 // GetModuleTerraformOptions returns terraform options for testing individual modules
@@ -83,7 +137,7 @@ func (tc *TestConfig) GetModuleTerraformOptions(modulePath string, vars map[stri
 
 	return &terraform.Options{
 		TerraformDir:    modulePath,
-		TerraformBinary: "terraform", // Explicitly use terraform instead of auto-detecting tofu
+		TerraformBinary: "terraform", // Explicitly use terraform instead of auto-detecting OpenTofu
 		Vars:            moduleVars,
 		EnvVars: map[string]string{
 			"AWS_DEFAULT_REGION":  tc.AWSRegion,
@@ -175,11 +229,11 @@ func (tc *TestConfig) getModuleSpecificVars(
 
 // GetSubnetById gets a subnet by ID using AWS SDK v2 directly
 func GetSubnetById(t *testing.T, subnetID, region string) *types.Subnet {
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(region))
 	assert.NoError(t, err)
 
 	svc := ec2.NewFromConfig(cfg)
-	result, err := svc.DescribeSubnets(context.TODO(), &ec2.DescribeSubnetsInput{
+	result, err := svc.DescribeSubnets(context.Background(), &ec2.DescribeSubnetsInput{
 		SubnetIds: []string{subnetID},
 	})
 	assert.NoError(t, err)
@@ -190,11 +244,11 @@ func GetSubnetById(t *testing.T, subnetID, region string) *types.Subnet {
 
 // GetSecurityGroupById gets a security group by ID using AWS SDK v2 directly
 func GetSecurityGroupById(t *testing.T, sgID, region string) *types.SecurityGroup {
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(region))
 	assert.NoError(t, err)
 
 	svc := ec2.NewFromConfig(cfg)
-	result, err := svc.DescribeSecurityGroups(context.TODO(), &ec2.DescribeSecurityGroupsInput{
+	result, err := svc.DescribeSecurityGroups(context.Background(), &ec2.DescribeSecurityGroupsInput{
 		GroupIds: []string{sgID},
 	})
 	assert.NoError(t, err)
@@ -205,11 +259,11 @@ func GetSecurityGroupById(t *testing.T, sgID, region string) *types.SecurityGrou
 
 // GetInternetGatewaysForVpc gets internet gateways for a VPC using AWS SDK v2 directly
 func GetInternetGatewaysForVpc(t *testing.T, vpcID, region string) []types.InternetGateway {
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(region))
 	assert.NoError(t, err)
 
 	svc := ec2.NewFromConfig(cfg)
-	result, err := svc.DescribeInternetGateways(context.TODO(), &ec2.DescribeInternetGatewaysInput{
+	result, err := svc.DescribeInternetGateways(context.Background(), &ec2.DescribeInternetGatewaysInput{
 		Filters: []types.Filter{
 			{
 				Name:   aws.String("attachment.vpc-id"),
@@ -224,11 +278,11 @@ func GetInternetGatewaysForVpc(t *testing.T, vpcID, region string) []types.Inter
 
 // GetEc2InstanceById gets an EC2 instance by ID using AWS SDK v2 directly
 func GetEc2InstanceById(t *testing.T, instanceID, region string) *types.Instance {
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(region))
 	assert.NoError(t, err)
 
 	svc := ec2.NewFromConfig(cfg)
-	result, err := svc.DescribeInstances(context.TODO(), &ec2.DescribeInstancesInput{
+	result, err := svc.DescribeInstances(context.Background(), &ec2.DescribeInstancesInput{
 		InstanceIds: []string{instanceID},
 	})
 	assert.NoError(t, err)
