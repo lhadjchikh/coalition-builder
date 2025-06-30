@@ -177,16 +177,7 @@ jobs:
           aws sts get-caller-identity
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           echo "Using backend bucket: coalition-terraform-state-${ACCOUNT_ID}"
-
-          # Create test-specific backend configuration for CI
-          cd terraform
-          cat > backend.hcl << EOF
-          bucket         = "coalition-terraform-state-${ACCOUNT_ID}"
-          key            = "tests/terraform-${GITHUB_RUN_ID}-${{ strategy.job-index }}.tfstate"
-          region         = "us-east-1"
-          encrypt        = true
-          dynamodb_table = "coalition-terraform-locks"
-          EOF
+          echo "AWS_ACCOUNT_ID=${ACCOUNT_ID}" >> $GITHUB_ENV
 
           echo "Test state key: tests/terraform-${GITHUB_RUN_ID}-${{ strategy.job-index }}.tfstate"
 

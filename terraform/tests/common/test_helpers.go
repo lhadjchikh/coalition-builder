@@ -3,6 +3,7 @@ package common
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 	terratest_aws "github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
@@ -69,11 +71,42 @@ func (tc *TestConfig) GetTerraformOptions(vars map[string]interface{}) *terrafor
 		TerraformDir:    tc.TerraformDir,
 		TerraformBinary: "terraform", // Explicitly use terraform instead of auto-detecting tofu
 		Vars:            defaultVars,
+		BackendConfig: map[string]interface{}{
+			"bucket":         fmt.Sprintf("coalition-terraform-state-%s", tc.getAccountID()),
+			"key":            fmt.Sprintf("tests/terraform-test-%s.tfstate", tc.UniqueID),
+			"region":         tc.AWSRegion,
+			"encrypt":        true,
+			"dynamodb_table": "coalition-terraform-locks",
+		},
 		EnvVars: map[string]string{
 			"AWS_DEFAULT_REGION":  tc.AWSRegion,
 			"TERRATEST_TERRAFORM": "terraform", // Force Terratest to use terraform
 		},
 	}
+}
+
+// getAccountID returns the AWS account ID for backend configuration
+func (tc *TestConfig) getAccountID() string {
+	// First try from environment variable (set in CI)
+	if accountID := os.Getenv("AWS_ACCOUNT_ID"); accountID != "" {
+		return accountID
+	}
+
+	// Fallback to STS call (for local development)
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(tc.AWSRegion))
+	if err != nil {
+		// If we can't get AWS config, use a default value
+		return "123456789012"
+	}
+
+	stsClient := sts.NewFromConfig(cfg)
+	result, err := stsClient.GetCallerIdentity(context.TODO(), &sts.GetCallerIdentityInput{})
+	if err != nil {
+		// If we can't get caller identity, use a default value
+		return "123456789012"
+	}
+
+	return *result.Account
 }
 
 // GetModuleTerraformOptions returns terraform options for testing individual modules
