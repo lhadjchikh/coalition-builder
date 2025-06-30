@@ -59,7 +59,7 @@ RUN npm cache clean --force && \
 
 # Copy the rest of the frontend code and shared directory
 COPY frontend/ /app/
-COPY shared/ /app/../shared/
+COPY shared/ /shared/
 
 # Build the frontend
 RUN npm run build
