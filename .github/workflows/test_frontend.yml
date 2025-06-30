@@ -70,3 +70,37 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  # Test SSR Docker build to catch deployment issues early
+  test_ssr_docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Test SSR Docker build
+        run: |
+          echo "Testing SSR Docker build to catch deployment issues early..."
+          docker build -f Dockerfile.ssr -t test-ssr .
+          echo "✅ SSR Docker build successful"
+
+      - name: Test SSR container startup
+        run: |
+          echo "Testing SSR container startup..."
+          # Start container in background
+          docker run -d --name test-ssr -p 3000:3000 test-ssr
+
+          # Wait for container to start
+          echo "Waiting for SSR container to start..."
+          sleep 30
+
+          # Test health endpoint
+          echo "Testing health endpoint..."
+          docker exec test-ssr node healthcheck.js
+
+          # Cleanup
+          docker stop test-ssr
+          docker rm test-ssr
+          echo "✅ SSR container startup test successful"
