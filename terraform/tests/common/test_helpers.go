@@ -25,6 +25,7 @@ type TestConfig struct {
 	AWSRegion    string
 	Prefix       string
 	UniqueID     string
+	accountID    string // cached account ID to avoid repeated STS calls
 }
 
 // NewTestConfig creates a new test configuration with a unique ID
@@ -88,8 +89,14 @@ func (tc *TestConfig) GetTerraformOptions(vars map[string]interface{}) *terrafor
 
 // getAccountID returns the AWS account ID for backend configuration
 func (tc *TestConfig) getAccountID() (string, error) {
+	// Return cached value if available
+	if tc.accountID != "" {
+		return tc.accountID, nil
+	}
+
 	// First try from environment variable (set in CI)
 	if accountID := os.Getenv("AWS_ACCOUNT_ID"); accountID != "" {
+		tc.accountID = accountID // cache the value
 		return accountID, nil
 	}
 
@@ -105,6 +112,7 @@ func (tc *TestConfig) getAccountID() (string, error) {
 		return "", fmt.Errorf("failed to get AWS caller identity: %w. Please ensure AWS credentials are valid", err)
 	}
 
+	tc.accountID = *result.Account // cache the value
 	return *result.Account, nil
 }
 
