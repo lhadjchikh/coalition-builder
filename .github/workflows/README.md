@@ -75,7 +75,7 @@ This project uses a structured CI/CD pipeline with the following key workflows:
 - Includes Terraform planning and apply steps
 - Manages AWS resources like VPC, ECS clusters, RDS, and load balancers
 
-### Documentation Workflow (`docs.yml`)
+### Documentation Workflow (`deploy_docs.yml`)
 
 #### Documentation Generation and Deployment
 
