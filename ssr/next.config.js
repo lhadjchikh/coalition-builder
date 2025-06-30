@@ -1,4 +1,5 @@
 const path = require("path");
+const fs = require("fs");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -14,9 +15,7 @@ const nextConfig = {
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
     // Add alias for importing from frontend and shared
     // Support both Docker (./shared) and local (../shared) paths
-    const sharedPath = require("fs").existsSync(
-      path.resolve(__dirname, "./shared"),
-    )
+    const sharedPath = fs.existsSync(path.resolve(__dirname, "./shared"))
       ? path.resolve(__dirname, "./shared")
       : path.resolve(__dirname, "../shared");
 
