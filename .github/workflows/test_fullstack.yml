@@ -57,6 +57,8 @@ jobs:
             --load \
             -t coalition_ssr:latest \
             -f Dockerfile.ssr \
+            --build-arg NEXT_PUBLIC_API_URL=http://localhost:8000 \
+            --build-arg API_URL=http://localhost:8000 \
             .
 
       - name: Start all containers
@@ -85,16 +87,21 @@ jobs:
             # Continue anyway, as we'll see test failures if API isn't available
           fi
 
-          # Check if SSR is responding
+          # Check if SSR is responding with proper health check
           timeout=60
-          until curl -s http://localhost:3000/health || [ $timeout -le 0 ]; do
-            echo "Waiting for SSR to be ready..."
+          until curl -s http://localhost:3000/health | jq -e '.status == "healthy"' > /dev/null 2>&1 || [ $timeout -le 0 ]; do
+            echo "Waiting for SSR to be ready with healthy status..."
             sleep 5
             timeout=$((timeout-5))
           done
           if [ $timeout -le 0 ]; then
-            echo "SSR service failed to start in time"
+            echo "SSR service failed to start with healthy status in time"
+            echo "Current SSR health status:"
+            curl -s http://localhost:3000/health || echo "SSR health endpoint not responding"
             # Continue anyway, as we'll see test failures if SSR isn't available
+          else
+            echo "✅ SSR service started with healthy status"
+            curl -s http://localhost:3000/health | jq '.'
           fi
 
       - name: Create test data

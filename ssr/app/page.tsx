@@ -10,9 +10,9 @@ import {
   fetchHomepage,
   fetchCampaigns,
   getFallbackHomepage,
-} from "../../shared/utils/homepage-data";
-import { generateCSSVariables } from "../../shared/utils/theme";
-import SharedHomePageLayout from "../../shared/components/SharedHomePageLayout";
+} from "@shared/utils/homepage-data";
+import { generateCSSVariables } from "@shared/utils/theme";
+import SharedHomePageLayout from "@shared/components/SharedHomePageLayout";
 
 // Import shared components
 import HeroSection from "@frontend/components/HeroSection";

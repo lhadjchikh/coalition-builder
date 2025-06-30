@@ -1,6 +1,11 @@
 module.exports = {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
+  testEnvironmentOptions: {
+    url: 'http://localhost',
+  },
+  // Match the asyncUtilTimeout in setupTests.ts (5 seconds)
+  testTimeout: 5000,
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '\\.(gif|ttf|eot|svg|png)$': '<rootDir>/src/__mocks__/fileMock.js',

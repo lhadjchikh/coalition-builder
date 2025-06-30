@@ -36,12 +36,19 @@ const req = http.request(options, (res) => {
         // Parse the JSON response
         const healthData = JSON.parse(data);
 
-        // Check if the status is healthy and API is connected
-        if (
-          healthData.status === "healthy" &&
-          healthData.api?.status === "connected"
-        ) {
-          console.log("✅ Health check passed - API connection verified");
+        // Check if the SSR service itself is healthy
+        // During startup, API might be temporarily disconnected - this is acceptable
+        // We exit with code 0 (success) as long as SSR is healthy, even if API is disconnected,
+        // because this allows containers to start in any order without health check failures
+        if (healthData.status === "healthy") {
+          const apiStatus = healthData.api?.status || "unknown";
+          if (apiStatus === "connected") {
+            console.log("✅ Health check passed - API connection verified");
+          } else {
+            console.log(
+              `✅ Health check passed - SSR healthy (API: ${apiStatus})`,
+            );
+          }
           process.exit(0);
         } else {
           console.error(

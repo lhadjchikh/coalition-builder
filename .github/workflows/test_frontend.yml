@@ -70,3 +70,51 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  # Test SSR Docker build to catch deployment issues early
+  test_ssr_docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Test SSR Docker build
+        run: |
+          echo "Testing SSR Docker build to catch deployment issues early..."
+          docker build -f Dockerfile.ssr -t test-ssr . \
+            --build-arg NEXT_PUBLIC_API_URL=http://localhost:8000 \
+            --build-arg API_URL=http://localhost:8000
+          echo "✅ SSR Docker build successful"
+
+      - name: Test SSR container startup
+        run: |
+          echo "Testing SSR container startup..."
+          # Start container in background
+          docker run -d --name test-ssr -p 3000:3000 test-ssr
+
+          # Wait for container to start with dynamic timeout
+          echo "Waiting for SSR container to be ready..."
+          timeout=60
+          until docker exec test-ssr node healthcheck.js 2>/dev/null || [ $timeout -le 0 ]; do
+            echo "Waiting for SSR container readiness... ($timeout seconds remaining)"
+            sleep 5
+            timeout=$((timeout-5))
+          done
+
+          if [ $timeout -le 0 ]; then
+            echo "❌ SSR container failed to become ready in time"
+            echo "Container logs:"
+            docker logs test-ssr
+            exit 1
+          fi
+
+          # Test health endpoint one final time
+          echo "Testing health endpoint..."
+          docker exec test-ssr node healthcheck.js
+
+          # Cleanup
+          docker stop test-ssr
+          docker rm test-ssr
+          echo "✅ SSR container startup test successful"
