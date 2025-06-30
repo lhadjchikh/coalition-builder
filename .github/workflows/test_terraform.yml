@@ -196,10 +196,38 @@ jobs:
           go mod download
 
       - name: Run integration test - ${{ matrix.test-scenario.name }}
-        timeout-minutes: 45
+        timeout-minutes: 30
         run: |
           cd terraform/tests
-          go test -v -timeout 45m -run ${{ matrix.test-scenario.pattern }} ./integration/
+          echo "Starting integration test at $(date)"
+          echo "Test pattern: ${{ matrix.test-scenario.pattern }}"
+
+          # Enable detailed Terraform logging
+          export TF_LOG=DEBUG
+          export TF_LOG_PATH=/tmp/terraform-debug.log
+
+          # Run with verbose output and timeout handling
+          go test -v -timeout 30m -run ${{ matrix.test-scenario.pattern }} ./integration/ 2>&1 | tee /tmp/test-output.log
+
+          echo "Test completed/failed at $(date)"
+
+      - name: Upload debug logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-debug-logs-${{ matrix.test-scenario.name }}-${{ github.run_id }}
+          path: |
+            /tmp/terraform-debug.log
+            /tmp/test-output.log
+          retention-days: 7
+
+      - name: Show last 100 lines of terraform debug log on failure
+        if: failure()
+        run: |
+          echo "=== Last 100 lines of Terraform debug log ==="
+          tail -n 100 /tmp/terraform-debug.log || echo "No terraform debug log found"
+          echo "=== Last 100 lines of test output ==="
+          tail -n 100 /tmp/test-output.log || echo "No test output log found"
 
       - name: Cleanup test state file
         if: always() # Run even if tests fail

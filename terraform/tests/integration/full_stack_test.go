@@ -38,12 +38,14 @@ func TestFullStackDeploymentWithoutSSR(t *testing.T) {
 
 	defer common.CleanupResources(t, terraformOptions)
 
-	// Run terraform init and apply
-	terraform.InitAndApply(t, terraformOptions)
+	// Run terraform init and apply with progress logging
+	common.RunTerraformWithProgress(t, terraformOptions, "terraform init and apply", 2*time.Minute)
 
 	// Validate VPC and networking
+	common.LogPhaseStart(t, "validation phase")
 	vpcID := terraform.Output(t, terraformOptions, "vpc_id")
 	assert.NotEmpty(t, vpcID)
+	common.LogPhaseComplete(t, "VPC validation", vpcID)
 
 	vpc := aws.GetVpcById(t, vpcID, testConfig.AWSRegion)
 	// Note: VPC field validation simplified due to Terratest API limitations
@@ -59,10 +61,12 @@ func TestFullStackDeploymentWithoutSSR(t *testing.T) {
 	assert.Len(t, dbSubnetIDs, 2, "Should have 2 database subnets")
 
 	// Validate database
+	common.LogPhaseStart(t, "database validation")
 	dbInstanceID := terraform.Output(t, terraformOptions, "db_instance_id")
 	dbInstanceEndpoint := terraform.Output(t, terraformOptions, "db_instance_endpoint")
 	assert.NotEmpty(t, dbInstanceID)
 	assert.NotEmpty(t, dbInstanceEndpoint)
+	common.LogPhaseComplete(t, "Database validation", dbInstanceID)
 
 	// Validate ECS cluster and service
 	ecsClusterName := terraform.Output(t, terraformOptions, "ecs_cluster_name")
