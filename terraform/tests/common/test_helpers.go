@@ -71,7 +71,7 @@ func (tc *TestConfig) GetTerraformOptions(vars map[string]interface{}) *terrafor
 
 	return &terraform.Options{
 		TerraformDir:    tc.TerraformDir,
-		TerraformBinary: "terraform", // Explicitly use terraform instead of auto-detecting tofu
+		TerraformBinary: "terraform", // Explicitly use terraform instead of auto-detecting OpenTofu
 		Vars:            defaultVars,
 		BackendConfig: map[string]interface{}{
 			"bucket":         fmt.Sprintf("coalition-terraform-state-%s", tc.mustGetAccountID()),
@@ -112,6 +112,10 @@ func (tc *TestConfig) getAccountID() (string, error) {
 		return "", fmt.Errorf("failed to get AWS caller identity: %w. Please ensure AWS credentials are valid", err)
 	}
 
+	if result == nil || result.Account == nil {
+		return "", fmt.Errorf("AWS STS API returned nil result or account field. Please ensure AWS credentials are valid")
+	}
+
 	tc.accountID = *result.Account // cache the value
 	return *result.Account, nil
 }
@@ -133,7 +137,7 @@ func (tc *TestConfig) GetModuleTerraformOptions(modulePath string, vars map[stri
 
 	return &terraform.Options{
 		TerraformDir:    modulePath,
-		TerraformBinary: "terraform", // Explicitly use terraform instead of auto-detecting tofu
+		TerraformBinary: "terraform", // Explicitly use terraform instead of auto-detecting OpenTofu
 		Vars:            moduleVars,
 		EnvVars: map[string]string{
 			"AWS_DEFAULT_REGION":  tc.AWSRegion,
