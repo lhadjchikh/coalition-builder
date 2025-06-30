@@ -43,7 +43,8 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE ON SEQUENCES TO ${APP_USER};
 
     CREATE EXTENSION IF NOT EXISTS postgis;
-    CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder;
+    CREATE EXTENSION IF NOT EXISTS postgis_topology;
+    CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder CASCADE;
     
     SELECT 'PostGIS version: ' || PostGIS_version() as postgis_info;
 EOSQL

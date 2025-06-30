@@ -254,9 +254,10 @@ setup_database() {
     <<'EOF'; then
 -- Enable PostGIS extension
 CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS postgis_topology;
 
 -- Enable PostGIS Tiger Geocoder extension
-CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder;
+CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder CASCADE;
 
 -- Create or update application user with the generated password
 DO $
@@ -321,9 +322,10 @@ database = """$database"""
 # Use triple quotes and proper escaping
 sql_content = f'''-- Enable PostGIS extension
 CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS postgis_topology;
 
 -- Enable PostGIS Tiger Geocoder extension
-CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder;
+CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder CASCADE;
 
 -- Create or update application user with the generated password
 DO \$\$
