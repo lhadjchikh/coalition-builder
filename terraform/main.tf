@@ -127,6 +127,8 @@ module "compute" {
   domain_name               = var.domain_name
   enable_ssr                = var.enable_ssr
   health_check_path_api     = var.health_check_path_api
+  allowed_hosts             = var.allowed_hosts
+  csrf_trusted_origins      = var.csrf_trusted_origins
 
   # Make sure load balancer and secrets are created first
   depends_on = [

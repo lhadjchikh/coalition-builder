@@ -209,3 +209,15 @@ variable "redis_version" {
     error_message = "Redis version must be a valid Docker tag."
   }
 }
+
+variable "allowed_hosts" {
+  description = "Django ALLOWED_HOSTS setting - should include localhost for health checks"
+  type        = string
+  default     = "localhost,127.0.0.1"
+}
+
+variable "csrf_trusted_origins" {
+  description = "Django CSRF_TRUSTED_ORIGINS setting"
+  type        = string
+  default     = ""
+}
