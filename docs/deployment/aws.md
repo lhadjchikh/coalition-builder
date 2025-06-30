@@ -63,12 +63,12 @@ For CI/CD deployment, add the following secrets to your GitHub repository:
 1.  `AWS_ACCESS_KEY_ID`: Your AWS access key
 2.  `AWS_SECRET_ACCESS_KEY`: Your AWS secret key
 3.  `AWS_REGION`: The AWS region to deploy to (e.g., `us-east-1`)
-4.  `TF_VAR_db_name`: Database name (default: `coalition`)
-5.  `TF_VAR_route53_zone_id`: Your Route 53 hosted zone ID
-6.  `TF_VAR_domain_name`: Your domain name (e.g., `app.mydomain.org` or `mydomain.org`)
-7.  `TF_VAR_acm_certificate_arn`: The ARN of your ACM certificate for HTTPS
-8.  `TF_VAR_alert_email`: Email address to receive budget and other alerts
-9.  `TF_VAR_use_secrets_manager`: Set to `true` to use AWS Secrets Manager (recommended for production)
+4.  `TF_VAR_DB_NAME`: Database name (default: `coalition`)
+5.  `TF_VAR_AWS_ROUTE53_ZONE_ID`: Your Route 53 hosted zone ID
+6.  `TF_VAR_AWS_DOMAIN_NAME`: Your domain name (e.g., `app.mydomain.org` or `mydomain.org`)
+7.  `TF_VAR_AWS_ACM_CERTIFICATE_ARN`: The ARN of your ACM certificate for HTTPS
+8.  `TF_VAR_AWS_ALERT_EMAIL`: Email address to receive budget and other alerts
+9.  `TF_VAR_AWS_USE_SECRETS_MANAGER`: Set to `true` to use AWS Secrets Manager (recommended for production)
 
 > **IMPORTANT**: Database credentials (`DB_USERNAME`, `DB_PASSWORD`, `APP_DB_USERNAME`, `APP_DB_PASSWORD`) are managed through AWS Secrets Manager for security rather than GitHub Secrets. For initial setup only, you may need to provide these values once, after which they will be securely stored.
 
@@ -290,7 +290,7 @@ To clean up all AWS resources:
      TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
      TF_VAR_db_name: ${{ secrets.TF_VAR_db_name || 'coalition' }}
      TF_VAR_route53_zone_id: ${{ secrets.TF_VAR_route53_zone_id }}
-     TF_VAR_domain_name: ${{ secrets.TF_VAR_domain_name }}
+     TF_VAR_domain_name: ${{ secrets.TF_VAR_DOMAIN_NAME }}
      TF_VAR_acm_certificate_arn: ${{ secrets.TF_VAR_acm_certificate_arn }}
      TF_VAR_alert_email: ${{ secrets.TF_VAR_alert_email }}
      TF_VAR_use_secrets_manager: ${{ secrets.TF_VAR_use_secrets_manager || 'true' }}

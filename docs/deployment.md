@@ -139,6 +139,7 @@ All deployments include health check endpoints:
 
 - `/health/` - Application health
 - `/api/health/` - API health
+- `/health` - Next.js SSR health check
 - `/metrics/` - Prometheus metrics
 
 ## Security Checklist
