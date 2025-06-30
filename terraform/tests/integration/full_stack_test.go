@@ -39,34 +39,13 @@ func TestFullStackDeploymentWithoutSSR(t *testing.T) {
 	defer common.CleanupResources(t, terraformOptions)
 
 	// Run terraform init and apply with progress logging
-	t.Logf("Starting terraform init and apply at %s", time.Now().Format("15:04:05"))
-
-	// Log the progress periodically
-	done := make(chan bool)
-	go func() {
-		ticker := time.NewTicker(2 * time.Minute)
-		defer ticker.Stop()
-		startTime := time.Now()
-		for {
-			select {
-			case <-done:
-				return
-			case <-ticker.C:
-				elapsed := time.Since(startTime)
-				t.Logf("Still running terraform init/apply - elapsed time: %v", elapsed)
-			}
-		}
-	}()
-	defer close(done)
-
-	terraform.InitAndApply(t, terraformOptions)
-	t.Logf("Terraform init and apply completed at %s", time.Now().Format("15:04:05"))
+	common.RunTerraformWithProgress(t, terraformOptions, "terraform init and apply")
 
 	// Validate VPC and networking
-	t.Logf("Starting validation phase at %s", time.Now().Format("15:04:05"))
+	common.LogPhaseStart(t, "validation phase")
 	vpcID := terraform.Output(t, terraformOptions, "vpc_id")
 	assert.NotEmpty(t, vpcID)
-	t.Logf("VPC validation complete: %s", vpcID)
+	common.LogPhaseComplete(t, "VPC validation", vpcID)
 
 	vpc := aws.GetVpcById(t, vpcID, testConfig.AWSRegion)
 	// Note: VPC field validation simplified due to Terratest API limitations
@@ -82,12 +61,12 @@ func TestFullStackDeploymentWithoutSSR(t *testing.T) {
 	assert.Len(t, dbSubnetIDs, 2, "Should have 2 database subnets")
 
 	// Validate database
-	t.Logf("Starting database validation at %s", time.Now().Format("15:04:05"))
+	common.LogPhaseStart(t, "database validation")
 	dbInstanceID := terraform.Output(t, terraformOptions, "db_instance_id")
 	dbInstanceEndpoint := terraform.Output(t, terraformOptions, "db_instance_endpoint")
 	assert.NotEmpty(t, dbInstanceID)
 	assert.NotEmpty(t, dbInstanceEndpoint)
-	t.Logf("Database validation complete: %s", dbInstanceID)
+	common.LogPhaseComplete(t, "Database validation", dbInstanceID)
 
 	// Validate ECS cluster and service
 	ecsClusterName := terraform.Output(t, terraformOptions, "ecs_cluster_name")

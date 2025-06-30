@@ -446,3 +446,39 @@ func ValidateTerraformOutputList(
 	}
 	return outputs
 }
+
+// RunTerraformWithProgress runs terraform init and apply with progress logging
+func RunTerraformWithProgress(t *testing.T, terraformOptions *terraform.Options, operationName string) {
+	t.Logf("Starting %s at %s", operationName, time.Now().Format("15:04:05"))
+
+	// Log the progress periodically
+	done := make(chan bool)
+	go func() {
+		ticker := time.NewTicker(2 * time.Minute)
+		defer ticker.Stop()
+		startTime := time.Now()
+		for {
+			select {
+			case <-done:
+				return
+			case <-ticker.C:
+				elapsed := time.Since(startTime)
+				t.Logf("Still running %s - elapsed time: %v", operationName, elapsed)
+			}
+		}
+	}()
+	defer close(done)
+
+	terraform.InitAndApply(t, terraformOptions)
+	t.Logf("%s completed at %s", operationName, time.Now().Format("15:04:05"))
+}
+
+// LogPhaseStart logs the start of a test phase with timestamp
+func LogPhaseStart(t *testing.T, phaseName string) {
+	t.Logf("Starting %s at %s", phaseName, time.Now().Format("15:04:05"))
+}
+
+// LogPhaseComplete logs the completion of a test phase with result
+func LogPhaseComplete(t *testing.T, phaseName, result string) {
+	t.Logf("%s complete: %s", phaseName, result)
+}
