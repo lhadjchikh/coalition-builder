@@ -39,7 +39,7 @@ func TestFullStackDeploymentWithoutSSR(t *testing.T) {
 	defer common.CleanupResources(t, terraformOptions)
 
 	// Run terraform init and apply with progress logging
-	common.RunTerraformWithProgress(t, terraformOptions, "terraform init and apply")
+	common.RunTerraformWithProgress(t, terraformOptions, "terraform init and apply", 2*time.Minute)
 
 	// Validate VPC and networking
 	common.LogPhaseStart(t, "validation phase")

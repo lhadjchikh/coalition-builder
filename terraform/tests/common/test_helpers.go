@@ -447,14 +447,24 @@ func ValidateTerraformOutputList(
 	return outputs
 }
 
-// RunTerraformWithProgress runs terraform init and apply with progress logging
-func RunTerraformWithProgress(t *testing.T, terraformOptions *terraform.Options, operationName string) {
+// RunTerraformWithProgress runs terraform init and apply with configurable progress logging interval
+func RunTerraformWithProgress(
+	t *testing.T,
+	terraformOptions *terraform.Options,
+	operationName string,
+	tickerInterval time.Duration,
+) {
 	t.Logf("Starting %s at %s", operationName, time.Now().Format("15:04:05"))
+
+	// Use default interval if zero value provided
+	if tickerInterval == 0 {
+		tickerInterval = 2 * time.Minute
+	}
 
 	// Log the progress periodically
 	done := make(chan bool)
 	go func() {
-		ticker := time.NewTicker(2 * time.Minute)
+		ticker := time.NewTicker(tickerInterval)
 		defer ticker.Stop()
 		startTime := time.Now()
 		for {
