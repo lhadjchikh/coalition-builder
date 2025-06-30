@@ -89,7 +89,7 @@ jobs:
 
           # Check if SSR is responding with proper health check
           timeout=60
-          until curl -s http://localhost:3000/health | grep -q '"status":"healthy"' || [ $timeout -le 0 ]; do
+          until curl -s http://localhost:3000/health | jq -e '.status == "healthy"' > /dev/null 2>&1 || [ $timeout -le 0 ]; do
             echo "Waiting for SSR to be ready with healthy status..."
             sleep 5
             timeout=$((timeout-5))
