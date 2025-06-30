@@ -346,8 +346,44 @@ jobs:
             echo "✅ No leftover test ECS clusters found"
           fi
 
+          # Check for test RDS instances
+          TEST_RDS=$(aws rds describe-db-instances --query 'DBInstances[?contains(DBInstanceIdentifier, `test`)].DBInstanceIdentifier' --output text)
+          if [ -n "$TEST_RDS" ]; then
+            echo "⚠️ Found leftover test RDS instances: $TEST_RDS"
+            echo "TEST_RDS_FOUND=true" >> $GITHUB_ENV
+          else
+            echo "✅ No leftover test RDS instances found"
+          fi
+
+          # Check for test NAT Gateways (expensive!)
+          TEST_NAT=$(aws ec2 describe-nat-gateways --filter "Name=tag:Name,Values=*test*" --query 'NatGateways[?State==`available`].NatGatewayId' --output text)
+          if [ -n "$TEST_NAT" ]; then
+            echo "⚠️ Found leftover test NAT Gateways: $TEST_NAT"
+            echo "TEST_NAT_FOUND=true" >> $GITHUB_ENV
+          else
+            echo "✅ No leftover test NAT Gateways found"
+          fi
+
+          # Check for test Load Balancers
+          TEST_ALB=$(aws elbv2 describe-load-balancers --query 'LoadBalancers[?contains(LoadBalancerName, `test`)].LoadBalancerArn' --output text)
+          if [ -n "$TEST_ALB" ]; then
+            echo "⚠️ Found leftover test Load Balancers: $TEST_ALB"
+            echo "TEST_ALB_FOUND=true" >> $GITHUB_ENV
+          else
+            echo "✅ No leftover test Load Balancers found"
+          fi
+
+          # Check for test Elastic IPs
+          TEST_EIP=$(aws ec2 describe-addresses --filters "Name=tag:Name,Values=*test*" --query 'Addresses[?AssociationId==null].AllocationId' --output text)
+          if [ -n "$TEST_EIP" ]; then
+            echo "⚠️ Found leftover test Elastic IPs: $TEST_EIP"
+            echo "TEST_EIP_FOUND=true" >> $GITHUB_ENV
+          else
+            echo "✅ No leftover test Elastic IPs found"
+          fi
+
       - name: Create issue for leftover resources
-        if: env.TEST_VPCS_FOUND == 'true' || env.TEST_CLUSTERS_FOUND == 'true'
+        if: env.TEST_VPCS_FOUND == 'true' || env.TEST_CLUSTERS_FOUND == 'true' || env.TEST_RDS_FOUND == 'true' || env.TEST_NAT_FOUND == 'true' || env.TEST_ALB_FOUND == 'true' || env.TEST_EIP_FOUND == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -361,8 +397,12 @@ jobs:
               
               **VPCs**: ${{ env.TEST_VPCS_FOUND == 'true' && 'Found leftover test VPCs' || 'None' }}
               **ECS Clusters**: ${{ env.TEST_CLUSTERS_FOUND == 'true' && 'Found leftover test ECS clusters' || 'None' }}
-              
-              **Action Required**: Please review and clean up these resources manually.
+              **RDS Instances**: ${{ env.TEST_RDS_FOUND == 'true' && 'Found leftover test RDS instances' || 'None' }}
+              **NAT Gateways**: ${{ env.TEST_NAT_FOUND == 'true' && '⚠️ EXPENSIVE! Found leftover test NAT Gateways' || 'None' }}
+              **Load Balancers**: ${{ env.TEST_ALB_FOUND == 'true' && 'Found leftover test Load Balancers' || 'None' }}
+              **Elastic IPs**: ${{ env.TEST_EIP_FOUND == 'true' && 'Found leftover test Elastic IPs' || 'None' }}
+
+              **Action Required**: Please review and clean up these resources manually ASAP.
               
               **Workflow Run**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
               `,
