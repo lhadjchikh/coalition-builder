@@ -251,3 +251,15 @@ variable "health_check_path_ssr" {
   type        = string
   default     = "/health"
 }
+
+variable "allowed_hosts" {
+  description = "Django ALLOWED_HOSTS setting - should include localhost for health checks"
+  type        = string
+  default     = "localhost,127.0.0.1"
+}
+
+variable "csrf_trusted_origins" {
+  description = "Django CSRF_TRUSTED_ORIGINS setting"
+  type        = string
+  default     = ""
+}

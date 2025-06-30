@@ -712,6 +712,51 @@ fi
 # ✅ Done with full logging and error handling
 ```
 
+## Configuration Management
+
+### Preventing Configuration Drift
+
+To prevent ALLOWED_HOSTS issues that can cause health check failures, this project uses a centralized configuration approach:
+
+1. **Environment Configuration File**: Use `.env.example` as a template
+
+   - Copy to `.env` for local development
+   - Contains both Django and Terraform variables
+   - Ensures consistency between docker-compose and terraform
+
+2. **Shared Variables**: Key configurations are defined once and referenced everywhere
+
+   ```bash
+   # In .env.example
+   ALLOWED_HOSTS=localhost,127.0.0.1,${TF_VAR_domain_name},*.${TF_VAR_domain_name}
+   TF_VAR_allowed_hosts=${ALLOWED_HOSTS}
+   ```
+
+3. **Simple Validation**: Health check test in CI workflow catches configuration issues
+
+4. **Docker Compose Integration**: Uses environment variables from .env
+
+   ```yaml
+   environment:
+     - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,api,ssr,nginx}
+   ```
+
+5. **Terraform Integration**: Uses TF*VAR* variables from .env
+   ```hcl
+   variable "allowed_hosts" {
+     description = "Django ALLOWED_HOSTS setting - should include localhost for health checks"
+   }
+   variable "csrf_trusted_origins" {
+     description = "Django CSRF_TRUSTED_ORIGINS setting"
+   }
+   ```
+
+### Usage
+
+1. **Setup**: Copy `.env.example` to `.env` and configure your values
+2. **Development**: Run `docker-compose up` (uses .env automatically)
+3. **Deployment**: Run `terraform apply` (uses TF*VAR* from .env)
+
 ## Best Practices
 
 ### General

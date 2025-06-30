@@ -87,6 +87,16 @@ jobs:
             # Continue anyway, as we'll see test failures if API isn't available
           fi
 
+          # IMPORTANT: Test health check with localhost (like ECS does)
+          echo "Testing health check endpoint that ECS uses..."
+          if curl -f http://localhost:8000/health/; then
+            echo "✅ Health check passed - ECS health checks should work"
+          else
+            echo "❌ Health check failed - ECS health checks will fail in production!"
+            echo "This indicates ALLOWED_HOSTS configuration drift between docker-compose and terraform"
+            exit 1
+          fi
+
           # Check if SSR is responding with proper health check
           timeout=60
           until curl -s http://localhost:3000/health | jq -e '.status == "healthy"' > /dev/null 2>&1 || [ $timeout -le 0 ]; do

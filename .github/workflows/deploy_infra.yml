@@ -37,6 +37,8 @@ env:
   TF_VAR_acm_certificate_arn: ${{ secrets.TF_VAR_ACM_CERTIFICATE_ARN }}
   TF_VAR_alert_email: ${{ secrets.TF_VAR_ALERT_EMAIL }}
   TF_VAR_bastion_public_key: ${{ secrets.TF_VAR_BASTION_PUBLIC_KEY }}
+  TF_VAR_allowed_hosts: "localhost,127.0.0.1,${{ secrets.TF_VAR_DOMAIN_NAME }},*.${{ secrets.TF_VAR_DOMAIN_NAME }}"
+  TF_VAR_csrf_trusted_origins: "https://${{ secrets.TF_VAR_DOMAIN_NAME }},https://www.${{ secrets.TF_VAR_DOMAIN_NAME }}"
 
 jobs:
   terraform_plan:
