@@ -3,6 +3,7 @@ package common
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"testing"
@@ -95,15 +96,13 @@ func (tc *TestConfig) getAccountID() string {
 	// Fallback to STS call (for local development)
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(tc.AWSRegion))
 	if err != nil {
-		// If we can't get AWS config, use a default value
-		return "123456789012"
+		log.Fatalf("Failed to load AWS configuration: %v. Please ensure AWS credentials are configured.", err)
 	}
 
 	stsClient := sts.NewFromConfig(cfg)
 	result, err := stsClient.GetCallerIdentity(context.TODO(), &sts.GetCallerIdentityInput{})
 	if err != nil {
-		// If we can't get caller identity, use a default value
-		return "123456789012"
+		log.Fatalf("Failed to get AWS caller identity: %v. Please ensure AWS credentials are valid.", err)
 	}
 
 	return *result.Account
