@@ -270,6 +270,10 @@ BEGIN
         EXECUTE format('ALTER USER %I WITH PASSWORD %L', :'app_user', :'app_pass');
         RAISE NOTICE 'Updated password for user: %', :'app_user';
     END IF;
+    
+    -- Grant rds_superuser role to allow creating extensions (required for PostGIS)
+    EXECUTE format('GRANT rds_superuser TO %I', :'app_user');
+    RAISE NOTICE 'Granted rds_superuser role to: %', :'app_user';
 END
 $;
 
@@ -333,6 +337,10 @@ BEGIN
         EXECUTE format('ALTER USER %I WITH PASSWORD %L', '{app_username}', '{app_password}');
         RAISE NOTICE 'Updated password for user: {app_username}';
     END IF;
+    
+    -- Grant rds_superuser role to allow creating extensions (required for PostGIS)
+    EXECUTE format('GRANT rds_superuser TO %I', '{app_username}');
+    RAISE NOTICE 'Granted rds_superuser role to: {app_username}';
 END
 \$\$;
 
@@ -365,6 +373,9 @@ BEGIN
     ELSE
         EXECUTE format('ALTER USER %I WITH PASSWORD %L', 'PLACEHOLDER_USER', 'PLACEHOLDER_PASSWORD');
     END IF;
+    
+    -- Grant rds_superuser role to allow creating extensions (required for PostGIS)
+    EXECUTE format('GRANT rds_superuser TO %I', 'PLACEHOLDER_USER');
 END
 $;
 DO $
