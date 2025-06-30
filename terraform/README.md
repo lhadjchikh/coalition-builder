@@ -728,7 +728,7 @@ To prevent ALLOWED_HOSTS issues that can cause health check failures, this proje
 
    ```bash
    # In .env.example
-   ALLOWED_HOSTS=localhost,127.0.0.1,${TF_VAR_domain_name},*.${TF_VAR_domain_name}
+   ALLOWED_HOSTS=localhost,127.0.0.1,${TF_VAR_domain_name:-coalition.org},*.${TF_VAR_domain_name:-coalition.org}
    TF_VAR_allowed_hosts=${ALLOWED_HOSTS}
    ```
 
@@ -756,6 +756,15 @@ To prevent ALLOWED_HOSTS issues that can cause health check failures, this proje
 1. **Setup**: Copy `.env.example` to `.env` and configure your values
 2. **Development**: Run `docker-compose up` (uses .env automatically)
 3. **Deployment**: Run `terraform apply` (uses TF*VAR* from .env)
+
+### Health Check Endpoints
+
+The application uses different health check endpoints for different services:
+
+- **Django API**: `/health/` (with trailing slash) - Used by the load balancer API target group
+- **Next.js SSR**: `/health` (without trailing slash) - Used by the load balancer SSR target group
+
+These different endpoints are intentional and serve different purposes. Do not attempt to standardize them as they correspond to different frameworks' conventions.
 
 ## Best Practices
 
@@ -853,7 +862,8 @@ HealthCheckFailure: container health check failed
 
 **Solution**:
 
-- Check that the SSR target group has the correct health check path (/health)
+- Check that the SSR target group has the correct health check path (`/health`)
+- Check that the API target group has the correct health check path (`/health/`)
 - Verify the load balancer listener rules are routing frontend paths to the SSR target group
 - Ensure the SSR container is exposing port 3000
 
