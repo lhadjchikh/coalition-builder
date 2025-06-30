@@ -96,13 +96,13 @@ func (tc *TestConfig) getAccountID() (string, error) {
 	// Fallback to STS call (for local development)
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(tc.AWSRegion))
 	if err != nil {
-		return "", fmt.Errorf("failed to load AWS configuration: %v. Please ensure AWS credentials are configured", err)
+		return "", fmt.Errorf("failed to load AWS configuration: %w. Please ensure AWS credentials are configured", err)
 	}
 
 	stsClient := sts.NewFromConfig(cfg)
 	result, err := stsClient.GetCallerIdentity(context.TODO(), &sts.GetCallerIdentityInput{})
 	if err != nil {
-		return "", fmt.Errorf("failed to get AWS caller identity: %v. Please ensure AWS credentials are valid", err)
+		return "", fmt.Errorf("failed to get AWS caller identity: %w. Please ensure AWS credentials are valid", err)
 	}
 
 	return *result.Account, nil
