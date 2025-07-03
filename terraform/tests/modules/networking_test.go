@@ -404,3 +404,147 @@ func TestCostOptimization(t *testing.T) {
 	s3EndpointID := terraform.Output(t, terraformOptions, "s3_endpoint_id")
 	assert.NotEmpty(t, s3EndpointID, "S3 VPC endpoint should replace NAT Gateway for AWS service access")
 }
+
+// TestEndpointSubnetLogic verifies both single-AZ and multi-AZ VPC endpoint configurations
+func TestEndpointSubnetLogic(t *testing.T) {
+	common.SkipIfShortTest(t)
+
+	// Test single-AZ endpoint configuration (cost optimization)
+	t.Run("SingleAZEndpoints", func(t *testing.T) {
+		testConfig := common.NewTestConfig("../../modules/networking")
+		testVars := common.GetNetworkingTestVars()
+		testVars["create_vpc_endpoints"] = true
+		testVars["create_private_subnets"] = true
+		testVars["enable_single_az_endpoints"] = true
+
+		terraformOptions := testConfig.GetModuleTerraformOptions("../../modules/networking", testVars)
+		defer common.CleanupResources(t, terraformOptions)
+
+		terraform.InitAndApply(t, terraformOptions)
+
+		// Validate that interface endpoints are created in only one subnet
+		vpcID := terraform.Output(t, terraformOptions, "vpc_id")
+		privateSubnetIDs := terraform.OutputList(t, terraformOptions, "private_subnet_ids")
+		assert.Len(t, privateSubnetIDs, 2, "Should have 2 private subnets available")
+
+		// Create AWS client to check endpoint subnet configuration
+		cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(testConfig.AWSRegion))
+		assert.NoError(t, err)
+		ec2Client := ec2.NewFromConfig(cfg)
+
+		// Get all interface endpoints for this VPC
+		input := &ec2.DescribeVpcEndpointsInput{
+			Filters: []types.Filter{
+				{
+					Name:   aws.String("vpc-id"),
+					Values: []string{vpcID},
+				},
+				{
+					Name:   aws.String("vpc-endpoint-type"),
+					Values: []string{"Interface"},
+				},
+			},
+		}
+
+		result, err := ec2Client.DescribeVpcEndpoints(context.TODO(), input)
+		assert.NoError(t, err)
+
+		// Verify interface endpoints exist and are in single AZ
+		assert.Greater(t, len(result.VpcEndpoints), 0, "Should have interface endpoints")
+
+		for _, endpoint := range result.VpcEndpoints {
+			// Each interface endpoint should be in exactly 1 subnet (single-AZ)
+			assert.Len(t, endpoint.SubnetIds, 1, "Single-AZ endpoints should be in exactly 1 subnet")
+
+			// Verify the subnet is one of our private subnets
+			subnetInPrivateList := false
+			for _, privateSubnetID := range privateSubnetIDs {
+				if endpoint.SubnetIds[0] == privateSubnetID {
+					subnetInPrivateList = true
+					break
+				}
+			}
+			assert.True(t, subnetInPrivateList, "Endpoint subnet should be one of the private subnets")
+		}
+	})
+
+	// Test multi-AZ endpoint configuration (high availability)
+	t.Run("MultiAZEndpoints", func(t *testing.T) {
+		testConfig := common.NewTestConfig("../../modules/networking")
+		testVars := common.GetNetworkingTestVars()
+		testVars["create_vpc_endpoints"] = true
+		testVars["create_private_subnets"] = true
+		testVars["enable_single_az_endpoints"] = false
+
+		terraformOptions := testConfig.GetModuleTerraformOptions("../../modules/networking", testVars)
+		defer common.CleanupResources(t, terraformOptions)
+
+		terraform.InitAndApply(t, terraformOptions)
+
+		// Validate that interface endpoints are created in multiple subnets
+		vpcID := terraform.Output(t, terraformOptions, "vpc_id")
+		privateSubnetIDs := terraform.OutputList(t, terraformOptions, "private_subnet_ids")
+		assert.Len(t, privateSubnetIDs, 2, "Should have 2 private subnets available")
+
+		// Create AWS client to check endpoint subnet configuration
+		cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(testConfig.AWSRegion))
+		assert.NoError(t, err)
+		ec2Client := ec2.NewFromConfig(cfg)
+
+		// Get all interface endpoints for this VPC
+		input := &ec2.DescribeVpcEndpointsInput{
+			Filters: []types.Filter{
+				{
+					Name:   aws.String("vpc-id"),
+					Values: []string{vpcID},
+				},
+				{
+					Name:   aws.String("vpc-endpoint-type"),
+					Values: []string{"Interface"},
+				},
+			},
+		}
+
+		result, err := ec2Client.DescribeVpcEndpoints(context.TODO(), input)
+		assert.NoError(t, err)
+
+		// Verify interface endpoints exist and are in multiple AZs
+		assert.Greater(t, len(result.VpcEndpoints), 0, "Should have interface endpoints")
+
+		for _, endpoint := range result.VpcEndpoints {
+			// Each interface endpoint should be in exactly 2 subnets (multi-AZ)
+			assert.Len(t, endpoint.SubnetIds, 2, "Multi-AZ endpoints should be in exactly 2 subnets")
+
+			// Verify both subnets are in our private subnet list
+			for _, endpointSubnetID := range endpoint.SubnetIds {
+				subnetInPrivateList := false
+				for _, privateSubnetID := range privateSubnetIDs {
+					if endpointSubnetID == privateSubnetID {
+						subnetInPrivateList = true
+						break
+					}
+				}
+				assert.True(t, subnetInPrivateList, "All endpoint subnets should be private subnets")
+			}
+		}
+	})
+
+	// Test validation: single-AZ with no private subnets should fail
+	t.Run("ValidationFailureNoSubnets", func(t *testing.T) {
+		testConfig := common.NewTestConfig("../../modules/networking")
+		testVars := common.GetNetworkingTestVars()
+		testVars["create_vpc_endpoints"] = true
+		testVars["create_private_subnets"] = false // No private subnets
+		testVars["enable_single_az_endpoints"] = true
+		testVars["private_subnet_ids"] = []string{} // Empty existing subnets
+
+		terraformOptions := testConfig.GetModuleTerraformOptions("../../modules/networking", testVars)
+		defer common.CleanupResources(t, terraformOptions)
+
+		// This should fail validation during plan/apply
+		_, err := terraform.InitAndPlanE(t, terraformOptions)
+		assert.Error(t, err, "Should fail when enable_single_az_endpoints=true but no private subnets configured")
+		assert.Contains(t, err.Error(), "at least one private subnet must be configured",
+			"Error should mention subnet requirement")
+	})
+}
