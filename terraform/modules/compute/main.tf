@@ -294,6 +294,14 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "CACHE_URL"
           value = "redis://localhost:6379/1"
+        },
+        {
+          name  = "SITE_PASSWORD_ENABLED"
+          value = tostring(var.site_password_enabled)
+        },
+        {
+          name  = "SITE_PASSWORD"
+          value = var.site_password
         }
       ]
       secrets = [
@@ -427,6 +435,14 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "CACHE_URL"
           value = "redis://localhost:6379/1"
+        },
+        {
+          name  = "SITE_PASSWORD_ENABLED"
+          value = tostring(var.site_password_enabled)
+        },
+        {
+          name  = "SITE_PASSWORD"
+          value = var.site_password
         }
       ]
       secrets = [

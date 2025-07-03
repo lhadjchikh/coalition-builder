@@ -129,6 +129,8 @@ module "compute" {
   health_check_path_api     = var.health_check_path_api
   allowed_hosts             = var.allowed_hosts
   csrf_trusted_origins      = var.csrf_trusted_origins
+  site_password_enabled     = var.site_password_enabled
+  site_password             = var.site_password
 
   # Make sure load balancer and secrets are created first
   depends_on = [

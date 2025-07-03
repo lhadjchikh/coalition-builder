@@ -221,3 +221,18 @@ variable "csrf_trusted_origins" {
   type        = string
   default     = ""
 }
+
+# Site Password Protection Variables
+variable "site_password_enabled" {
+  description = "Enable password protection for the entire site during development"
+  type        = bool
+  default     = false
+}
+
+variable "site_password" {
+  description = "Password for site access when password protection is enabled"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
