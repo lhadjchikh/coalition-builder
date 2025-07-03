@@ -238,11 +238,6 @@ resource "awscc_ce_anomaly_monitor" "project_anomaly_monitor" {
     Values       = ["Amazon Elastic Compute Cloud - Compute", "Amazon Relational Database Service", "Amazon Virtual Private Cloud", "Amazon Elastic Container Service", "Amazon Elastic Container Registry (ECR)"]
     MatchOptions = ["EQUALS"]
   })
-
-  tags = [{
-    key   = "Name"
-    value = "${var.prefix}-anomaly-monitor"
-  }]
 }
 
 # SNS Topic for Cost Anomaly Alerts
@@ -291,10 +286,5 @@ resource "awscc_ce_anomaly_subscription" "project_anomaly_subscription" {
       }
     }]
   })
-
-  tags = [{
-    key   = "Name"
-    value = "${var.prefix}-anomaly-subscription"
-  }]
 }
 
