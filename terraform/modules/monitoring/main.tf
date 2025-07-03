@@ -262,7 +262,7 @@ resource "awscc_ce_anomaly_subscription" "project_anomaly_subscription" {
   frequency         = "DAILY"
 
   monitor_arn_list = [
-    awscc_ce_anomaly_monitor.project_anomaly_monitor.arn
+    awscc_ce_anomaly_monitor.project_anomaly_monitor.id
   ]
 
   subscribers = [

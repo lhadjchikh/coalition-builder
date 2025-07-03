@@ -15,12 +15,12 @@ output "budget_info" {
 
 output "cost_anomaly_monitor_arn" {
   description = "ARN of the cost anomaly monitor"
-  value       = awscc_ce_anomaly_monitor.project_anomaly_monitor.arn
+  value       = awscc_ce_anomaly_monitor.project_anomaly_monitor.id
 }
 
 output "cost_anomaly_subscription_arn" {
   description = "ARN of the cost anomaly subscription"
-  value       = awscc_ce_anomaly_subscription.project_anomaly_subscription.arn
+  value       = awscc_ce_anomaly_subscription.project_anomaly_subscription.id
 }
 
 output "cost_anomaly_sns_topic_arn" {
