@@ -70,7 +70,7 @@ docker compose exec api python scripts/create_test_data.py
 
 - **Backend**: Django 5.2 + PostgreSQL + PostGIS
 - **Frontend**: React 19 + TypeScript
-- **SSR**: Next.js 14 (optional)
+- **SSR**: Next.js 15 (optional)
 - **Infrastructure**: AWS + Terraform
 - **Testing**: Comprehensive test coverage
 

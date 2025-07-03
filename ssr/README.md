@@ -15,7 +15,7 @@ Quick links:
 
 This implementation uses Next.js App Router for server-side rendering. Key aspects:
 
-- **App Router**: Uses Next.js 14's App Router architecture
+- **App Router**: Uses Next.js 15's App Router architecture
 - **API Integration**: Fetches data from the Django backend API
 - **Docker Ready**: Optimized for containerized deployment
 - **Health Monitoring**: Includes health check and metrics endpoints
