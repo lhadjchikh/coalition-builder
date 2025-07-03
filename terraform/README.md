@@ -372,16 +372,17 @@ To access the RDS database through the bastion host:
 
 ## Networking Variables
 
-| Variable Name            | Description                                                                | Default | Required                                  |
-| ------------------------ | -------------------------------------------------------------------------- | ------- | ----------------------------------------- |
-| `create_vpc`             | Whether to create a new VPC                                                | `true`  | No                                        |
-| `vpc_id`                 | ID of existing VPC (if `create_vpc` is false)                              | `""`    | Yes, if `create_vpc` is false             |
-| `create_public_subnets`  | Whether to create new public subnets                                       | `true`  | No                                        |
-| `public_subnet_ids`      | IDs of existing public subnets (if `create_public_subnets` is false)       | `[]`    | Yes, if `create_public_subnets` is false  |
-| `create_private_subnets` | Whether to create new private app subnets                                  | `true`  | No                                        |
-| `private_subnet_ids`     | IDs of existing private app subnets (if `create_private_subnets` is false) | `[]`    | Yes, if `create_private_subnets` is false |
-| `create_db_subnets`      | Whether to create new database subnets                                     | `true`  | No                                        |
-| `db_subnet_ids`          | IDs of existing database subnets (if `create_db_subnets` is false)         | `[]`    | Yes, if `create_db_subnets` is false      |
+| Variable Name                | Description                                                                | Default | Required                                  |
+| ---------------------------- | -------------------------------------------------------------------------- | ------- | ----------------------------------------- |
+| `create_vpc`                 | Whether to create a new VPC                                                | `true`  | No                                        |
+| `vpc_id`                     | ID of existing VPC (if `create_vpc` is false)                              | `""`    | Yes, if `create_vpc` is false             |
+| `create_public_subnets`      | Whether to create new public subnets                                       | `true`  | No                                        |
+| `public_subnet_ids`          | IDs of existing public subnets (if `create_public_subnets` is false)       | `[]`    | Yes, if `create_public_subnets` is false  |
+| `create_private_subnets`     | Whether to create new private app subnets                                  | `true`  | No                                        |
+| `private_subnet_ids`         | IDs of existing private app subnets (if `create_private_subnets` is false) | `[]`    | Yes, if `create_private_subnets` is false |
+| `create_db_subnets`          | Whether to create new database subnets                                     | `true`  | No                                        |
+| `db_subnet_ids`              | IDs of existing database subnets (if `create_db_subnets` is false)         | `[]`    | Yes, if `create_db_subnets` is false      |
+| `enable_single_az_endpoints` | Deploy VPC endpoints in single AZ to reduce costs (~50% savings)           | `true`  | No                                        |
 
 ## Database Variables
 
