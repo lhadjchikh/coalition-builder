@@ -312,7 +312,7 @@ locals {
   # Safely determine subnet IDs for VPC endpoints with validation
   endpoint_subnet_ids = var.enable_single_az_endpoints ? (
     length(local.private_subnet_ids) > 0 ?
-    slice(local.private_subnet_ids, 0, 1) :
+    slice(sort(local.private_subnet_ids), 0, 1) :
     [] # Empty list will cause clear error if no subnets available
   ) : local.private_subnet_ids
 
