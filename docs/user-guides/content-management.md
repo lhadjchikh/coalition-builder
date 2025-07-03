@@ -18,7 +18,6 @@ Coalition Builder provides a powerful content management system that enables you
 ### Accessing the Admin Interface
 
 1. **Login Process**:
-
    - Navigate to `http://your-domain.com/admin/`
    - Enter your username and password
    - Click "Log in" to access the admin dashboard
