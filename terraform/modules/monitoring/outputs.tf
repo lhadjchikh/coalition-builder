@@ -27,3 +27,8 @@ output "cost_anomaly_sns_topic_arn" {
   description = "ARN of the SNS topic for cost anomaly alerts"
   value       = aws_sns_topic.cost_anomaly_alerts.arn
 }
+
+output "budget_alerts_sns_topic_arn" {
+  description = "ARN of the SNS topic for budget alerts"
+  value       = aws_sns_topic.budget_alerts.arn
+}

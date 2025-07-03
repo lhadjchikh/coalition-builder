@@ -148,6 +148,22 @@ resource "aws_flow_log" "vpc_flow_logs" {
   }
 }
 
+# SNS Topic for Budget Alerts
+resource "aws_sns_topic" "budget_alerts" {
+  name = "${var.prefix}-budget-alerts"
+
+  tags = {
+    Name = "${var.prefix}-budget-alerts"
+  }
+}
+
+# SNS Topic Subscription for Budget Email Alerts
+resource "aws_sns_topic_subscription" "budget_email" {
+  topic_arn = aws_sns_topic.budget_alerts.arn
+  protocol  = "email"
+  endpoint  = var.alert_email
+}
+
 # Budget Monitoring
 resource "aws_budgets_budget" "monthly" {
   name              = "${var.prefix}-monthly-budget"
@@ -181,29 +197,29 @@ resource "aws_budgets_budget" "monthly" {
 
   # Early warning at 70% of budget
   notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 70
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "ACTUAL"
-    subscriber_email_addresses = [var.alert_email]
+    comparison_operator       = "GREATER_THAN"
+    threshold                 = 70
+    threshold_type            = "PERCENTAGE"
+    notification_type         = "ACTUAL"
+    subscriber_sns_topic_arns = [aws_sns_topic.budget_alerts.arn]
   }
 
   # Near limit warning at 90% of budget
   notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 90
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "ACTUAL"
-    subscriber_email_addresses = [var.alert_email]
+    comparison_operator       = "GREATER_THAN"
+    threshold                 = 90
+    threshold_type            = "PERCENTAGE"
+    notification_type         = "ACTUAL"
+    subscriber_sns_topic_arns = [aws_sns_topic.budget_alerts.arn]
   }
 
   # Forecast warning if we're projected to exceed budget
   notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 100
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "FORECASTED"
-    subscriber_email_addresses = [var.alert_email]
+    comparison_operator       = "GREATER_THAN"
+    threshold                 = 100
+    threshold_type            = "PERCENTAGE"
+    notification_type         = "FORECASTED"
+    subscriber_sns_topic_arns = [aws_sns_topic.budget_alerts.arn]
   }
 
   tags = {
