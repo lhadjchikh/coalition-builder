@@ -834,6 +834,45 @@ These different endpoints are intentional and serve different purposes. Do not a
    - Daily anomaly alerts for changes >= $5 impact
    - Email notifications to configured alert address
 
+## Terraform Outputs
+
+After deployment, the following outputs are available for integration with external systems:
+
+### **Access Outputs**
+
+- `website_url` - Primary application URL
+- `load_balancer_dns` - Load balancer DNS name for direct access
+- `bastion_public_ip` - Bastion host IP for secure database access
+
+### **Infrastructure Outputs**
+
+- `vpc_id` - VPC identifier for network configurations
+- `public_subnet_ids` - Public subnet IDs for load balancer placement
+- `private_subnet_ids` - Private subnet IDs for application deployment
+- `database_endpoint` - RDS endpoint for application configuration
+- `api_ecr_repository_url` - ECR repository URL for API container images
+- `ssr_ecr_repository_url` - ECR repository URL for SSR container images
+
+### **Cost Monitoring Outputs**
+
+- `cost_anomaly_monitor_arn` - ARN of the Cost Explorer anomaly monitor for programmatic access
+- `cost_anomaly_subscription_arn` - ARN of the anomaly subscription for management operations
+- `budget_alerts_sns_topic_arn` - SNS topic ARN for budget alerts integration
+- `cost_anomaly_sns_topic_arn` - SNS topic ARN for anomaly alerts integration
+
+### **Usage Examples**
+
+```bash
+# Get cost monitoring SNS topic for external integration
+terraform output cost_anomaly_sns_topic_arn
+
+# Get database endpoint for application configuration
+terraform output database_endpoint
+
+# Get all outputs in JSON format
+terraform output -json
+```
+
 ### Troubleshooting
 
 1. **Check prerequisite tools** (Python3, AWS CLI, psql) before deployment

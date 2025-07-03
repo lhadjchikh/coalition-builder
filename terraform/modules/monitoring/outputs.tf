@@ -14,12 +14,12 @@ output "budget_info" {
 }
 
 output "cost_anomaly_monitor_arn" {
-  description = "ARN of the cost anomaly monitor"
+  description = "ID/ARN of the cost anomaly monitor (awscc provider uses id attribute for ARNs)"
   value       = awscc_ce_anomaly_monitor.project_anomaly_monitor.id
 }
 
 output "cost_anomaly_subscription_arn" {
-  description = "ARN of the cost anomaly subscription"
+  description = "ID/ARN of the cost anomaly subscription (awscc provider uses id attribute for ARNs)"
   value       = awscc_ce_anomaly_subscription.project_anomaly_subscription.id
 }
 
