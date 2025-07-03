@@ -125,6 +125,6 @@ variable "enable_single_az_endpoints" {
     condition = var.enable_single_az_endpoints ? (
       var.create_private_subnets || length(var.private_subnet_ids) > 0
     ) : true
-    error_message = "When enable_single_az_endpoints is true, at least one private subnet must be configured (either create_private_subnets=true or provide private_subnet_ids)."
+    error_message = "When enable_single_az_endpoints is true, at least one private subnet must be configured."
   }
 }
