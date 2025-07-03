@@ -263,3 +263,9 @@ variable "csrf_trusted_origins" {
   type        = string
   default     = ""
 }
+
+variable "enable_single_az_endpoints" {
+  description = "Deploy VPC endpoints in a single AZ to reduce costs (saves ~50% on endpoint costs)"
+  type        = bool
+  default     = true
+}

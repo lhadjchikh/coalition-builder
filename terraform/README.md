@@ -808,7 +808,7 @@ These different endpoints are intentional and serve different purposes. Do not a
 
 1. **VPC Endpoints**: Single-AZ deployment reduces costs by ~50%
    - Default configuration uses single-AZ endpoints (saves ~$0.96/day)
-   - For high availability, set `single_az_endpoints = false` in production
+   - For high availability, set `enable_single_az_endpoints = false` in production
    - Monitor AZ failures and have a recovery plan
 
 2. **No NAT Gateway**: Architecture avoids expensive NAT Gateways

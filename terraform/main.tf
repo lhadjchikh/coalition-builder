@@ -35,7 +35,8 @@ module "networking" {
   private_db_subnet_b_cidr = var.private_db_subnet_b_cidr
 
   # VPC Endpoints for private subnet internet access
-  create_vpc_endpoints = true
+  create_vpc_endpoints       = true
+  enable_single_az_endpoints = var.enable_single_az_endpoints
 }
 
 # Security Module
