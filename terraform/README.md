@@ -804,6 +804,30 @@ These different endpoints are intentional and serve different purposes. Do not a
 5. **Limit bastion host access** to specific IP addresses when possible
 6. **Implement proper security group rules** following least privilege principle
 
+### Cost Optimization
+
+1. **VPC Endpoints**: Single-AZ deployment reduces costs by ~50%
+   - Default configuration uses single-AZ endpoints (saves ~$0.96/day)
+   - For high availability, set `single_az_endpoints = false` in production
+   - Monitor AZ failures and have a recovery plan
+
+2. **No NAT Gateway**: Architecture avoids expensive NAT Gateways
+   - Saves ~$3/day ($90/month) compared to multi-AZ NAT
+   - Uses VPC endpoints for AWS service access instead
+   - Trade-off: More endpoints to manage, but still cheaper overall
+
+3. **Database Optimization**:
+   - Single-AZ RDS deployment (Multi-AZ disabled)
+   - Performance Insights disabled
+   - Consider stopping database during development downtime
+
+4. **Daily Cost Breakdown** (approximate):
+   - VPC Endpoints (single-AZ): ~$0.96/day
+   - Application Load Balancer: ~$0.60/day
+   - RDS t4g.micro: ~$0.50/day
+   - ECS Fargate: Variable based on usage
+   - Total baseline: ~$2-3/day
+
 ### Troubleshooting
 
 1. **Check prerequisite tools** (Python3, AWS CLI, psql) before deployment

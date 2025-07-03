@@ -115,3 +115,9 @@ variable "existing_endpoints_security_group_id" {
   type        = string
   default     = ""
 }
+
+variable "single_az_endpoints" {
+  description = "Deploy VPC endpoints in a single AZ to reduce costs (saves ~50% on endpoint costs)"
+  type        = bool
+  default     = true
+}
