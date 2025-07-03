@@ -205,7 +205,7 @@ variable "alert_email" {
 variable "budget_limit_amount" {
   description = "Monthly budget limit amount in USD"
   type        = string
-  default     = "30"
+  default     = "100"
 }
 
 # Bastion Host Variables
