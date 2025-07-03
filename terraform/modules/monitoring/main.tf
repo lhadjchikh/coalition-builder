@@ -148,6 +148,22 @@ resource "aws_flow_log" "vpc_flow_logs" {
   }
 }
 
+# SNS Topic for Budget Alerts
+resource "aws_sns_topic" "budget_alerts" {
+  name = "${var.prefix}-budget-alerts"
+
+  tags = {
+    Name = "${var.prefix}-budget-alerts"
+  }
+}
+
+# SNS Topic Subscription for Budget Email Alerts
+resource "aws_sns_topic_subscription" "budget_alerts_email_subscription" {
+  topic_arn = aws_sns_topic.budget_alerts.arn
+  protocol  = "email"
+  endpoint  = var.alert_email
+}
+
 # Budget Monitoring
 resource "aws_budgets_budget" "monthly" {
   name              = "${var.prefix}-monthly-budget"
@@ -181,32 +197,94 @@ resource "aws_budgets_budget" "monthly" {
 
   # Early warning at 70% of budget
   notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 70
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "ACTUAL"
-    subscriber_email_addresses = [var.alert_email]
+    comparison_operator       = "GREATER_THAN"
+    threshold                 = 70
+    threshold_type            = "PERCENTAGE"
+    notification_type         = "ACTUAL"
+    subscriber_sns_topic_arns = [aws_sns_topic.budget_alerts.arn]
   }
 
   # Near limit warning at 90% of budget
   notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 90
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "ACTUAL"
-    subscriber_email_addresses = [var.alert_email]
+    comparison_operator       = "GREATER_THAN"
+    threshold                 = 90
+    threshold_type            = "PERCENTAGE"
+    notification_type         = "ACTUAL"
+    subscriber_sns_topic_arns = [aws_sns_topic.budget_alerts.arn]
   }
 
   # Forecast warning if we're projected to exceed budget
   notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 100
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "FORECASTED"
-    subscriber_email_addresses = [var.alert_email]
+    comparison_operator       = "GREATER_THAN"
+    threshold                 = 100
+    threshold_type            = "PERCENTAGE"
+    notification_type         = "FORECASTED"
+    subscriber_sns_topic_arns = [aws_sns_topic.budget_alerts.arn]
   }
 
   tags = {
     Name = "${var.prefix}-monthly-budget"
   }
 }
+
+# Cost Anomaly Detection
+resource "awscc_ce_anomaly_monitor" "project_anomaly_monitor" {
+  monitor_name = "${var.prefix}-anomaly-monitor"
+  monitor_type = "DIMENSIONAL"
+
+  monitor_specification = jsonencode({
+    Dimension    = "SERVICE"
+    Key          = "SERVICE"
+    Values       = ["Amazon Elastic Compute Cloud - Compute", "Amazon Relational Database Service", "Amazon Virtual Private Cloud", "Amazon Elastic Container Service", "Amazon Elastic Container Registry (ECR)"]
+    MatchOptions = ["EQUALS"]
+  })
+}
+
+# SNS Topic for Cost Anomaly Alerts
+resource "aws_sns_topic" "cost_anomaly_alerts" {
+  name = "${var.prefix}-cost-anomaly-alerts"
+
+  tags = {
+    Name = "${var.prefix}-cost-anomaly-alerts"
+  }
+}
+
+# SNS Topic Subscription for Email Alerts
+resource "aws_sns_topic_subscription" "cost_anomaly_email" {
+  topic_arn = aws_sns_topic.cost_anomaly_alerts.arn
+  protocol  = "email"
+  endpoint  = var.alert_email
+}
+
+# Cost Anomaly Subscription
+resource "awscc_ce_anomaly_subscription" "project_anomaly_subscription" {
+  subscription_name = "${var.prefix}-anomaly-subscription"
+  frequency         = "DAILY"
+
+  monitor_arn_list = [
+    awscc_ce_anomaly_monitor.project_anomaly_monitor.id
+  ]
+
+  subscribers = [
+    {
+      type    = "EMAIL"
+      address = var.alert_email
+    },
+    {
+      type    = "SNS"
+      address = aws_sns_topic.cost_anomaly_alerts.arn
+    }
+  ]
+
+  # Alert on anomalies with impact >= $5
+  threshold_expression = jsonencode({
+    And = [{
+      Dimensions = {
+        Key          = "ANOMALY_TOTAL_IMPACT_ABSOLUTE"
+        Values       = ["5"]
+        MatchOptions = ["GREATER_THAN_OR_EQUAL"]
+      }
+    }]
+  })
+}
+

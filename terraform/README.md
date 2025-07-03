@@ -372,16 +372,17 @@ To access the RDS database through the bastion host:
 
 ## Networking Variables
 
-| Variable Name            | Description                                                                | Default | Required                                  |
-| ------------------------ | -------------------------------------------------------------------------- | ------- | ----------------------------------------- |
-| `create_vpc`             | Whether to create a new VPC                                                | `true`  | No                                        |
-| `vpc_id`                 | ID of existing VPC (if `create_vpc` is false)                              | `""`    | Yes, if `create_vpc` is false             |
-| `create_public_subnets`  | Whether to create new public subnets                                       | `true`  | No                                        |
-| `public_subnet_ids`      | IDs of existing public subnets (if `create_public_subnets` is false)       | `[]`    | Yes, if `create_public_subnets` is false  |
-| `create_private_subnets` | Whether to create new private app subnets                                  | `true`  | No                                        |
-| `private_subnet_ids`     | IDs of existing private app subnets (if `create_private_subnets` is false) | `[]`    | Yes, if `create_private_subnets` is false |
-| `create_db_subnets`      | Whether to create new database subnets                                     | `true`  | No                                        |
-| `db_subnet_ids`          | IDs of existing database subnets (if `create_db_subnets` is false)         | `[]`    | Yes, if `create_db_subnets` is false      |
+| Variable Name                | Description                                                                | Default | Required                                  |
+| ---------------------------- | -------------------------------------------------------------------------- | ------- | ----------------------------------------- |
+| `create_vpc`                 | Whether to create a new VPC                                                | `true`  | No                                        |
+| `vpc_id`                     | ID of existing VPC (if `create_vpc` is false)                              | `""`    | Yes, if `create_vpc` is false             |
+| `create_public_subnets`      | Whether to create new public subnets                                       | `true`  | No                                        |
+| `public_subnet_ids`          | IDs of existing public subnets (if `create_public_subnets` is false)       | `[]`    | Yes, if `create_public_subnets` is false  |
+| `create_private_subnets`     | Whether to create new private app subnets                                  | `true`  | No                                        |
+| `private_subnet_ids`         | IDs of existing private app subnets (if `create_private_subnets` is false) | `[]`    | Yes, if `create_private_subnets` is false |
+| `create_db_subnets`          | Whether to create new database subnets                                     | `true`  | No                                        |
+| `db_subnet_ids`              | IDs of existing database subnets (if `create_db_subnets` is false)         | `[]`    | Yes, if `create_db_subnets` is false      |
+| `enable_single_az_endpoints` | Deploy VPC endpoints in single AZ to reduce costs (~50% savings)           | `true`  | No                                        |
 
 ## Database Variables
 
@@ -803,6 +804,75 @@ These different endpoints are intentional and serve different purposes. Do not a
 4. **Use bastion hosts** for controlled access to private resources
 5. **Limit bastion host access** to specific IP addresses when possible
 6. **Implement proper security group rules** following least privilege principle
+
+### Cost Optimization
+
+1. **VPC Endpoints**: Single-AZ deployment reduces costs by ~50%
+   - Default configuration uses single-AZ endpoints (saves ~$0.96/day)
+   - For high availability, set `enable_single_az_endpoints = false` in production
+   - Monitor AZ failures and have a recovery plan
+
+2. **No NAT Gateway**: Architecture avoids expensive NAT Gateways
+   - Saves ~$3/day ($90/month) compared to multi-AZ NAT
+   - Uses VPC endpoints for AWS service access instead
+   - Trade-off: More endpoints to manage, but still cheaper overall
+
+3. **Database Optimization**:
+   - Single-AZ RDS deployment (Multi-AZ disabled)
+   - Performance Insights disabled
+   - Consider stopping database during development downtime
+
+4. **Daily Cost Breakdown** (approximate):
+   - VPC Endpoints (single-AZ): ~$0.96/day
+   - Application Load Balancer: ~$0.60/day
+   - RDS t4g.micro: ~$0.50/day
+   - ECS Fargate: Variable based on usage
+   - Total baseline: ~$2-3/day
+
+5. **Cost Monitoring and Alerts**:
+   - Monthly budget alerts at 70%, 90%, and 100% forecast
+   - Cost anomaly detection for unusual spending patterns
+   - Daily anomaly alerts for changes >= $5 impact
+   - Email notifications to configured alert address
+
+## Terraform Outputs
+
+After deployment, the following outputs are available for integration with external systems:
+
+### **Access Outputs**
+
+- `website_url` - Primary application URL
+- `load_balancer_dns` - Load balancer DNS name for direct access
+- `bastion_public_ip` - Bastion host IP for secure database access
+
+### **Infrastructure Outputs**
+
+- `vpc_id` - VPC identifier for network configurations
+- `public_subnet_ids` - Public subnet IDs for load balancer placement
+- `private_subnet_ids` - Private subnet IDs for application deployment
+- `database_endpoint` - RDS endpoint for application configuration
+- `api_ecr_repository_url` - ECR repository URL for API container images
+- `ssr_ecr_repository_url` - ECR repository URL for SSR container images
+
+### **Cost Monitoring Outputs**
+
+- `cost_anomaly_monitor_arn` - ARN of the Cost Explorer anomaly monitor for programmatic access
+- `cost_anomaly_subscription_arn` - ARN of the anomaly subscription for management operations
+- `budget_alerts_sns_topic_arn` - SNS topic ARN for budget alerts integration
+- `cost_anomaly_sns_topic_arn` - SNS topic ARN for anomaly alerts integration
+
+### **Usage Examples**
+
+```bash
+# Get cost monitoring SNS topic for external integration
+terraform output cost_anomaly_sns_topic_arn
+
+# Get database endpoint for application configuration
+terraform output database_endpoint
+
+# Get all outputs in JSON format
+terraform output -json
+```
 
 ### Troubleshooting
 

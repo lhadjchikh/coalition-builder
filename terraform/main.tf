@@ -6,6 +6,11 @@ provider "aws" {
   }
 }
 
+# AWS Cloud Control provider for Cost Explorer resources
+provider "awscc" {
+  region = var.aws_region
+}
+
 # Networking Module
 module "networking" {
   source = "./modules/networking"
@@ -35,7 +40,8 @@ module "networking" {
   private_db_subnet_b_cidr = var.private_db_subnet_b_cidr
 
   # VPC Endpoints for private subnet internet access
-  create_vpc_endpoints = true
+  create_vpc_endpoints       = true
+  enable_single_az_endpoints = var.enable_single_az_endpoints
 }
 
 # Security Module

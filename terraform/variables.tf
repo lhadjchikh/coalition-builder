@@ -205,7 +205,7 @@ variable "alert_email" {
 variable "budget_limit_amount" {
   description = "Monthly budget limit amount in USD"
   type        = string
-  default     = "30"
+  default     = "100"
 }
 
 # Bastion Host Variables
@@ -262,4 +262,10 @@ variable "csrf_trusted_origins" {
   description = "Django CSRF_TRUSTED_ORIGINS setting"
   type        = string
   default     = ""
+}
+
+variable "enable_single_az_endpoints" {
+  description = "Deploy VPC endpoints in a single AZ to reduce costs (saves ~50% on endpoint costs)"
+  type        = bool
+  default     = true
 }

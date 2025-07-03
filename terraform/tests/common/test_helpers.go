@@ -25,6 +25,7 @@ type TestConfig struct {
 	AWSRegion    string
 	Prefix       string
 	UniqueID     string
+	AccountID    string // Public field for test access
 	accountID    string // cached account ID to avoid repeated STS calls
 }
 
@@ -128,6 +129,14 @@ func (tc *TestConfig) mustGetAccountID() string {
 		log.Fatalf("Failed to get AWS account ID: %v", err)
 	}
 	return accountID
+}
+
+// GetAccountID lazily populates and returns the AccountID field
+func (tc *TestConfig) GetAccountID() string {
+	if tc.AccountID == "" {
+		tc.AccountID = tc.mustGetAccountID()
+	}
+	return tc.AccountID
 }
 
 // GetModuleTerraformOptions returns terraform options for testing individual modules
@@ -470,6 +479,15 @@ func GetDefaultSecurityTestVars() map[string]interface{} {
 		"vpc_id":                "vpc-12345678",
 		"allowed_bastion_cidrs": []string{"10.0.0.0/8"},
 		"database_subnet_cidrs": []string{"10.0.5.0/24", "10.0.6.0/24"},
+	}
+}
+
+// GetMonitoringTestVars returns default test variables for monitoring module
+func GetMonitoringTestVars() map[string]interface{} {
+	return map[string]interface{}{
+		"vpc_id":              "vpc-12345678",
+		"alert_email":         "test@example.com",
+		"budget_limit_amount": "100",
 	}
 }
 

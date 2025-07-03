@@ -115,3 +115,16 @@ variable "existing_endpoints_security_group_id" {
   type        = string
   default     = ""
 }
+
+variable "enable_single_az_endpoints" {
+  description = "Deploy VPC endpoints in a single AZ to reduce costs (saves ~50% on endpoint costs)"
+  type        = bool
+  default     = true
+
+  validation {
+    condition = var.enable_single_az_endpoints ? (
+      var.create_private_subnets || length(var.private_subnet_ids) > 0
+    ) : true
+    error_message = "When enable_single_az_endpoints is true, at least one private subnet must be configured."
+  }
+}
