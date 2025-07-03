@@ -161,10 +161,11 @@ resource "aws_iam_policy" "secrets_access" {
         Action = [
           "secretsmanager:GetSecretValue"
         ],
-        Resource = [
+        Resource = compact([
           var.db_url_secret_arn,
-          var.secret_key_secret_arn
-        ]
+          var.secret_key_secret_arn,
+          var.site_password_secret_arn
+        ])
       },
       {
         Effect = "Allow",
@@ -294,9 +295,13 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "CACHE_URL"
           value = "redis://localhost:6379/1"
+        },
+        {
+          name  = "SITE_PASSWORD_ENABLED"
+          value = tostring(var.site_password_enabled)
         }
       ]
-      secrets = [
+      secrets = concat([
         {
           name      = "SECRET_KEY",
           valueFrom = var.secret_key_secret_arn
@@ -305,7 +310,12 @@ resource "aws_ecs_task_definition" "app" {
           name      = "DATABASE_URL",
           valueFrom = "${var.db_url_secret_arn}:url::"
         }
-      ]
+        ], var.site_password_enabled && var.site_password_secret_arn != "" ? [
+        {
+          name      = "SITE_PASSWORD",
+          valueFrom = "${var.site_password_secret_arn}:password::"
+        }
+      ] : [])
       healthCheck = {
         command = [
           "CMD-SHELL",
@@ -427,9 +437,13 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "CACHE_URL"
           value = "redis://localhost:6379/1"
+        },
+        {
+          name  = "SITE_PASSWORD_ENABLED"
+          value = tostring(var.site_password_enabled)
         }
       ]
-      secrets = [
+      secrets = concat([
         {
           name      = "SECRET_KEY",
           valueFrom = var.secret_key_secret_arn
@@ -438,7 +452,12 @@ resource "aws_ecs_task_definition" "app" {
           name      = "DATABASE_URL",
           valueFrom = "${var.db_url_secret_arn}:url::"
         }
-      ]
+        ], var.site_password_enabled && var.site_password_secret_arn != "" ? [
+        {
+          name      = "SITE_PASSWORD",
+          valueFrom = "${var.site_password_secret_arn}:password::"
+        }
+      ] : [])
       healthCheck = {
         command = [
           "CMD-SHELL",

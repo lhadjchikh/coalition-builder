@@ -37,19 +37,97 @@ Coalition Builder uses two Docker Compose configurations:
 - TypeScript/React: Prettier formatting, ESLint
 - Git: Conventional commit messages
 
-### Running Tests
+### Site Password Protection
+
+Coalition Builder includes a password protection system to secure your site during development and testing phases.
+
+#### Quick Start
+
+Enable password protection (password required):
 
 ```bash
-# Backend tests
-cd backend
-poetry run pytest
+./scripts/enable-password-protection.sh admin your-secure-password
+```
+
+Disable password protection:
+
+```bash
+./scripts/disable-password-protection.sh
+```
+
+#### Custom Password Protection
+
+Enable with custom username and password:
+
+```bash
+./scripts/enable-password-protection.sh myuser my-secure-password-2024
+```
+
+**Security Note:** For security reasons, you must provide a password - no defaults are used.
+
+#### How It Works
+
+The password protection system uses two layers:
+
+**Development (Docker Compose)**
+
+- nginx basic authentication for the entire site
+- Protects all content at the web server level
+- Uses `.htpasswd` file for credential storage
+
+**Production (AWS/ECS)**
+
+- Django middleware for session-based authentication
+- Custom login page with clean UI
+- Maintains authentication state across requests
+
+#### Environment Variables
+
+- `SITE_PASSWORD_ENABLED`: Set to `true` to enable protection
+- `SITE_PASSWORD`: The password for site access (required when enabled)
+- `NGINX_CONFIG`: Switches nginx config between protected/unprotected
+
+#### Excluded Paths
+
+These paths remain accessible even when password protection is enabled:
+
+- `/health/` - Django health checks
+- `/health` - Next.js health checks
+- `/admin/` - Django admin (has its own authentication)
+- `/site-login/` - Password protection login endpoint
+
+#### Production Deployment
+
+For production environments, set these Terraform variables:
+
+```hcl
+site_password_enabled = true
+site_password = "your-secure-password"
+```
+
+The middleware will automatically handle authentication without affecting performance or functionality.
+
+### Running Tests
+
+For comprehensive testing information, see the [Testing Guide](development/testing.md).
+
+Quick commands:
+
+```bash
+# Backend tests (local)
+cd backend && poetry run pytest
+
+# Backend tests (Docker - recommended)
+docker compose run --rm api poetry run pytest
 
 # Frontend tests
-cd frontend
-npm test
+cd frontend && npm test
 
-# All tests
-./scripts/test-all.sh
+# Shell script tests
+cd scripts/tests && ./run_all_tests.sh
+
+# Terraform tests
+cd terraform/tests && go test ./...
 ```
 
 ### Code Quality

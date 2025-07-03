@@ -170,6 +170,43 @@ CACHE_URL=redis://localhost:6379/1
 - Honeypot field validation
 - Form timing analysis
 
+### Site Protection Configuration
+
+| Variable                | Description                                      | Default | Required |
+| ----------------------- | ------------------------------------------------ | ------- | -------- |
+| `SITE_PASSWORD_ENABLED` | Enable password protection for the entire site   | `false` | No       |
+| `SITE_PASSWORD`         | Password for site access when protection enabled | -       | Yes\*    |
+| `NGINX_CONFIG`          | Path to nginx configuration file                 | -       | No       |
+
+\* Required when `SITE_PASSWORD_ENABLED=true`
+
+**Usage:**
+
+The site protection system provides password protection during development and testing phases. It works at two levels:
+
+- **Development (Docker Compose)**: nginx basic authentication
+- **Production (AWS/ECS)**: Django middleware with session-based authentication
+
+**Example:**
+
+```bash
+# Enable password protection (password required)
+SITE_PASSWORD_ENABLED=true
+SITE_PASSWORD=my-secure-password
+
+# Switch nginx to protected configuration (development only)
+NGINX_CONFIG=./nginx.protected.conf
+```
+
+**Excluded Paths:**
+
+These paths remain accessible even when password protection is enabled:
+
+- `/health/` - Django health checks
+- `/health` - Next.js health checks
+- `/admin/` - Django admin (has its own authentication)
+- `/site-login/` - Password protection login endpoint
+
 ### Logging Configuration
 
 | Variable             | Description               | Default | Required |
@@ -315,11 +352,24 @@ TF_VAR_route53_zone_id=Z1D633PJN98FT9
 | `TF_VAR_alert_email`  | Email for alerts           | -       | Yes      |
 | `TF_VAR_budget_limit` | Monthly budget limit (USD) | `30`    | No       |
 
+### Site Protection (Production)
+
+| Variable                       | Description                              | Default | Required |
+| ------------------------------ | ---------------------------------------- | ------- | -------- |
+| `TF_VAR_site_password_enabled` | Enable password protection in production | `false` | No       |
+| `TF_VAR_site_password`         | Password for site access in production   | -       | Yes\*    |
+
+\* Required when `TF_VAR_site_password_enabled=true`
+
 **Example:**
 
 ```bash
 TF_VAR_alert_email=admin@yourdomain.com
 TF_VAR_budget_limit=50
+
+# Enable password protection for staging/preview environments
+TF_VAR_site_password_enabled=true
+TF_VAR_site_password=staging-access-2024
 ```
 
 ## Environment Files
@@ -352,6 +402,11 @@ ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS=3
 
 # Cache (for rate limiting) - Redis container in docker-compose
 CACHE_URL=redis://redis:6379/1
+
+# Site Protection (disabled by default in development)
+SITE_PASSWORD_ENABLED=false
+# SITE_PASSWORD=your-secure-password
+# NGINX_CONFIG=./nginx.dev.conf
 
 # Frontend
 NEXT_PUBLIC_API_URL=http://localhost:8000/api
@@ -398,6 +453,10 @@ ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS=3
 
 # Cache (Redis recommended for production)
 CACHE_URL=redis://redis:6379/1
+
+# Site Protection (can be enabled for staging/preview environments)
+SITE_PASSWORD_ENABLED=false
+# SITE_PASSWORD=secure-staging-password
 
 # Storage
 USE_S3=True

@@ -69,3 +69,29 @@ resource "aws_secretsmanager_secret_version" "secret_key" {
   }
 }
 
+# Site Password Secret (conditional creation)
+resource "aws_secretsmanager_secret" "site_password" {
+  count       = var.site_password_enabled ? 1 : 0
+  name        = "${var.prefix}/site-password"
+  description = "Site password for access protection"
+  kms_key_id  = aws_kms_key.secrets.arn
+
+  tags = {
+    Name = "${var.prefix}-site-password"
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "site_password" {
+  count     = var.site_password_enabled ? 1 : 0
+  secret_id = aws_secretsmanager_secret.site_password[0].id
+  secret_string = jsonencode({
+    password = var.site_password
+  })
+
+  lifecycle {
+    ignore_changes = [
+      secret_string
+    ]
+  }
+}
+
