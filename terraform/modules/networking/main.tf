@@ -309,6 +309,13 @@ locals {
   # Use a local for the security group ID, which could be either the created one or an existing one
   endpoints_security_group_id = var.existing_endpoints_security_group_id != "" ? var.existing_endpoints_security_group_id : (length(aws_security_group.ecs_endpoints) > 0 ? aws_security_group.ecs_endpoints[0].id : "")
 
+  # Safely determine subnet IDs for VPC endpoints with validation
+  endpoint_subnet_ids = var.enable_single_az_endpoints ? (
+    length(local.private_subnet_ids) > 0 ?
+    slice(local.private_subnet_ids, 0, 1) :
+    [] # Empty list will cause clear error if no subnets available
+  ) : local.private_subnet_ids
+
   vpc_endpoints = {
     ecr_api = {
       service_name = "com.amazonaws.${var.aws_region}.ecr.api"
@@ -334,7 +341,7 @@ resource "aws_vpc_endpoint" "interface" {
   vpc_id              = local.vpc_id
   service_name        = each.value.service_name
   vpc_endpoint_type   = "Interface"
-  subnet_ids          = var.single_az_endpoints ? [local.private_subnet_ids[0]] : local.private_subnet_ids
+  subnet_ids          = local.endpoint_subnet_ids
   security_group_ids  = [local.endpoints_security_group_id]
   private_dns_enabled = true
 
