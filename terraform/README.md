@@ -828,6 +828,12 @@ These different endpoints are intentional and serve different purposes. Do not a
    - ECS Fargate: Variable based on usage
    - Total baseline: ~$2-3/day
 
+5. **Cost Monitoring and Alerts**:
+   - Monthly budget alerts at 70%, 90%, and 100% forecast
+   - Cost anomaly detection for unusual spending patterns
+   - Daily anomaly alerts for changes >= $5 impact
+   - Email notifications to configured alert address
+
 ### Troubleshooting
 
 1. **Check prerequisite tools** (Python3, AWS CLI, psql) before deployment

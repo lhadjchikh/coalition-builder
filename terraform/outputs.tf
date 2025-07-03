@@ -81,6 +81,16 @@ output "budget_info" {
   value = module.monitoring.budget_info
 }
 
+output "cost_anomaly_detector_arn" {
+  description = "ARN of the cost anomaly detector for monitoring unusual spending"
+  value       = module.monitoring.cost_anomaly_detector_arn
+}
+
+output "cost_anomaly_subscription_arn" {
+  description = "ARN of the cost anomaly subscription for daily alerts"
+  value       = module.monitoring.cost_anomaly_subscription_arn
+}
+
 # Simple deployment status
 output "deployment_status" {
   description = "Overall deployment status"

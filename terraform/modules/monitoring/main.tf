@@ -210,3 +210,71 @@ resource "aws_budgets_budget" "monthly" {
     Name = "${var.prefix}-monthly-budget"
   }
 }
+
+# Cost Anomaly Detection
+resource "aws_ce_anomaly_detector" "project_anomaly_detector" {
+  name         = "${var.prefix}-anomaly-detector"
+  monitor_type = "DIMENSIONAL"
+
+  specification = jsonencode({
+    DimensionKey = "SERVICE"
+    MatchOptions = ["EQUALS"]
+    Values       = ["Amazon Elastic Compute Cloud - Compute", "Amazon Relational Database Service", "Amazon Virtual Private Cloud", "Amazon Elastic Container Service", "Amazon Elastic Container Registry (ECR)"]
+    Dimension    = "SERVICE"
+  })
+
+  tags = {
+    Name = "${var.prefix}-anomaly-detector"
+  }
+}
+
+# SNS Topic for Cost Anomaly Alerts
+resource "aws_sns_topic" "cost_anomaly_alerts" {
+  name = "${var.prefix}-cost-anomaly-alerts"
+
+  tags = {
+    Name = "${var.prefix}-cost-anomaly-alerts"
+  }
+}
+
+# SNS Topic Subscription for Email Alerts
+resource "aws_sns_topic_subscription" "cost_anomaly_email" {
+  topic_arn = aws_sns_topic.cost_anomaly_alerts.arn
+  protocol  = "email"
+  endpoint  = var.alert_email
+}
+
+# Cost Anomaly Subscription
+resource "aws_ce_anomaly_subscription" "project_anomaly_subscription" {
+  name      = "${var.prefix}-anomaly-subscription"
+  frequency = "DAILY"
+
+  monitor_arn_list = [
+    aws_ce_anomaly_detector.project_anomaly_detector.arn
+  ]
+
+  subscriber {
+    type    = "EMAIL"
+    address = var.alert_email
+  }
+
+  subscriber {
+    type    = "SNS"
+    address = aws_sns_topic.cost_anomaly_alerts.arn
+  }
+
+  # Alert on anomalies with impact >= $5
+  threshold_expression {
+    and {
+      dimension {
+        key           = "ANOMALY_TOTAL_IMPACT_ABSOLUTE"
+        values        = ["5"]
+        match_options = ["GREATER_THAN_OR_EQUAL"]
+      }
+    }
+  }
+
+  tags = {
+    Name = "${var.prefix}-anomaly-subscription"
+  }
+}
