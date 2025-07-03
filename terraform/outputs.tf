@@ -81,9 +81,9 @@ output "budget_info" {
   value = module.monitoring.budget_info
 }
 
-output "cost_anomaly_detector_arn" {
-  description = "ARN of the cost anomaly detector for monitoring unusual spending"
-  value       = module.monitoring.cost_anomaly_detector_arn
+output "cost_anomaly_monitor_arn" {
+  description = "ARN of the cost anomaly monitor for monitoring unusual spending"
+  value       = module.monitoring.cost_anomaly_monitor_arn
 }
 
 output "cost_anomaly_subscription_arn" {

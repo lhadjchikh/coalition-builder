@@ -6,6 +6,11 @@ provider "aws" {
   }
 }
 
+# AWS Cloud Control provider for Cost Explorer resources
+provider "awscc" {
+  region = var.aws_region
+}
+
 # Networking Module
 module "networking" {
   source = "./modules/networking"
