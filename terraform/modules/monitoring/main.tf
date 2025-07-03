@@ -158,7 +158,7 @@ resource "aws_sns_topic" "budget_alerts" {
 }
 
 # SNS Topic Subscription for Budget Email Alerts
-resource "aws_sns_topic_subscription" "budget_email" {
+resource "aws_sns_topic_subscription" "budget_alerts_email_subscription" {
   topic_arn = aws_sns_topic.budget_alerts.arn
   protocol  = "email"
   endpoint  = var.alert_email
