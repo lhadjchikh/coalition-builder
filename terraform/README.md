@@ -183,7 +183,6 @@ The infrastructure includes the following security features:
 Database credentials are managed securely through AWS Secrets Manager:
 
 1. **Master Database User**: Administrative user with full database privileges
-
    - Credentials stored in AWS Secrets Manager
    - Used only for initial setup and maintenance
    - Not exposed to application code
@@ -197,19 +196,16 @@ Database credentials are managed securely through AWS Secrets Manager:
 ### Credential Lifecycle
 
 1. **Initial Setup**:
-
    - If secrets don't exist, they are created with secure passwords
    - If secrets exist, they are used for deployment
    - Database setup script handles both scenarios gracefully
 
 2. **Manual Password Updates**:
-
    - Passwords can be updated manually through AWS Secrets Manager console
    - No need to update Terraform configuration
    - Re-run database setup script to sync changes
 
 3. **Future Enhancement**:
-
    - Automated password rotation is not currently configured
    - May be implemented in future releases using AWS Lambda and Secrets Manager rotation schedules
 
@@ -307,7 +303,6 @@ A bastion host is provisioned to allow secure access to the database. You have s
    ```
 
 2. Store the public key as a GitHub secret with the name `TF_VAR_BASTION_PUBLIC_KEY`.
-
    - Copy the contents of `~/.ssh/coalition-bastion.pub`
    - Go to your GitHub repository → Settings → Secrets and Variables → Actions
    - Add new repository secret with name `TF_VAR_BASTION_PUBLIC_KEY` and paste the public key as value
@@ -324,7 +319,6 @@ A bastion host is provisioned to allow secure access to the database. You have s
 Instead of providing your own public key, you can have AWS create and manage the key pair:
 
 1. Create a key pair in the AWS Console:
-
    - Go to EC2 → Key Pairs → Create Key Pair
    - Name it `coalition-bastion` (or whatever name you prefer)
    - Select RSA and .pem format
@@ -567,7 +561,6 @@ This Terraform configuration uses remote state storage in S3 with DynamoDB locki
    ```
 
    This script will:
-
    - Create a unique S3 bucket: `coalition-terraform-state-{YOUR_AWS_ACCOUNT_ID}`
    - Create a DynamoDB table: `coalition-terraform-locks`
    - Generate a `backend.hcl` file with your account-specific configuration
@@ -719,7 +712,6 @@ fi
 To prevent ALLOWED_HOSTS issues that can cause health check failures, this project uses a centralized configuration approach:
 
 1. **Environment Configuration File**: Use `.env.example` as a template
-
    - Copy to `.env` for local development
    - Contains both Django and Terraform variables
    - Ensures consistency between docker-compose and terraform
