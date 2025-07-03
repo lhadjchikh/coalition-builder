@@ -79,7 +79,7 @@ func TestMonitoringModuleCreatesBudget(t *testing.T) {
 
 	// List budgets to verify our budget exists
 	input := &budgets.DescribeBudgetsInput{
-		AccountId: aws.String(testConfig.AccountID),
+		AccountId: aws.String(testConfig.GetAccountID()),
 	}
 
 	result, err := budgetsClient.DescribeBudgets(context.TODO(), input)

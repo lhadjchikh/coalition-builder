@@ -34,17 +34,12 @@ func NewTestConfig(terraformDir string) *TestConfig {
 	// Use time-based unique ID instead of deprecated rand.Seed
 	uniqueID := fmt.Sprintf("test-%d", time.Now().UnixNano()%100000)
 
-	tc := &TestConfig{
+	return &TestConfig{
 		TerraformDir: terraformDir,
 		AWSRegion:    "us-east-1",
 		Prefix:       fmt.Sprintf("coalition-%s", uniqueID),
 		UniqueID:     uniqueID,
 	}
-
-	// Populate AccountID for test access
-	tc.AccountID = tc.mustGetAccountID()
-
-	return tc
 }
 
 // GetTerraformOptions returns default terraform options for testing
@@ -134,6 +129,14 @@ func (tc *TestConfig) mustGetAccountID() string {
 		log.Fatalf("Failed to get AWS account ID: %v", err)
 	}
 	return accountID
+}
+
+// GetAccountID lazily populates and returns the AccountID field
+func (tc *TestConfig) GetAccountID() string {
+	if tc.AccountID == "" {
+		tc.AccountID = tc.mustGetAccountID()
+	}
+	return tc.AccountID
 }
 
 // GetModuleTerraformOptions returns terraform options for testing individual modules
