@@ -91,6 +91,16 @@ output "cost_anomaly_subscription_arn" {
   value       = module.monitoring.cost_anomaly_subscription_arn
 }
 
+output "cost_anomaly_sns_topic_arn" {
+  description = "ARN of the SNS topic for cost anomaly alerts"
+  value       = module.monitoring.cost_anomaly_sns_topic_arn
+}
+
+output "budget_alerts_sns_topic_arn" {
+  description = "ARN of the SNS topic for budget alerts"
+  value       = module.monitoring.budget_alerts_sns_topic_arn
+}
+
 # Simple deployment status
 output "deployment_status" {
   description = "Overall deployment status"
