@@ -25,6 +25,7 @@ type TestConfig struct {
 	AWSRegion    string
 	Prefix       string
 	UniqueID     string
+	AccountID    string // Public field for test access
 	accountID    string // cached account ID to avoid repeated STS calls
 }
 
@@ -33,12 +34,17 @@ func NewTestConfig(terraformDir string) *TestConfig {
 	// Use time-based unique ID instead of deprecated rand.Seed
 	uniqueID := fmt.Sprintf("test-%d", time.Now().UnixNano()%100000)
 
-	return &TestConfig{
+	tc := &TestConfig{
 		TerraformDir: terraformDir,
 		AWSRegion:    "us-east-1",
 		Prefix:       fmt.Sprintf("coalition-%s", uniqueID),
 		UniqueID:     uniqueID,
 	}
+
+	// Populate AccountID for test access
+	tc.AccountID = tc.mustGetAccountID()
+
+	return tc
 }
 
 // GetTerraformOptions returns default terraform options for testing
@@ -470,6 +476,15 @@ func GetDefaultSecurityTestVars() map[string]interface{} {
 		"vpc_id":                "vpc-12345678",
 		"allowed_bastion_cidrs": []string{"10.0.0.0/8"},
 		"database_subnet_cidrs": []string{"10.0.5.0/24", "10.0.6.0/24"},
+	}
+}
+
+// GetMonitoringTestVars returns default test variables for monitoring module
+func GetMonitoringTestVars() map[string]interface{} {
+	return map[string]interface{}{
+		"vpc_id":              "vpc-12345678",
+		"alert_email":         "test@example.com",
+		"budget_limit_amount": "100",
 	}
 }
 
