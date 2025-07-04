@@ -11,7 +11,9 @@ export function middleware(request: NextRequest) {
   }
 
   // Check if basic auth is enabled
-  const authEnabled = process.env.SITE_PASSWORD_ENABLED === "true";
+  const authEnabled = ["true", "1", "yes"].includes(
+    (process.env.SITE_PASSWORD_ENABLED || "").toLowerCase(),
+  );
   if (!authEnabled) {
     return NextResponse.next();
   }
