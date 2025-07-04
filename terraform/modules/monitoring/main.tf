@@ -231,14 +231,6 @@ resource "aws_budgets_budget" "monthly" {
 resource "awscc_ce_anomaly_monitor" "project_anomaly_monitor" {
   monitor_name = "${var.prefix}-anomaly-monitor"
   monitor_type = "DIMENSIONAL"
-
-  monitor_specification = jsonencode({
-    Dimensions = {
-      Key          = "SERVICE"
-      Values       = ["Amazon Elastic Compute Cloud - Compute", "Amazon Relational Database Service", "Amazon Virtual Private Cloud", "Amazon Elastic Container Service", "Amazon Elastic Container Registry (ECR)"]
-      MatchOptions = ["EQUALS"]
-    }
-  })
 }
 
 # SNS Topic for Cost Anomaly Alerts
