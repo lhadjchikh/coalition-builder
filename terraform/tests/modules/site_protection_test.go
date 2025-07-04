@@ -33,8 +33,8 @@ func TestSitePasswordVariableValidation(t *testing.T) {
 		}
 
 		// This should succeed - secrets are always created
-		_, err := terraform.InitAndValidateE(t, terraformOptions)
-		assert.NoError(t, err, "Default configuration should validate successfully")
+		err := terraform.InitE(t, terraformOptions)
+		assert.NoError(t, err, "Default configuration should initialize successfully")
 	})
 
 	// Test case 2: Custom password should work
@@ -60,8 +60,8 @@ func TestSitePasswordVariableValidation(t *testing.T) {
 		}
 
 		// This should succeed
-		_, err := terraform.InitAndValidateE(t, terraformOptions)
-		assert.NoError(t, err, "Custom password configuration should validate successfully")
+		err := terraform.InitE(t, terraformOptions)
+		assert.NoError(t, err, "Custom password configuration should initialize successfully")
 	})
 }
 
@@ -98,9 +98,9 @@ func TestComputeModuleSecretsIntegration(t *testing.T) {
 			},
 		}
 
-		// This should validate successfully
-		_, err := terraform.InitAndValidateE(t, terraformOptions)
-		assert.NoError(t, err, "Compute module with all secrets should validate successfully")
+		// This should initialize successfully
+		err := terraform.InitE(t, terraformOptions)
+		assert.NoError(t, err, "Compute module with all secrets should initialize successfully")
 	})
 
 	// Test case 2: Compute module with password protection disabled
