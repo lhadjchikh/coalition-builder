@@ -20,6 +20,9 @@ class SitePasswordProtectionMiddleware(MiddlewareMixin):
     Users will be prompted for a password before accessing any content.
     """
 
+    # Required for Django 5.2+ compatibility
+    async_mode = False
+
     def __init__(self, get_response: Callable) -> None:
         self.get_response = get_response
         self.enabled = os.getenv("SITE_PASSWORD_ENABLED", "false").lower() == "true"
