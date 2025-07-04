@@ -111,16 +111,18 @@ jobs:
               [[ -z "$pattern" ]] && continue
 
               # Check if pattern ends with / (directory match)
-              if [[ "$pattern" =~ /$ ]]; then
+              if [[ "$pattern" == */ ]]; then
                 # Directory pattern - check if file starts with it
-                if [[ "$file" =~ ^"$pattern" ]]; then
+                if [[ "$file" == "$pattern"* ]]; then
                   return 0
                 fi
               else
-                # Exact file match or glob pattern
-                if [[ "$file" = "$pattern" ]] || [[ "$file" =~ $pattern ]]; then
-                  return 0
-                fi
+                # Use shell glob matching for patterns, exact match for files
+                case "$file" in
+                  $pattern)
+                    return 0
+                    ;;
+                esac
               fi
             done <<< "$patterns"
 
