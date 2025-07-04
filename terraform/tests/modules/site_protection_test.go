@@ -7,10 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSitePasswordVariableValidation(t *testing.T) {
+func TestSecretsModuleValidation(t *testing.T) {
 	t.Parallel()
 
-	// Test case 1: Default values should work (secrets always created)
+	// Test case 1: Secrets module with default values (always creates site password secret)
 	t.Run("DefaultValuesWork", func(t *testing.T) {
 		terraformOptions := &terraform.Options{
 			TerraformDir: "../../modules/secrets",
@@ -34,10 +34,10 @@ func TestSitePasswordVariableValidation(t *testing.T) {
 
 		// This should succeed - secrets are always created
 		_, err := terraform.InitE(t, terraformOptions)
-		assert.NoError(t, err, "Default configuration should initialize successfully")
+		assert.NoError(t, err, "Secrets module with default configuration should initialize successfully")
 	})
 
-	// Test case 2: Custom password should work
+	// Test case 2: Secrets module with custom password
 	t.Run("CustomPasswordWorks", func(t *testing.T) {
 		terraformOptions := &terraform.Options{
 			TerraformDir: "../../modules/secrets",
@@ -61,7 +61,7 @@ func TestSitePasswordVariableValidation(t *testing.T) {
 
 		// This should succeed
 		_, err := terraform.InitE(t, terraformOptions)
-		assert.NoError(t, err, "Custom password configuration should initialize successfully")
+		assert.NoError(t, err, "Secrets module with custom password should initialize successfully")
 	})
 }
 
