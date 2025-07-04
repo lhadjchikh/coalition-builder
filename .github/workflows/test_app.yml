@@ -215,7 +215,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 workflow_id: 'test_frontend.yml',
-                ref: '${{ github.sha }}',
+                ref: '${{ github.head_ref || github.ref }}',
                 inputs: {
                   ref: '${{ github.sha }}'
                 }
@@ -235,7 +235,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'test_backend.yml',
-              ref: '${{ github.sha }}',
+              ref: '${{ github.head_ref || github.ref }}',
               inputs: {
                 ref: '${{ github.sha }}'
               }
@@ -251,7 +251,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'test_ssr.yml',
-              ref: '${{ github.sha }}',
+              ref: '${{ github.head_ref || github.ref }}',
               inputs: {
                 ref: '${{ github.sha }}'
               }
@@ -267,7 +267,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'test_fullstack.yml',
-              ref: '${{ github.sha }}',
+              ref: '${{ github.head_ref || github.ref }}',
               inputs: {
                 ref: '${{ github.sha }}'
               }
@@ -316,13 +316,12 @@ jobs:
               const runs = await github.rest.actions.listWorkflowRunsForRepo({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                head_sha: '${{ github.sha }}',
                 per_page: 100
               });
 
               const relevantRuns = runs.data.workflow_runs.filter(run =>
                 requiredTests.includes(run.name) &&
-                run.head_sha === '${{ github.sha }}' &&
+                run.event === 'workflow_dispatch' &&
                 new Date(run.created_at).getTime() > startTime - 60000
               );
 
