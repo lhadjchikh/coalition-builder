@@ -33,7 +33,7 @@ func TestSitePasswordVariableValidation(t *testing.T) {
 		}
 
 		// This should succeed - secrets are always created
-		err := terraform.InitE(t, terraformOptions)
+		_, err := terraform.InitE(t, terraformOptions)
 		assert.NoError(t, err, "Default configuration should initialize successfully")
 	})
 
@@ -60,7 +60,7 @@ func TestSitePasswordVariableValidation(t *testing.T) {
 		}
 
 		// This should succeed
-		err := terraform.InitE(t, terraformOptions)
+		_, err := terraform.InitE(t, terraformOptions)
 		assert.NoError(t, err, "Custom password configuration should initialize successfully")
 	})
 }
@@ -99,7 +99,7 @@ func TestComputeModuleSecretsIntegration(t *testing.T) {
 		}
 
 		// This should initialize successfully
-		err := terraform.InitE(t, terraformOptions)
+		_, err := terraform.InitE(t, terraformOptions)
 		assert.NoError(t, err, "Compute module with all secrets should initialize successfully")
 	})
 
@@ -135,7 +135,7 @@ func TestComputeModuleSecretsIntegration(t *testing.T) {
 		}
 
 		// This should initialize successfully - secret ARN is still required even when protection is disabled
-		err := terraform.InitE(t, terraformOptions)
+		_, err := terraform.InitE(t, terraformOptions)
 		assert.NoError(t, err, "Compute module with password protection disabled should initialize successfully")
 	})
 
@@ -170,7 +170,7 @@ func TestComputeModuleSecretsIntegration(t *testing.T) {
 		}
 
 		// This should initialize successfully with custom username
-		err := terraform.InitE(t, terraformOptions)
+		_, err := terraform.InitE(t, terraformOptions)
 		assert.NoError(t, err, "Compute module with custom site_username should initialize successfully")
 	})
 }
