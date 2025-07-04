@@ -1,12 +1,11 @@
 name: Deploy to ECS
 
 on:
-  # This workflow will run after the test workflows complete successfully on main
+  # This workflow will run after the test app workflow completes successfully on main
   workflow_run:
     workflows:
-      - "Frontend Tests"
-      - "Backend Tests"
-      - "Full Stack Integration Tests"
+      - "Test App"
+      - "Terraform Infrastructure CI/CD"
     types:
       - completed
     branches: [main]
@@ -33,9 +32,116 @@ env:
   SSR_ECR_REPOSITORY: coalition-ssr
 
 jobs:
+  check_deployment_trigger:
+    name: Check Deployment Trigger and Prevent Duplicates
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ fromJSON(steps.check_trigger.outputs.result).should_deploy }}
+      trigger_type: ${{ fromJSON(steps.check_trigger.outputs.result).trigger_type }}
+    steps:
+      - name: Check trigger type and prevent duplicate deployments
+        id: check_trigger
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const triggerWorkflow = '${{ github.event.workflow_run.name }}';
+            const eventName = '${{ github.event_name }}';
+
+            console.log(`Event name: ${eventName}`);
+            console.log(`Trigger workflow: ${triggerWorkflow}`);
+
+            let shouldDeploy = false;
+            let triggerType = 'unknown';
+
+            if (eventName === 'workflow_dispatch') {
+              shouldDeploy = true;
+              triggerType = 'manual';
+              console.log('✅ Manual trigger - proceeding with deployment');
+            } else if (eventName === 'workflow_run') {
+              const conclusion = '${{ github.event.workflow_run.conclusion }}';
+              console.log(`Workflow conclusion: ${conclusion}`);
+              
+              if (conclusion !== 'success') {
+                console.log('❌ Triggering workflow did not succeed - skipping deployment');
+                shouldDeploy = false;
+                triggerType = 'failed_workflow';
+              } else if (triggerWorkflow === 'Test App') {
+                triggerType = 'test_app';
+                
+                const currentCommitSha = '${{ github.event.workflow_run.head_sha }}';
+                console.log(`Current Test App commit: ${currentCommitSha}`);
+                
+                // Check for recent infrastructure deployments
+                const infrastructureRuns = await github.rest.actions.listWorkflowRunsForRepo({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  workflow_id: 'deploy_infra.yml',
+                  branch: 'main',
+                  per_page: 10 // Check more runs to find matching commits
+                });
+                
+                const recentInfraRun = infrastructureRuns.data.workflow_runs.find(run => 
+                  run.status === 'completed' && 
+                  run.conclusion === 'success' &&
+                  new Date(run.updated_at) > new Date(Date.now() - 30 * 60 * 1000) // Within last 30 minutes
+                );
+                
+                if (recentInfraRun) {
+                  console.log(`Found recent infrastructure run: ${recentInfraRun.head_sha} at ${recentInfraRun.updated_at}`);
+                  
+                  // Check if the infrastructure deployment is for the same commit or contains our changes
+                  if (recentInfraRun.head_sha === currentCommitSha) {
+                    console.log('🔄 Same commit deployed infrastructure - will be handled by infra trigger');
+                    shouldDeploy = false;
+                    triggerType = 'deferred_to_infra_same_commit';
+                  } else {
+                    // Check if the infrastructure run's commit is ahead of or contains our changes
+                    try {
+                      const compareResult = await github.rest.repos.compareCommits({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        base: currentCommitSha,
+                        head: recentInfraRun.head_sha
+                      });
+                      
+                      if (compareResult.data.status === 'ahead') {
+                        console.log('🏗️ Infrastructure deployment is ahead - contains our changes, will be handled by infra trigger');
+                        shouldDeploy = false;
+                        triggerType = 'deferred_to_infra_ahead';
+                      } else {
+                        console.log('✅ Infrastructure deployment is for different/older code - proceeding with Test App deployment');
+                        shouldDeploy = true;
+                      }
+                    } catch (error) {
+                      console.log(`Could not compare commits: ${error.message}`);
+                      console.log('✅ Proceeding with Test App deployment to be safe');
+                      shouldDeploy = true;
+                    }
+                  }
+                } else {
+                  console.log('✅ No recent infrastructure deployment - proceeding with Test App deployment');
+                  shouldDeploy = true;
+                }
+              } else if (triggerWorkflow === 'Terraform Infrastructure CI/CD') {
+                triggerType = 'infrastructure';
+                console.log('🏗️ Infrastructure deployment completed - proceeding with app deployment');
+                shouldDeploy = true;
+              }
+            }
+
+            console.log(`Final decision: shouldDeploy=${shouldDeploy}, triggerType=${triggerType}`);
+
+            // Set outputs using github-script's return mechanism
+            return {
+              should_deploy: shouldDeploy.toString(),
+              trigger_type: triggerType
+            };
+
   check_changes:
     name: Check if only documentation changed
     runs-on: ubuntu-latest
+    needs: check_deployment_trigger
+    if: needs.check_deployment_trigger.outputs.should_deploy == 'true'
     outputs:
       docs_only: ${{ steps.changes.outputs.docs_only }}
     steps:
@@ -48,7 +154,15 @@ jobs:
         id: changes
         env:
           HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          TRIGGER_TYPE: ${{ needs.check_deployment_trigger.outputs.trigger_type }}
         run: |
+          # Infrastructure deployments should always deploy the app
+          if [ "$TRIGGER_TYPE" = "infrastructure" ]; then
+            echo "Infrastructure deployment trigger - always deploying app"
+            echo "docs_only=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           # Get list of changed files based on trigger type
           if [ "${{ github.event_name }}" = "workflow_run" ]; then
             # For workflow_run, get files changed in the triggering workflow
@@ -104,7 +218,7 @@ jobs:
   check_tests:
     name: Check Test Status
     runs-on: ubuntu-latest
-    needs: check_changes
+    needs: [check_deployment_trigger, check_changes]
     # Skip deployment if only docs changed, otherwise check test status
     if: |
       needs.check_changes.outputs.docs_only != 'true' && (
@@ -116,10 +230,50 @@ jobs:
     steps:
       - name: Set output values
         id: set_output
+        env:
+          TRIGGER_TYPE: ${{ needs.check_deployment_trigger.outputs.trigger_type }}
         run: |
-          echo "workflow_name=${{ github.event.workflow_run.name || 'Manual Trigger' }}" >> $GITHUB_OUTPUT
-          echo "Tests passed or skipped, proceeding with deployment"
-          echo "Triggered by: ${{ github.event.workflow_run.name || 'Manual Trigger' }}"
+          WORKFLOW_NAME="${{ github.event.workflow_run.name || 'Manual Trigger' }}"
+          echo "workflow_name=$WORKFLOW_NAME" >> $GITHUB_OUTPUT
+
+          if [ "$TRIGGER_TYPE" = "infrastructure" ]; then
+            echo "🏗️ Infrastructure deployment completed successfully, proceeding with app deployment"
+            echo "No additional tests required after infrastructure deployment"
+          elif [ "$TRIGGER_TYPE" = "test_app" ]; then
+            echo "✅ Test App workflow completed successfully, proceeding with deployment"
+          else
+            echo "✅ Manual trigger or other workflow completed, proceeding with deployment"
+          fi
+
+          echo "Triggered by: $WORKFLOW_NAME"
+
+  skip_deployment_trigger:
+    name: Skip Deployment (Trigger Check Failed)
+    runs-on: ubuntu-latest
+    needs: check_deployment_trigger
+    if: needs.check_deployment_trigger.outputs.should_deploy != 'true'
+    steps:
+      - name: Skip deployment message
+        env:
+          TRIGGER_TYPE: ${{ needs.check_deployment_trigger.outputs.trigger_type }}
+        run: |
+          echo "Deployment skipped based on trigger analysis"
+          echo "Trigger type: $TRIGGER_TYPE"
+
+          case "$TRIGGER_TYPE" in
+            "failed_workflow")
+              echo "❌ Triggering workflow did not complete successfully"
+              ;;
+            "deferred_to_infra_same_commit")
+              echo "🔄 Deployment deferred - same commit being deployed by infrastructure workflow"
+              ;;
+            "deferred_to_infra_ahead")
+              echo "🏗️ Deployment deferred - infrastructure workflow contains our changes and will deploy"
+              ;;
+            *)
+              echo "ℹ️ Deployment conditions not met"
+              ;;
+          esac
 
   skip_deployment:
     name: Skip Deployment (Documentation Only)

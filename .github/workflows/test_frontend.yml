@@ -1,15 +1,13 @@
 name: Frontend Tests
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-    paths:
-      - "frontend/**"
-      - ".github/workflows/test_frontend.yml"
-  # Allow manual triggers
+  # Allow manual triggers and triggers from other workflows
   workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to checkout and test"
+        required: false
+        default: ""
 
 # Set explicit permissions for the GITHUB_TOKEN
 permissions:
@@ -30,6 +28,8 @@ jobs:
         node-version: ["22.x"]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
