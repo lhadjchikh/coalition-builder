@@ -222,6 +222,9 @@ jobs:
                 repo: context.repo.repo,
                 workflow_id: 'test_frontend.yml',
                 ref: ref,
+                inputs: {
+                  ref: '${{ github.sha }}'
+                }
               });
               console.log('✅ Triggered Frontend Tests');
             } catch (error) {
@@ -239,6 +242,9 @@ jobs:
               repo: context.repo.repo,
               workflow_id: 'test_backend.yml',
               ref: '${{ github.head_ref || github.ref }}',
+              inputs: {
+                ref: '${{ github.sha }}'
+              }
             });
             console.log('Triggered Backend Tests');
 
@@ -252,6 +258,9 @@ jobs:
               repo: context.repo.repo,
               workflow_id: 'test_ssr.yml',
               ref: '${{ github.head_ref || github.ref }}',
+              inputs: {
+                ref: '${{ github.sha }}'
+              }
             });
             console.log('Triggered SSR Tests');
 
@@ -265,6 +274,9 @@ jobs:
               repo: context.repo.repo,
               workflow_id: 'test_fullstack.yml',
               ref: '${{ github.head_ref || github.ref }}',
+              inputs: {
+                ref: '${{ github.sha }}'
+              }
             });
             console.log('Triggered Full Stack Tests');
 
