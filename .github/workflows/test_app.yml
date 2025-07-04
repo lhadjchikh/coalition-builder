@@ -210,18 +210,12 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const ref = '${{ github.head_ref || github.ref }}';
-            console.log(`Attempting to trigger Frontend Tests on ref: ${ref}`);
-            console.log(`Event name: ${{ github.event_name }}`);
-            console.log(`Head ref: ${{ github.head_ref }}`);
-            console.log(`Ref: ${{ github.ref }}`);
-
             try {
               await github.rest.actions.createWorkflowDispatch({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 workflow_id: 'test_frontend.yml',
-                ref: ref,
+                ref: '${{ github.sha }}',
                 inputs: {
                   ref: '${{ github.sha }}'
                 }
@@ -241,7 +235,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'test_backend.yml',
-              ref: '${{ github.head_ref || github.ref }}',
+              ref: '${{ github.sha }}',
               inputs: {
                 ref: '${{ github.sha }}'
               }
@@ -257,7 +251,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'test_ssr.yml',
-              ref: '${{ github.head_ref || github.ref }}',
+              ref: '${{ github.sha }}',
               inputs: {
                 ref: '${{ github.sha }}'
               }
@@ -273,7 +267,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'test_fullstack.yml',
-              ref: '${{ github.head_ref || github.ref }}',
+              ref: '${{ github.sha }}',
               inputs: {
                 ref: '${{ github.sha }}'
               }
