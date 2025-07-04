@@ -36,7 +36,11 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - Configuration: configuration.md
-  - Development: development.md
+  - Development:
+      - Overview: development.md
+      - Setup: development/setup.md
+      - Testing: development/testing.md
+      - Automated Protection: development/automated-protection.md
   - User Guides:
       - Theme Management: user-guides/theme-management.md
       - Homepage Management: user-guides/homepage-management.md

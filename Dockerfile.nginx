@@ -1,0 +1,22 @@
+# Dockerfile.nginx - Custom nginx image with conditional authentication
+
+FROM nginx:alpine
+
+# Install apache2-utils for htpasswd command
+RUN apk add --no-cache apache2-utils
+
+# Copy nginx configurations
+COPY nginx.dev.conf /etc/nginx/templates/nginx.dev.conf
+COPY nginx.protected.conf /etc/nginx/templates/nginx.protected.conf
+
+# Copy entrypoint script
+COPY nginx/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+# Default environment variables
+ENV SITE_PASSWORD_ENABLED=false
+ENV SITE_USERNAME=admin
+ENV SITE_PASSWORD=changeme
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]

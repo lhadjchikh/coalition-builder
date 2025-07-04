@@ -87,17 +87,19 @@ services:
 
   # Nginx reverse proxy for local development (optional)
   nginx:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
     depends_on:
       - api
       - ssr
     ports:
       - "80:80"
-    volumes:
-      # Choose nginx config based on SITE_PASSWORD_ENABLED environment variable
-      - ${NGINX_CONFIG:-./nginx.dev.conf}:/etc/nginx/conf.d/default.conf:ro
-      # Mount .htpasswd file for basic auth (only used when password protection is enabled)
-      - ./.htpasswd:/etc/nginx/.htpasswd:ro
+    environment:
+      # Password protection settings
+      - SITE_PASSWORD_ENABLED=${SITE_PASSWORD_ENABLED:-false}
+      - SITE_USERNAME=${SITE_USERNAME:-admin}
+      - SITE_PASSWORD=${SITE_PASSWORD:-changeme}
     networks:
       - app-network
 

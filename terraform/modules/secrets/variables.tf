@@ -37,4 +37,9 @@ variable "site_password" {
   type        = string
   sensitive   = true
   default     = ""
+
+  validation {
+    condition     = var.site_password_enabled == false || var.site_password != ""
+    error_message = "site_password must be provided when site_password_enabled is true."
+  }
 }

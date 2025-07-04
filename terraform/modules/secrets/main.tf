@@ -70,7 +70,7 @@ resource "aws_secretsmanager_secret_version" "secret_key" {
 }
 
 # Site Password Secret (conditional creation)
-resource "aws_secretsmanager_secret" "site_password" {
+resource "aws_secretsmanager_secret" "site_password_secret" {
   count       = var.site_password_enabled ? 1 : 0
   name        = "${var.prefix}/site-password"
   description = "Site password for access protection"
@@ -81,9 +81,9 @@ resource "aws_secretsmanager_secret" "site_password" {
   }
 }
 
-resource "aws_secretsmanager_secret_version" "site_password" {
+resource "aws_secretsmanager_secret_version" "site_password_secret" {
   count     = var.site_password_enabled ? 1 : 0
-  secret_id = aws_secretsmanager_secret.site_password[0].id
+  secret_id = aws_secretsmanager_secret.site_password_secret[0].id
   secret_string = jsonencode({
     password = var.site_password
   })

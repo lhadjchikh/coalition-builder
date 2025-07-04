@@ -1,0 +1,131 @@
+name: Update Site Protection Settings
+
+on:
+  workflow_dispatch:
+    inputs:
+      enabled:
+        description: 'Enable password protection'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
+      username:
+        description: 'Username for protection'
+        required: false
+        type: string
+        default: 'admin'
+      password:
+        description: 'Password for protection'
+        required: false
+        type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+        - development
+        - production
+
+jobs:
+  update-protection:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Validate inputs
+      run: |
+        if [ "${{ inputs.enabled }}" = "true" ] && [ -z "${{ inputs.password }}" ]; then
+          echo "❌ Error: Password is required when enabling protection"
+          exit 1
+        fi
+
+    - name: Update .env file for development
+      if: inputs.environment == 'development'
+      run: |
+        echo "## Updating Site Protection Settings" >> $GITHUB_STEP_SUMMARY
+        echo "- Environment: **${{ inputs.environment }}**" >> $GITHUB_STEP_SUMMARY
+        echo "- Protection: **${{ inputs.enabled }}**" >> $GITHUB_STEP_SUMMARY
+        echo "- Username: **${{ inputs.username }}**" >> $GITHUB_STEP_SUMMARY
+        
+        # Create or update .env file
+        ENV_FILE=".env"
+        
+        # Remove existing site protection settings
+        if [ -f "$ENV_FILE" ]; then
+          grep -v "^SITE_PASSWORD_ENABLED=" "$ENV_FILE" > "$ENV_FILE.tmp" || true
+          grep -v "^SITE_USERNAME=" "$ENV_FILE.tmp" > "$ENV_FILE.tmp2" || true
+          grep -v "^SITE_PASSWORD=" "$ENV_FILE.tmp2" > "$ENV_FILE.tmp3" || true
+          mv "$ENV_FILE.tmp3" "$ENV_FILE"
+          rm -f "$ENV_FILE.tmp" "$ENV_FILE.tmp2"
+        else
+          touch "$ENV_FILE"
+        fi
+        
+        # Add new settings
+        echo "" >> "$ENV_FILE"
+        echo "# Site password protection" >> "$ENV_FILE"
+        echo "SITE_PASSWORD_ENABLED=${{ inputs.enabled }}" >> "$ENV_FILE"
+        echo "SITE_USERNAME=${{ inputs.username }}" >> "$ENV_FILE"
+        
+        if [ "${{ inputs.enabled }}" = "true" ]; then
+          echo "SITE_PASSWORD=${{ inputs.password }}" >> "$ENV_FILE"
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "✅ Updated .env file with new settings" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
+        echo "1. Pull the latest changes: \`git pull\`" >> $GITHUB_STEP_SUMMARY
+        echo "2. Restart Docker containers: \`docker compose up -d\`" >> $GITHUB_STEP_SUMMARY
+        echo "3. Access the site and test the protection" >> $GITHUB_STEP_SUMMARY
+
+    - name: Update production environment variables
+      if: inputs.environment == 'production'
+      run: |
+        echo "## Production Configuration" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "To update production password protection:" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Terraform Variables:" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+        echo "export TF_VAR_site_password_enabled=${{ inputs.enabled }}" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ inputs.enabled }}" = "true" ]; then
+          echo "export TF_VAR_site_password=\"${{ inputs.password }}\"" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "terraform apply" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "⚠️ **Manual deployment required for production changes**" >> $GITHUB_STEP_SUMMARY
+
+    - name: Commit changes
+      if: inputs.environment == 'development'
+      run: |
+        if git diff --quiet; then
+          echo "No changes to commit"
+        else
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .env
+          git commit -m "chore: update site password protection settings
+
+Protection enabled: ${{ inputs.enabled }}
+Username: ${{ inputs.username }}
+
+🤖 Generated with [GitHub Actions](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+Co-Authored-By: GitHub Actions <action@github.com>"
+          
+          echo "✅ Changes committed to repository" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Push changes
+      if: inputs.environment == 'development'
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}

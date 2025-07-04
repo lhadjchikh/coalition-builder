@@ -39,31 +39,56 @@ Coalition Builder uses two Docker Compose configurations:
 
 ### Site Password Protection
 
-Coalition Builder includes a password protection system to secure your site during development and testing phases.
+Coalition Builder includes a password protection system to secure your site during development and testing phases using HTTP Basic Authentication.
 
 #### Quick Start
 
-Enable password protection (password required):
+Password protection is controlled via environment variables. Set these in your `.env` file:
 
 ```bash
-./scripts/enable-password-protection.sh admin your-secure-password
+# Enable password protection
+SITE_PASSWORD_ENABLED=true
+SITE_USERNAME=admin
+SITE_PASSWORD=your-secure-password
+
+# Restart Docker containers to apply
+docker compose up -d
 ```
 
-Disable password protection:
+To disable password protection:
 
 ```bash
-./scripts/disable-password-protection.sh
+# Disable password protection
+SITE_PASSWORD_ENABLED=false
+
+# Restart Docker containers to apply
+docker compose up -d
 ```
 
-#### Custom Password Protection
+#### How It Works
 
-Enable with custom username and password:
+- **No file manipulation**: The system dynamically configures nginx based on environment variables
+- **Always ready**: Password protection resources are always available, just toggled on/off
+- **Automatic setup**: The nginx container automatically creates the `.htpasswd` file when needed
+- **Clean switching**: No manual scripts or file cleanup required
 
-```bash
-./scripts/enable-password-protection.sh myuser my-secure-password-2024
-```
+#### Automated Protection (GitHub Workflow)
 
-**Security Note:** For security reasons, you must provide a password - no defaults are used.
+For automated management, you can use the GitHub workflow:
+
+- **GitHub Actions**: Go to Actions → "Update Site Protection Settings" → Run workflow
+- **Simple interface**: Just specify enabled/disabled state and credentials
+- **Documentation**: See [Automated Protection Guide](development/automated-protection.md)
+
+The workflow updates environment variables and provides production deployment instructions.
+
+#### What This Does
+
+When enabled, visitors to your site will see a browser authentication dialog asking for:
+- **Username**: The first parameter you provided
+- **Password**: The second parameter you provided
+
+The username and password are stored in a `.htpasswd` file (not in environment variables) and used by nginx for HTTP Basic Authentication.
 
 #### How It Works
 
@@ -83,9 +108,11 @@ The password protection system uses two layers:
 
 #### Environment Variables
 
-- `SITE_PASSWORD_ENABLED`: Set to `true` to enable protection
-- `SITE_PASSWORD`: The password for site access (required when enabled)
-- `NGINX_CONFIG`: Switches nginx config between protected/unprotected
+- `SITE_PASSWORD_ENABLED`: Set to `true` to enable protection, `false` to disable
+- `SITE_USERNAME`: The username for HTTP Basic Authentication
+- `SITE_PASSWORD`: The password for site access
+
+**Note**: No file manipulation needed - nginx automatically configures authentication based on these variables.
 
 #### Excluded Paths
 
