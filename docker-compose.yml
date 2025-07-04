@@ -56,6 +56,7 @@ services:
       - PYTHONPATH=/app
       # Site password protection settings
       - SITE_PASSWORD_ENABLED=${SITE_PASSWORD_ENABLED:-false}
+      - SITE_USERNAME=${SITE_USERNAME:-admin}
       - SITE_PASSWORD=${SITE_PASSWORD:-changeme}
     ports:
       - "8000:8000"
