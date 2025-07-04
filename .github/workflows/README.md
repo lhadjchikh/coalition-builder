@@ -105,11 +105,13 @@ This project uses a structured CI/CD pipeline with the following key workflows:
 
 #### Application Deployment (`deploy_app.yml`)
 
-- **Triggered by**: "Test App" workflow completion or manual dispatch
+- **Triggered by**: "Test App" workflow completion, "Terraform Infrastructure CI/CD" workflow completion, or manual dispatch
+- Intelligent deployment orchestration with deduplication logic
 - Deploys the application to Amazon ECS
 - Can be manually triggered with an option to skip tests
 - Builds and pushes Docker images to ECR with unique tags (SHA + run number)
 - Updates ECS services with new task definitions
+- **Smart Deduplication**: Prevents multiple deployments using commit SHA analysis and timing
 
 #### Infrastructure Deployment (`deploy_infra.yml`)
 
@@ -118,6 +120,7 @@ This project uses a structured CI/CD pipeline with the following key workflows:
 - Runs independently of application code changes
 - Includes Terraform planning and apply steps
 - Manages AWS resources like VPC, ECS clusters, RDS, and load balancers
+- **Triggers application deployment**: After successful infrastructure changes, automatically triggers app deployment to ensure compatibility with new infrastructure
 
 #### Documentation Deployment (`deploy_docs.yml`)
 
@@ -143,16 +146,40 @@ Linting Workflows:
 Test Workflows:
 Push/PR to main ──► Test App ──┬─► Frontend Tests ────┐
                                ├─► Backend Tests ─────┼─► Application Deployment ─► Amazon ECS
-                               ├─► SSR Tests ─────────┤
-                               └─► Full Stack Tests ──┘
-
-Terraform Tests ──► Infrastructure Deployment ─► AWS Resources
+                               ├─► SSR Tests ─────────┤              ▲
+                               └─► Full Stack Tests ──┘              │
+                                                                     │
+Terraform Tests ──► Infrastructure Deployment ─► AWS Resources ─────┘
+                                                  (triggers app deployment)
 
 Deployment Workflows:
 ├── Application Deployment ─► Amazon ECS
 ├── Infrastructure Deployment ─► AWS Resources
 └── Documentation Deployment ─► GitHub Pages
 ```
+
+## Deployment Coordination and Deduplication
+
+The deployment workflows include intelligent coordination to prevent multiple simultaneous deployments:
+
+### Scenarios Handled:
+
+1. **Test App Completion**: When tests pass, application deployment proceeds normally
+2. **Infrastructure Deployment**: After infrastructure changes, application deployment is automatically triggered to ensure compatibility
+3. **Simultaneous Triggers**: If both Test App and Infrastructure workflows complete around the same time, smart deduplication logic prevents redundant deployments:
+   - **Same Commit**: If both workflows target the same commit SHA, Test App deployment is deferred to Infrastructure
+   - **Infrastructure Ahead**: If Infrastructure workflow contains newer changes that include the Test App changes, Test App deployment is deferred
+   - **Different Code**: If workflows target different commits/code versions, both deployments proceed independently
+   - Infrastructure deployment always triggers application deployment to ensure compatibility
+
+### Benefits:
+
+- **Prevents resource conflicts**: No concurrent deployments competing for the same resources
+- **Ensures infrastructure compatibility**: App is always deployed after infrastructure changes
+- **Reduces deployment time**: Eliminates unnecessary duplicate deployments for the same code
+- **Preserves code integrity**: Different code versions are deployed independently
+- **Maintains deployment integrity**: Infrastructure and application stay in sync
+- **Git-aware deduplication**: Uses commit SHA and Git history for accurate duplicate detection
 
 ## Manual Triggers
 
