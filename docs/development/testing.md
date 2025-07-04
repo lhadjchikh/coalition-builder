@@ -157,7 +157,7 @@ cd ssr
 npm install
 
 # Run unit tests
-npm test
+npm run test:unit
 
 # Run integration tests with backend
 npm run test:integration

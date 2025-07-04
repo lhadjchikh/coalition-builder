@@ -10,9 +10,10 @@
     "typecheck": "tsc --noEmit",
     "tsc": "tsc --noEmit",
     "test": "node tests/test-ssr-integration.js",
-    "test:simple": "node tests/test-ssr-integration-simple.js",
+    "test:unit": "node tests/test-middleware-unit.js",
+    "test:integration": "node tests/test-ssr-integration.js",
+    "test:integration:simple": "node tests/test-ssr-integration-simple.js",
     "test:ci": "node tests/test-ssr-integration-simple.js",
-    "test:middleware": "node tests/test-middleware-unit.js",
     "postinstall": "echo 'Disabling Next.js telemetry' && npx next telemetry disable"
   },
   "dependencies": {
