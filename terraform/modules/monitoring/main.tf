@@ -233,10 +233,11 @@ resource "awscc_ce_anomaly_monitor" "project_anomaly_monitor" {
   monitor_type = "DIMENSIONAL"
 
   monitor_specification = jsonencode({
-    Dimension    = "SERVICE"
-    Key          = "SERVICE"
-    Values       = ["Amazon Elastic Compute Cloud - Compute", "Amazon Relational Database Service", "Amazon Virtual Private Cloud", "Amazon Elastic Container Service", "Amazon Elastic Container Registry (ECR)"]
-    MatchOptions = ["EQUALS"]
+    Dimensions = {
+      Key          = "SERVICE"
+      Values       = ["Amazon Elastic Compute Cloud - Compute", "Amazon Relational Database Service", "Amazon Virtual Private Cloud", "Amazon Elastic Container Service", "Amazon Elastic Container Registry (ECR)"]
+      MatchOptions = ["EQUALS"]
+    }
   })
 }
 
