@@ -66,8 +66,14 @@ jobs:
             CHANGED_FILES=$(git diff --name-only \
               origin/${{ github.base_ref }}...HEAD)
           elif [ "${{ github.event_name }}" = "push" ]; then
-            # For pushes, compare with previous commit
-            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+            # For pushes, use github.event.before to capture all changes in the push
+            BEFORE_SHA="${{ github.event.before }}"
+            if [ -n "$BEFORE_SHA" ] && [ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
+              CHANGED_FILES=$(git diff --name-only "$BEFORE_SHA" HEAD)
+            else
+              # Fallback for first push or when before SHA is not available
+              CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+            fi
           else
             # For manual dispatch, compare against main branch
             git fetch origin main
