@@ -104,13 +104,12 @@ module "database" {
 module "secrets" {
   source = "./modules/secrets"
 
-  prefix                = var.prefix
-  app_db_username       = var.app_db_username
-  app_db_password       = var.app_db_password
-  db_endpoint           = module.database.db_instance_endpoint
-  db_name               = module.database.db_instance_name
-  site_password_enabled = var.site_password_enabled
-  site_password         = var.site_password
+  prefix          = var.prefix
+  app_db_username = var.app_db_username
+  app_db_password = var.app_db_password
+  db_endpoint     = module.database.db_instance_endpoint
+  db_name         = module.database.db_instance_name
+  site_password   = var.site_password
 }
 
 module "compute" {

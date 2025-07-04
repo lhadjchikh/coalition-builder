@@ -14,6 +14,6 @@ output "secrets_kms_key_arn" {
 }
 
 output "site_password_secret_arn" {
-  description = "ARN of the site password secret (empty if not enabled)"
-  value       = var.site_password_enabled ? aws_secretsmanager_secret.site_password_secret[0].arn : ""
+  description = "ARN of the site password secret"
+  value       = aws_secretsmanager_secret.site_password_secret.arn
 }

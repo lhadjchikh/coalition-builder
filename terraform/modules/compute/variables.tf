@@ -230,9 +230,8 @@ variable "site_password_enabled" {
 }
 
 variable "site_password_secret_arn" {
-  description = "ARN of the site password secret (empty if not enabled)"
+  description = "ARN of the site password secret"
   type        = string
-  default     = ""
 }
 
 variable "site_username" {
