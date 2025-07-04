@@ -52,6 +52,8 @@ npm test
 ./scripts/test-all.sh
 ```
 
+For comprehensive testing documentation, see the [Testing Guide](development/testing.md).
+
 ### Code Quality
 
 ```bash
