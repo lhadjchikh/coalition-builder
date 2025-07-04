@@ -229,8 +229,9 @@ resource "aws_budgets_budget" "monthly" {
 
 # Cost Anomaly Detection
 resource "awscc_ce_anomaly_monitor" "project_anomaly_monitor" {
-  monitor_name = "${var.prefix}-anomaly-monitor"
-  monitor_type = "DIMENSIONAL"
+  monitor_name      = "${var.prefix}-anomaly-monitor"
+  monitor_type      = "DIMENSIONAL"
+  monitor_dimension = "SERVICE"
 }
 
 # SNS Topic for Cost Anomaly Alerts
