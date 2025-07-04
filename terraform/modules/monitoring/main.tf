@@ -253,17 +253,13 @@ resource "aws_sns_topic_subscription" "cost_anomaly_email" {
 # Cost Anomaly Subscription
 resource "awscc_ce_anomaly_subscription" "project_anomaly_subscription" {
   subscription_name = "${var.prefix}-anomaly-subscription"
-  frequency         = "DAILY"
+  frequency         = "IMMEDIATE"
 
   monitor_arn_list = [
     awscc_ce_anomaly_monitor.project_anomaly_monitor.id
   ]
 
   subscribers = [
-    {
-      type    = "EMAIL"
-      address = var.alert_email
-    },
     {
       type    = "SNS"
       address = aws_sns_topic.cost_anomaly_alerts.arn
