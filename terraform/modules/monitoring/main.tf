@@ -272,13 +272,11 @@ resource "awscc_ce_anomaly_subscription" "project_anomaly_subscription" {
 
   # Alert on anomalies with impact >= $5
   threshold_expression = jsonencode({
-    And = [{
-      Dimensions = {
-        Key          = "ANOMALY_TOTAL_IMPACT_ABSOLUTE"
-        Values       = ["5"]
-        MatchOptions = ["GREATER_THAN_OR_EQUAL"]
-      }
-    }]
+    Dimensions = {
+      Key          = "ANOMALY_TOTAL_IMPACT_ABSOLUTE"
+      Values       = ["5"]
+      MatchOptions = ["GREATER_THAN_OR_EQUAL"]
+    }
   })
 }
 
