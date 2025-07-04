@@ -89,6 +89,11 @@ Comprehensive guides for managing your coalition platform:
 - **[Endorsement Workflow](user-guides/endorsement-workflow.md)** - Collect and manage campaign endorsements
 - **[Content Management](user-guides/content-management.md)** - Complete guide to the Django admin interface
 
+## Development Guides
+
+- **[Development Setup](development/setup.md)** - Detailed environment setup including automated tooling
+- **[Site Password Protection](development/automated-protection.md)** - Configure site-wide authentication for development and production
+
 ## Documentation
 
 - **[API Reference](api/)** - Auto-generated from Django models and views

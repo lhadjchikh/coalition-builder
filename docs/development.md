@@ -59,6 +59,72 @@ npm test
 ./scripts/lint.py
 ```
 
+### Site Password Protection
+
+Coalition Builder includes a flexible password protection system for securing your site during development and testing.
+
+#### Architecture Overview
+
+The system provides multiple protection layers:
+
+**Development Options:**
+
+- **SSR Container (Port 3000)**: Next.js middleware with HTTP Basic Authentication
+- **nginx Proxy (Port 80)**: Optional reverse proxy with HTTP Basic Authentication
+- **API Container (Port 8000)**: Django middleware with session-based authentication
+
+**Production:**
+
+- **ALB → SSR**: Next.js middleware protects frontend routes
+- **ALB → API**: Django middleware protects API endpoints
+
+#### Quick Start
+
+Enable password protection by setting environment variables in your `.env` file:
+
+```bash
+# Enable password protection
+SITE_PASSWORD_ENABLED=true
+SITE_USERNAME=admin
+SITE_PASSWORD=your-secure-password
+
+# Restart containers
+docker compose up -d
+```
+
+#### Access Options
+
+```bash
+# Direct SSR access with Next.js middleware protection
+http://localhost:3000
+
+# Through nginx proxy (if enabled)
+http://localhost:80
+
+# Direct API access with Django middleware protection
+http://localhost:8000
+```
+
+#### Environment Variables
+
+| Variable                | Description              | Default    | Used By        |
+| ----------------------- | ------------------------ | ---------- | -------------- |
+| `SITE_PASSWORD_ENABLED` | Enable protection        | `false`    | All containers |
+| `SITE_USERNAME`         | HTTP Basic Auth username | `admin`    | SSR, nginx     |
+| `SITE_PASSWORD`         | Site access password     | `changeme` | All containers |
+
+#### Production Management
+
+Set these GitHub repository secrets for production deployment:
+
+- `SITE_PASSWORD_ENABLED`: `true` or `false`
+- `SITE_USERNAME`: Username for authentication
+- `SITE_PASSWORD`: Secure password
+
+Changes apply automatically when infrastructure is deployed via the `deploy_infra.yml` workflow.
+
+For detailed production setup, see the [Site Password Protection Guide](development/automated-protection.md).
+
 ## Project Structure
 
 ```

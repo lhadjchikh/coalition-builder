@@ -25,3 +25,21 @@ variable "app_db_password" {
   sensitive   = true
   default     = ""
 }
+
+variable "site_password_enabled" {
+  description = "Enable password protection for the entire site"
+  type        = bool
+  default     = false
+}
+
+variable "site_password" {
+  description = "Password for site access when password protection is enabled"
+  type        = string
+  sensitive   = true
+  default     = ""
+
+  validation {
+    condition     = var.site_password_enabled == false || var.site_password != ""
+    error_message = "site_password must be provided when site_password_enabled is true."
+  }
+}

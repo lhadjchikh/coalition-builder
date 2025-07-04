@@ -229,3 +229,49 @@ When adding new workflows, please follow these conventions:
 5. Include the workflow in this README with description
 6. Follow security best practices (minimal permissions, environment restrictions)
 7. Add manual trigger capability where appropriate (`workflow_dispatch`)
+
+## Site Protection Configuration
+
+Coalition Builder includes automated password protection that deploys with infrastructure changes.
+
+### Architecture
+
+The system provides multiple authentication layers:
+
+- **Next.js Middleware**: HTTP Basic Auth in SSR container (port 3000)
+- **nginx Proxy**: Optional reverse proxy with HTTP Basic Auth (port 80)
+- **Django Middleware**: Session-based authentication in API container (port 8000)
+
+### Production Deployment
+
+Site protection is managed through GitHub repository secrets:
+
+| Secret                  | Required | Description                           |
+| ----------------------- | -------- | ------------------------------------- |
+| `SITE_PASSWORD_ENABLED` | Yes      | Enable protection (`true` or `false`) |
+| `SITE_USERNAME`         | No\*     | HTTP Basic Auth username              |
+| `SITE_PASSWORD`         | No\*     | Site access password                  |
+
+\*Required when `SITE_PASSWORD_ENABLED` is `true`
+
+The `deploy_infra.yml` workflow automatically:
+
+1. Reads secrets from GitHub repository
+2. Configures ECS containers with environment variables
+3. Stores passwords securely in AWS Secrets Manager
+
+### Development Setup
+
+Configure password protection in your `.env` file:
+
+```bash
+SITE_PASSWORD_ENABLED=true
+SITE_USERNAME=admin
+SITE_PASSWORD=your-secure-password
+```
+
+Access methods:
+
+- SSR Direct: `http://localhost:3000` (Next.js middleware)
+- nginx Proxy: `http://localhost:80` (HTTP Basic Auth)
+- API Direct: `http://localhost:8000` (Django middleware)
