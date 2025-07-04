@@ -1,14 +1,7 @@
 name: SSR Tests
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-    paths:
-      - "ssr/**"
-      - ".github/workflows/test_ssr.yml"
-  # Allow manual triggers
+  # Allow manual triggers and triggers from other workflows
   workflow_dispatch:
 
 # Set explicit permissions for the GITHUB_TOKEN

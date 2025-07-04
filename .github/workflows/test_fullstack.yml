@@ -1,19 +1,7 @@
 name: Full Stack Integration Tests
 
 on:
-  push:
-    branches: [main]
-    # No path filters for main branch pushes to ensure deployment workflow gets triggered
-  pull_request:
-    branches: [main]
-    paths:
-      - "frontend/**"
-      - "backend/**"
-      - "ssr/**"
-      - "docker-compose.yml"
-      - "Dockerfile"
-      - ".github/workflows/test_fullstack.yml"
-  # Allow manual triggers
+  # Allow manual triggers and triggers from other workflows
   workflow_dispatch:
 
 # Set explicit permissions for the GITHUB_TOKEN

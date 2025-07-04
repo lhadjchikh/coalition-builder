@@ -1,12 +1,10 @@
 name: Deploy to ECS
 
 on:
-  # This workflow will run after the test workflows complete successfully on main
+  # This workflow will run after the test app workflow completes successfully on main
   workflow_run:
     workflows:
-      - "Frontend Tests"
-      - "Backend Tests"
-      - "Full Stack Integration Tests"
+      - "Test App"
     types:
       - completed
     branches: [main]
@@ -118,7 +116,7 @@ jobs:
         id: set_output
         run: |
           echo "workflow_name=${{ github.event.workflow_run.name || 'Manual Trigger' }}" >> $GITHUB_OUTPUT
-          echo "Tests passed or skipped, proceeding with deployment"
+          echo "Test App workflow completed successfully, proceeding with deployment"
           echo "Triggered by: ${{ github.event.workflow_run.name || 'Manual Trigger' }}"
 
   skip_deployment:

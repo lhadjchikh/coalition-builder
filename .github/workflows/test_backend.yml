@@ -1,16 +1,7 @@
 name: Backend Tests
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-    paths:
-      - "backend/**"
-      - "docker-compose.yml"
-      - "Dockerfile"
-      - ".github/workflows/test_backend.yml"
-  # Allow manual triggers
+  # Allow manual triggers and triggers from other workflows
   workflow_dispatch:
 
 # Set explicit permissions for the GITHUB_TOKEN
