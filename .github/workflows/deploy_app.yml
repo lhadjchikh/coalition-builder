@@ -36,8 +36,8 @@ jobs:
     name: Check Deployment Trigger and Prevent Duplicates
     runs-on: ubuntu-latest
     outputs:
-      should_deploy: ${{ steps.check_trigger.outputs.should_deploy }}
-      trigger_type: ${{ steps.check_trigger.outputs.trigger_type }}
+      should_deploy: ${{ fromJSON(steps.check_trigger.outputs.result).should_deploy }}
+      trigger_type: ${{ fromJSON(steps.check_trigger.outputs.result).trigger_type }}
     steps:
       - name: Check trigger type and prevent duplicate deployments
         id: check_trigger
@@ -130,8 +130,12 @@ jobs:
             }
 
             console.log(`Final decision: shouldDeploy=${shouldDeploy}, triggerType=${triggerType}`);
-            core.setOutput('should_deploy', shouldDeploy.toString());
-            core.setOutput('trigger_type', triggerType);
+
+            // Set outputs using github-script's return mechanism
+            return {
+              should_deploy: shouldDeploy.toString(),
+              trigger_type: triggerType
+            };
 
   check_changes:
     name: Check if only documentation changed
