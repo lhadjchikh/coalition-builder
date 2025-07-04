@@ -25,3 +25,10 @@ variable "app_db_password" {
   sensitive   = true
   default     = ""
 }
+
+variable "site_password" {
+  description = "Password for site access (empty string will use 'changeme' as fallback in secret)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}

@@ -163,7 +163,8 @@ resource "aws_iam_policy" "secrets_access" {
         ],
         Resource = [
           var.db_url_secret_arn,
-          var.secret_key_secret_arn
+          var.secret_key_secret_arn,
+          var.site_password_secret_arn
         ]
       },
       {
@@ -294,9 +295,13 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "CACHE_URL"
           value = "redis://localhost:6379/1"
+        },
+        {
+          name  = "SITE_PASSWORD_ENABLED"
+          value = tostring(var.site_password_enabled)
         }
       ]
-      secrets = [
+      secrets = concat([
         {
           name      = "SECRET_KEY",
           valueFrom = var.secret_key_secret_arn
@@ -305,7 +310,12 @@ resource "aws_ecs_task_definition" "app" {
           name      = "DATABASE_URL",
           valueFrom = "${var.db_url_secret_arn}:url::"
         }
-      ]
+        ], [
+        {
+          name      = "SITE_PASSWORD",
+          valueFrom = "${var.site_password_secret_arn}:password::"
+        }
+      ])
       healthCheck = {
         command = [
           "CMD-SHELL",
@@ -364,6 +374,20 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "PORT"
           value = tostring(var.container_port_ssr)
+        },
+        {
+          name  = "SITE_PASSWORD_ENABLED"
+          value = tostring(var.site_password_enabled)
+        },
+        {
+          name  = "SITE_USERNAME"
+          value = var.site_username
+        }
+      ]
+      secrets = [
+        {
+          name      = "SITE_PASSWORD",
+          valueFrom = "${var.site_password_secret_arn}:password::"
         }
       ]
       healthCheck = {
@@ -427,9 +451,13 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "CACHE_URL"
           value = "redis://localhost:6379/1"
+        },
+        {
+          name  = "SITE_PASSWORD_ENABLED"
+          value = tostring(var.site_password_enabled)
         }
       ]
-      secrets = [
+      secrets = concat([
         {
           name      = "SECRET_KEY",
           valueFrom = var.secret_key_secret_arn
@@ -438,7 +466,12 @@ resource "aws_ecs_task_definition" "app" {
           name      = "DATABASE_URL",
           valueFrom = "${var.db_url_secret_arn}:url::"
         }
-      ]
+        ], [
+        {
+          name      = "SITE_PASSWORD",
+          valueFrom = "${var.site_password_secret_arn}:password::"
+        }
+      ])
       healthCheck = {
         command = [
           "CMD-SHELL",

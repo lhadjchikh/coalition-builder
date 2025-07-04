@@ -99,6 +99,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "lockdown.middleware.LockdownMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -302,3 +303,20 @@ else:
             "LOCATION": CACHE_URL,
         },
     }
+
+# Site Password Protection (django-lockdown)
+LOCKDOWN_ENABLED = os.getenv("SITE_PASSWORD_ENABLED", "false").lower() in (
+    "true",
+    "1",
+    "yes",
+)
+LOCKDOWN_PASSWORDS = [os.getenv("SITE_PASSWORD", "changeme")]
+LOCKDOWN_URL_EXCEPTIONS = [
+    r"^/health/?$",  # Django health check
+    r"^/health$",  # Next.js health check
+    r"^/admin/",  # Django admin (has its own auth)
+    r"^/api/health/",  # API health endpoint
+]
+
+# Session-based lockdown (user stays logged in)
+LOCKDOWN_SESSION_LOCKDOWN = True

@@ -69,3 +69,27 @@ resource "aws_secretsmanager_secret_version" "secret_key" {
   }
 }
 
+# Site Password Secret (always created)
+resource "aws_secretsmanager_secret" "site_password_secret" {
+  name        = "${var.prefix}/site-password"
+  description = "Site password for access protection"
+  kms_key_id  = aws_kms_key.secrets.arn
+
+  tags = {
+    Name = "${var.prefix}-site-password"
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "site_password_secret" {
+  secret_id = aws_secretsmanager_secret.site_password_secret.id
+  secret_string = jsonencode({
+    password = var.site_password != "" ? var.site_password : "changeme"
+  })
+
+  lifecycle {
+    ignore_changes = [
+      secret_string
+    ]
+  }
+}
+

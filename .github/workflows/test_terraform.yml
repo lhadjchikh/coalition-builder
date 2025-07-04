@@ -92,6 +92,13 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: terraform/tests/go.sum
 
+      - name: Configure fake AWS credentials for unit tests
+        run: |
+          # Set fake AWS credentials to prevent provider initialization errors
+          echo "AWS_ACCESS_KEY_ID=fake-access-key" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=fake-secret-key" >> $GITHUB_ENV
+          echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
+
       - name: Verify Terraform installation
         run: |
           terraform version
@@ -123,6 +130,10 @@ jobs:
           make lint || true # Allow lint failures for now
 
       - name: Run unit tests for ${{ matrix.module }}
+        env:
+          # Ensure unit tests don't try to access AWS
+          TF_SKIP_PROVIDER_VERIFY: true
+          AWS_PROVIDER_SKIP_VALIDATION: true
         run: |
           cd terraform/tests
           case "${{ matrix.module }}" in
@@ -261,12 +272,23 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: terraform/tests/go.sum
 
+      - name: Configure fake AWS credentials for integration tests
+        run: |
+          # Set fake AWS credentials to prevent provider initialization errors
+          echo "AWS_ACCESS_KEY_ID=fake-access-key" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=fake-secret-key" >> $GITHUB_ENV
+          echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
+
       - name: Install dependencies
         run: |
           cd terraform/tests
           go mod download
 
       - name: Run short integration tests
+        env:
+          # Ensure integration tests don't try to access AWS
+          TF_SKIP_PROVIDER_VERIFY: true
+          AWS_PROVIDER_SKIP_VALIDATION: true
         run: |
           cd terraform/tests
           go test -short -v -timeout 10m ./integration/
@@ -292,12 +314,23 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: terraform/tests/go.sum
 
+      - name: Configure fake AWS credentials for coverage tests
+        run: |
+          # Set fake AWS credentials to prevent provider initialization errors
+          echo "AWS_ACCESS_KEY_ID=fake-access-key" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=fake-secret-key" >> $GITHUB_ENV
+          echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
+
       - name: Install dependencies
         run: |
           cd terraform/tests
           go mod download
 
       - name: Generate test coverage
+        env:
+          # Ensure coverage tests don't try to access AWS
+          TF_SKIP_PROVIDER_VERIFY: true
+          AWS_PROVIDER_SKIP_VALIDATION: true
         run: |
           cd terraform/tests
           go test -short -coverprofile=coverage.out ./...

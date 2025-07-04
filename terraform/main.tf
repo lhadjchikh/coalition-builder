@@ -109,6 +109,7 @@ module "secrets" {
   app_db_password = var.app_db_password
   db_endpoint     = module.database.db_instance_endpoint
   db_name         = module.database.db_instance_name
+  site_password   = var.site_password
 }
 
 module "compute" {
@@ -135,6 +136,9 @@ module "compute" {
   health_check_path_api     = var.health_check_path_api
   allowed_hosts             = var.allowed_hosts
   csrf_trusted_origins      = var.csrf_trusted_origins
+  site_password_enabled     = var.site_password_enabled
+  site_password_secret_arn  = module.secrets.site_password_secret_arn
+  site_username             = var.site_username
 
   # Make sure load balancer and secrets are created first
   depends_on = [

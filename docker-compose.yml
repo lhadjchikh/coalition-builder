@@ -51,9 +51,13 @@ services:
       - SECRET_KEY=${SECRET_KEY:-dev_secret_key_replace_in_production}
       - DATABASE_URL=postgis://${APP_DB_USERNAME:-coalition_app}:${APP_DB_PASSWORD:-app_password}@db:5432/${DB_NAME:-coalition}
       - CACHE_URL=${CACHE_URL:-redis://redis:6379/1}
-      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,api,ssr,nginx}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,api,nginx,ssr}
       - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS:-}
       - PYTHONPATH=/app
+      # Site password protection settings
+      - SITE_PASSWORD_ENABLED=${SITE_PASSWORD_ENABLED:-false}
+      - SITE_USERNAME=${SITE_USERNAME:-admin}
+      - SITE_PASSWORD=${SITE_PASSWORD:-changeme}
     ports:
       - "8000:8000"
     networks:
@@ -71,6 +75,10 @@ services:
       - API_URL=http://api:8000
       - NEXT_PUBLIC_API_URL=http://localhost:8000
       - PORT=3000
+      # Site password protection settings
+      - SITE_PASSWORD_ENABLED=${SITE_PASSWORD_ENABLED:-false}
+      - SITE_USERNAME=${SITE_USERNAME:-admin}
+      - SITE_PASSWORD=${SITE_PASSWORD:-changeme}
     ports:
       - "3000:3000"
     healthcheck:
