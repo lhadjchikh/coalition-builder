@@ -73,12 +73,12 @@ The system provides multiple protection layers:
 
 - **SSR Container (Port 3000)**: Next.js middleware with HTTP Basic Authentication
 - **nginx Proxy (Port 80)**: Optional reverse proxy with HTTP Basic Authentication
-- **API Container (Port 8000)**: Django middleware with session-based authentication
+- **API Container (Port 8000)**: django-lockdown middleware with session-based authentication
 
 **Production:**
 
 - **ALB → SSR**: Next.js middleware protects frontend routes
-- **ALB → API**: Django middleware protects API endpoints
+- **ALB → API**: django-lockdown middleware protects API endpoints
 
 #### Quick Start
 
