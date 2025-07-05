@@ -106,9 +106,23 @@ ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
 
 Upload your organization's visual assets:
 
-- **Logo URL**: Main organization logo
+- **Logo**: Upload your main organization logo (automatically stored in S3)
 - **Logo Alt Text**: Accessibility description for the logo
-- **Favicon URL**: Small icon for browser tabs
+- **Favicon**: Upload favicon image (automatically stored in S3)
+
+#### Supported Image Formats
+
+- **JPEG** (.jpg, .jpeg) - Recommended for photos and complex images
+- **PNG** (.png) - Recommended for logos with transparency
+- **WebP** (.webp) - Modern format with excellent compression
+- **GIF** (.gif) - For simple graphics or animations
+
+#### File Requirements
+
+- **Logo**: Recommended size 200x80px to 400x160px for optimal display
+- **Favicon**: Recommended size 32x32px or 64x64px
+- **File Size**: Maximum 5MB per file
+- **Quality**: High-resolution images are automatically optimized for web delivery
 
 ### Custom CSS
 

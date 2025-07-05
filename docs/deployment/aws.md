@@ -12,6 +12,7 @@ This deployment strategy uses:
 - **Amazon ECS** for container orchestration
 - **Amazon ECR** for container registry
 - **Amazon RDS** for PostgreSQL with PostGIS
+- **Amazon S3** for static file storage and media uploads
 - **Application Load Balancer** for routing traffic
 - **AWS Secrets Manager** for secure credentials management
 
@@ -24,6 +25,7 @@ This deployment strategy uses:
    - ECS full access
    - VPC and networking permissions
    - RDS permissions
+   - S3 permissions for static asset storage
    - CloudWatch Logs permissions
    - IAM permissions to create roles and policies
 
