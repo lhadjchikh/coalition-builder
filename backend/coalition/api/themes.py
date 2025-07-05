@@ -34,6 +34,7 @@ class ThemeOut(Schema):
     # Typography
     heading_font_family: str
     body_font_family: str
+    google_fonts: list[str]
     font_size_base: float
     font_size_small: float
     font_size_large: float
@@ -124,6 +125,10 @@ class ThemeIn(Schema):
             "sans-serif"
         ),
         max_length=200,
+    )
+    google_fonts: list[str] = Field(
+        default_factory=list,
+        description="List of Google Font family names to load",
     )
     font_size_base: float = Field(default=1.0, ge=0.5, le=2.0)
     font_size_small: float = Field(default=0.875, ge=0.5, le=2.0)

@@ -192,6 +192,7 @@ class ThemeOut(Schema):
     # Typography
     heading_font_family: str
     body_font_family: str
+    google_fonts: list[str]
     font_size_base: float
     font_size_small: float
     font_size_large: float

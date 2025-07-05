@@ -122,6 +122,14 @@ class Theme(models.Model):
         ),
         help_text="Font family for body text (CSS font-family value)",
     )
+    google_fonts = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=(
+            "List of Google Font family names to load "
+            "(e.g., ['Merriweather', 'Barlow'])"
+        ),
+    )
 
     # Font sizes (in rem units)
     font_size_base = models.DecimalField(
@@ -131,14 +139,14 @@ class Theme(models.Model):
         help_text="Base font size in rem units (e.g., 1.00 for 16px)",
     )
     font_size_small = models.DecimalField(
-        max_digits=3,
-        decimal_places=2,
+        max_digits=4,
+        decimal_places=3,
         default=0.875,
         help_text="Small font size in rem units",
     )
     font_size_large = models.DecimalField(
-        max_digits=3,
-        decimal_places=2,
+        max_digits=4,
+        decimal_places=3,
         default=1.125,
         help_text="Large font size in rem units",
     )
