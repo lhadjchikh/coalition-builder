@@ -24,6 +24,7 @@ class Theme(models.Model):
     )
     description = models.TextField(
         blank=True,
+        null=True,
         help_text="Optional description of this theme",
     )
 
@@ -161,6 +162,7 @@ class Theme(models.Model):
     logo_alt_text = models.CharField(
         max_length=200,
         blank=True,
+        null=True,
         help_text="Alt text for logo (accessibility)",
     )
     favicon = models.ImageField(
@@ -173,6 +175,7 @@ class Theme(models.Model):
     # Custom CSS
     custom_css = models.TextField(
         blank=True,
+        null=True,
         help_text="Additional custom CSS for advanced styling (optional)",
     )
 
@@ -192,6 +195,20 @@ class Theme(models.Model):
     def __str__(self) -> str:
         status = " (Active)" if self.is_active else ""
         return f"{self.name}{status}"
+
+    @property
+    def logo_url(self) -> str:
+        """Return the URL of the uploaded logo, or empty string if no logo."""
+        if self.logo and hasattr(self.logo, "url"):
+            return self.logo.url
+        return ""
+
+    @property
+    def favicon_url(self) -> str:
+        """Return the URL of the uploaded favicon, or empty string if no favicon."""
+        if self.favicon and hasattr(self.favicon, "url"):
+            return self.favicon.url
+        return ""
 
     def clean(self) -> None:
         """Ensure only one active theme exists"""
@@ -372,6 +389,13 @@ class HomePage(models.Model):
     def __str__(self) -> str:
         return f"Homepage: {self.organization_name}"
 
+    @property
+    def hero_background_image_url(self) -> str:
+        """Return the URL of the hero background image, or empty string if no image."""
+        if self.hero_background_image and hasattr(self.hero_background_image, "url"):
+            return self.hero_background_image.url
+        return ""
+
     def clean(self) -> None:
         """Ensure only one active homepage configuration exists"""
         if self.is_active:
@@ -529,6 +553,13 @@ class ContentBlock(models.Model):
 
     def __str__(self) -> str:
         return f"Block: {self.title or self.block_type} (Order: {self.order})"
+
+    @property
+    def image_url(self) -> str:
+        """Return the URL of the uploaded image, or empty string if no image."""
+        if self.image and hasattr(self.image, "url"):
+            return self.image.url
+        return ""
 
     def save(self, *args: "Any", **kwargs: "Any") -> None:
         """Sanitize content based on block type before saving."""

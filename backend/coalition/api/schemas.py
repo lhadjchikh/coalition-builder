@@ -9,7 +9,7 @@ from coalition.stakeholders.validators import AddressValidator
 if TYPE_CHECKING:
     from django.db.models import QuerySet
 
-    from coalition.core.models import ContentBlock, HomePage
+    from coalition.core.models import ContentBlock, HomePage, Theme
 
 # Import models for ModelSchema
 from coalition.campaigns.models import PolicyCampaign
@@ -211,8 +211,28 @@ class ThemeOut(Schema):
 
     # Status
     is_active: bool
-    created_at: datetime
-    updated_at: datetime
+    created_at: str
+    updated_at: str
+
+    @staticmethod
+    def resolve_logo_url(obj: "Theme") -> str | None:
+        """Get the logo URL"""
+        return obj.logo_url
+
+    @staticmethod
+    def resolve_favicon_url(obj: "Theme") -> str | None:
+        """Get the favicon URL"""
+        return obj.favicon_url
+
+    @staticmethod
+    def resolve_created_at(obj: "Theme") -> str:
+        """Convert created_at datetime to ISO string"""
+        return obj.created_at.isoformat()
+
+    @staticmethod
+    def resolve_updated_at(obj: "Theme") -> str:
+        """Convert updated_at datetime to ISO string"""
+        return obj.updated_at.isoformat()
 
 
 class HomePageOut(Schema):
@@ -224,7 +244,7 @@ class HomePageOut(Schema):
     # Hero section
     hero_title: str
     hero_subtitle: str
-    hero_background_image: str
+    hero_background_image_url: str
 
     # Main content sections
     about_section_title: str
@@ -266,6 +286,11 @@ class HomePageOut(Schema):
     def resolve_content_blocks(obj: "HomePage") -> "QuerySet[ContentBlock]":
         """Only return visible content blocks, ordered by order field"""
         return obj.content_blocks.filter(is_visible=True).order_by("order")
+
+    @staticmethod
+    def resolve_hero_background_image_url(obj: "HomePage") -> str:
+        """Get the hero background image URL"""
+        return obj.hero_background_image_url
 
     @staticmethod
     def resolve_theme(obj: "HomePage") -> "ThemeOut | None":

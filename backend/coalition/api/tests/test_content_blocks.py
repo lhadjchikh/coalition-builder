@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.test.client import Client
 
@@ -9,6 +11,41 @@ class ContentBlockAPITest(TestCase):
         """Set up test data"""
         self.client = Client()
 
+        # Mock S3 URLs for image properties
+        self.image_block_url = (
+            "https://test-bucket.s3.amazonaws.com/content_blocks/image-block.jpg"
+        )
+        self.text_image_block_url = (
+            "https://test-bucket.s3.amazonaws.com/content_blocks/text-image-block.jpg"
+        )
+
+        # Create test data
+        self._setup_test_data()
+
+        # Patch the properties at the class level so ALL instances return mock URLs
+        self.content_block_patch = patch.object(
+            ContentBlock,
+            "image_url",
+            new_callable=lambda: property(
+                lambda self: (
+                    "https://test-bucket.s3.amazonaws.com/content_blocks/image-block.jpg"
+                    if self.block_type == "image"
+                    else (
+                        "https://test-bucket.s3.amazonaws.com/content_blocks/text-image-block.jpg"
+                        if self.block_type == "text_image"
+                        else ""
+                    )
+                ),
+            ),
+        )
+
+        self.content_block_patch.start()
+
+    def tearDown(self) -> None:
+        # Stop the patches
+        self.content_block_patch.stop()
+
+    def _setup_test_data(self) -> None:
         # Create test theme
         self.theme = Theme.objects.create(
             name="Test Theme",
@@ -43,7 +80,6 @@ class ContentBlockAPITest(TestCase):
             title="Image Block",
             block_type="image",
             content="This is an image block with attribution.",
-            image_url="https://example.com/test-image.jpg",
             image_alt_text="Test image description",
             image_title="Beautiful Landscape",
             image_author="Jane Photographer",
@@ -58,7 +94,6 @@ class ContentBlockAPITest(TestCase):
             title="Text + Image Block",
             block_type="text_image",
             content="This block combines text and image.",
-            image_url="https://example.com/another-image.jpg",
             image_alt_text="Another test image",
             image_title="City Skyline",
             image_author="John Photographer",
@@ -169,8 +204,10 @@ class ContentBlockAPITest(TestCase):
         assert data["id"] == self.image_block.id
         assert data["title"] == "Image Block"
         assert data["block_type"] == "image"
-        assert data["image_url"] == "https://example.com/test-image.jpg"
         assert data["image_alt_text"] == "Test image description"
+
+        # Check image URL for image block
+        assert data["image_url"] == self.image_block_url
 
         # Check image attribution fields
         assert data["image_title"] == "Beautiful Landscape"
@@ -190,6 +227,9 @@ class ContentBlockAPITest(TestCase):
         assert data["block_type"] == "text_image"
         assert data["css_classes"] == "featured-block"
         assert data["background_color"] == "#f8f9fa"
+
+        # Check image URL for text_image block
+        assert data["image_url"] == self.text_image_block_url
 
         # Check image attribution fields for this block
         assert data["image_title"] == "City Skyline"
@@ -357,7 +397,6 @@ class ContentBlockAPITest(TestCase):
             title="Partial Attribution",
             block_type="image",
             content="Image with partial attribution",
-            image_url="https://example.com/partial.jpg",
             image_alt_text="Partial image",
             image_title="Mountain View",
             image_author="Anonymous",
