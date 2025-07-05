@@ -42,7 +42,7 @@ func NewTestConfig(terraformDir string) *TestConfig {
 	}
 }
 
-// GetTerraformOptions returns default terraform options for testing
+// GetTerraformOptions returns default terraform options for testing with remote backend
 func (tc *TestConfig) GetTerraformOptions(vars map[string]interface{}) *terraform.Options {
 	defaultVars := map[string]interface{}{
 		"prefix":     tc.Prefix,
@@ -81,6 +81,46 @@ func (tc *TestConfig) GetTerraformOptions(vars map[string]interface{}) *terrafor
 			"encrypt":        true,
 			"dynamodb_table": "coalition-terraform-locks",
 		},
+		EnvVars: map[string]string{
+			"AWS_DEFAULT_REGION":  tc.AWSRegion,
+			"TERRATEST_TERRAFORM": "terraform", // Force Terratest to use terraform
+		},
+	}
+}
+
+// GetTerraformOptionsForPlanOnly returns terraform options for plan-only tests (no backend)
+func (tc *TestConfig) GetTerraformOptionsForPlanOnly(vars map[string]interface{}) *terraform.Options {
+	defaultVars := map[string]interface{}{
+		"prefix":     tc.Prefix,
+		"aws_region": tc.AWSRegion,
+		// Test-specific overrides
+		"create_vpc":             true,
+		"create_public_subnets":  true,
+		"create_private_subnets": true,
+		"create_db_subnets":      true,
+		"enable_ssr":             false, // Disable SSR for most tests to simplify
+		// Use minimal resources for testing
+		"db_allocated_storage": 20,
+		"db_instance_class":    "db.t4g.micro",
+		// Required for some modules but not needed for most tests
+		"route53_zone_id":     "Z123456789",
+		"domain_name":         fmt.Sprintf("%s.example.com", tc.UniqueID),
+		"acm_certificate_arn": fmt.Sprintf("arn:aws:acm:us-east-1:123456789012:certificate/%s", tc.UniqueID),
+		"alert_email":         "test@example.com",
+		"db_password":         "testpassword123!",
+		"app_db_password":     "apppassword123!",
+	}
+
+	// Merge with provided vars (provided vars override defaults)
+	for k, v := range vars {
+		defaultVars[k] = v
+	}
+
+	return &terraform.Options{
+		TerraformDir:    tc.TerraformDir,
+		TerraformBinary: "terraform", // Explicitly use terraform instead of auto-detecting OpenTofu
+		Vars:            defaultVars,
+		// No BackendConfig - plan-only tests don't need remote backend
 		EnvVars: map[string]string{
 			"AWS_DEFAULT_REGION":  tc.AWSRegion,
 			"TERRATEST_TERRAFORM": "terraform", // Force Terratest to use terraform
