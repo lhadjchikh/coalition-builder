@@ -27,16 +27,16 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
   const buildCreditText = (): string => {
     const parts: string[] = [];
 
-    if (title) {
-      parts.push(`"${title}"`);
+    if (title?.trim()) {
+      parts.push(`"${title.trim()}"`);
     }
 
-    if (author) {
-      parts.push(`by ${author}`);
+    if (author?.trim()) {
+      parts.push(`by ${author.trim()}`);
     }
 
-    if (license) {
-      parts.push(`is licensed under ${license}`);
+    if (license?.trim()) {
+      parts.push(`is licensed under ${license.trim()}`);
     }
 
     return parts.join(' ');
