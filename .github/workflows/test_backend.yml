@@ -88,10 +88,30 @@ jobs:
           echo "Skipping intensive tests for non-relevant changes to ensure deployment workflow gets triggered"
           docker compose run --rm -e PYTHONUNBUFFERED=1 api sh -c "python -c 'print(\"Minimal test passed, allowing deployment workflow to trigger\")'"
 
-      - name: Run backend tests
+      - name: Run backend tests with coverage
         if: steps.check_tests.outputs.skip_full_tests != 'true'
         run: |
-          docker compose run --rm -e PYTHONUNBUFFERED=1 -e DEBUG=True api sh -c "python manage.py test"
+          # Create coverage directory on host
+          mkdir -p ./backend_coverage
+
+          # Run tests with volume mount to get coverage file
+          docker compose run --rm \
+            -v $(pwd)/backend_coverage:/app/backend/coverage \
+            -e PYTHONUNBUFFERED=1 \
+            -e DEBUG=True \
+            api sh -c "
+              poetry install --with dev &&
+              poetry run pytest --cov=coalition --cov-report=xml:coverage/coverage.xml --cov-report=term-missing
+            "
+
+      - name: Upload coverage to Codecov
+        if: steps.check_tests.outputs.skip_full_tests != 'true'
+        uses: codecov/codecov-action@v5
+        with:
+          file: ./backend_coverage/coverage.xml
+          flags: python
+          name: python-coverage
+          fail_ci_if_error: false # Don't fail CI if Codecov has issues
 
       - name: Stop containers
         if: always()

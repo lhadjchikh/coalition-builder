@@ -68,6 +68,15 @@ jobs:
         if: steps.check_tests.outputs.skip_full_tests != 'true'
         run: npm run test:ci
 
+      - name: Upload coverage to Codecov
+        if: steps.check_tests.outputs.skip_full_tests != 'true'
+        uses: codecov/codecov-action@v5
+        with:
+          directory: ./frontend/coverage
+          flags: javascript
+          name: javascript-coverage
+          fail_ci_if_error: false # Don't fail CI if Codecov has issues
+
       - name: Build
         run: npm run build
 

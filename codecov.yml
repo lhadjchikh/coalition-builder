@@ -1,0 +1,50 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 1%
+        base: auto
+    patch:
+      default:
+        target: 80%
+        threshold: 1%
+
+flag_management:
+  individual_flags:
+    - name: python
+      paths:
+        - backend/
+      carryforward: true
+    - name: javascript
+      paths:
+        - frontend/
+        - ssr/
+        - shared/
+      carryforward: true
+    - name: terraform
+      paths:
+        - terraform/tests/
+      carryforward: true
+
+comment:
+  layout: "reach,diff,flags,files,footer"
+  behavior: default
+  require_changes: false
+  require_base: no
+  require_head: yes
+
+ignore:
+  - "backend/*/migrations/*"
+  - "backend/staticfiles/*"
+  - "backend/htmlcov/*"
+  - "frontend/build/*"
+  - "frontend/coverage/*"
+  - "ssr/.next/*"
+  - "ssr/node_modules/*"
+  - "shared/node_modules/*"
+  - "terraform/.terraform/*"
+  - "**/*_test.go"
+  - "**/*.test.js"
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
