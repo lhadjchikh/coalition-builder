@@ -13,6 +13,7 @@ class ContentBlockAPITest(TestCase):
         self.theme = Theme.objects.create(
             name="Test Theme",
             primary_color="#2563eb",
+            google_fonts=[],
             is_active=True,
         )
 
