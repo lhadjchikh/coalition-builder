@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Theme } from '@shared/utils/theme';
+import { loadGoogleFonts } from '../utils/googleFonts';
 
 interface ThemeContextType {
   theme: Theme | null;
@@ -88,6 +89,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
     // Update favicon if provided
     if (themeData.favicon_url) {
       updateFavicon(themeData.favicon_url);
+    }
+
+    // Load Google Fonts if specified
+    if (themeData.google_fonts && themeData.google_fonts.length > 0) {
+      loadGoogleFonts(themeData.google_fonts);
     }
   };
 

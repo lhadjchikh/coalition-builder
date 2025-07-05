@@ -25,6 +25,7 @@ export interface Theme {
   // Typography
   heading_font_family: string;
   body_font_family: string;
+  google_fonts: string[];
   font_size_base: number;
   font_size_small: number;
   font_size_large: number;
