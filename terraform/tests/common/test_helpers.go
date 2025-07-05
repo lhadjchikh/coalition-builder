@@ -3,7 +3,6 @@ package common
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"testing"
@@ -13,7 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"github.com/aws/aws-sdk-go-v2/service/sts"
 	terratest_aws "github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
@@ -26,7 +24,6 @@ type TestConfig struct {
 	Prefix       string
 	UniqueID     string
 	AccountID    string // Public field for test access
-	accountID    string // cached account ID to avoid repeated STS calls
 }
 
 // NewTestConfig creates a new test configuration with a unique ID
@@ -120,7 +117,6 @@ func (tc *TestConfig) GetTerraformOptionsForPlanOnly(vars map[string]interface{}
 		TerraformDir:    tc.TerraformDir,
 		TerraformBinary: "terraform", // Explicitly use terraform instead of auto-detecting OpenTofu
 		Vars:            defaultVars,
-		BackendConfig: map[string]interface{}{
 		EnvVars: map[string]string{
 			"AWS_DEFAULT_REGION":  tc.AWSRegion,
 			"TERRATEST_TERRAFORM": "terraform", // Force Terratest to use terraform
@@ -128,8 +124,26 @@ func (tc *TestConfig) GetTerraformOptionsForPlanOnly(vars map[string]interface{}
 	}
 }
 
-// Note: getAccountID, mustGetAccountID, and GetAccountID functions removed
-// since plan-only tests use local state and don't need S3 backend configuration
+// mustGetAccountID returns the AWS account ID for backend configuration
+// Used only by regular terraform tests that need S3 backend
+func (tc *TestConfig) mustGetAccountID() string {
+	// Try from environment variable first (set in CI)
+	if accountID := os.Getenv("AWS_ACCOUNT_ID"); accountID != "" {
+		return accountID
+	}
+
+	// For local development, use a fallback value
+	// Real apply tests should set AWS_ACCOUNT_ID environment variable
+	return "123456789012" // placeholder account ID
+}
+
+// GetAccountID lazily populates and returns the AccountID field
+func (tc *TestConfig) GetAccountID() string {
+	if tc.AccountID == "" {
+		tc.AccountID = tc.mustGetAccountID()
+	}
+	return tc.AccountID
+}
 
 // GetModuleTerraformOptions returns terraform options for testing individual modules
 func (tc *TestConfig) GetModuleTerraformOptions(modulePath string, vars map[string]interface{}) *terraform.Options {
