@@ -82,6 +82,21 @@ func TestFullStackDeploymentWithoutSSR(t *testing.T) {
 	assert.NotEmpty(t, apiECRURL)
 	assert.NotEmpty(t, ssrECRURL)
 
+	// Validate storage outputs
+	staticAssetsBucketName := terraform.Output(t, terraformOptions, "static_assets_bucket_name")
+	staticAssetsBucketArn := terraform.Output(t, terraformOptions, "static_assets_bucket_arn")
+	staticAssetsBucketURL := terraform.Output(t, terraformOptions, "static_assets_bucket_url")
+	staticAssetsUploadPolicyArn := terraform.Output(t, terraformOptions, "static_assets_upload_policy_arn")
+
+	assert.NotEmpty(t, staticAssetsBucketName)
+	assert.NotEmpty(t, staticAssetsBucketArn)
+	assert.NotEmpty(t, staticAssetsBucketURL)
+	assert.NotEmpty(t, staticAssetsUploadPolicyArn)
+
+	// Validate bucket ARN format
+	assert.Contains(t, staticAssetsBucketArn, "arn:aws:s3:::")
+	assert.Contains(t, staticAssetsBucketArn, staticAssetsBucketName)
+
 	// Note: We can't test actual HTTP endpoints without deploying containers
 	// In a real integration test, you'd build and push test containers first
 }

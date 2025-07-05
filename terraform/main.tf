@@ -156,7 +156,7 @@ module "storage" {
 
   prefix                 = var.prefix
   force_destroy          = var.static_assets_force_destroy
-  cors_allowed_origins   = var.static_assets_cors_origins
+  cors_allowed_origins   = var.static_assets_cors_origins != null ? var.static_assets_cors_origins : ["https://${var.domain_name}"]
   enable_versioning      = var.static_assets_enable_versioning
   enable_lifecycle_rules = var.static_assets_enable_lifecycle
 }

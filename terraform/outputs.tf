@@ -138,6 +138,11 @@ output "static_assets_bucket_name" {
   value       = module.storage.static_assets_bucket_name
 }
 
+output "static_assets_bucket_arn" {
+  description = "ARN of the S3 bucket for static assets"
+  value       = module.storage.static_assets_bucket_arn
+}
+
 output "static_assets_bucket_url" {
   description = "URL of the S3 bucket for static assets"
   value       = "https://${module.storage.static_assets_bucket_domain_name}"

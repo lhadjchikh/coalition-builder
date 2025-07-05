@@ -303,9 +303,9 @@ variable "static_assets_force_destroy" {
 }
 
 variable "static_assets_cors_origins" {
-  description = "List of allowed origins for CORS configuration on static assets bucket"
+  description = "List of allowed origins for CORS configuration on static assets bucket. Specify trusted domains explicitly."
   type        = list(string)
-  default     = ["*"]
+  default     = null # Will be set to include domain_name if not specified
 }
 
 variable "static_assets_enable_versioning" {
