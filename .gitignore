@@ -73,5 +73,15 @@ site/
 *.sublime-workspace
 Thumbs.db
 
+# Test Coverage
+coverage.xml
+htmlcov/
+.coverage
+*.cover
+.pytest_cache/
+backend/coverage.xml
+backend/htmlcov/
+backend/.coverage
+
 # Project Data
 /backend/coalition/fixtures
