@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Theme } from '@shared/utils/theme';
-import { loadGoogleFonts } from '../utils/googleFonts';
+import { loadGoogleFonts } from '@shared/utils/googleFonts';
 
 interface ThemeContextType {
   theme: Theme | null;

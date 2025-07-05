@@ -2,7 +2,7 @@ import React from 'react';
 import { render, waitFor, screen } from '@testing-library/react';
 import { ThemeProvider } from '../../contexts/ThemeContext';
 import { Theme } from '@shared/utils/theme';
-import * as googleFontsModule from '../../utils/googleFonts';
+import * as googleFontsModule from '@shared/utils/googleFonts';
 
 // Mock the loadGoogleFonts function
 const mockLoadGoogleFonts = jest.fn();
@@ -58,10 +58,10 @@ const createMockTheme = (overrides: Partial<Theme> = {}): Theme => ({
   font_size_base: 1.0,
   font_size_small: 0.875,
   font_size_large: 1.125,
-  logo_url: null,
-  logo_alt_text: null,
-  favicon_url: null,
-  custom_css: null,
+  logo_url: undefined,
+  logo_alt_text: undefined,
+  favicon_url: undefined,
+  custom_css: undefined,
   is_active: true,
   created_at: '2025-01-04T12:00:00Z',
   updated_at: '2025-01-04T12:00:00Z',
