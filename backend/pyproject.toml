@@ -95,6 +95,15 @@ addopts = [
     "--cov-fail-under=80"
 ]
 
+[tool.coverage.run]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*_tests.py",
+    "*/migrations/*",
+    "*/tests.py"
+]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
