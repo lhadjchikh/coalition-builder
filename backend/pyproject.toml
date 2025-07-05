@@ -96,6 +96,7 @@ addopts = [
 ]
 
 [tool.coverage.run]
+source = ["coalition"]
 omit = [
     "*/tests/*",
     "*/test_*.py",
