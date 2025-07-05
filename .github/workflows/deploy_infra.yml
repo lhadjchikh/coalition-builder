@@ -80,9 +80,9 @@ jobs:
           intervalSeconds: 60 # Check every minute
 
       - name: Check terraform tests result
-        if: steps.check_terraform_changes.outputs.terraform_changed == 'true' && steps.wait-for-tests.outputs.conclusion != 'success'
+        if: steps.check_terraform_changes.outputs.terraform_changed == 'true' && steps.wait_for_tests.outputs.conclusion != 'success'
         run: |
-          echo "Terraform tests did not complete successfully: ${{ steps.wait-for-tests.outputs.conclusion }}"
+          echo "Terraform tests did not complete successfully: ${{ steps.wait_for_tests.outputs.conclusion }}"
           exit 1
 
   terraform_plan:
