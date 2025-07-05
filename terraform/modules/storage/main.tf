@@ -89,6 +89,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "static_assets" {
     id     = "cleanup-old-versions"
     status = "Enabled"
 
+    filter {
+      prefix = ""
+    }
+
     noncurrent_version_expiration {
       noncurrent_days = var.noncurrent_version_expiration_days
     }

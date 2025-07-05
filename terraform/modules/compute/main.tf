@@ -249,9 +249,8 @@ resource "aws_iam_role_policy_attachment" "ecs_task_policy_attachment" {
   policy_arn = aws_iam_policy.ecs_task_policy.arn
 }
 
-# Attach S3 upload policy if provided
+# Attach S3 upload policy
 resource "aws_iam_role_policy_attachment" "ecs_task_s3_policy_attachment" {
-  count      = var.static_assets_upload_policy_arn != "" ? 1 : 0
   role       = aws_iam_role.ecs_task_role.name
   policy_arn = var.static_assets_upload_policy_arn
 }
