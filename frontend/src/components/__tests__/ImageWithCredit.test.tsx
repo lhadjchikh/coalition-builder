@@ -160,7 +160,7 @@ describe('ImageWithCredit Component', () => {
       const container = screen.getByRole('img').parentElement;
       expect(container).toHaveClass('relative', 'inline-block');
 
-      const overlay = screen.getByText('"Overlay Test"').parentElement;
+      const overlay = screen.getByText('"Overlay Test"').closest('div');
       expect(overlay).toHaveClass(
         'absolute',
         'bottom-2',
@@ -202,7 +202,7 @@ describe('ImageWithCredit Component', () => {
       const tooltipGroup = screen.getByText('"Tooltip Test"').closest('.group');
       expect(tooltipGroup).toBeInTheDocument();
 
-      const tooltipContent = screen.getByText('"Tooltip Test"').parentElement;
+      const tooltipContent = screen.getByText('"Tooltip Test"').closest('div');
       expect(tooltipContent).toHaveClass(
         'bg-gray-800',
         'text-white',

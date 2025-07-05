@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, waitFor, screen } from '@testing-library/react';
-import { ThemeProvider } from '../../contexts/ThemeContext';
+import { ThemeProvider, useTheme } from '../../contexts/ThemeContext';
 import { Theme } from '@shared/utils/theme';
 import * as googleFontsModule from '@shared/utils/googleFonts';
 
@@ -144,7 +144,7 @@ describe('Google Fonts Integration in Components', () => {
 
     await waitFor(
       () => {
-        expect(mockLoadGoogleFonts).toHaveBeenCalledWith([]);
+        expect(mockLoadGoogleFonts).not.toHaveBeenCalled();
       },
       { timeout: 1000 }
     );
@@ -213,35 +213,49 @@ describe('Google Fonts Integration in Components', () => {
       body_font_family: "'Roboto', sans-serif",
     });
 
-    const { rerender } = render(
+    const ThemeUpdateComponent: React.FC = () => {
+      const { theme, setTheme } = useTheme();
+      const [hasUpdated, setHasUpdated] = React.useState(false);
+
+      React.useEffect(() => {
+        // Wait for initial theme to load, then update it
+        if (theme && !hasUpdated) {
+          setTimeout(() => {
+            const updatedTheme = createMockTheme({
+              google_fonts: ['Lato', 'Montserrat'],
+              heading_font_family: "'Montserrat', sans-serif",
+              body_font_family: "'Lato', sans-serif",
+            });
+            setTheme(updatedTheme);
+            setHasUpdated(true);
+          }, 100);
+        }
+      }, [theme, setTheme, hasUpdated]);
+
+      return <FontTestComponent />;
+    };
+
+    render(
       <ThemeProvider initialTheme={initialTheme}>
-        <FontTestComponent />
+        <ThemeUpdateComponent />
       </ThemeProvider>
     );
 
     // Verify initial fonts are loaded
-    await waitFor(() => {
-      expect(mockLoadGoogleFonts).toHaveBeenCalledWith(['Roboto']);
-    });
-
-    mockLoadGoogleFonts.mockClear();
-
-    // Update with new theme
-    const updatedTheme = createMockTheme({
-      google_fonts: ['Lato', 'Montserrat'],
-      heading_font_family: "'Montserrat', sans-serif",
-      body_font_family: "'Lato', sans-serif",
-    });
-
-    rerender(
-      <ThemeProvider initialTheme={updatedTheme}>
-        <FontTestComponent />
-      </ThemeProvider>
+    await waitFor(
+      () => {
+        expect(mockLoadGoogleFonts).toHaveBeenCalledWith(['Roboto']);
+      },
+      { timeout: 1000 }
     );
 
-    await waitFor(() => {
-      expect(mockLoadGoogleFonts).toHaveBeenCalledWith(['Lato', 'Montserrat']);
-    });
+    // Wait for theme update and verify new fonts are loaded
+    await waitFor(
+      () => {
+        expect(mockLoadGoogleFonts).toHaveBeenCalledWith(['Lato', 'Montserrat']);
+      },
+      { timeout: 2000 }
+    );
 
     const root = document.documentElement;
     expect(root.style.getPropertyValue('--theme-font-heading')).toBe("'Montserrat', sans-serif");

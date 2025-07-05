@@ -66,7 +66,8 @@ describe('ThemeContext Google Fonts Integration', () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    // Don't restore mocks as we want the loadGoogleFonts mock to persist
+    document.documentElement.style.cssText = '';
   });
 
   it('should load Google Fonts when theme is provided with google_fonts', async () => {
@@ -76,9 +77,12 @@ describe('ThemeContext Google Fonts Integration', () => {
       </ThemeProvider>
     );
 
-    await waitFor(() => {
-      expect(mockLoadGoogleFonts).toHaveBeenCalledWith(['Merriweather', 'Barlow']);
-    });
+    await waitFor(
+      () => {
+        expect(mockLoadGoogleFonts).toHaveBeenCalledWith(['Merriweather', 'Barlow']);
+      },
+      { timeout: 1000 }
+    );
   });
 
   it('should not load Google Fonts when theme has empty google_fonts array', async () => {
@@ -93,9 +97,12 @@ describe('ThemeContext Google Fonts Integration', () => {
       </ThemeProvider>
     );
 
-    await waitFor(() => {
-      expect(mockLoadGoogleFonts).not.toHaveBeenCalled();
-    });
+    await waitFor(
+      () => {
+        expect(mockLoadGoogleFonts).not.toHaveBeenCalled();
+      },
+      { timeout: 1000 }
+    );
   });
 
   it('should not load Google Fonts when theme has no google_fonts property', async () => {
@@ -111,9 +118,12 @@ describe('ThemeContext Google Fonts Integration', () => {
     );
 
     // Since google_fonts is undefined, loadGoogleFonts should not be called
-    await waitFor(() => {
-      expect(mockLoadGoogleFonts).not.toHaveBeenCalled();
-    });
+    await waitFor(
+      () => {
+        expect(mockLoadGoogleFonts).not.toHaveBeenCalled();
+      },
+      { timeout: 1000 }
+    );
   });
 
   it('should load Google Fonts when theme is fetched from API', async () => {
@@ -128,43 +138,66 @@ describe('ThemeContext Google Fonts Integration', () => {
       </ThemeProvider>
     );
 
-    await waitFor(() => {
-      expect(mockLoadGoogleFonts).toHaveBeenCalledWith(['Merriweather', 'Barlow']);
-    });
+    await waitFor(
+      () => {
+        expect(mockLoadGoogleFonts).toHaveBeenCalledWith(['Merriweather', 'Barlow']);
+      },
+      { timeout: 1000 }
+    );
   });
 
   it('should load different Google Fonts when theme is updated', async () => {
-    const { rerender } = render(
+    const TestComponentWithSetter: React.FC = () => {
+      const { theme, setTheme } = useTheme();
+      const [hasUpdated, setHasUpdated] = React.useState(false);
+
+      React.useEffect(() => {
+        // Wait for initial theme to load, then update it
+        if (theme && !hasUpdated) {
+          setTimeout(() => {
+            const updatedTheme = {
+              ...theme,
+              google_fonts: ['Playfair Display', 'Inter'],
+              heading_font_family: "'Playfair Display', serif",
+              body_font_family: "'Inter', sans-serif",
+            };
+            setTheme(updatedTheme);
+            setHasUpdated(true);
+          }, 100);
+        }
+      }, [theme, setTheme, hasUpdated]);
+
+      return (
+        <div data-testid="test-component">
+          <div data-testid="theme-name">{theme?.name || 'no-theme'}</div>
+          <div data-testid="google-fonts">
+            {theme?.google_fonts ? JSON.stringify(theme.google_fonts) : 'no-fonts'}
+          </div>
+        </div>
+      );
+    };
+
+    render(
       <ThemeProvider initialTheme={mockTheme}>
-        <TestComponent />
+        <TestComponentWithSetter />
       </ThemeProvider>
     );
 
     // Verify initial fonts are loaded
-    await waitFor(() => {
-      expect(mockLoadGoogleFonts).toHaveBeenCalledWith(['Merriweather', 'Barlow']);
-    });
-
-    // Clear the mock to track new calls
-    mockLoadGoogleFonts.mockClear();
-
-    // Update with new theme
-    const updatedTheme = {
-      ...mockTheme,
-      google_fonts: ['Playfair Display', 'Inter'],
-      heading_font_family: "'Playfair Display', serif",
-      body_font_family: "'Inter', sans-serif",
-    };
-
-    rerender(
-      <ThemeProvider initialTheme={updatedTheme}>
-        <TestComponent />
-      </ThemeProvider>
+    await waitFor(
+      () => {
+        expect(mockLoadGoogleFonts).toHaveBeenCalledWith(['Merriweather', 'Barlow']);
+      },
+      { timeout: 1000 }
     );
 
-    await waitFor(() => {
-      expect(mockLoadGoogleFonts).toHaveBeenCalledWith(['Playfair Display', 'Inter']);
-    });
+    // Wait for theme update and verify new fonts are loaded
+    await waitFor(
+      () => {
+        expect(mockLoadGoogleFonts).toHaveBeenCalledWith(['Playfair Display', 'Inter']);
+      },
+      { timeout: 2000 }
+    );
   });
 
   it('should load Google Fonts with single font family', async () => {
@@ -232,9 +265,12 @@ describe('ThemeContext Google Fonts Integration', () => {
       </ThemeProvider>
     );
 
-    await waitFor(() => {
-      expect(mockLoadGoogleFonts).not.toHaveBeenCalled();
-    });
+    await waitFor(
+      () => {
+        expect(mockLoadGoogleFonts).not.toHaveBeenCalled();
+      },
+      { timeout: 1000 }
+    );
   });
 
   it('should handle 404 response and not load fonts', async () => {
@@ -249,9 +285,12 @@ describe('ThemeContext Google Fonts Integration', () => {
       </ThemeProvider>
     );
 
-    await waitFor(() => {
-      expect(mockLoadGoogleFonts).not.toHaveBeenCalled();
-    });
+    await waitFor(
+      () => {
+        expect(mockLoadGoogleFonts).not.toHaveBeenCalled();
+      },
+      { timeout: 1000 }
+    );
   });
 
   it('should reload Google Fonts when refreshTheme is called', async () => {
@@ -290,9 +329,12 @@ describe('ThemeContext Google Fonts Integration', () => {
     );
 
     // Wait for initial load
-    await waitFor(() => {
-      expect(mockLoadGoogleFonts).toHaveBeenCalledWith(['Merriweather', 'Barlow']);
-    });
+    await waitFor(
+      () => {
+        expect(mockLoadGoogleFonts).toHaveBeenCalledWith(['Merriweather', 'Barlow']);
+      },
+      { timeout: 1000 }
+    );
 
     // Wait for refresh
     await waitFor(
@@ -351,9 +393,12 @@ describe('ThemeContext Google Fonts Integration', () => {
     );
 
     // Initial load should happen
-    await waitFor(() => {
-      expect(mockLoadGoogleFonts).toHaveBeenCalledWith(['Merriweather', 'Barlow']);
-    });
+    await waitFor(
+      () => {
+        expect(mockLoadGoogleFonts).toHaveBeenCalledWith(['Merriweather', 'Barlow']);
+      },
+      { timeout: 1000 }
+    );
 
     // Setting to null should not trigger additional calls
     const callCount = mockLoadGoogleFonts.mock.calls.length;

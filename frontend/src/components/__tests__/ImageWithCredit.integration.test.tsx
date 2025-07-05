@@ -251,7 +251,7 @@ describe('ImageWithCredit Integration Tests', () => {
       const caption = screen.getByText(
         '"Test Image" by Test Author is licensed under Test License'
       );
-      expect(caption.parentElement).toHaveClass('mt-1', 'text-right');
+      expect(caption.closest('div')).toHaveClass('mt-1', 'text-right');
     });
   });
 
