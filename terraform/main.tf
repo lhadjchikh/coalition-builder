@@ -155,7 +155,7 @@ module "storage" {
   source = "./modules/storage"
 
   prefix                 = var.prefix
-  force_destroy          = var.force_destroy
+  force_destroy          = var.static_assets_force_destroy
   cors_allowed_origins   = var.static_assets_cors_origins
   enable_versioning      = var.static_assets_enable_versioning
   enable_lifecycle_rules = var.static_assets_enable_lifecycle

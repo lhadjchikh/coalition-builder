@@ -296,7 +296,7 @@ variable "site_username" {
 }
 
 # Static Assets Storage Variables
-variable "force_destroy" {
+variable "static_assets_force_destroy" {
   description = "Whether to force destroy buckets even if they contain objects"
   type        = bool
   default     = false
