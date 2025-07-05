@@ -48,13 +48,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
 
   const setTheme = (newTheme: Theme | null): void => {
     setThemeState(newTheme);
-
-    // Apply CSS variables to the document root
-    if (newTheme) {
-      applyThemeToDocument(newTheme);
-    } else {
-      removeThemeFromDocument();
-    }
+    // Theme application is handled by useEffect hook to avoid duplication
   };
 
   const refreshTheme = async (): Promise<void> => {
