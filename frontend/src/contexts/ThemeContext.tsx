@@ -143,13 +143,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
   useEffect(() => {
     if (!initialTheme) {
       fetchActiveTheme();
-    } else {
-      // Apply the initial theme to the document
-      applyThemeToDocument(initialTheme);
     }
   }, [initialTheme]);
 
-  // Apply theme whenever it changes
+  // Apply theme whenever it changes (including initial theme)
   useEffect(() => {
     if (theme) {
       applyThemeToDocument(theme);
