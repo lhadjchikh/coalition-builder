@@ -148,6 +148,10 @@ export interface ContentBlock {
   content: string;
   image_url: string;
   image_alt_text: string;
+  image_title: string;
+  image_author: string;
+  image_license: string;
+  image_source_url: string;
   css_classes: string;
   background_color: string;
   order: number;
