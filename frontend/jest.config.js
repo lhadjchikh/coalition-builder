@@ -23,7 +23,7 @@ module.exports = {
   ],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
-    '../shared/**/*.{ts,tsx}',
+    '../shared/**/*.{ts,tsx,js}',
     '!src/**/*.d.ts',
     '!src/index.tsx',
     '!src/reportWebVitals.ts',
