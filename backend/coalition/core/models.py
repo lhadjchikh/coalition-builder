@@ -467,6 +467,25 @@ class ContentBlock(models.Model):
         blank=True,
         help_text="Alt text for the image (accessibility)",
     )
+    image_title = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Title of the image for attribution",
+    )
+    image_author = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Author/photographer of the image",
+    )
+    image_license = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="License of the image (e.g., 'CC BY 2.0', 'All rights reserved')",
+    )
+    image_source_url = models.URLField(
+        blank=True,
+        help_text="Source URL where the image was obtained",
+    )
 
     # Layout options
     css_classes = models.CharField(

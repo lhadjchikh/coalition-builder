@@ -157,6 +157,10 @@ class ContentBlockOut(Schema):
     content: str
     image_url: str
     image_alt_text: str
+    image_title: str
+    image_author: str
+    image_license: str
+    image_source_url: str
     css_classes: str
     background_color: str
     order: int
