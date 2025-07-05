@@ -59,6 +59,29 @@ ORG_TAGLINE="Protecting our planet through policy"
 CONTACT_EMAIL="info@environmentalcoalition.org"
 ```
 
+### File Storage Configuration
+
+| Variable                  | Description                           | Default     | Required   |
+| ------------------------- | ------------------------------------- | ----------- | ---------- |
+| `AWS_STORAGE_BUCKET_NAME` | S3 bucket name for media file uploads | -           | Production |
+| `AWS_REGION`              | AWS region for S3 bucket              | `us-east-1` | No         |
+
+**Note:** In production, media files (uploaded images) are automatically stored in AWS S3. The ECS task role provides authentication for S3 access.
+
+**File Organization:**
+
+- `logos/` - Organization logos from theme settings
+- `favicons/` - Favicon uploads
+- `backgrounds/` - Hero background images
+- `content_blocks/` - Images from content blocks
+
+**Example:**
+
+```bash
+AWS_STORAGE_BUCKET_NAME="my-org-static-assets"
+AWS_REGION="us-west-2"
+```
+
 ### Email Configuration
 
 | Variable                             | Description                           | Default                 | Required |

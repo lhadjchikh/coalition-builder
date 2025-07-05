@@ -122,6 +122,7 @@ export interface Theme {
   // Typography
   heading_font_family: string;
   body_font_family: string;
+  google_fonts: string[];
   font_size_base: number;
   font_size_small: number;
   font_size_large: number;
@@ -148,6 +149,10 @@ export interface ContentBlock {
   content: string;
   image_url: string;
   image_alt_text: string;
+  image_title?: string;
+  image_author?: string;
+  image_license?: string;
+  image_source_url?: string;
   css_classes: string;
   background_color: string;
   order: number;

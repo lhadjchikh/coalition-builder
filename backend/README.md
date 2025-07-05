@@ -22,6 +22,8 @@ Quick links:
 - **Python 3.13**: Core programming language
 - **Django 5.2**: Web framework
 - **Django Ninja**: API framework (FastAPI-inspired)
+- **django-storages**: S3-based file storage for media uploads
+- **Pillow**: Image processing library for uploaded files
 - **GeoDjango**: For geographic data handling
 - **PostGIS**: Spatial database extension for PostgreSQL
 - **Poetry**: Dependency management
@@ -206,10 +208,19 @@ The admin interface provides dedicated sections for managing homepage content:
 - Social media links
 - Campaign section settings
 
+**Theme Management**:
+
+- Logo and favicon image uploads
+- Color customization (primary, secondary, accent colors)
+- Typography settings with Google Fonts support
+- Custom CSS for advanced styling
+
 **Content Blocks**:
 
 - Flexible content sections that can be added to the homepage
 - Support for different block types: text, image, text+image, quote, statistics, custom HTML
+- Image upload functionality with automatic S3 storage
+- Image attribution tracking (title, author, license, source)
 - Drag-and-drop ordering via the `order` field
 - Visibility controls for each block
 - Rich content editing with HTML support
@@ -314,6 +325,18 @@ The following environment variables can be configured:
 - `ORGANIZATION_NAME`: Name of the organization (fallback when no homepage exists)
 - `ORG_TAGLINE`: Organization tagline or slogan (fallback)
 - `CONTACT_EMAIL`: Primary contact email address (fallback)
+
+### File Storage Configuration
+
+- `AWS_STORAGE_BUCKET_NAME`: S3 bucket name for media file uploads (auto-configured in production)
+- `AWS_REGION`: AWS region for S3 bucket (defaults to us-east-1)
+
+Media files (uploaded images) are automatically stored in AWS S3 with organized folder structure:
+
+- `logos/` - Organization logos from theme settings
+- `favicons/` - Favicon uploads
+- `backgrounds/` - Hero background images
+- `content_blocks/` - Images from content blocks
 
 ### Production Environment
 

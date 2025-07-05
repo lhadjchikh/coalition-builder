@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import TYPE_CHECKING
 
 from ninja import ModelSchema, Schema
@@ -9,29 +8,20 @@ from coalition.stakeholders.validators import AddressValidator
 if TYPE_CHECKING:
     from django.db.models import QuerySet
 
-    from coalition.core.models import ContentBlock, HomePage
+    from coalition.core.models import ContentBlock, HomePage, Theme
 
 # Import models for ModelSchema
-from coalition.campaigns.models import PolicyCampaign
+from coalition.campaigns.models import Bill, PolicyCampaign
+from coalition.core.models import ContentBlock, HomePage, Theme
 from coalition.endorsements.models import Endorsement
+from coalition.legislators.models import Legislator
 from coalition.stakeholders.models import Stakeholder
 
 
 class PolicyCampaignOut(ModelSchema):
     class Meta:
         model = PolicyCampaign
-        fields = [
-            "id",
-            "name",
-            "title",
-            "summary",
-            "description",
-            "endorsement_statement",
-            "allow_endorsements",
-            "endorsement_form_instructions",
-            "active",
-            "created_at",
-        ]
+        fields = "__all__"
 
 
 class StakeholderOut(ModelSchema):
@@ -47,21 +37,7 @@ class StakeholderOut(ModelSchema):
 
     class Meta:
         model = Stakeholder
-        fields = [
-            "id",
-            "name",
-            "organization",
-            "role",
-            "email",
-            "street_address",
-            "city",
-            "state",
-            "zip_code",
-            "county",
-            "type",
-            "created_at",
-            "updated_at",
-        ]
+        exclude = ["location"]
 
     @staticmethod
     def resolve_latitude(obj: "Stakeholder") -> float | None:
@@ -102,165 +78,88 @@ class EndorsementOut(ModelSchema):
 
     class Meta:
         model = Endorsement
-        fields = [
-            "id",
-            "statement",
-            "public_display",
-            "status",
-            "email_verified",
-            "created_at",
-            "verified_at",
-            "reviewed_at",
+        exclude = [
+            "verification_token",
+            "verification_sent_at",
+            "admin_notes",
         ]
 
 
 class BillOut(Schema):
-    id: int
-    level: str = "federal"
-    policy_id: int
-    number: str
-    title: str
-    chamber: str
-    session: str
-    state_id: int | None = None
-    state_name: str | None = None
-    introduced_date: str
-    status: str = ""
-    url: str = ""
-    is_primary: bool = False
-    related_bill_id: int | None = None
-    sponsors: list[int] = []
-    cosponsors: list[int] = []
-    display_name: str
+    class Meta:
+        model = Bill
+        fields = "__all__"
 
 
-class LegislatorOut(Schema):
-    id: int
-    level: str = "federal"
-    bioguide_id: str | None = None
-    state_id: str = ""
-    first_name: str
-    last_name: str
-    chamber: str
-    state: str
-    district: str | None = None
-    is_senior: bool | None = None
-    party: str
-    in_office: bool = True
-    url: str = ""
+class LegislatorOut(ModelSchema):
+    class Meta:
+        model = Legislator
+        fields = "__all__"
 
 
-class ContentBlockOut(Schema):
-    id: int
-    title: str
-    block_type: str
-    content: str
+class ContentBlockOut(ModelSchema):
+    # Add the computed property field
     image_url: str
-    image_alt_text: str
-    css_classes: str
-    background_color: str
-    order: int
-    is_visible: bool
-    created_at: datetime
-    updated_at: datetime
+
+    class Meta:
+        model = ContentBlock
+        fields = "__all__"
 
 
-class ThemeOut(Schema):
+class ThemeOut(ModelSchema):
     """Response schema for Theme model"""
 
-    id: int
-    name: str
-    description: str | None = None
-
-    # Brand colors
-    primary_color: str
-    secondary_color: str
-    accent_color: str
-
-    # Background colors
-    background_color: str
-    section_background_color: str
-    card_background_color: str
-
-    # Text colors
-    heading_color: str
-    body_text_color: str
-    muted_text_color: str
-    link_color: str
-    link_hover_color: str
-
-    # Typography
-    heading_font_family: str
-    body_font_family: str
-    font_size_base: float
-    font_size_small: float
-    font_size_large: float
-
-    # Brand assets
+    # Add computed property fields
     logo_url: str | None = None
-    logo_alt_text: str | None = None
     favicon_url: str | None = None
+    # Override datetime fields to return strings
+    created_at: str
+    updated_at: str
 
-    # Custom CSS
-    custom_css: str | None = None
+    class Meta:
+        model = Theme
+        fields = "__all__"
 
-    # Status
-    is_active: bool
-    created_at: datetime
-    updated_at: datetime
+    @staticmethod
+    def resolve_logo_url(obj: "Theme") -> str | None:
+        """Get the logo URL"""
+        return obj.logo_url
+
+    @staticmethod
+    def resolve_favicon_url(obj: "Theme") -> str | None:
+        """Get the favicon URL"""
+        return obj.favicon_url
+
+    @staticmethod
+    def resolve_created_at(obj: "Theme") -> str:
+        """Convert created_at datetime to ISO string"""
+        return obj.created_at.isoformat()
+
+    @staticmethod
+    def resolve_updated_at(obj: "Theme") -> str:
+        """Convert updated_at datetime to ISO string"""
+        return obj.updated_at.isoformat()
 
 
-class HomePageOut(Schema):
-    id: int
-    # Organization info
-    organization_name: str
-    tagline: str
-
-    # Hero section
-    hero_title: str
-    hero_subtitle: str
-    hero_background_image: str
-
-    # Main content sections
-    about_section_title: str
-    about_section_content: str
-
-    # Call to action
-    cta_title: str
-    cta_content: str
-    cta_button_text: str
-    cta_button_url: str
-
-    # Contact information
-    contact_email: str
-    contact_phone: str
-
-    # Social media
-    facebook_url: str
-    twitter_url: str
-    instagram_url: str
-    linkedin_url: str
-
-    # Campaign section customization
-    campaigns_section_title: str
-    campaigns_section_subtitle: str
-    show_campaigns_section: bool
-
-    # Content blocks
+class HomePageOut(ModelSchema):
+    # Add computed property fields
+    hero_background_image_url: str
     content_blocks: list[ContentBlockOut]
-
-    # Theme information
     theme: ThemeOut | None = None
 
-    # Meta information
-    is_active: bool
-    created_at: datetime
-    updated_at: datetime
+    class Meta:
+        model = HomePage
+        fields = "__all__"
 
     @staticmethod
     def resolve_content_blocks(obj: "HomePage") -> "QuerySet[ContentBlock]":
         """Only return visible content blocks, ordered by order field"""
         return obj.content_blocks.filter(is_visible=True).order_by("order")
+
+    @staticmethod
+    def resolve_hero_background_image_url(obj: "HomePage") -> str:
+        """Get the hero background image URL"""
+        return obj.hero_background_image_url
 
     @staticmethod
     def resolve_theme(obj: "HomePage") -> "ThemeOut | None":

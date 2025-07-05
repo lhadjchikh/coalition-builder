@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Theme } from '@shared/utils/theme';
+import { loadGoogleFonts } from '@shared/utils/googleFonts';
 
 interface ThemeContextType {
   theme: Theme | null;
@@ -47,13 +48,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
 
   const setTheme = (newTheme: Theme | null): void => {
     setThemeState(newTheme);
-
-    // Apply CSS variables to the document root
-    if (newTheme) {
-      applyThemeToDocument(newTheme);
-    } else {
-      removeThemeFromDocument();
-    }
+    // Theme application is handled by useEffect hook to avoid duplication
   };
 
   const refreshTheme = async (): Promise<void> => {
@@ -88,6 +83,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
     // Update favicon if provided
     if (themeData.favicon_url) {
       updateFavicon(themeData.favicon_url);
+    }
+
+    // Load Google Fonts if specified
+    if (themeData.google_fonts && themeData.google_fonts.length > 0) {
+      loadGoogleFonts(themeData.google_fonts);
     }
   };
 
@@ -137,13 +137,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
   useEffect(() => {
     if (!initialTheme) {
       fetchActiveTheme();
-    } else {
-      // Apply the initial theme to the document
-      applyThemeToDocument(initialTheme);
     }
   }, [initialTheme]);
 
-  // Apply theme whenever it changes
+  // Apply theme whenever it changes (including initial theme)
   useEffect(() => {
     if (theme) {
       applyThemeToDocument(theme);

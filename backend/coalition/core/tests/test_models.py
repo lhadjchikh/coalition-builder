@@ -121,7 +121,7 @@ class HomePageModelTest(TestCase):
 
         # These should be blank/empty
         assert homepage.hero_subtitle == ""
-        assert homepage.hero_background_image == ""
+        assert not homepage.hero_background_image
         assert homepage.contact_phone == ""
         assert homepage.facebook_url == ""
         assert homepage.twitter_url == ""

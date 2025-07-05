@@ -24,6 +24,7 @@ class Theme(models.Model):
     )
     description = models.TextField(
         blank=True,
+        null=True,
         help_text="Optional description of this theme",
     )
 
@@ -122,6 +123,14 @@ class Theme(models.Model):
         ),
         help_text="Font family for body text (CSS font-family value)",
     )
+    google_fonts = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=(
+            "List of Google Font family names to load "
+            "(e.g., ['Merriweather', 'Barlow'])"
+        ),
+    )
 
     # Font sizes (in rem units)
     font_size_base = models.DecimalField(
@@ -131,36 +140,42 @@ class Theme(models.Model):
         help_text="Base font size in rem units (e.g., 1.00 for 16px)",
     )
     font_size_small = models.DecimalField(
-        max_digits=3,
-        decimal_places=2,
+        max_digits=4,
+        decimal_places=3,
         default=0.875,
         help_text="Small font size in rem units",
     )
     font_size_large = models.DecimalField(
-        max_digits=3,
-        decimal_places=2,
+        max_digits=4,
+        decimal_places=3,
         default=1.125,
         help_text="Large font size in rem units",
     )
 
     # Brand assets
-    logo_url = models.URLField(
+    logo = models.ImageField(
+        upload_to="logos/",
         blank=True,
-        help_text="URL to organization logo image",
+        null=True,
+        help_text="Organization logo image",
     )
     logo_alt_text = models.CharField(
         max_length=200,
         blank=True,
+        null=True,
         help_text="Alt text for logo (accessibility)",
     )
-    favicon_url = models.URLField(
+    favicon = models.ImageField(
+        upload_to="favicons/",
         blank=True,
-        help_text="URL to favicon image",
+        null=True,
+        help_text="Favicon image",
     )
 
     # Custom CSS
     custom_css = models.TextField(
         blank=True,
+        null=True,
         help_text="Additional custom CSS for advanced styling (optional)",
     )
 
@@ -180,6 +195,20 @@ class Theme(models.Model):
     def __str__(self) -> str:
         status = " (Active)" if self.is_active else ""
         return f"{self.name}{status}"
+
+    @property
+    def logo_url(self) -> str:
+        """Return the URL of the uploaded logo, or empty string if no logo."""
+        if self.logo and hasattr(self.logo, "url"):
+            return self.logo.url
+        return ""
+
+    @property
+    def favicon_url(self) -> str:
+        """Return the URL of the uploaded favicon, or empty string if no favicon."""
+        if self.favicon and hasattr(self.favicon, "url"):
+            return self.favicon.url
+        return ""
 
     def clean(self) -> None:
         """Ensure only one active theme exists"""
@@ -279,9 +308,11 @@ class HomePage(models.Model):
         blank=True,
         help_text="Optional subtitle or description under the hero title",
     )
-    hero_background_image = models.URLField(
+    hero_background_image = models.ImageField(
+        upload_to="backgrounds/",
         blank=True,
-        help_text="URL to hero background image (optional)",
+        null=True,
+        help_text="Hero background image (optional)",
     )
 
     # Main content sections
@@ -357,6 +388,13 @@ class HomePage(models.Model):
 
     def __str__(self) -> str:
         return f"Homepage: {self.organization_name}"
+
+    @property
+    def hero_background_image_url(self) -> str:
+        """Return the URL of the hero background image, or empty string if no image."""
+        if self.hero_background_image and hasattr(self.hero_background_image, "url"):
+            return self.hero_background_image.url
+        return ""
 
     def clean(self) -> None:
         """Ensure only one active homepage configuration exists"""
@@ -449,15 +487,36 @@ class ContentBlock(models.Model):
         help_text="Main content for this block (text, HTML, etc.)",
     )
 
-    image_url = models.URLField(
+    image = models.ImageField(
+        upload_to="content_blocks/",
         blank=True,
-        help_text="Image URL for image or text+image blocks",
+        null=True,
+        help_text="Image for image or text+image blocks",
     )
 
     image_alt_text = models.CharField(
         max_length=200,
         blank=True,
         help_text="Alt text for the image (accessibility)",
+    )
+    image_title = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Title of the image for attribution",
+    )
+    image_author = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Author/photographer of the image",
+    )
+    image_license = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="License of the image (e.g., 'CC BY 2.0', 'All rights reserved')",
+    )
+    image_source_url = models.URLField(
+        blank=True,
+        help_text="Source URL where the image was obtained",
     )
 
     # Layout options
@@ -494,6 +553,13 @@ class ContentBlock(models.Model):
 
     def __str__(self) -> str:
         return f"Block: {self.title or self.block_type} (Order: {self.order})"
+
+    @property
+    def image_url(self) -> str:
+        """Return the URL of the uploaded image, or empty string if no image."""
+        if self.image and hasattr(self.image, "url"):
+            return self.image.url
+        return ""
 
     def save(self, *args: "Any", **kwargs: "Any") -> None:
         """Sanitize content based on block type before saving."""

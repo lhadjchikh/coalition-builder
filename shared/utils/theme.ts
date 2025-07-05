@@ -25,6 +25,7 @@ export interface Theme {
   // Typography
   heading_font_family: string;
   body_font_family: string;
+  google_fonts: string[];
   font_size_base: number;
   font_size_small: number;
   font_size_large: number;
@@ -61,6 +62,7 @@ export const DEFAULT_THEME: Omit<Theme, "id" | "created_at" | "updated_at"> = {
     'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
   body_font_family:
     'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
+  google_fonts: [],
   font_size_base: 1.0,
   font_size_small: 0.875,
   font_size_large: 1.125,

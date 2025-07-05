@@ -83,6 +83,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_extensions",
     "django_ratelimit",
+    "lockdown",
+    "storages",
     "coalition.core.apps.CoreConfig",
     "coalition.campaigns.apps.CampaignsConfig",
     "coalition.legislators.apps.LegislatorsConfig",
@@ -99,12 +101,12 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "lockdown.middleware.LockdownMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "lockdown.middleware.LockdownMiddleware",
 ]
 
 ROOT_URLCONF = "coalition.core.urls"
@@ -320,3 +322,28 @@ LOCKDOWN_URL_EXCEPTIONS = [
 
 # Session-based lockdown (user stays logged in)
 LOCKDOWN_SESSION_LOCKDOWN = True
+
+
+# File Storage Configuration (django-storages with S3)
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
+# AWS S3 Configuration
+AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "")
+AWS_S3_REGION_NAME = os.getenv("AWS_REGION", "us-east-1")
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+
+# S3 File Settings
+AWS_S3_OBJECT_PARAMETERS = {
+    "CacheControl": "max-age=86400",  # Cache for 1 day
+}
+AWS_S3_FILE_OVERWRITE = False  # Don't overwrite files with same name
+AWS_DEFAULT_ACL = "public-read"  # Make uploaded files publicly readable
+AWS_S3_VERIFY_SSL = True
+
+# Media files configuration
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+MEDIA_ROOT = "/media/"
+
+# Use IAM role for authentication (ECS task role handles this)
+AWS_S3_ACCESS_KEY_ID = None
+AWS_S3_SECRET_ACCESS_KEY = None

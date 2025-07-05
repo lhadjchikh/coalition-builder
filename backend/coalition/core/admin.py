@@ -329,6 +329,7 @@ class ThemeAdmin(admin.ModelAdmin):
                 "fields": (
                     "heading_font_family",
                     "body_font_family",
+                    "google_fonts",
                     "font_size_base",
                     "font_size_small",
                     "font_size_large",

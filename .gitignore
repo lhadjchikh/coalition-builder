@@ -72,3 +72,6 @@ site/
 *.sublime-project
 *.sublime-workspace
 Thumbs.db
+
+# Project Data
+/backend/coalition/fixtures

@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.test.client import Client
 
@@ -9,13 +11,56 @@ class HomepageAPITest(TestCase):
         # Use Django's test client
         self.client = Client()
 
+        # Mock S3 URLs for image properties
+        self.hero_bg_url = (
+            "https://test-bucket.s3.amazonaws.com/backgrounds/hero-bg.jpg"
+        )
+        self.content_block_img_url = (
+            "https://test-bucket.s3.amazonaws.com/content_blocks/test-image.jpg"
+        )
+
+        # Create test data
+        self._setup_test_data()
+
+        # Patch the properties at the class level so ALL instances return mock URLs
+        self.homepage_patch = patch.object(
+            HomePage,
+            "hero_background_image_url",
+            new_callable=lambda: property(
+                lambda self: (
+                    self.hero_bg_url
+                    if hasattr(self, "hero_bg_url")
+                    else "https://test-bucket.s3.amazonaws.com/backgrounds/hero-bg.jpg"
+                ),
+            ),
+        )
+        self.content_block_patch = patch.object(
+            ContentBlock,
+            "image_url",
+            new_callable=lambda: property(
+                lambda self: (
+                    "https://test-bucket.s3.amazonaws.com/content_blocks/test-image.jpg"
+                    if self.block_type == "image"
+                    else ""
+                ),
+            ),
+        )
+
+        self.homepage_patch.start()
+        self.content_block_patch.start()
+
+    def tearDown(self) -> None:
+        # Stop the patches
+        self.homepage_patch.stop()
+        self.content_block_patch.stop()
+
+    def _setup_test_data(self) -> None:
         # Create test homepage
         self.homepage = HomePage.objects.create(
             organization_name="Test Organization",
             tagline="Building test coalitions",
             hero_title="Welcome to Test Organization",
             hero_subtitle="Making a difference in testing",
-            hero_background_image="https://example.com/hero.jpg",
             about_section_title="About Our Test Mission",
             about_section_content=(
                 "We are dedicated to thorough testing of our platform."
@@ -51,7 +96,6 @@ class HomepageAPITest(TestCase):
             title="Test Block 2",
             block_type="image",
             content="This is the second test content block.",
-            image_url="https://example.com/image.jpg",
             image_alt_text="Test image",
             order=2,
             is_visible=True,
@@ -79,7 +123,7 @@ class HomepageAPITest(TestCase):
         assert data["tagline"] == "Building test coalitions"
         assert data["hero_title"] == "Welcome to Test Organization"
         assert data["hero_subtitle"] == "Making a difference in testing"
-        assert data["hero_background_image"] == "https://example.com/hero.jpg"
+        assert data["hero_background_image_url"] == self.hero_bg_url
         assert data["about_section_title"] == "About Our Test Mission"
         assert (
             data["about_section_content"]
@@ -124,7 +168,7 @@ class HomepageAPITest(TestCase):
         assert block2["title"] == "Test Block 2"
         assert block2["block_type"] == "image"
         assert block2["content"] == "This is the second test content block."
-        assert block2["image_url"] == "https://example.com/image.jpg"
+        assert block2["image_url"] == self.content_block_img_url
         assert block2["image_alt_text"] == "Test image"
         assert block2["order"] == 2
         assert block2["is_visible"]
@@ -271,7 +315,7 @@ class HomepageAPITest(TestCase):
             "tagline",
             "hero_title",
             "hero_subtitle",
-            "hero_background_image",
+            "hero_background_image_url",
             "about_section_title",
             "about_section_content",
             "cta_title",
@@ -500,7 +544,7 @@ class HomepageAPITest(TestCase):
         assert data["id"] == self.content_block2.id
         assert data["title"] == "Test Block 2"
         assert data["block_type"] == "image"
-        assert data["image_url"] == "https://example.com/image.jpg"
+        assert data["image_url"] == self.content_block_img_url
         assert data["image_alt_text"] == "Test image"
         assert data["order"] == 2
 

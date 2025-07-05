@@ -132,6 +132,27 @@ output "troubleshooting_commands" {
   }
 }
 
+# Storage Module Outputs
+output "static_assets_bucket_name" {
+  description = "Name of the S3 bucket for static assets"
+  value       = module.storage.static_assets_bucket_name
+}
+
+output "static_assets_bucket_arn" {
+  description = "ARN of the S3 bucket for static assets"
+  value       = module.storage.static_assets_bucket_arn
+}
+
+output "static_assets_bucket_url" {
+  description = "URL of the S3 bucket for static assets"
+  value       = "https://${module.storage.static_assets_bucket_domain_name}"
+}
+
+output "static_assets_upload_policy_arn" {
+  description = "ARN of the IAM policy for uploading to the static assets bucket"
+  value       = module.storage.static_assets_upload_policy_arn
+}
+
 # Summary output
 output "deployment_summary" {
   description = "Complete deployment summary"
@@ -141,6 +162,7 @@ output "deployment_summary" {
 🌐 Website: ${module.dns.website_url}
 🗄️  Database: ${module.database.db_instance_endpoint}
 🖥️  Bastion: ${module.compute.bastion_public_ip}
+📦 Static Assets: https://${module.storage.static_assets_bucket_domain_name}
 
 EOT
 }

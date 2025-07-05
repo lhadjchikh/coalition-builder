@@ -30,6 +30,8 @@ bleach = "^6.2.0"
 geopy = "^2.4.1"
 django-extensions = "^4.1"
 django-lockdown = "^5.0.0"
+django-storages = {extras = ["s3"], version = "^1.14.4"}
+pillow = "^11.0.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"

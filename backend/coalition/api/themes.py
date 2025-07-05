@@ -1,55 +1,12 @@
 from django.http import Http404, HttpRequest
 from ninja import Router, Schema
+from ninja.errors import HttpError
 from pydantic import Field
 
+from coalition.api.schemas import ThemeOut
 from coalition.core.models import Theme
 
 router = Router(tags=["Themes"])
-
-
-class ThemeOut(Schema):
-    """Response schema for Theme model"""
-
-    id: int
-    name: str
-    description: str | None = None
-
-    # Brand colors
-    primary_color: str
-    secondary_color: str
-    accent_color: str
-
-    # Background colors
-    background_color: str
-    section_background_color: str
-    card_background_color: str
-
-    # Text colors
-    heading_color: str
-    body_text_color: str
-    muted_text_color: str
-    link_color: str
-    link_hover_color: str
-
-    # Typography
-    heading_font_family: str
-    body_font_family: str
-    font_size_base: float
-    font_size_small: float
-    font_size_large: float
-
-    # Brand assets
-    logo_url: str | None = None
-    logo_alt_text: str | None = None
-    favicon_url: str | None = None
-
-    # Custom CSS
-    custom_css: str | None = None
-
-    # Status
-    is_active: bool
-    created_at: str
-    updated_at: str
 
 
 class ThemeIn(Schema):
@@ -125,14 +82,16 @@ class ThemeIn(Schema):
         ),
         max_length=200,
     )
+    google_fonts: list[str] = Field(
+        default_factory=list,
+        description="List of Google Font family names to load",
+    )
     font_size_base: float = Field(default=1.0, ge=0.5, le=2.0)
     font_size_small: float = Field(default=0.875, ge=0.5, le=2.0)
     font_size_large: float = Field(default=1.125, ge=0.5, le=2.0)
 
-    # Brand assets
-    logo_url: str | None = None
+    # Brand assets (logo and favicon files are uploaded separately)
     logo_alt_text: str | None = Field(None, max_length=200)
-    favicon_url: str | None = None
 
     # Custom CSS
     custom_css: str | None = None
@@ -169,19 +128,6 @@ def get_theme(request: HttpRequest, theme_id: int) -> Theme:
         raise Http404("Theme not found") from None
 
 
-@router.get("/{theme_id}/css/", response=ThemeCSSOut)
-def get_theme_css(request: HttpRequest, theme_id: int) -> dict:
-    """Get CSS variables and custom CSS for a specific theme"""
-    try:
-        theme = Theme.objects.get(id=theme_id)
-        return {
-            "css_variables": theme.generate_css_variables(),
-            "custom_css": theme.custom_css,
-        }
-    except Theme.DoesNotExist:
-        raise Http404("Theme not found") from None
-
-
 @router.get("/active/css/", response=ThemeCSSOut)
 def get_active_theme_css(request: HttpRequest) -> dict:
     """Get CSS variables and custom CSS for the active theme"""
@@ -197,6 +143,19 @@ def get_active_theme_css(request: HttpRequest) -> dict:
         "css_variables": theme.generate_css_variables(),
         "custom_css": theme.custom_css,
     }
+
+
+@router.get("/{theme_id}/css/", response=ThemeCSSOut)
+def get_theme_css(request: HttpRequest, theme_id: int) -> dict:
+    """Get CSS variables and custom CSS for a specific theme"""
+    try:
+        theme = Theme.objects.get(id=theme_id)
+        return {
+            "css_variables": theme.generate_css_variables(),
+            "custom_css": theme.custom_css,
+        }
+    except Theme.DoesNotExist:
+        raise Http404("Theme not found") from None
 
 
 @router.post("/", response=ThemeOut)
@@ -243,12 +202,11 @@ def delete_theme(request: HttpRequest, theme_id: int) -> dict:
         theme = Theme.objects.get(id=theme_id)
 
         if theme.is_active:
-            return {
-                "error": (
-                    "Cannot delete the active theme. "
-                    "Please activate another theme first."
-                ),
-            }, 400
+            raise HttpError(
+                400,
+                "Cannot delete the active theme. "
+                "Please activate another theme first.",
+            )
 
         theme.delete()
         return {"message": "Theme deleted successfully"}
