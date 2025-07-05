@@ -83,6 +83,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_extensions",
     "django_ratelimit",
+    "lockdown",
     "coalition.core.apps.CoreConfig",
     "coalition.campaigns.apps.CampaignsConfig",
     "coalition.legislators.apps.LegislatorsConfig",
@@ -99,12 +100,12 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "lockdown.middleware.LockdownMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "lockdown.middleware.LockdownMiddleware",
 ]
 
 ROOT_URLCONF = "coalition.core.urls"
