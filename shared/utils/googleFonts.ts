@@ -28,9 +28,10 @@ export function loadGoogleFonts(googleFonts: string[]): void {
         const WebFont = cachedWebFontLoader.default || cachedWebFontLoader;
 
         // Format fonts for webfontloader (Family:weight1,weight2)
-        const formattedFonts = googleFonts.map(
-          (family) => `${family.trim()}:400,500,600,700`,
-        );
+        // Filter out empty or whitespace-only font names
+        const formattedFonts = googleFonts
+          .filter((family) => family && family.trim().length > 0)
+          .map((family) => `${family.trim()}:400,500,600,700`);
 
         WebFont.load({
           google: {

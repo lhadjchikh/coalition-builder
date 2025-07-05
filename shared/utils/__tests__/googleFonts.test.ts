@@ -180,8 +180,8 @@ describe("loadGoogleFonts", () => {
     });
   });
 
-  it("should handle empty strings in font array", () => {
-    const fonts = ["Roboto", "", "Open Sans"];
+  it("should filter out empty strings and whitespace-only font names", () => {
+    const fonts = ["Roboto", "", "   ", "Open Sans", "  Inter  "];
 
     loadGoogleFonts(fonts);
 
@@ -189,8 +189,8 @@ describe("loadGoogleFonts", () => {
       google: {
         families: [
           "Roboto:400,500,600,700",
-          ":400,500,600,700",
           "Open Sans:400,500,600,700",
+          "Inter:400,500,600,700",
         ],
       },
       timeout: 3000,
