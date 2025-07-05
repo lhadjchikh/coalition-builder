@@ -45,8 +45,15 @@ jobs:
             -t coalition_api:latest \
             .
 
-      - name: Start database container
-        run: docker compose up -d db
+      - name: Start database and cache containers
+        run: |
+          # Export environment variables that init-db.sh needs
+          export DB_USERNAME=coalition_admin
+          export DB_PASSWORD=admin_password
+          export APP_DB_USERNAME=coalition_app
+          export APP_DB_PASSWORD=app_password
+          export DB_NAME=coalition
+          docker compose up -d db redis
 
       # Temp fix for https://github.com/docker/build-push-action/issues/252
       - name: Move cache
@@ -99,7 +106,9 @@ jobs:
             -v $(pwd)/backend_coverage:/app/backend/coverage \
             -e PYTHONUNBUFFERED=1 \
             -e DEBUG=True \
+            -e DATABASE_URL=postgis://coalition_admin:admin_password@db:5432/coalition \
             api sh -c "
+              cd /app/backend &&
               poetry install --with dev &&
               poetry run pytest --cov=coalition --cov-report=xml:coverage/coverage.xml --cov-report=term-missing
             "
