@@ -120,7 +120,12 @@ func (tc *TestConfig) GetTerraformOptionsForPlanOnly(vars map[string]interface{}
 		TerraformDir:    tc.TerraformDir,
 		TerraformBinary: "terraform", // Explicitly use terraform instead of auto-detecting OpenTofu
 		Vars:            defaultVars,
-		// No BackendConfig - plan-only tests don't need remote backend
+		// For plan-only tests, provide minimal S3 backend config (bucket doesn't need to exist for plan)
+		BackendConfig: map[string]interface{}{
+			"bucket": "terraform-plan-only-test-bucket",
+			"key":    fmt.Sprintf("plan-only-test-%s.tfstate", tc.UniqueID),
+			"region": tc.AWSRegion,
+		},
 		EnvVars: map[string]string{
 			"AWS_DEFAULT_REGION":  tc.AWSRegion,
 			"TERRATEST_TERRAFORM": "terraform", // Force Terratest to use terraform
