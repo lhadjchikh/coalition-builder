@@ -103,14 +103,14 @@ jobs:
 
           # Run tests with volume mount to get coverage file
           docker compose run --rm \
-            -v $(pwd)/backend_coverage:/app/backend/coverage \
+            -v $(pwd)/backend_coverage:/app/coverage \
             -e PYTHONUNBUFFERED=1 \
             -e DEBUG=True \
             -e DATABASE_URL=postgis://coalition_admin:admin_password@db:5432/coalition \
             api sh -c "
-              cd /app/backend &&
               poetry install --with dev &&
-              poetry run pytest --cov=coalition --cov-report=xml:coverage/coverage.xml --cov-report=term-missing
+              cd /app/coverage &&
+              poetry run pytest /app
             "
 
       - name: Upload coverage to Codecov
