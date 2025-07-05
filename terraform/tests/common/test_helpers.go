@@ -121,12 +121,6 @@ func (tc *TestConfig) GetTerraformOptionsForPlanOnly(vars map[string]interface{}
 		TerraformBinary: "terraform", // Explicitly use terraform instead of auto-detecting OpenTofu
 		Vars:            defaultVars,
 		BackendConfig: map[string]interface{}{
-			"bucket":         fmt.Sprintf("coalition-terraform-state-%s", tc.mustGetAccountID()),
-			"key":            fmt.Sprintf("tests/terraform-test-%s.tfstate", tc.UniqueID),
-			"region":         tc.AWSRegion,
-			"encrypt":        true,
-			"dynamodb_table": "coalition-terraform-locks",
-		},
 		EnvVars: map[string]string{
 			"AWS_DEFAULT_REGION":  tc.AWSRegion,
 			"TERRATEST_TERRAFORM": "terraform", // Force Terratest to use terraform
@@ -134,56 +128,8 @@ func (tc *TestConfig) GetTerraformOptionsForPlanOnly(vars map[string]interface{}
 	}
 }
 
-// getAccountID returns the AWS account ID for backend configuration
-func (tc *TestConfig) getAccountID() (string, error) {
-	// Return cached value if available
-	if tc.accountID != "" {
-		return tc.accountID, nil
-	}
-
-	// First try from environment variable (set in CI)
-	if accountID := os.Getenv("AWS_ACCOUNT_ID"); accountID != "" {
-		tc.accountID = accountID // cache the value
-		return accountID, nil
-	}
-
-	// Fallback to STS call (for local development)
-	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(tc.AWSRegion))
-	if err != nil {
-		return "", fmt.Errorf("failed to load AWS configuration: %w. Please ensure AWS credentials are configured", err)
-	}
-
-	stsClient := sts.NewFromConfig(cfg)
-	result, err := stsClient.GetCallerIdentity(context.Background(), &sts.GetCallerIdentityInput{})
-	if err != nil {
-		return "", fmt.Errorf("failed to get AWS caller identity: %w. Please ensure AWS credentials are valid", err)
-	}
-
-	if result == nil || result.Account == nil {
-		return "", fmt.Errorf("AWS STS API returned nil result or account field. Please ensure AWS credentials are valid")
-	}
-
-	tc.accountID = *result.Account // cache the value
-	return *result.Account, nil
-}
-
-// mustGetAccountID is a helper that panics if getAccountID fails
-// This is used in contexts where we can't return an error
-func (tc *TestConfig) mustGetAccountID() string {
-	accountID, err := tc.getAccountID()
-	if err != nil {
-		log.Fatalf("Failed to get AWS account ID: %v", err)
-	}
-	return accountID
-}
-
-// GetAccountID lazily populates and returns the AccountID field
-func (tc *TestConfig) GetAccountID() string {
-	if tc.AccountID == "" {
-		tc.AccountID = tc.mustGetAccountID()
-	}
-	return tc.AccountID
-}
+// Note: getAccountID, mustGetAccountID, and GetAccountID functions removed
+// since plan-only tests use local state and don't need S3 backend configuration
 
 // GetModuleTerraformOptions returns terraform options for testing individual modules
 func (tc *TestConfig) GetModuleTerraformOptions(modulePath string, vars map[string]interface{}) *terraform.Options {
@@ -310,14 +256,6 @@ func GetSecurityGroupById(t *testing.T, sgID, region string) *types.SecurityGrou
 	assert.Len(t, result.SecurityGroups, 1)
 
 	return &result.SecurityGroups[0]
-}
-
-// InitWithReconfigure runs terraform init with -reconfigure flag
-func InitWithReconfigure(t *testing.T, options *terraform.Options) {
-	_, err := terraform.RunTerraformCommandE(t, options, terraform.FormatArgs(options, "init", "-reconfigure")...)
-	if err != nil {
-		t.Fatalf("Failed to run terraform init -reconfigure: %v", err)
-	}
 }
 
 // GetInternetGatewaysForVpc gets internet gateways for a VPC using AWS SDK v2 directly
