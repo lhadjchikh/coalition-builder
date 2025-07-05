@@ -12,6 +12,7 @@ on:
       - "terraform/**"
       - ".github/workflows/test_terraform.yml"
   workflow_dispatch:
+  workflow_call: # Allow this workflow to be called by other workflows
 
 # Permissions needed for testing
 permissions:
@@ -87,20 +88,6 @@ jobs:
         run: |
           cd terraform/tests
           go mod download
-
-      - name: Format check
-        run: |
-          cd terraform/tests
-          make fmt-check
-
-      - name: Lint
-        run: |
-          cd terraform/tests
-          # Install golangci-lint if needed
-          if ! command -v golangci-lint &> /dev/null; then
-            go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-          fi
-          make lint
 
       - name: Run unit tests
         run: |

@@ -1,0 +1,60 @@
+name: Frontend Check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "shared/**"
+      - "ssr/**"
+      - ".github/workflows/lint_typescript.yml"
+      - ".github/workflows/lint_prettier.yml"
+      - ".github/workflows/test_frontend.yml"
+      - ".github/workflows/test_ssr.yml"
+      - ".github/workflows/check_frontend.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "shared/**"
+      - "ssr/**"
+      - ".github/workflows/lint_typescript.yml"
+      - ".github/workflows/lint_prettier.yml"
+      - ".github/workflows/test_frontend.yml"
+      - ".github/workflows/test_ssr.yml"
+      - ".github/workflows/check_frontend.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Run frontend linting in parallel
+  typescript-lint:
+    name: TypeScript Lint
+    uses: ./.github/workflows/lint_typescript.yml
+    permissions:
+      contents: read
+
+  prettier-lint:
+    name: Prettier Format Check
+    uses: ./.github/workflows/lint_prettier.yml
+    permissions:
+      contents: read
+
+  # Run tests only after both lint checks pass
+  frontend-tests:
+    name: Frontend Tests
+    needs: [typescript-lint, prettier-lint]
+    uses: ./.github/workflows/test_frontend.yml
+    permissions:
+      contents: read
+    secrets: inherit
+
+  ssr-tests:
+    name: SSR Tests
+    needs: [typescript-lint, prettier-lint]
+    uses: ./.github/workflows/test_ssr.yml
+    permissions:
+      contents: read
+    secrets: inherit

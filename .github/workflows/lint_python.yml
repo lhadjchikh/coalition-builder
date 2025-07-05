@@ -14,6 +14,7 @@ on:
     paths:
       - "**/*.py"
       - ".github/workflows/lint_python.yml"
+  workflow_call: # Allow this workflow to be called by other workflows
 
 jobs:
   lint:

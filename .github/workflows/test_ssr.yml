@@ -8,6 +8,7 @@ on:
         description: "Git ref to checkout and test"
         required: false
         default: ""
+  workflow_call: # Allow this workflow to be called by other workflows
 
 # Set explicit permissions for the GITHUB_TOKEN
 permissions:

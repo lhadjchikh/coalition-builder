@@ -1,0 +1,49 @@
+name: Terraform Check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "terraform/**"
+      - ".github/workflows/lint_terraform.yml"
+      - ".github/workflows/lint_go.yml"
+      - ".github/workflows/test_terraform.yml"
+      - ".github/workflows/check_terraform.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "terraform/**"
+      - ".github/workflows/lint_terraform.yml"
+      - ".github/workflows/lint_go.yml"
+      - ".github/workflows/test_terraform.yml"
+      - ".github/workflows/check_terraform.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # For AWS authentication in tests
+
+jobs:
+  # Run Terraform linting first
+  terraform-lint:
+    name: Terraform Lint
+    uses: ./.github/workflows/lint_terraform.yml
+    permissions:
+      contents: read
+
+  # Run Go linting in parallel with Terraform linting
+  go-lint:
+    name: Go Lint
+    uses: ./.github/workflows/lint_go.yml
+    permissions:
+      contents: read
+
+  # Run tests only after both lint jobs pass
+  terraform-tests:
+    name: Terraform Tests
+    needs: [terraform-lint, go-lint]
+    uses: ./.github/workflows/test_terraform.yml
+    permissions:
+      contents: read
+      id-token: write
+    secrets: inherit # Pass secrets to the called workflow

@@ -24,6 +24,7 @@ on:
       - ".github/workflows/lint_typescript.yml"
   # Allow manual triggers
   workflow_dispatch:
+  workflow_call: # Allow this workflow to be called by other workflows
 
 jobs:
   typecheck:

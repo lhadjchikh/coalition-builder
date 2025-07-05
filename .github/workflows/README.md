@@ -86,8 +86,8 @@ This project uses a structured CI/CD pipeline with the following key workflows:
 
 #### Terraform Tests (`test_terraform.yml`)
 
-- **Triggered by**: changes to files in the `terraform/` directory
-- Validates Terraform configurations and formatting
+- **Triggered by**: changes to files in the `terraform/` directory or via workflow call
+- Validates Terraform configurations
 - Runs comprehensive unit tests for all modules (networking, compute, security, database, monitoring, secrets, storage, dns, loadbalancer)
 - Runs integration tests that validate complete configuration using plan-only validation
 - **Cost-free testing**: All tests use plan-only validation - no AWS resources are created
@@ -97,6 +97,31 @@ This project uses a structured CI/CD pipeline with the following key workflows:
 
 - **Unit Tests**: Fast validation tests that check module file structure and configuration
 - **Integration Tests**: Plan-only tests that validate complete terraform configuration with real AWS credentials but no resource creation
+
+#### Python Check (`check_python.yml`)
+
+- **Triggered by**: changes to Python files or workflow files
+- Orchestrates Python-related workflows in the correct order:
+  1. Runs Python linting (`lint_python.yml`) first
+  2. Only after lint checks pass, runs Backend tests (`test_backend.yml`)
+- Ensures code quality before running potentially expensive test operations
+
+#### Frontend Check (`check_frontend.yml`)
+
+- **Triggered by**: changes to frontend, shared, or SSR files, or workflow files
+- Orchestrates frontend-related workflows in the correct order:
+  1. Runs TypeScript linting (`lint_typescript.yml`) and Prettier formatting (`lint_prettier.yml`) in parallel
+  2. Only after both lint checks pass, runs Frontend tests (`test_frontend.yml`) and SSR tests (`test_ssr.yml`)
+- Ensures code quality before running potentially expensive test operations
+
+#### Terraform Check (`check_terraform.yml`)
+
+- **Triggered by**: changes to Terraform files, test files, or workflow files
+- Orchestrates Terraform-related workflows in the correct order:
+  1. Runs Terraform linting (`lint_terraform.yml`) and Go linting (`lint_go.yml`) in parallel
+  2. Only after both lint checks pass, runs Terraform tests (`test_terraform.yml`)
+- Ensures code quality before running potentially expensive test operations
+- Reduces overall CI time by running lint checks in parallel
 
 ### Deployment Workflows
 
@@ -132,22 +157,27 @@ This project uses a structured CI/CD pipeline with the following key workflows:
 ## Workflow Dependencies
 
 ```
-Linting Workflows:
+Quality Check Orchestration Workflows:
+Python Check ──► Python Lint ──► Backend Tests ────┐
+                                                    │
+Frontend Check ──┬─► TypeScript Lint ──┐           ├─► Application Deployment ─► Amazon ECS
+                 └─► Prettier Format ───┼─► Frontend Tests + SSR Tests ────┤              ▲
+                                        │                                  │              │
+Terraform Check ──┬─► Terraform Lint ──┐                                  │              │
+                  └─► Go Lint ─────────┼─► Terraform Tests ──► Infrastructure Deployment ─► AWS Resources ─────┐
+                                       │                                                  (triggers app deployment) │
+                                       └──────────────────────────────────────────────────────────────────────────┘
+
+Legacy Test App Workflow (still triggers fullstack tests):
+Push/PR to main ──► Test App ──► Full Stack Tests ──┘
+
+Individual Linting Workflows (can still run independently):
 ├── Python Linting
 ├── TypeScript Linting
 ├── Prettier Formatting
 ├── Terraform Linting
 ├── Go Linting
 └── Shell Script Linting
-
-Test Workflows:
-Push/PR to main ──► Test App ──┬─► Frontend Tests ────┐
-                               ├─► Backend Tests ─────┼─► Application Deployment ─► Amazon ECS
-                               ├─► SSR Tests ─────────┤              ▲
-                               └─► Full Stack Tests ──┘              │
-                                                                     │
-Terraform Tests ──► Infrastructure Deployment ─► AWS Resources ─────┘
-                                                  (triggers app deployment)
 
 Deployment Workflows:
 ├── Application Deployment ─► Amazon ECS
