@@ -94,7 +94,7 @@ describe('ThemeContext Google Fonts Integration', () => {
     );
 
     await waitFor(() => {
-      expect(mockLoadGoogleFonts).toHaveBeenCalledWith([]);
+      expect(mockLoadGoogleFonts).not.toHaveBeenCalled();
     });
   });
 

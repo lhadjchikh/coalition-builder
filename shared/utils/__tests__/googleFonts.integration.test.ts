@@ -76,7 +76,7 @@ describe("Google Fonts Integration Tests", () => {
       }),
     );
 
-    expect(mockLoadGoogleFonts).toHaveBeenCalledWith([]);
+    expect(mockLoadGoogleFonts).not.toHaveBeenCalled();
   });
 
   it("should call loadGoogleFonts with fonts from API response", async () => {
