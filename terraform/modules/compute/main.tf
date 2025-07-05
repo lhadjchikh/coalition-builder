@@ -2,6 +2,38 @@
 
 # Local values for container definitions
 locals {
+  # Common environment variables for Django API and SSR containers
+  common_environment_variables = [
+    {
+      name  = "AWS_STORAGE_BUCKET_NAME"
+      value = var.static_assets_bucket_name
+    },
+    {
+      name  = "SITE_PASSWORD_ENABLED"
+      value = tostring(var.site_password_enabled)
+    }
+  ]
+
+  # Common environment variables for Django API containers
+  django_api_environment_variables = [
+    {
+      name  = "DEBUG"
+      value = "False"
+    },
+    {
+      name  = "ALLOWED_HOSTS"
+      value = var.allowed_hosts
+    },
+    {
+      name  = "CSRF_TRUSTED_ORIGINS"
+      value = var.csrf_trusted_origins
+    },
+    {
+      name  = "CACHE_URL"
+      value = "redis://localhost:6379/1"
+    }
+  ]
+
   # Redis container definition (shared between SSR and API-only configurations)
   redis_container = {
     name      = "redis"
@@ -285,32 +317,7 @@ resource "aws_ecs_task_definition" "app" {
           name          = "django-api"
         }
       ]
-      environment = [
-        {
-          name  = "DEBUG"
-          value = "False"
-        },
-        {
-          name  = "ALLOWED_HOSTS"
-          value = var.allowed_hosts
-        },
-        {
-          name  = "CSRF_TRUSTED_ORIGINS"
-          value = var.csrf_trusted_origins
-        },
-        {
-          name  = "CACHE_URL"
-          value = "redis://localhost:6379/1"
-        },
-        {
-          name  = "SITE_PASSWORD_ENABLED"
-          value = tostring(var.site_password_enabled)
-        },
-        {
-          name  = "AWS_STORAGE_BUCKET_NAME"
-          value = var.static_assets_bucket_name
-        }
-      ]
+      environment = concat(local.common_environment_variables, local.django_api_environment_variables)
       secrets = concat([
         {
           name      = "SECRET_KEY",
@@ -368,7 +375,7 @@ resource "aws_ecs_task_definition" "app" {
           name          = "ssr-app"
         }
       ]
-      environment = [
+      environment = concat(local.common_environment_variables, [
         {
           name  = "NODE_ENV"
           value = "production"
@@ -386,18 +393,10 @@ resource "aws_ecs_task_definition" "app" {
           value = tostring(var.container_port_ssr)
         },
         {
-          name  = "SITE_PASSWORD_ENABLED"
-          value = tostring(var.site_password_enabled)
-        },
-        {
-          name  = "AWS_STORAGE_BUCKET_NAME"
-          value = var.static_assets_bucket_name
-        },
-        {
           name  = "SITE_USERNAME"
           value = var.site_username
         }
-      ]
+      ])
       secrets = [
         {
           name      = "SITE_PASSWORD",
@@ -449,32 +448,7 @@ resource "aws_ecs_task_definition" "app" {
           name          = "django-api"
         }
       ]
-      environment = [
-        {
-          name  = "DEBUG"
-          value = "False"
-        },
-        {
-          name  = "ALLOWED_HOSTS"
-          value = var.allowed_hosts
-        },
-        {
-          name  = "CSRF_TRUSTED_ORIGINS"
-          value = var.csrf_trusted_origins
-        },
-        {
-          name  = "CACHE_URL"
-          value = "redis://localhost:6379/1"
-        },
-        {
-          name  = "SITE_PASSWORD_ENABLED"
-          value = tostring(var.site_password_enabled)
-        },
-        {
-          name  = "AWS_STORAGE_BUCKET_NAME"
-          value = var.static_assets_bucket_name
-        }
-      ]
+      environment = concat(local.common_environment_variables, local.django_api_environment_variables)
       secrets = concat([
         {
           name      = "SECRET_KEY",
