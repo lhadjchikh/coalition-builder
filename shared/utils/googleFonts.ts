@@ -1,3 +1,6 @@
+// Cache for the dynamically imported webfontloader module
+let cachedWebFontLoader: any = null;
+
 /**
  * Load Google Fonts dynamically using webfontloader
  * This function is designed to work in both frontend and shared contexts
@@ -13,13 +16,16 @@ export function loadGoogleFonts(googleFonts: string[]): void {
     // Use dynamic import with string literal to avoid TypeScript module resolution
     const loadWebFont = async () => {
       try {
-        // Use Function constructor to avoid TypeScript static analysis
-        const dynamicImport = new Function(
-          "moduleName",
-          "return import(moduleName)",
-        );
-        const webfontModule = await dynamicImport("webfontloader");
-        const WebFont = webfontModule.default || webfontModule;
+        // Check if the module is already cached
+        if (!cachedWebFontLoader) {
+          // Use Function constructor to avoid TypeScript static analysis
+          const dynamicImport = new Function(
+            "moduleName",
+            "return import(moduleName)",
+          );
+          cachedWebFontLoader = await dynamicImport("webfontloader");
+        }
+        const WebFont = cachedWebFontLoader.default || cachedWebFontLoader;
 
         // Format fonts for webfontloader (Family:weight1,weight2)
         const formattedFonts = googleFonts.map(
