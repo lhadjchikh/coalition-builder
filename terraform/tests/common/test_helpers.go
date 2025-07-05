@@ -120,11 +120,12 @@ func (tc *TestConfig) GetTerraformOptionsForPlanOnly(vars map[string]interface{}
 		TerraformDir:    tc.TerraformDir,
 		TerraformBinary: "terraform", // Explicitly use terraform instead of auto-detecting OpenTofu
 		Vars:            defaultVars,
-		// For plan-only tests, provide minimal S3 backend config (bucket doesn't need to exist for plan)
 		BackendConfig: map[string]interface{}{
-			"bucket": "terraform-plan-only-test-bucket",
-			"key":    fmt.Sprintf("plan-only-test-%s.tfstate", tc.UniqueID),
-			"region": tc.AWSRegion,
+			"bucket":         fmt.Sprintf("coalition-terraform-state-%s", tc.mustGetAccountID()),
+			"key":            fmt.Sprintf("tests/terraform-test-%s.tfstate", tc.UniqueID),
+			"region":         tc.AWSRegion,
+			"encrypt":        true,
+			"dynamodb_table": "coalition-terraform-locks",
 		},
 		EnvVars: map[string]string{
 			"AWS_DEFAULT_REGION":  tc.AWSRegion,
