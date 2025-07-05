@@ -294,3 +294,28 @@ variable "site_username" {
   type        = string
   default     = "admin"
 }
+
+# Static Assets Storage Variables
+variable "force_destroy" {
+  description = "Whether to force destroy buckets even if they contain objects"
+  type        = bool
+  default     = false
+}
+
+variable "static_assets_cors_origins" {
+  description = "List of allowed origins for CORS configuration on static assets bucket"
+  type        = list(string)
+  default     = ["*"]
+}
+
+variable "static_assets_enable_versioning" {
+  description = "Whether to enable versioning on the static assets bucket"
+  type        = bool
+  default     = true
+}
+
+variable "static_assets_enable_lifecycle" {
+  description = "Whether to enable lifecycle rules for cost optimization on static assets"
+  type        = bool
+  default     = true
+}

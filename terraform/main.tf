@@ -115,36 +115,49 @@ module "secrets" {
 module "compute" {
   source = "./modules/compute"
 
-  prefix                    = var.prefix
-  aws_region                = var.aws_region
-  private_subnet_ids        = module.networking.private_subnet_ids
-  public_subnet_id          = module.networking.public_subnet_ids[0]
-  app_security_group_id     = module.security.app_security_group_id
-  bastion_security_group_id = module.security.bastion_security_group_id
-  api_target_group_arn      = module.loadbalancer.api_target_group_arn
-  ssr_target_group_arn      = module.loadbalancer.ssr_target_group_arn
-  db_url_secret_arn         = module.secrets.db_url_secret_arn
-  secret_key_secret_arn     = module.secrets.secret_key_secret_arn
-  secrets_kms_key_arn       = module.secrets.secrets_kms_key_arn
-  bastion_key_name          = var.bastion_key_name
-  bastion_public_key        = var.bastion_public_key
-  create_new_key_pair       = var.create_new_key_pair
-  container_port_api        = 8000
-  container_port_ssr        = 3000
-  domain_name               = var.domain_name
-  enable_ssr                = var.enable_ssr
-  health_check_path_api     = var.health_check_path_api
-  allowed_hosts             = var.allowed_hosts
-  csrf_trusted_origins      = var.csrf_trusted_origins
-  site_password_enabled     = var.site_password_enabled
-  site_password_secret_arn  = module.secrets.site_password_secret_arn
-  site_username             = var.site_username
+  prefix                          = var.prefix
+  aws_region                      = var.aws_region
+  private_subnet_ids              = module.networking.private_subnet_ids
+  public_subnet_id                = module.networking.public_subnet_ids[0]
+  app_security_group_id           = module.security.app_security_group_id
+  bastion_security_group_id       = module.security.bastion_security_group_id
+  api_target_group_arn            = module.loadbalancer.api_target_group_arn
+  ssr_target_group_arn            = module.loadbalancer.ssr_target_group_arn
+  db_url_secret_arn               = module.secrets.db_url_secret_arn
+  secret_key_secret_arn           = module.secrets.secret_key_secret_arn
+  secrets_kms_key_arn             = module.secrets.secrets_kms_key_arn
+  bastion_key_name                = var.bastion_key_name
+  bastion_public_key              = var.bastion_public_key
+  create_new_key_pair             = var.create_new_key_pair
+  container_port_api              = 8000
+  container_port_ssr              = 3000
+  domain_name                     = var.domain_name
+  enable_ssr                      = var.enable_ssr
+  health_check_path_api           = var.health_check_path_api
+  allowed_hosts                   = var.allowed_hosts
+  csrf_trusted_origins            = var.csrf_trusted_origins
+  site_password_enabled           = var.site_password_enabled
+  site_password_secret_arn        = module.secrets.site_password_secret_arn
+  site_username                   = var.site_username
+  static_assets_upload_policy_arn = module.storage.static_assets_upload_policy_arn
 
   # Make sure load balancer and secrets are created first
   depends_on = [
     module.loadbalancer,
-    module.secrets
+    module.secrets,
+    module.storage
   ]
+}
+
+# Storage Module
+module "storage" {
+  source = "./modules/storage"
+
+  prefix                 = var.prefix
+  force_destroy          = var.force_destroy
+  cors_allowed_origins   = var.static_assets_cors_origins
+  enable_versioning      = var.static_assets_enable_versioning
+  enable_lifecycle_rules = var.static_assets_enable_lifecycle
 }
 
 # DNS Module
