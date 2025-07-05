@@ -109,11 +109,11 @@ func TestDnsModuleOutputs(t *testing.T) {
 		},
 	}
 
-	// Run terraform init and plan to check outputs
+	// Run terraform init and plan to check outputs are defined in plan
 	terraform.Init(t, terraformOptions)
-	planStruct := terraform.InitAndPlan(t, terraformOptions)
+	planOutput := terraform.InitAndPlan(t, terraformOptions)
 
-	// Check that outputs are defined
-	assert.Contains(t, planStruct, "website_url", "website_url output should be defined")
-	assert.Contains(t, planStruct, "dns_record_name", "dns_record_name output should be defined")
+	// Check that outputs are defined in the plan output
+	assert.Contains(t, planOutput, "website_url", "website_url output should be defined")
+	assert.Contains(t, planOutput, "dns_record_name", "dns_record_name output should be defined")
 }

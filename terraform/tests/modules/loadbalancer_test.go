@@ -153,15 +153,15 @@ func TestLoadbalancerModuleOutputs(t *testing.T) {
 		},
 	}
 
-	// Run terraform init and plan to check outputs
+	// Run terraform init and plan to check outputs are defined in plan
 	terraform.Init(t, terraformOptions)
-	planStruct := terraform.InitAndPlan(t, terraformOptions)
+	planOutput := terraform.InitAndPlan(t, terraformOptions)
 
-	// Check that outputs are defined
-	assert.Contains(t, planStruct, "alb_dns_name", "alb_dns_name output should be defined")
-	assert.Contains(t, planStruct, "alb_zone_id", "alb_zone_id output should be defined")
-	assert.Contains(t, planStruct, "api_target_group_arn", "api_target_group_arn output should be defined")
-	assert.Contains(t, planStruct, "ssr_target_group_arn", "ssr_target_group_arn output should be defined")
-	assert.Contains(t, planStruct, "http_listener_arn", "http_listener_arn output should be defined")
-	assert.Contains(t, planStruct, "https_listener_arn", "https_listener_arn output should be defined")
+	// Check that outputs are defined in the plan output
+	assert.Contains(t, planOutput, "alb_dns_name", "alb_dns_name output should be defined")
+	assert.Contains(t, planOutput, "alb_zone_id", "alb_zone_id output should be defined")
+	assert.Contains(t, planOutput, "api_target_group_arn", "api_target_group_arn output should be defined")
+	assert.Contains(t, planOutput, "ssr_target_group_arn", "ssr_target_group_arn output should be defined")
+	assert.Contains(t, planOutput, "http_listener_arn", "http_listener_arn output should be defined")
+	assert.Contains(t, planOutput, "https_listener_arn", "https_listener_arn output should be defined")
 }

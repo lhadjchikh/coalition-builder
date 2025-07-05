@@ -133,7 +133,7 @@ jobs:
           AWS_PROVIDER_SKIP_VALIDATION: true
         run: |
           cd terraform/tests
-          go test -short -v -timeout 10m ./modules/
+          go test -short -v -timeout 10m -coverprofile=coverage.out ./modules/
 
   # Integration tests (creates AWS resources - only on main branch or manual trigger)
   integration-tests:
