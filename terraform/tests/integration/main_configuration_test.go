@@ -29,7 +29,7 @@ func TestMainConfigurationWithoutSSR(t *testing.T) {
 	terraformOptions := testConfig.GetTerraformOptionsForPlanOnly(testVars)
 
 	// Run terraform init and plan - validate configuration works
-	terraform.Init(t, terraformOptions)
+	common.InitWithReconfigure(t, terraformOptions)
 	planOutput := terraform.Plan(t, terraformOptions)
 
 	// Validate all expected outputs are defined
@@ -78,7 +78,7 @@ func TestMainConfigurationWithSSR(t *testing.T) {
 
 	terraformOptions := testConfig.GetTerraformOptionsForPlanOnly(testVars)
 
-	terraform.Init(t, terraformOptions)
+	common.InitWithReconfigure(t, terraformOptions)
 	planOutput := terraform.Plan(t, terraformOptions)
 
 	// Validate SSR-specific outputs and resources
@@ -104,7 +104,7 @@ func TestMainConfigurationValidation(t *testing.T) {
 
 		terraformOptions := testConfig.GetTerraformOptionsForPlanOnly(testVars)
 
-		terraform.Init(t, terraformOptions)
+		common.InitWithReconfigure(t, terraformOptions)
 		_, err := terraform.PlanE(t, terraformOptions)
 		assert.Error(t, err, "Plan should fail with missing required variables")
 	})
@@ -124,7 +124,7 @@ func TestMainConfigurationValidation(t *testing.T) {
 
 		terraformOptions := testConfig.GetTerraformOptionsForPlanOnly(testVars)
 
-		terraform.Init(t, terraformOptions)
+		common.InitWithReconfigure(t, terraformOptions)
 		planOutput := terraform.Plan(t, terraformOptions)
 
 		// Should succeed and contain main components
@@ -155,7 +155,7 @@ func TestMainConfigurationCORS(t *testing.T) {
 
 		terraformOptions := testConfig.GetTerraformOptionsForPlanOnly(testVars)
 
-		terraform.Init(t, terraformOptions)
+		common.InitWithReconfigure(t, terraformOptions)
 		planOutput := terraform.Plan(t, terraformOptions)
 
 		assert.Contains(t, planOutput, "aws_s3_bucket_cors_configuration", "Plan should configure CORS")
@@ -178,7 +178,7 @@ func TestMainConfigurationCORS(t *testing.T) {
 
 		terraformOptions := testConfig.GetTerraformOptionsForPlanOnly(testVars)
 
-		terraform.Init(t, terraformOptions)
+		common.InitWithReconfigure(t, terraformOptions)
 		planOutput := terraform.Plan(t, terraformOptions)
 
 		assert.Contains(t, planOutput, "custom1.example.com", "Plan should include custom CORS origin")

@@ -312,6 +312,14 @@ func GetSecurityGroupById(t *testing.T, sgID, region string) *types.SecurityGrou
 	return &result.SecurityGroups[0]
 }
 
+// InitWithReconfigure runs terraform init with -reconfigure flag
+func InitWithReconfigure(t *testing.T, options *terraform.Options) {
+	_, err := terraform.RunTerraformCommandE(t, options, terraform.FormatArgs(options, "init", "-reconfigure")...)
+	if err != nil {
+		t.Fatalf("Failed to run terraform init -reconfigure: %v", err)
+	}
+}
+
 // GetInternetGatewaysForVpc gets internet gateways for a VPC using AWS SDK v2 directly
 func GetInternetGatewaysForVpc(t *testing.T, vpcID, region string) []types.InternetGateway {
 	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(region))
