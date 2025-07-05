@@ -18,11 +18,15 @@ module.exports = {
   testMatch: [
     '<rootDir>/src/**/__tests__/**/*.{ts,tsx,js}',
     '<rootDir>/src/**/*.{test,spec}.{ts,tsx,js}',
+    '<rootDir>/../shared/**/__tests__/**/*.{ts,tsx,js}',
+    '<rootDir>/../shared/**/*.{test,spec}.{ts,tsx,js}',
   ],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
+    '../shared/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
     '!src/index.tsx',
     '!src/reportWebVitals.ts',
+    '!../shared/**/*.d.ts',
   ],
 };
