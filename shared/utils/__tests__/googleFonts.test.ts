@@ -1,16 +1,16 @@
 // Mock webfontloader
 const mockWebFontLoad = jest.fn();
-jest.mock('webfontloader', () => ({
+jest.mock("webfontloader", () => ({
   load: mockWebFontLoad,
 }));
 
-import { loadGoogleFonts } from '../googleFonts';
+import { loadGoogleFonts } from "../googleFonts";
 
 // Mock console methods
-const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation();
-const mockConsoleWarn = jest.spyOn(console, 'warn').mockImplementation();
+const mockConsoleLog = jest.spyOn(console, "log").mockImplementation();
+const mockConsoleWarn = jest.spyOn(console, "warn").mockImplementation();
 
-describe('loadGoogleFonts', () => {
+describe("loadGoogleFonts", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -20,13 +20,13 @@ describe('loadGoogleFonts', () => {
     mockConsoleWarn.mockRestore();
   });
 
-  it('should not load fonts when array is empty', () => {
+  it("should not load fonts when array is empty", () => {
     loadGoogleFonts([]);
 
     expect(mockWebFontLoad).not.toHaveBeenCalled();
   });
 
-  it('should not load fonts when array is null/undefined', () => {
+  it("should not load fonts when array is null/undefined", () => {
     loadGoogleFonts(null as any);
     expect(mockWebFontLoad).not.toHaveBeenCalled();
 
@@ -34,15 +34,15 @@ describe('loadGoogleFonts', () => {
     expect(mockWebFontLoad).not.toHaveBeenCalled();
   });
 
-  it('should load single Google Font with correct configuration', () => {
-    const fonts = ['Roboto'];
+  it("should load single Google Font with correct configuration", () => {
+    const fonts = ["Roboto"];
 
     loadGoogleFonts(fonts);
 
     expect(mockWebFontLoad).toHaveBeenCalledTimes(1);
     expect(mockWebFontLoad).toHaveBeenCalledWith({
       google: {
-        families: ['Roboto:400,500,600,700'],
+        families: ["Roboto:400,500,600,700"],
       },
       timeout: 3000,
       active: expect.any(Function),
@@ -50,15 +50,15 @@ describe('loadGoogleFonts', () => {
     });
   });
 
-  it('should load multiple Google Fonts with correct formatting', () => {
-    const fonts = ['Merriweather', 'Barlow'];
+  it("should load multiple Google Fonts with correct formatting", () => {
+    const fonts = ["Merriweather", "Barlow"];
 
     loadGoogleFonts(fonts);
 
     expect(mockWebFontLoad).toHaveBeenCalledTimes(1);
     expect(mockWebFontLoad).toHaveBeenCalledWith({
       google: {
-        families: ['Merriweather:400,500,600,700', 'Barlow:400,500,600,700'],
+        families: ["Merriweather:400,500,600,700", "Barlow:400,500,600,700"],
       },
       timeout: 3000,
       active: expect.any(Function),
@@ -66,14 +66,14 @@ describe('loadGoogleFonts', () => {
     });
   });
 
-  it('should trim whitespace from font family names', () => {
-    const fonts = ['  Playfair Display  ', '   Inter   '];
+  it("should trim whitespace from font family names", () => {
+    const fonts = ["  Playfair Display  ", "   Inter   "];
 
     loadGoogleFonts(fonts);
 
     expect(mockWebFontLoad).toHaveBeenCalledWith({
       google: {
-        families: ['Playfair Display:400,500,600,700', 'Inter:400,500,600,700'],
+        families: ["Playfair Display:400,500,600,700", "Inter:400,500,600,700"],
       },
       timeout: 3000,
       active: expect.any(Function),
@@ -81,14 +81,17 @@ describe('loadGoogleFonts', () => {
     });
   });
 
-  it('should handle font families with spaces in names', () => {
-    const fonts = ['Open Sans', 'Source Sans Pro'];
+  it("should handle font families with spaces in names", () => {
+    const fonts = ["Open Sans", "Source Sans Pro"];
 
     loadGoogleFonts(fonts);
 
     expect(mockWebFontLoad).toHaveBeenCalledWith({
       google: {
-        families: ['Open Sans:400,500,600,700', 'Source Sans Pro:400,500,600,700'],
+        families: [
+          "Open Sans:400,500,600,700",
+          "Source Sans Pro:400,500,600,700",
+        ],
       },
       timeout: 3000,
       active: expect.any(Function),
@@ -96,8 +99,8 @@ describe('loadGoogleFonts', () => {
     });
   });
 
-  it('should call active callback when fonts load successfully', () => {
-    const fonts = ['Roboto'];
+  it("should call active callback when fonts load successfully", () => {
+    const fonts = ["Roboto"];
 
     loadGoogleFonts(fonts);
 
@@ -108,11 +111,13 @@ describe('loadGoogleFonts', () => {
     // Simulate successful font loading
     activeCallback();
 
-    expect(mockConsoleLog).toHaveBeenCalledWith('Google Fonts loaded successfully');
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      "Google Fonts loaded successfully",
+    );
   });
 
-  it('should call inactive callback when fonts fail to load', () => {
-    const fonts = ['Roboto'];
+  it("should call inactive callback when fonts fail to load", () => {
+    const fonts = ["Roboto"];
 
     loadGoogleFonts(fonts);
 
@@ -123,11 +128,13 @@ describe('loadGoogleFonts', () => {
     // Simulate failed font loading
     inactiveCallback();
 
-    expect(mockConsoleWarn).toHaveBeenCalledWith('Google Fonts failed to load or timed out');
+    expect(mockConsoleWarn).toHaveBeenCalledWith(
+      "Google Fonts failed to load or timed out",
+    );
   });
 
-  it('should use 3 second timeout', () => {
-    const fonts = ['Roboto'];
+  it("should use 3 second timeout", () => {
+    const fonts = ["Roboto"];
 
     loadGoogleFonts(fonts);
 
@@ -135,17 +142,17 @@ describe('loadGoogleFonts', () => {
     expect(mockCall.timeout).toBe(3000);
   });
 
-  it('should handle complex font family names correctly', () => {
-    const fonts = ['Playfair Display', 'Source Code Pro', 'Noto Sans JP'];
+  it("should handle complex font family names correctly", () => {
+    const fonts = ["Playfair Display", "Source Code Pro", "Noto Sans JP"];
 
     loadGoogleFonts(fonts);
 
     expect(mockWebFontLoad).toHaveBeenCalledWith({
       google: {
         families: [
-          'Playfair Display:400,500,600,700',
-          'Source Code Pro:400,500,600,700',
-          'Noto Sans JP:400,500,600,700',
+          "Playfair Display:400,500,600,700",
+          "Source Code Pro:400,500,600,700",
+          "Noto Sans JP:400,500,600,700",
         ],
       },
       timeout: 3000,
@@ -154,14 +161,18 @@ describe('loadGoogleFonts', () => {
     });
   });
 
-  it('should handle duplicate font families', () => {
-    const fonts = ['Roboto', 'Roboto', 'Open Sans'];
+  it("should handle duplicate font families", () => {
+    const fonts = ["Roboto", "Roboto", "Open Sans"];
 
     loadGoogleFonts(fonts);
 
     expect(mockWebFontLoad).toHaveBeenCalledWith({
       google: {
-        families: ['Roboto:400,500,600,700', 'Roboto:400,500,600,700', 'Open Sans:400,500,600,700'],
+        families: [
+          "Roboto:400,500,600,700",
+          "Roboto:400,500,600,700",
+          "Open Sans:400,500,600,700",
+        ],
       },
       timeout: 3000,
       active: expect.any(Function),
@@ -169,14 +180,18 @@ describe('loadGoogleFonts', () => {
     });
   });
 
-  it('should handle empty strings in font array', () => {
-    const fonts = ['Roboto', '', 'Open Sans'];
+  it("should handle empty strings in font array", () => {
+    const fonts = ["Roboto", "", "Open Sans"];
 
     loadGoogleFonts(fonts);
 
     expect(mockWebFontLoad).toHaveBeenCalledWith({
       google: {
-        families: ['Roboto:400,500,600,700', ':400,500,600,700', 'Open Sans:400,500,600,700'],
+        families: [
+          "Roboto:400,500,600,700",
+          ":400,500,600,700",
+          "Open Sans:400,500,600,700",
+        ],
       },
       timeout: 3000,
       active: expect.any(Function),
