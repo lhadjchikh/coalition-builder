@@ -140,6 +140,7 @@ module "compute" {
   site_password_secret_arn        = module.secrets.site_password_secret_arn
   site_username                   = var.site_username
   static_assets_upload_policy_arn = module.storage.static_assets_upload_policy_arn
+  static_assets_bucket_name       = module.storage.static_assets_bucket_name
 
   # Make sure load balancer and secrets are created first
   depends_on = [

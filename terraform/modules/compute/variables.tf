@@ -246,3 +246,9 @@ variable "static_assets_upload_policy_arn" {
   default     = ""
 }
 
+variable "static_assets_bucket_name" {
+  description = "Name of the S3 bucket for static assets"
+  type        = string
+  default     = ""
+}
+

@@ -306,6 +306,10 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "SITE_PASSWORD_ENABLED"
           value = tostring(var.site_password_enabled)
+        },
+        {
+          name  = "AWS_STORAGE_BUCKET_NAME"
+          value = var.static_assets_bucket_name
         }
       ]
       secrets = concat([
@@ -387,6 +391,10 @@ resource "aws_ecs_task_definition" "app" {
           value = tostring(var.site_password_enabled)
         },
         {
+          name  = "AWS_STORAGE_BUCKET_NAME"
+          value = var.static_assets_bucket_name
+        },
+        {
           name  = "SITE_USERNAME"
           value = var.site_username
         }
@@ -462,6 +470,10 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "SITE_PASSWORD_ENABLED"
           value = tostring(var.site_password_enabled)
+        },
+        {
+          name  = "AWS_STORAGE_BUCKET_NAME"
+          value = var.static_assets_bucket_name
         }
       ]
       secrets = concat([

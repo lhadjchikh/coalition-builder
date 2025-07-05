@@ -152,18 +152,22 @@ class Theme(models.Model):
     )
 
     # Brand assets
-    logo_url = models.URLField(
+    logo = models.ImageField(
+        upload_to="logos/",
         blank=True,
-        help_text="URL to organization logo image",
+        null=True,
+        help_text="Organization logo image",
     )
     logo_alt_text = models.CharField(
         max_length=200,
         blank=True,
         help_text="Alt text for logo (accessibility)",
     )
-    favicon_url = models.URLField(
+    favicon = models.ImageField(
+        upload_to="favicons/",
         blank=True,
-        help_text="URL to favicon image",
+        null=True,
+        help_text="Favicon image",
     )
 
     # Custom CSS
@@ -287,9 +291,11 @@ class HomePage(models.Model):
         blank=True,
         help_text="Optional subtitle or description under the hero title",
     )
-    hero_background_image = models.URLField(
+    hero_background_image = models.ImageField(
+        upload_to="backgrounds/",
         blank=True,
-        help_text="URL to hero background image (optional)",
+        null=True,
+        help_text="Hero background image (optional)",
     )
 
     # Main content sections
@@ -457,9 +463,11 @@ class ContentBlock(models.Model):
         help_text="Main content for this block (text, HTML, etc.)",
     )
 
-    image_url = models.URLField(
+    image = models.ImageField(
+        upload_to="content_blocks/",
         blank=True,
-        help_text="Image URL for image or text+image blocks",
+        null=True,
+        help_text="Image for image or text+image blocks",
     )
 
     image_alt_text = models.CharField(
