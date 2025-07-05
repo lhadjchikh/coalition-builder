@@ -32,9 +32,7 @@ class ThemeAPITest(TestCase):
             font_size_base=1.00,
             font_size_small=0.875,
             font_size_large=1.125,
-            logo_url="https://example.com/logo.png",
             logo_alt_text="Test Logo",
-            favicon_url="https://example.com/favicon.ico",
             custom_css=".custom { color: red; }",
             is_active=True,
         )

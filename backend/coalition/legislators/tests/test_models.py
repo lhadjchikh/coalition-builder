@@ -3,7 +3,7 @@ from django.test import TestCase
 
 from coalition.regions.models import Region
 
-from .models import Legislator
+from ..models import Legislator
 
 
 class LegislatorModelTest(TestCase):
