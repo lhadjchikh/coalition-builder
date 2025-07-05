@@ -88,18 +88,15 @@ This project uses a structured CI/CD pipeline with the following key workflows:
 
 - **Triggered by**: changes to files in the `terraform/` directory
 - Validates Terraform configurations and formatting
-- Runs comprehensive unit tests for individual modules (networking, compute, security, database)
-- Runs integration tests that validate module interactions
-- **Cost-aware testing**: Creates AWS resources only on main branch pushes or manual triggers
-- Includes automatic resource cleanup and cost monitoring
-- Supports manual testing scenarios with configurable options
+- Runs comprehensive unit tests for all modules (networking, compute, security, database, monitoring, secrets, storage, dns, loadbalancer)
+- Runs integration tests that validate complete configuration using plan-only validation
+- **Cost-free testing**: All tests use plan-only validation - no AWS resources are created
+- Generates test coverage reports for Terraform modules
 
 **Test Types:**
 
-- **Unit Tests**: Fast tests without AWS resources (networking, compute, security, database modules)
-- **Integration Tests (Short)**: Module interaction tests without AWS resources
-- **Integration Tests (Full)**: Complete infrastructure deployment with real AWS resources
-- **Cost Monitoring**: Checks for leftover resources and creates alerts
+- **Unit Tests**: Fast validation tests that check module file structure and configuration
+- **Integration Tests**: Plan-only tests that validate complete terraform configuration with real AWS credentials but no resource creation
 
 ### Deployment Workflows
 

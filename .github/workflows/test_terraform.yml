@@ -12,31 +12,11 @@ on:
       - "terraform/**"
       - ".github/workflows/test_terraform.yml"
   workflow_dispatch:
-    inputs:
-      test_type:
-        description: "Type of tests to run"
-        required: true
-        default: "unit"
-        type: choice
-        options:
-          - "unit"
-          - "integration"
-          - "all"
-      skip_aws_resources:
-        description: "Skip AWS resource creation (faster, cheaper)"
-        required: true
-        default: "true"
-        type: choice
-        options:
-          - "true"
-          - "false"
 
 # Permissions needed for testing
 permissions:
   contents: read
   id-token: write # For AWS authentication
-  pull-requests: write # For commenting on PRs
-  issues: write # For creating cost monitoring issues
 
 env:
   GO_VERSION: "1.24"
@@ -69,19 +49,15 @@ jobs:
           terraform init -backend=false
           terraform validate
 
-  # Run unit tests (fast, no AWS resources)
-  unit-tests:
-    name: Unit Tests
+  # Run all tests (unit tests don't need AWS, integration tests do)
+  tests:
+    name: Go Tests
     runs-on: ubuntu-latest
     needs: validate
+    environment: test # Use test environment for AWS credentials
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.12.1
 
       - name: Setup Go
         uses: actions/setup-go@v4
@@ -89,23 +65,23 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: terraform/tests/go.sum
 
-      - name: Configure fake AWS credentials for unit tests
-        run: |
-          # Set fake AWS credentials to prevent provider initialization errors
-          echo "AWS_ACCESS_KEY_ID=fake-access-key" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=fake-secret-key" >> $GITHUB_ENV
-          echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.12.1
 
-      - name: Verify Terraform installation
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      - name: Verify AWS credentials
         run: |
-          terraform version
-          which terraform
-          echo "PATH: $PATH"
-          ls -la $(which terraform) || echo "terraform not found"
-          echo "Checking for tofu..."
-          which tofu || echo "tofu not found (good)"
-          echo "Environment variables:"
-          env | grep -i terra || echo "No terraform env vars"
+          aws sts get-caller-identity
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          echo "AWS_ACCOUNT_ID=${ACCOUNT_ID}" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: |
@@ -124,207 +100,18 @@ jobs:
           if ! command -v golangci-lint &> /dev/null; then
             go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
           fi
-          make lint || true # Allow lint failures for now
+          make lint
 
       - name: Run unit tests
-        env:
-          # Ensure unit tests don't try to access AWS
-          TF_SKIP_PROVIDER_VERIFY: true
-          AWS_PROVIDER_SKIP_VALIDATION: true
         run: |
           cd terraform/tests
           go test -short -v -timeout 10m -coverprofile=coverage.out ./modules/
 
-  # Integration tests (creates AWS resources - only on main branch or manual trigger)
-  integration-tests:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    needs: [validate, unit-tests]
-    if: |
-      (github.ref == 'refs/heads/main' && github.event_name == 'push') ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.skip_aws_resources == 'false')
-    environment: test # Use test environment for AWS credentials
-    strategy:
-      max-parallel: 1 # Prevent parallel runs to avoid resource conflicts
-      matrix:
-        test-scenario:
-          - name: "Full Stack without SSR"
-            pattern: "TestFullStackDeploymentWithoutSSR"
-          - name: "Security Configuration"
-            pattern: "TestFullStackSecurityConfiguration"
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: terraform/tests/go.sum
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.12.1
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_DEFAULT_REGION }}
-
-      - name: Verify AWS credentials and setup backend
-        run: |
-          aws sts get-caller-identity
-          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          echo "Using backend bucket: coalition-terraform-state-${ACCOUNT_ID}"
-          echo "AWS_ACCOUNT_ID=${ACCOUNT_ID}" >> $GITHUB_ENV
-
-          echo "Test state key: tests/terraform-${GITHUB_RUN_ID}-${{ strategy.job-index }}.tfstate"
-
-      - name: Install dependencies
+      - name: Run integration tests
         run: |
           cd terraform/tests
-          go mod download
-
-      - name: Run integration test - ${{ matrix.test-scenario.name }}
-        timeout-minutes: 30
-        run: |
-          cd terraform/tests
-          echo "Starting integration test at $(date)"
-          echo "Test pattern: ${{ matrix.test-scenario.pattern }}"
-
-          # Enable detailed Terraform logging
-          export TF_LOG=DEBUG
-          export TF_LOG_PATH=/tmp/terraform-debug.log
-
-          # Run with verbose output and timeout handling
-          go test -v -timeout 30m -run ${{ matrix.test-scenario.pattern }} ./integration/ 2>&1 | tee /tmp/test-output.log
-
-          echo "Test completed/failed at $(date)"
-
-      - name: Upload debug logs on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-debug-logs-${{ matrix.test-scenario.name }}-${{ github.run_id }}
-          path: |
-            /tmp/terraform-debug.log
-            /tmp/test-output.log
-          retention-days: 7
-
-      - name: Show last 100 lines of terraform debug log on failure
-        if: failure()
-        run: |
-          echo "=== Last 100 lines of Terraform debug log ==="
-          tail -n 100 /tmp/terraform-debug.log || echo "No terraform debug log found"
-          echo "=== Last 100 lines of test output ==="
-          tail -n 100 /tmp/test-output.log || echo "No test output log found"
-
-      - name: Cleanup test state file
-        if: always() # Run even if tests fail
-        run: |
-          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          TEST_STATE_KEY="tests/terraform-${GITHUB_RUN_ID}-${{ strategy.job-index }}.tfstate"
-
-          echo "Cleaning up test state file: s3://coalition-terraform-state-${ACCOUNT_ID}/${TEST_STATE_KEY}"
-          aws s3 rm "s3://coalition-terraform-state-${ACCOUNT_ID}/${TEST_STATE_KEY}" || echo "State file already deleted or doesn't exist"
-
-      - name: Cleanup on failure
-        if: failure()
-        run: |
-          echo "Cleaning up any leftover resources..."
-          # List resources with test prefix for manual cleanup if needed
-          aws ec2 describe-vpcs --filters "Name=tag:Name,Values=coalition-test-*" --query 'Vpcs[].VpcId' --output table || true
-          aws ecs list-clusters --query 'clusterArns[?contains(@, `test`)]' --output table || true
-
-  # Fast integration tests (no AWS resources created)
-  integration-tests-short:
-    name: Integration Tests (No AWS)
-    runs-on: ubuntu-latest
-    needs: [validate, unit-tests]
-    if: |
-      github.event_name == 'pull_request' ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.skip_aws_resources == 'true')
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.12.1
-
-      - name: Setup Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: terraform/tests/go.sum
-
-      - name: Configure fake AWS credentials for integration tests
-        run: |
-          # Set fake AWS credentials to prevent provider initialization errors
-          echo "AWS_ACCESS_KEY_ID=fake-access-key" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=fake-secret-key" >> $GITHUB_ENV
-          echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
-
-      - name: Install dependencies
-        run: |
-          cd terraform/tests
-          go mod download
-
-      - name: Run short integration tests
-        env:
-          # Ensure integration tests don't try to access AWS
-          TF_SKIP_PROVIDER_VERIFY: true
-          AWS_PROVIDER_SKIP_VALIDATION: true
-        run: |
-          cd terraform/tests
-          go test -short -v -timeout 10m ./integration/
-
-  # Comprehensive test report
-  test-summary:
-    name: Test Summary
-    runs-on: ubuntu-latest
-    needs: [unit-tests, integration-tests-short]
-    if: always() && github.event_name == 'pull_request'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.12.1
-
-      - name: Setup Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: terraform/tests/go.sum
-
-      - name: Configure fake AWS credentials for coverage tests
-        run: |
-          # Set fake AWS credentials to prevent provider initialization errors
-          echo "AWS_ACCESS_KEY_ID=fake-access-key" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=fake-secret-key" >> $GITHUB_ENV
-          echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
-
-      - name: Install dependencies
-        run: |
-          cd terraform/tests
-          go mod download
-
-      - name: Generate test coverage
-        env:
-          # Ensure coverage tests don't try to access AWS
-          TF_SKIP_PROVIDER_VERIFY: true
-          AWS_PROVIDER_SKIP_VALIDATION: true
-        run: |
-          cd terraform/tests
-          go test -short -coverprofile=coverage.out ./...
-          go tool cover -html=coverage.out -o coverage.html
+          echo "Running integration tests (plan-only) at $(date)"
+          go test -v -timeout 20m ./integration/
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
@@ -334,141 +121,21 @@ jobs:
           name: terraform-coverage
           fail_ci_if_error: false # Don't fail CI if Codecov has issues
 
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-coverage
-          path: terraform/tests/coverage.html
-
-  # Cost monitoring job
-  cost-monitor:
-    name: Cost Monitor
-    runs-on: ubuntu-latest
-    needs: integration-tests
-    if: needs.integration-tests.result == 'success'
-    environment: test
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_DEFAULT_REGION }}
-
-      - name: Check for leftover test resources
-        run: |
-          echo "Checking for leftover test resources..."
-
-          # Check for test VPCs
-          TEST_VPCS=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=coalition-test-*" --query 'Vpcs[].VpcId' --output text)
-          if [ -n "$TEST_VPCS" ]; then
-            echo "⚠️ Found leftover test VPCs: $TEST_VPCS"
-            echo "TEST_VPCS_FOUND=true" >> $GITHUB_ENV
-          else
-            echo "✅ No leftover test VPCs found"
-          fi
-
-          # Check for test ECS clusters
-          TEST_CLUSTERS=$(aws ecs list-clusters --query 'clusterArns[?contains(@, `test`)]' --output text)
-          if [ -n "$TEST_CLUSTERS" ]; then
-            echo "⚠️ Found leftover test ECS clusters: $TEST_CLUSTERS"
-            echo "TEST_CLUSTERS_FOUND=true" >> $GITHUB_ENV
-          else
-            echo "✅ No leftover test ECS clusters found"
-          fi
-
-          # Check for test RDS instances
-          TEST_RDS=$(aws rds describe-db-instances --query 'DBInstances[?contains(DBInstanceIdentifier, `test`)].DBInstanceIdentifier' --output text)
-          if [ -n "$TEST_RDS" ]; then
-            echo "⚠️ Found leftover test RDS instances: $TEST_RDS"
-            echo "TEST_RDS_FOUND=true" >> $GITHUB_ENV
-          else
-            echo "✅ No leftover test RDS instances found"
-          fi
-
-          # Check for test NAT Gateways (expensive!)
-          TEST_NAT=$(aws ec2 describe-nat-gateways --filter "Name=tag:Name,Values=*test*" --query 'NatGateways[?State==`available`].NatGatewayId' --output text)
-          if [ -n "$TEST_NAT" ]; then
-            echo "⚠️ Found leftover test NAT Gateways: $TEST_NAT"
-            echo "TEST_NAT_FOUND=true" >> $GITHUB_ENV
-          else
-            echo "✅ No leftover test NAT Gateways found"
-          fi
-
-          # Check for test Load Balancers
-          TEST_ALB=$(aws elbv2 describe-load-balancers --query 'LoadBalancers[?contains(LoadBalancerName, `test`)].LoadBalancerArn' --output text)
-          if [ -n "$TEST_ALB" ]; then
-            echo "⚠️ Found leftover test Load Balancers: $TEST_ALB"
-            echo "TEST_ALB_FOUND=true" >> $GITHUB_ENV
-          else
-            echo "✅ No leftover test Load Balancers found"
-          fi
-
-          # Check for test Elastic IPs
-          TEST_EIP=$(aws ec2 describe-addresses --filters "Name=tag:Name,Values=*test*" --query 'Addresses[?AssociationId==null].AllocationId' --output text)
-          if [ -n "$TEST_EIP" ]; then
-            echo "⚠️ Found leftover test Elastic IPs: $TEST_EIP"
-            echo "TEST_EIP_FOUND=true" >> $GITHUB_ENV
-          else
-            echo "✅ No leftover test Elastic IPs found"
-          fi
-
-      - name: Create issue for leftover resources
-        if: env.TEST_VPCS_FOUND == 'true' || env.TEST_CLUSTERS_FOUND == 'true' || env.TEST_RDS_FOUND == 'true' || env.TEST_NAT_FOUND == 'true' || env.TEST_ALB_FOUND == 'true' || env.TEST_EIP_FOUND == 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: '🚨 Leftover test resources detected',
-              body: `## Leftover Test Resources Detected
-              
-              The integration tests may have left behind AWS resources that could incur costs.
-              
-              **VPCs**: ${{ env.TEST_VPCS_FOUND == 'true' && 'Found leftover test VPCs' || 'None' }}
-              **ECS Clusters**: ${{ env.TEST_CLUSTERS_FOUND == 'true' && 'Found leftover test ECS clusters' || 'None' }}
-              **RDS Instances**: ${{ env.TEST_RDS_FOUND == 'true' && 'Found leftover test RDS instances' || 'None' }}
-              **NAT Gateways**: ${{ env.TEST_NAT_FOUND == 'true' && '⚠️ EXPENSIVE! Found leftover test NAT Gateways' || 'None' }}
-              **Load Balancers**: ${{ env.TEST_ALB_FOUND == 'true' && 'Found leftover test Load Balancers' || 'None' }}
-              **Elastic IPs**: ${{ env.TEST_EIP_FOUND == 'true' && 'Found leftover test Elastic IPs' || 'None' }}
-
-              **Action Required**: Please review and clean up these resources manually ASAP.
-              
-              **Workflow Run**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-              `,
-              labels: ['bug', 'infrastructure', 'urgent']
-            });
-
-  # Final status check
+  # Final summary job
   terraform-tests:
     name: Terraform Tests Complete
     runs-on: ubuntu-latest
-    needs: [validate, unit-tests, integration-tests-short]
+    needs: [validate, tests]
     if: always()
     steps:
       - name: Check test results
         run: |
-          validate_result="${{ needs.validate.result }}"
-          unit_result="${{ needs.unit-tests.result }}"
-          integration_result="${{ needs.integration-tests-short.result }}"
-
-          echo "Validate: $validate_result"
-          echo "Unit Tests: $unit_result"
-          echo "Integration Tests (Short): $integration_result"
-
-          # Function to check if result is acceptable (success or skipped)
-          is_acceptable() {
-            [[ "$1" == "success" || "$1" == "skipped" ]]
-          }
-
-          if is_acceptable "$validate_result" && is_acceptable "$unit_result" && is_acceptable "$integration_result"; then
-            echo "✅ All Terraform tests passed or were skipped!"
-            exit 0
-          else
-            echo "❌ Some Terraform tests failed"
-            echo "  - Validate: $validate_result"
-            echo "  - Unit Tests: $unit_result" 
-            echo "  - Integration Tests: $integration_result"
+          if [ "${{ needs.validate.result }}" != "success" ]; then
+            echo "Terraform validation failed"
             exit 1
           fi
+          if [ "${{ needs.tests.result }}" != "success" ]; then
+            echo "Go tests failed"
+            exit 1
+          fi
+          echo "All terraform tests passed successfully!"
