@@ -3,6 +3,7 @@ package integration
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"terraform-tests/common"
 
@@ -28,9 +29,21 @@ func TestMainConfigurationWithoutSSR(t *testing.T) {
 
 	terraformOptions := testConfig.GetTerraformOptionsForPlanOnly(testVars)
 
+	// Add retry configuration with timeouts to prevent hanging
+	terraformOptions.MaxRetries = 1
+	terraformOptions.TimeBetweenRetries = 5 * time.Second
+	terraformOptions.RetryableTerraformErrors = map[string]string{
+		"timeout": "Terraform operation timed out",
+	}
+
 	// Run terraform init and plan - validate configuration works
+	t.Logf("Starting terraform init for directory: %s", terraformOptions.TerraformDir)
 	terraform.Init(t, terraformOptions)
+	t.Logf("Terraform init completed successfully")
+
+	t.Logf("Starting terraform plan")
 	planOutput := terraform.Plan(t, terraformOptions)
+	t.Logf("Terraform plan completed successfully")
 
 	// Validate all expected outputs are defined
 	expectedOutputs := []string{
