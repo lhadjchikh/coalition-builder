@@ -111,6 +111,8 @@ jobs:
         if: steps.check_tests.outputs.skip_full_tests != 'true'
         uses: codecov/codecov-action@v5
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: lhadjchikh/coalition-builder
           file: ./backend_coverage/coverage.xml
           flags: python
           name: python-coverage

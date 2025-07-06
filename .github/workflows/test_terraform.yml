@@ -92,6 +92,8 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: lhadjchikh/coalition-builder
           file: ./terraform/tests/coverage.out
           flags: terraform
           name: terraform-coverage

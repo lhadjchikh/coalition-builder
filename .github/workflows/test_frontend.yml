@@ -64,6 +64,8 @@ jobs:
         if: steps.check_tests.outputs.skip_full_tests != 'true'
         uses: codecov/codecov-action@v5
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: lhadjchikh/coalition-builder
           directory: ./frontend/coverage
           flags: javascript
           name: javascript-coverage
