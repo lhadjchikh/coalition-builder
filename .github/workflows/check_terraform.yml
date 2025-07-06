@@ -27,6 +27,7 @@ on:
 permissions:
   contents: read
   id-token: write # For AWS authentication in tests
+  actions: read # Need actions:read for codecov in called workflows
 
 jobs:
   # Run Terraform linting first
@@ -51,4 +52,5 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      actions: read # Need actions:read for codecov
     secrets: inherit # Pass secrets to the called workflow

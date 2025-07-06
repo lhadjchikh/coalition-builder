@@ -32,6 +32,7 @@ on:
 
 permissions:
   contents: read
+  actions: read # Need actions:read for codecov in called workflows
 
 jobs:
   # Run frontend linting in parallel
@@ -54,6 +55,7 @@ jobs:
     uses: ./.github/workflows/test_frontend.yml
     permissions:
       contents: read
+      actions: read # Need actions:read for codecov
     secrets: inherit
 
   ssr-tests:

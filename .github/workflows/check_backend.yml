@@ -26,6 +26,7 @@ on:
 
 permissions:
   contents: read
+  actions: read # Need actions:read for codecov in called workflows
 
 jobs:
   # Run Python linting first
@@ -42,4 +43,5 @@ jobs:
     uses: ./.github/workflows/test_backend.yml
     permissions:
       contents: read
+      actions: read # Need actions:read for codecov
     secrets: inherit # Pass secrets to the called workflow
