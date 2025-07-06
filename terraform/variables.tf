@@ -319,3 +319,40 @@ variable "static_assets_enable_lifecycle" {
   type        = bool
   default     = true
 }
+
+# CloudFront TTL Configuration
+variable "cloudfront_s3_cache_min_ttl" {
+  description = "Minimum TTL for S3 content (user uploads) in seconds"
+  type        = number
+  default     = 0
+}
+
+variable "cloudfront_s3_cache_default_ttl" {
+  description = "Default TTL for S3 content (user uploads) in seconds. Set to 3600 (1 hour) for development, 86400 (1 day) for production"
+  type        = number
+  default     = 3600 # 1 hour (development-friendly)
+}
+
+variable "cloudfront_s3_cache_max_ttl" {
+  description = "Maximum TTL for S3 content (user uploads) in seconds"
+  type        = number
+  default     = 86400 # 1 day
+}
+
+variable "cloudfront_static_cache_min_ttl" {
+  description = "Minimum TTL for Django static files in seconds"
+  type        = number
+  default     = 0
+}
+
+variable "cloudfront_static_cache_default_ttl" {
+  description = "Default TTL for Django static files in seconds. Set to 3600 (1 hour) for development, 86400 (1 day) for production"
+  type        = number
+  default     = 3600 # 1 hour (development-friendly)
+}
+
+variable "cloudfront_static_cache_max_ttl" {
+  description = "Maximum TTL for Django static files in seconds"
+  type        = number
+  default     = 86400 # 1 day
+}

@@ -161,6 +161,14 @@ module "storage" {
   cors_allowed_origins   = var.static_assets_cors_origins != null ? var.static_assets_cors_origins : ["https://${var.domain_name}"]
   enable_versioning      = var.static_assets_enable_versioning
   enable_lifecycle_rules = var.static_assets_enable_lifecycle
+
+  # CloudFront TTL configuration
+  s3_cache_min_ttl         = var.cloudfront_s3_cache_min_ttl
+  s3_cache_default_ttl     = var.cloudfront_s3_cache_default_ttl
+  s3_cache_max_ttl         = var.cloudfront_s3_cache_max_ttl
+  static_cache_min_ttl     = var.cloudfront_static_cache_min_ttl
+  static_cache_default_ttl = var.cloudfront_static_cache_default_ttl
+  static_cache_max_ttl     = var.cloudfront_static_cache_max_ttl
 }
 
 # DNS Module

@@ -174,9 +174,9 @@ resource "aws_cloudfront_distribution" "static_assets" {
       }
     }
 
-    min_ttl     = 0
-    default_ttl = 86400    # 1 day
-    max_ttl     = 31536000 # 1 year
+    min_ttl     = var.s3_cache_min_ttl
+    default_ttl = var.s3_cache_default_ttl
+    max_ttl     = var.s3_cache_max_ttl
   }
 
   # Cache behavior for Django static files served by WhiteNoise
@@ -196,9 +196,9 @@ resource "aws_cloudfront_distribution" "static_assets" {
       headers = ["Origin", "Access-Control-Request-Headers", "Access-Control-Request-Method"]
     }
 
-    min_ttl     = 86400    # 1 day
-    default_ttl = 2592000  # 30 days
-    max_ttl     = 31536000 # 1 year
+    min_ttl     = var.static_cache_min_ttl
+    default_ttl = var.static_cache_default_ttl
+    max_ttl     = var.static_cache_max_ttl
   }
 
   # Geographic restrictions (none by default)
