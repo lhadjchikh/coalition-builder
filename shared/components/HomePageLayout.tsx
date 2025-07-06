@@ -1,14 +1,17 @@
 import React from "react";
 import { Campaign, HomePage } from "../utils/homepage-data";
 
+// Import the shared NavItemData type
+type NavItemData = {
+  label: string;
+  onClick?: () => void;
+  href?: string;
+  active?: boolean;
+};
+
 interface NavbarProps {
   organizationName?: string;
-  navItems?: Array<{
-    label: string;
-    onClick?: () => void;
-    href?: string;
-    active?: boolean;
-  }>;
+  navItems?: NavItemData[];
 }
 
 interface HomePageLayoutProps {

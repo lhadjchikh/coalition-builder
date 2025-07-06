@@ -100,7 +100,7 @@ type NavItemData = {
   active?: boolean;
 };
 
-interface NavbarProps {
+interface LayoutNavbarProps {
   organizationName?: string;
   // Frontend app mode props
   currentView?: 'list' | 'detail';
@@ -109,7 +109,7 @@ interface NavbarProps {
   navItems?: NavItemData[];
 }
 
-const Navbar: React.FC<NavbarProps> = ({
+const Navbar: React.FC<LayoutNavbarProps> = ({
   currentView,
   onNavigate,
   organizationName = 'Coalition Builder',

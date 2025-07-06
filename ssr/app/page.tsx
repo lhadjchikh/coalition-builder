@@ -20,15 +20,18 @@ import ContentBlock from "@frontend/components/ContentBlock";
 import SocialLinks from "@frontend/components/SocialLinks";
 import Navbar from "@frontend/components/Navbar";
 
+// Import the shared NavItemData type
+type NavItemData = {
+  label: string;
+  onClick?: () => void;
+  href?: string;
+  active?: boolean;
+};
+
 // SSR navbar configuration
 const SSRNavbar: React.FC<{
   organizationName?: string;
-  navItems?: Array<{
-    label: string;
-    href?: string;
-    onClick?: () => void;
-    active?: boolean;
-  }>;
+  navItems?: NavItemData[];
 }> = ({
   organizationName,
   navItems = [

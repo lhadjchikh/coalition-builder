@@ -43,11 +43,27 @@ async function runNavbarIntegrationTests(): Promise<TestResults> {
     return results; // Early return if SSR is not working
   }
 
+  // Fetch SSR HTML once for all tests
+  let html: string;
+  try {
+    console.log("\n🔍 Fetching SSR HTML");
+    const response = await makeRequest(`${SSR_URL}/`);
+    html = response.data;
+    console.log("✅ SSR HTML fetched successfully");
+  } catch (error) {
+    results.tests.push({
+      name: "Fetch SSR HTML",
+      status: "FAIL",
+      error: error instanceof Error ? error.message : String(error),
+    });
+    results.failed++;
+    console.log("❌ Failed to fetch SSR HTML");
+    return results; // Early return if SSR HTML cannot be fetched
+  }
+
   // Test 2: Check if homepage contains navigation element
   try {
     console.log("\n🔍 Test 2: Navbar element present in SSR");
-    const response = await makeRequest(`${SSR_URL}/`);
-    const html = response.data;
 
     // Check if the HTML contains a nav element
     if (html.includes("<nav") || html.includes('role="navigation"')) {
@@ -73,8 +89,6 @@ async function runNavbarIntegrationTests(): Promise<TestResults> {
   // Test 3: Check if navbar contains expected navigation items
   try {
     console.log("\n🔍 Test 3: Navbar contains expected navigation items");
-    const response = await makeRequest(`${SSR_URL}/`);
-    const html = response.data;
 
     // Check for expected navigation items
     const expectedItems = ["About", "Campaigns", "Contact"];
@@ -100,8 +114,6 @@ async function runNavbarIntegrationTests(): Promise<TestResults> {
   // Test 4: Check if organization name is rendered
   try {
     console.log("\n🔍 Test 4: Organization name in navbar");
-    const response = await makeRequest(`${SSR_URL}/`);
-    const html = response.data;
 
     // The organization name should be visible in the navbar
     if (html.includes("Coalition Builder")) {
