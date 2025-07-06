@@ -99,7 +99,6 @@ jobs:
           flags: terraform
           name: terraform-coverage
           fail_ci_if_error: false # Don't fail CI if Codecov has issues
-          verbose: true # Enable verbose logging for debugging
 
   # Final summary job
   terraform-tests:
