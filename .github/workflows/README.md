@@ -7,6 +7,59 @@ testing and other CI/CD processes.
 
 This project uses a structured CI/CD pipeline with the following key workflows:
 
+### Figure 1: Main CI/CD Workflow
+
+The following diagram shows the workflow orchestration from code push to deployment:
+
+> **Note**: This diagram uses Mermaid syntax. It will render automatically on GitHub, GitLab, and other platforms that support Mermaid. If you're viewing this locally, you may need a Mermaid preview extension.
+
+```mermaid
+%%{init: {'theme':'basic'}}%%
+flowchart TD
+    %% Main trigger
+    push[Push/PR to main] --> check_app[Check App]
+
+    %% Check App branches
+    check_app --> frontend_check[Frontend Check]
+    check_app --> backend_check[Backend Check]
+    check_app --> terraform_check[Terraform Check]
+    check_app --> fullstack_tests[Full Stack Tests]
+
+    %% Frontend workflow
+    frontend_check --> ts_lint[TypeScript Lint]
+    frontend_check --> prettier[Prettier Format]
+    ts_lint --> frontend_lint_complete{"Frontend<br/>Linting<br/>Passed?"}
+    prettier --> frontend_lint_complete
+    frontend_lint_complete --> frontend_tests[Frontend Tests]
+    frontend_lint_complete --> ssr_tests[SSR Tests]
+
+    %% Backend workflow
+    backend_check --> python_lint[Python Lint]
+    python_lint --> backend_tests[Backend Tests]
+
+    %% Terraform workflow
+    terraform_check --> tf_lint[Terraform Lint]
+    terraform_check --> go_lint[Go Lint]
+    tf_lint --> terraform_lint_complete{"Terraform<br/>Linting<br/>Passed?"}
+    go_lint --> terraform_lint_complete
+    terraform_lint_complete --> terraform_tests[Terraform Tests]
+
+    %% All tests converge to deployment decision
+    frontend_tests --> tests_complete{"All Tests<br/>Passed?"}
+    ssr_tests --> tests_complete
+    backend_tests --> tests_complete
+    terraform_tests --> tests_complete
+    fullstack_tests --> tests_complete
+
+    %% Decision to deployment
+    tests_complete --> app_deploy[Application Deployment]
+
+    %% Deployment to AWS
+    app_deploy --> ecs[Amazon ECS]
+```
+
+_Figure 1: Workflow dependency tree showing how push/PR events trigger orchestrated quality checks, linting, testing, and deployment processes. Diamond nodes represent quality gates where parallel processes must complete successfully before proceeding._
+
 ### Orchestration Workflows
 
 #### Check App (`check_app.yml`)
@@ -153,55 +206,6 @@ This project uses a structured CI/CD pipeline with the following key workflows:
   - **User Guides**: Written in Markdown and processed by MkDocs
 - Deploys to GitHub Pages automatically on main branch pushes
 - Combines backend API docs, frontend component docs, and user documentation into a unified site
-
-## Workflow Dependencies
-
-> **Note**: This diagram uses Mermaid syntax. It will render automatically on GitHub, GitLab, and other platforms that support Mermaid. If you're viewing this locally, you may need a Mermaid preview extension.
-
-```mermaid
-%%{init: {'theme':'basic'}}%%
-flowchart TD
-    %% Main trigger
-    push[Push/PR to main] --> check_app[Check App]
-
-    %% Check App branches
-    check_app --> frontend_check[Frontend Check]
-    check_app --> backend_check[Backend Check]
-    check_app --> terraform_check[Terraform Check]
-    check_app --> fullstack_tests[Full Stack Tests]
-
-    %% Frontend workflow
-    frontend_check --> ts_lint[TypeScript Lint]
-    frontend_check --> prettier[Prettier Format]
-    ts_lint --> frontend_lint_complete{"Frontend<br/>Linting<br/>Passed?"}
-    prettier --> frontend_lint_complete
-    frontend_lint_complete --> frontend_tests[Frontend Tests]
-    frontend_lint_complete --> ssr_tests[SSR Tests]
-
-    %% Backend workflow
-    backend_check --> python_lint[Python Lint]
-    python_lint --> backend_tests[Backend Tests]
-
-    %% Terraform workflow
-    terraform_check --> tf_lint[Terraform Lint]
-    terraform_check --> go_lint[Go Lint]
-    tf_lint --> terraform_lint_complete{"Terraform<br/>Linting<br/>Passed?"}
-    go_lint --> terraform_lint_complete
-    terraform_lint_complete --> terraform_tests[Terraform Tests]
-
-    %% All tests converge to deployment decision
-    frontend_tests --> tests_complete{"All Tests<br/>Passed?"}
-    ssr_tests --> tests_complete
-    backend_tests --> tests_complete
-    terraform_tests --> tests_complete
-    fullstack_tests --> tests_complete
-
-    %% Decision to deployment
-    tests_complete --> app_deploy[Application Deployment]
-
-    %% Deployment to AWS
-    app_deploy --> ecs[Amazon ECS]
-```
 
 ## Deployment Coordination and Deduplication
 
