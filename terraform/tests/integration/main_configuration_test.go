@@ -29,9 +29,7 @@ func TestMainConfigurationWithoutSSR(t *testing.T) {
 	terraformOptions := testConfig.GetTerraformOptionsForPlanOnly(testVars)
 
 	// Run terraform init and plan - validate configuration works
-	t.Logf("Starting terraform init for directory: %s", terraformOptions.TerraformDir)
-	terraform.Init(t, terraformOptions)
-	t.Logf("Terraform init completed successfully")
+	common.InitTerraformForPlanOnly(t, terraformOptions)
 
 	t.Logf("Starting terraform plan")
 	planOutput := terraform.Plan(t, terraformOptions)
@@ -83,7 +81,7 @@ func TestMainConfigurationWithSSR(t *testing.T) {
 
 	terraformOptions := testConfig.GetTerraformOptionsForPlanOnly(testVars)
 
-	terraform.Init(t, terraformOptions)
+	common.InitTerraformForPlanOnly(t, terraformOptions)
 	planOutput := terraform.Plan(t, terraformOptions)
 
 	// Validate SSR-specific outputs and resources
@@ -109,7 +107,7 @@ func TestMainConfigurationValidation(t *testing.T) {
 
 		terraformOptions := testConfig.GetTerraformOptionsForPlanOnly(testVars)
 
-		terraform.Init(t, terraformOptions)
+		common.InitTerraformForPlanOnly(t, terraformOptions)
 		_, err := terraform.PlanE(t, terraformOptions)
 		assert.Error(t, err, "Plan should fail with missing required variables")
 	})
@@ -129,7 +127,7 @@ func TestMainConfigurationValidation(t *testing.T) {
 
 		terraformOptions := testConfig.GetTerraformOptionsForPlanOnly(testVars)
 
-		terraform.Init(t, terraformOptions)
+		common.InitTerraformForPlanOnly(t, terraformOptions)
 		planOutput := terraform.Plan(t, terraformOptions)
 
 		// Should succeed and contain main components

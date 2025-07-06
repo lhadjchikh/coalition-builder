@@ -570,3 +570,10 @@ func LogPhaseStart(t *testing.T, phaseName string) {
 func LogPhaseComplete(t *testing.T, phaseName, result string) {
 	t.Logf("%s complete: %s", phaseName, result)
 }
+
+// InitTerraformForPlanOnly initializes terraform without backend for plan-only tests
+func InitTerraformForPlanOnly(t *testing.T, terraformOptions *terraform.Options) {
+	t.Logf("Starting terraform init for directory: %s", terraformOptions.TerraformDir)
+	terraform.RunTerraformCommand(t, terraformOptions, "init", "-backend=false")
+	t.Logf("Terraform init completed successfully")
+}
