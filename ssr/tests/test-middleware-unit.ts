@@ -3,36 +3,44 @@
  * Tests the basic authentication middleware functionality
  */
 
-const { middleware, NextResponse } = require("./middleware-testable");
+import { middleware, NextResponse } from "./middleware-testable";
+
+interface Headers {
+  [key: string]: string;
+}
 
 // Mock NextRequest
 class MockNextRequest {
-  constructor(url, headers = {}) {
+  public nextUrl: { pathname: string };
+  public headers: Map<string, string>;
+
+  constructor(url: string, headers: Headers = {}) {
     this.nextUrl = { pathname: new URL(url, "http://localhost").pathname };
     this.headers = new Map(Object.entries(headers));
   }
 
-  get(key) {
+  get(key: string): string | undefined {
     return this.headers.get(key);
   }
 }
 
 // Test runner
-async function runMiddlewareTests() {
+async function runMiddlewareTests(): Promise<boolean> {
   console.log("🧪 Starting Middleware Unit Tests\n");
 
   let passed = 0;
   let failed = 0;
 
   // Helper function to run a test
-  function runTest(testName, testFn) {
+  function runTest(testName: string, testFn: () => void): void {
     try {
       console.log(`🔍 Testing: ${testName}`);
       testFn();
       console.log(`✅ ${testName} passed`);
       passed++;
     } catch (error) {
-      console.log(`❌ ${testName} failed: ${error.message}`);
+      const err = error as Error;
+      console.log(`❌ ${testName} failed: ${err.message}`);
       failed++;
     }
   }
@@ -330,18 +338,15 @@ async function runMiddlewareTests() {
 }
 
 // Export for use in other test files
-module.exports = {
-  runMiddlewareTests,
-  MockNextRequest,
-};
+export { runMiddlewareTests, MockNextRequest, type Headers };
 
 // Run tests if this file is executed directly
 if (require.main === module) {
   runMiddlewareTests()
-    .then((success) => {
+    .then((success: boolean) => {
       process.exit(success ? 0 : 1);
     })
-    .catch((error) => {
+    .catch((error: Error) => {
       console.error("💥 Test execution failed:", error.message);
       process.exit(1);
     });

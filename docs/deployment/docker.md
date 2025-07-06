@@ -112,7 +112,7 @@ services:
     depends_on:
       - backend
     healthcheck:
-      test: ["CMD", "node", "healthcheck.js"]
+      test: ["CMD", "node", "healthcheck.ts"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -258,7 +258,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Create healthcheck script
-COPY healthcheck.js /app/
+COPY healthcheck.ts /app/
 
 USER nextjs
 
@@ -268,7 +268,7 @@ ENV HOSTNAME "0.0.0.0"
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD node healthcheck.js
+    CMD node healthcheck.ts
 
 CMD ["node", "server.js"]
 ```
@@ -322,7 +322,7 @@ if __name__ == "__main__":
 ### SSR Health Check
 
 ```javascript
-// ssr/healthcheck.js
+// ssr/healthcheck.ts
 const http = require("http");
 
 const options = {
@@ -577,7 +577,7 @@ docker stats
 
 # Health status
 docker-compose exec backend python healthcheck.py
-docker-compose exec ssr node healthcheck.js
+docker-compose exec ssr node healthcheck.ts
 ```
 
 ### Database Operations

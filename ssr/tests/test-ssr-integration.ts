@@ -10,26 +10,64 @@
  * 5. Static assets are served correctly
  */
 
-const { exec } = require("child_process");
-const { promisify } = require("util");
+import { exec } from "child_process";
+import { promisify } from "util";
 const execAsync = promisify(exec);
 
 // Import utilities for HTTP requests and service waiting
-const {
+import {
   makeRequest,
   waitForService,
-  fetchCompatible: fetch,
+  fetchCompatible as fetch,
   fetchWithRetry,
-} = require("./utils");
+  type FetchResponse,
+} from "./utils";
+
+interface TestConfig {
+  SSR_URL: string;
+  API_URL: string;
+  NGINX_URL: string;
+  TIMEOUT: number;
+  RETRY_COUNT: number;
+  RETRY_DELAY: number;
+  CI_MODE: boolean;
+}
+
+interface TestResult {
+  name: string;
+  status: "PASSED" | "FAILED";
+  result?: any;
+  error?: string;
+}
+
+interface TestResults {
+  passed: number;
+  failed: number;
+  warnings: number;
+  tests: TestResult[];
+  startTime: number;
+}
+
+interface HealthData {
+  status: string;
+  [key: string]: any;
+}
+
+interface Campaign {
+  id: number;
+  title: string;
+  summary: string;
+  [key: string]: any;
+}
 
 // Test configuration
-const TEST_CONFIG = {
+const TEST_CONFIG: TestConfig = {
   SSR_URL: process.env.SSR_URL || "http://localhost:3000",
   API_URL: process.env.API_URL || "http://localhost:8000",
   NGINX_URL: process.env.NGINX_URL || "http://localhost:80",
-  TIMEOUT: parseInt(process.env.TEST_TIMEOUT) || 60000, // 60 seconds by default
-  RETRY_COUNT: parseInt(process.env.TEST_RETRY_COUNT) || 5,
-  RETRY_DELAY: parseInt(process.env.TEST_RETRY_DELAY) || 3000, // 3 seconds
+  TIMEOUT: parseInt(process.env.TEST_TIMEOUT || "60000"), // 60 seconds by default
+  RETRY_COUNT: parseInt(process.env.TEST_RETRY_COUNT || "5"),
+  RETRY_DELAY: parseInt(process.env.TEST_RETRY_DELAY || "3000"), // 3 seconds
   CI_MODE: process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true",
 };
 
@@ -41,13 +79,13 @@ console.log("Test Configuration:", {
   ENVIRONMENT: TEST_CONFIG.CI_MODE ? "CI" : "Local",
 });
 
-// The helper functions have been replaced by imports from the utils module
-
 // Test 1: Verify SSR Health Check
-async function testSSRHealth() {
+async function testSSRHealth(): Promise<HealthData> {
   console.log("🔍 Testing SSR health endpoint...");
 
-  const response = await fetchWithRetry(`${TEST_CONFIG.SSR_URL}/health`);
+  const response: FetchResponse = await fetchWithRetry(
+    `${TEST_CONFIG.SSR_URL}/health`,
+  );
 
   if (!response.ok) {
     throw new Error(
@@ -55,7 +93,7 @@ async function testSSRHealth() {
     );
   }
 
-  const data = await response.json();
+  const data: HealthData = response.json();
 
   if (data.status !== "healthy") {
     throw new Error(
@@ -68,10 +106,12 @@ async function testSSRHealth() {
 }
 
 // Test 2: Verify Django API health
-async function testDjangoAPI() {
+async function testDjangoAPI(): Promise<Campaign[]> {
   console.log("🔍 Testing Django API health...");
 
-  const response = await fetchWithRetry(`${TEST_CONFIG.API_URL}/api/health/`);
+  const response: FetchResponse = await fetchWithRetry(
+    `${TEST_CONFIG.API_URL}/api/health/`,
+  );
 
   if (!response.ok) {
     throw new Error(
@@ -79,7 +119,7 @@ async function testDjangoAPI() {
     );
   }
 
-  const healthData = await response.json();
+  const healthData: HealthData = response.json();
 
   if (healthData.status !== "healthy") {
     throw new Error(
@@ -90,7 +130,7 @@ async function testDjangoAPI() {
   }
 
   // Also test data endpoint
-  const dataResponse = await fetchWithRetry(
+  const dataResponse: FetchResponse = await fetchWithRetry(
     `${TEST_CONFIG.API_URL}/api/campaigns/`,
   );
 
@@ -100,7 +140,7 @@ async function testDjangoAPI() {
     );
   }
 
-  const campaigns = await dataResponse.json();
+  const campaigns: Campaign[] = dataResponse.json();
 
   if (!Array.isArray(campaigns)) {
     throw new Error(
@@ -115,10 +155,10 @@ async function testDjangoAPI() {
 }
 
 // Test 3: Verify SSR Homepage Rendering
-async function testSSRHomepage() {
+async function testSSRHomepage(): Promise<string> {
   console.log("🔍 Testing SSR homepage rendering...");
 
-  const response = await fetchWithRetry(TEST_CONFIG.SSR_URL);
+  const response: FetchResponse = await fetchWithRetry(TEST_CONFIG.SSR_URL);
 
   if (!response.ok) {
     throw new Error(
@@ -126,7 +166,7 @@ async function testSSRHomepage() {
     );
   }
 
-  const html = await response.text();
+  const html: string = response.text();
 
   // Check that it's actually server-side rendered HTML
   if (!html.includes("<html")) {
@@ -134,7 +174,7 @@ async function testSSRHomepage() {
   }
 
   // Define critical and non-critical content to check
-  const criticalContent = [
+  const criticalContent: string[] = [
     // Fundamental HTML structure must be present
     "<html",
     "<head",
@@ -143,7 +183,7 @@ async function testSSRHomepage() {
 
   // Content that should be present but won't fail tests if missing
   // These could change with UI updates
-  const expectedContent = [
+  const expectedContent: string[] = [
     "Coalition Builder",
     "Policy Campaigns",
     // Check for Next.js specific meta tags
@@ -158,7 +198,7 @@ async function testSSRHomepage() {
   }
 
   // Check expected content (warn if missing but don't fail)
-  let missingContent = [];
+  const missingContent: string[] = [];
   for (const content of expectedContent) {
     if (!html.includes(content)) {
       missingContent.push(content);
@@ -185,11 +225,11 @@ async function testSSRHomepage() {
 }
 
 // Test 4: Test API routing through Load Balancer/Nginx
-async function testAPIRouting() {
+async function testAPIRouting(): Promise<Campaign[]> {
   console.log("🔍 Testing API routing through load balancer...");
 
   // Test through Nginx (simulates ALB routing)
-  const response = await fetchWithRetry(
+  const response: FetchResponse = await fetchWithRetry(
     `${TEST_CONFIG.NGINX_URL}/api/campaigns/`,
   );
 
@@ -199,7 +239,7 @@ async function testAPIRouting() {
     );
   }
 
-  const campaigns = await response.json();
+  const campaigns: Campaign[] = response.json();
 
   if (!Array.isArray(campaigns)) {
     throw new Error(
@@ -214,16 +254,16 @@ async function testAPIRouting() {
 }
 
 // Test 5: Test SSR with API Integration
-async function testSSRAPIIntegration() {
+async function testSSRAPIIntegration(): Promise<boolean> {
   console.log("🔍 Testing SSR + API integration...");
 
   // This tests that SSR can fetch data from the API and render it
-  const response = await fetchWithRetry(TEST_CONFIG.SSR_URL);
-  const html = await response.text();
+  const response: FetchResponse = await fetchWithRetry(TEST_CONFIG.SSR_URL);
+  const html: string = response.text();
 
   // Look for signs that the page has been rendered with actual data
   // This would indicate that SSR successfully called the API
-  const hasDataRendered =
+  const hasDataRendered: boolean =
     html.includes("campaign") ||
     html.includes("Policy Campaign") ||
     html.includes("No campaigns found");
@@ -240,7 +280,7 @@ async function testSSRAPIIntegration() {
 }
 
 // Test 6: Test Container Communication
-async function testContainerCommunication() {
+async function testContainerCommunication(): Promise<boolean> {
   console.log("🔍 Testing container-to-container communication...");
 
   try {
@@ -262,7 +302,7 @@ async function testContainerCommunication() {
       const dockerComposeCmd = "docker compose";
 
       const { stdout } = await execAsync(`${dockerComposeCmd} ps --services`);
-      const services = stdout.trim().split("\n");
+      const services: string[] = stdout.trim().split("\n");
 
       if (services.includes("ssr") && services.includes("api")) {
         // Test that SSR container can reach API container
@@ -281,8 +321,9 @@ async function testContainerCommunication() {
             return false;
           }
         } catch (cmdError) {
+          const err = cmdError as Error;
           console.warn(
-            `⚠️  Container command execution failed: ${cmdError.message}`,
+            `⚠️  Container command execution failed: ${err.message}`,
           );
           return false;
         }
@@ -296,8 +337,9 @@ async function testContainerCommunication() {
       }
     }
   } catch (error) {
+    const err = error as Error;
     // Log the error but don't fail the entire test suite for this
-    console.log(`ℹ️  Skipping container communication test: ${error.message}`);
+    console.log(`ℹ️  Skipping container communication test: ${err.message}`);
     return true;
   }
 
@@ -305,10 +347,10 @@ async function testContainerCommunication() {
 }
 
 // Test 7: Error Handling and Fallback UI Test
-async function testSSRErrorHandlingAndFallback() {
+async function testSSRErrorHandlingAndFallback(): Promise<boolean> {
   console.log("🔍 Testing SSR error handling and fallback UI...");
 
-  const response = await fetchWithRetry(TEST_CONFIG.SSR_URL);
+  const response: FetchResponse = await fetchWithRetry(TEST_CONFIG.SSR_URL);
 
   if (!response.ok) {
     throw new Error(
@@ -316,7 +358,7 @@ async function testSSRErrorHandlingAndFallback() {
     );
   }
 
-  const html = await response.text();
+  const html: string = response.text();
 
   // Verify the page structure is intact
   if (!html.includes("<html") || !html.includes("</html>")) {
@@ -324,7 +366,7 @@ async function testSSRErrorHandlingAndFallback() {
   }
 
   // Check that the SSR is actually rendering homepage content
-  const homepageIndicators = [
+  const homepageIndicators: string[] = [
     "Welcome to Coalition Builder", // Should show hero title from fallback
     "About Our Mission", // Should show about section
     "Policy Campaigns", // Should show campaigns section
@@ -351,11 +393,11 @@ async function testSSRErrorHandlingAndFallback() {
 }
 
 // Test 8: Performance Test
-async function testPerformance() {
+async function testPerformance(): Promise<number> {
   console.log("🔍 Running basic performance test...");
 
   const startTime = Date.now();
-  const response = await fetchWithRetry(TEST_CONFIG.SSR_URL);
+  const response: FetchResponse = await fetchWithRetry(TEST_CONFIG.SSR_URL);
   const endTime = Date.now();
 
   const responseTime = endTime - startTime;
@@ -374,10 +416,10 @@ async function testPerformance() {
 }
 
 // Main test runner
-async function runIntegrationTests() {
+async function runIntegrationTests(): Promise<void> {
   console.log("🚀 Starting SSR Integration Tests...\n");
 
-  const results = {
+  const results: TestResults = {
     passed: 0,
     failed: 0,
     warnings: 0,
@@ -387,12 +429,12 @@ async function runIntegrationTests() {
 
   // Track warnings by overriding console.warn
   const originalWarn = console.warn;
-  console.warn = (...args) => {
+  console.warn = (...args: any[]) => {
     results.warnings++;
     originalWarn.apply(console, args);
   };
 
-  const tests = [
+  const tests: Array<{ name: string; fn: () => Promise<any> }> = [
     { name: "SSR Health Check", fn: testSSRHealth },
     { name: "Django API Direct", fn: testDjangoAPI },
     { name: "SSR Homepage Rendering", fn: testSSRHomepage },
@@ -416,7 +458,8 @@ async function runIntegrationTests() {
     ]);
     console.log("✅ All services are ready\n");
   } catch (error) {
-    console.error("❌ Services failed to start:", error.message);
+    const err = error as Error;
+    console.error("❌ Services failed to start:", err.message);
     process.exit(1);
   }
 
@@ -427,13 +470,14 @@ async function runIntegrationTests() {
       results.passed++;
       results.tests.push({ name: test.name, status: "PASSED", result });
     } catch (error) {
+      const err = error as Error;
       results.failed++;
       results.tests.push({
         name: test.name,
         status: "FAILED",
-        error: error.message,
+        error: err.message,
       });
-      console.error(`❌ ${test.name} failed:`, error.message);
+      console.error(`❌ ${test.name} failed:`, err.message);
     }
     console.log(""); // Add spacing between tests
   }
@@ -458,7 +502,7 @@ async function runIntegrationTests() {
   // Print test results
   if (results.tests.length > 0) {
     console.log("\nTest details:");
-    results.tests.forEach((test) => {
+    results.tests.forEach((test: TestResult) => {
       if (test.status === "PASSED") {
         console.log(`  ✅ ${test.name}`);
       } else {
@@ -489,13 +533,13 @@ process.on("SIGTERM", () => {
 
 // Export for testing
 if (require.main === module) {
-  runIntegrationTests().catch((error) => {
+  runIntegrationTests().catch((error: Error) => {
     console.error("💥 Integration tests crashed:", error);
     process.exit(1);
   });
 }
 
-module.exports = {
+export {
   runIntegrationTests,
   testSSRHealth,
   testDjangoAPI,
@@ -505,4 +549,9 @@ module.exports = {
   testContainerCommunication,
   testSSRErrorHandlingAndFallback,
   testPerformance,
+  type TestConfig,
+  type TestResult,
+  type TestResults,
+  type HealthData,
+  type Campaign,
 };

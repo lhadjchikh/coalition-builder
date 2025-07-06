@@ -2,13 +2,84 @@
  * Production-ready Node.js SSR Service for Coalition Builder
  */
 
-const express = require("express");
-const React = require("react");
-const ReactDOMServer = require("react-dom/server");
-const cors = require("cors");
-const helmet = require("helmet");
-const compression = require("compression");
-const winston = require("winston");
+import express, { Request, Response, NextFunction, Application } from "express";
+import React from "react";
+import ReactDOMServer from "react-dom/server";
+import cors from "cors";
+import helmet from "helmet";
+import compression from "compression";
+import winston from "winston";
+
+interface MemoryUsage {
+  rss: number;
+  heapTotal: number;
+  heapUsed: number;
+  external: number;
+}
+
+interface HealthCheckResponse {
+  status: string;
+  timestamp: string;
+  uptime: string;
+  memory: {
+    used: string;
+    total: string;
+  };
+  cacheSize: number;
+  environment: string;
+}
+
+interface MetricsResponse {
+  cache: {
+    size: number;
+    hitRate: string;
+  };
+  memory: MemoryUsage;
+  uptime: number;
+}
+
+interface RenderRequest {
+  component?: string;
+  props?: Record<string, any>;
+  initialData?: {
+    campaigns?: Campaign[];
+    endorsers?: Endorser[];
+  };
+}
+
+interface RenderResponse {
+  html: string;
+  success: boolean;
+  cached?: boolean;
+  renderTime: number;
+  error?: string;
+}
+
+interface Campaign {
+  id: number;
+  title: string;
+  summary: string;
+}
+
+interface Endorser {
+  id: number;
+  name: string;
+  organization?: string;
+}
+
+interface AppProps {
+  title?: string;
+  description?: string;
+  initialData?: {
+    campaigns?: Campaign[];
+    endorsers?: Endorser[];
+  };
+}
+
+interface CacheEntry {
+  html: string;
+  timestamp: number;
+}
 
 // Configure logging
 const logger = winston.createLogger({
@@ -27,7 +98,7 @@ const logger = winston.createLogger({
   ],
 });
 
-const app = express();
+const app: Application = express();
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || "development";
 
@@ -64,7 +135,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Request logging middleware
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
   res.on("finish", () => {
     const duration = Date.now() - start;
@@ -80,7 +151,7 @@ app.use((req, res, next) => {
 });
 
 // React Components
-const AppComponent = (props = {}) => {
+const AppComponent = (props: AppProps = {}): React.ReactElement => {
   const { title, description, initialData = {} } = props;
 
   return React.createElement(
@@ -136,7 +207,7 @@ const AppComponent = (props = {}) => {
   );
 };
 
-const renderCampaignsList = (campaigns) => {
+const renderCampaignsList = (campaigns: Campaign[]): React.ReactElement => {
   return React.createElement(
     "div",
     {
@@ -151,7 +222,7 @@ const renderCampaignsList = (campaigns) => {
         : React.createElement(
             "ul",
             { key: "list" },
-            campaigns.map((campaign) =>
+            campaigns.map((campaign: Campaign) =>
               React.createElement(
                 "li",
                 {
@@ -173,7 +244,7 @@ const renderCampaignsList = (campaigns) => {
   );
 };
 
-const renderEndorsersList = (endorsers) => {
+const renderEndorsersList = (endorsers: Endorser[]): React.ReactElement => {
   return React.createElement(
     "div",
     {
@@ -187,7 +258,7 @@ const renderEndorsersList = (endorsers) => {
         : React.createElement(
             "ul",
             { key: "list" },
-            endorsers.map((endorser) =>
+            endorsers.map((endorser: Endorser) =>
               React.createElement(
                 "li",
                 {
@@ -212,14 +283,14 @@ const renderEndorsersList = (endorsers) => {
 };
 
 // Cache for rendered components (simple in-memory cache)
-const renderCache = new Map();
-const CACHE_TTL = process.env.CACHE_TTL || 300000; // 5 minutes
+const renderCache = new Map<string, CacheEntry>();
+const CACHE_TTL = parseInt(process.env.CACHE_TTL || "300000"); // 5 minutes
 
-function getCacheKey(data) {
+function getCacheKey(data: Record<string, any>): string {
   return Buffer.from(JSON.stringify(data)).toString("base64");
 }
 
-function getFromCache(key) {
+function getFromCache(key: string): string | null {
   const cached = renderCache.get(key);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     return cached.html;
@@ -228,7 +299,7 @@ function getFromCache(key) {
   return null;
 }
 
-function setCache(key, html) {
+function setCache(key: string, html: string): void {
   // Limit cache size to prevent memory issues
   if (renderCache.size > 100) {
     const firstKey = renderCache.keys().next().value;
@@ -242,76 +313,85 @@ function setCache(key, html) {
 }
 
 // Main SSR endpoint
-app.post("/render", async (req, res) => {
-  const startTime = Date.now();
+app.post(
+  "/render",
+  async (
+    req: Request<{}, RenderResponse, RenderRequest>,
+    res: Response<RenderResponse>,
+  ) => {
+    const startTime = Date.now();
 
-  try {
-    const { component = "App", props = {}, initialData = {} } = req.body;
+    try {
+      const { component = "App", props = {}, initialData = {} } = req.body;
 
-    // Validate component name
-    if (component !== "App") {
-      return res.status(400).json({
-        error: "Invalid component name",
-        success: false,
+      // Validate component name
+      if (component !== "App") {
+        return res.status(400).json({
+          error: "Invalid component name",
+          success: false,
+          html: "",
+          renderTime: 0,
+        });
+      }
+
+      // Check cache
+      const cacheKey = getCacheKey({ component, props, initialData });
+      const cachedHtml = getFromCache(cacheKey);
+
+      if (cachedHtml) {
+        logger.info("SSR cache hit", { component, cacheKey });
+        return res.json({
+          html: cachedHtml,
+          success: true,
+          cached: true,
+          renderTime: 0,
+        });
+      }
+
+      // Render component
+      const element = AppComponent({ ...props, initialData });
+      const html = ReactDOMServer.renderToString(element);
+
+      // Cache result
+      setCache(cacheKey, html);
+
+      const renderTime = Date.now() - startTime;
+
+      logger.info("SSR render complete", {
+        component,
+        renderTime: `${renderTime}ms`,
+        htmlLength: html.length,
       });
-    }
 
-    // Check cache
-    const cacheKey = getCacheKey({ component, props, initialData });
-    const cachedHtml = getFromCache(cacheKey);
-
-    if (cachedHtml) {
-      logger.info("SSR cache hit", { component, cacheKey });
-      return res.json({
-        html: cachedHtml,
+      res.json({
+        html,
         success: true,
-        cached: true,
-        renderTime: 0,
+        cached: false,
+        renderTime,
+      });
+    } catch (error) {
+      const renderTime = Date.now() - startTime;
+      const err = error as Error;
+
+      logger.error("SSR render error", {
+        error: err.message,
+        stack: err.stack,
+        renderTime: `${renderTime}ms`,
+      });
+
+      res.status(500).json({
+        html: '<div class="ssr-error">Error rendering component</div>',
+        error: err.message,
+        success: false,
+        renderTime,
       });
     }
-
-    // Render component
-    const element = AppComponent({ ...props, initialData });
-    const html = ReactDOMServer.renderToString(element);
-
-    // Cache result
-    setCache(cacheKey, html);
-
-    const renderTime = Date.now() - startTime;
-
-    logger.info("SSR render complete", {
-      component,
-      renderTime: `${renderTime}ms`,
-      htmlLength: html.length,
-    });
-
-    res.json({
-      html,
-      success: true,
-      cached: false,
-      renderTime,
-    });
-  } catch (error) {
-    const renderTime = Date.now() - startTime;
-
-    logger.error("SSR render error", {
-      error: error.message,
-      stack: error.stack,
-      renderTime: `${renderTime}ms`,
-    });
-
-    res.status(500).json({
-      html: '<div class="ssr-error">Error rendering component</div>',
-      error: error.message,
-      success: false,
-      renderTime,
-    });
-  }
-});
+  },
+);
 
 // Health check endpoint
-app.get("/health", (req, res) => {
-  const memUsage = process.memoryUsage();
+app.get("/health", (req: Request, res: Response<HealthCheckResponse>) => {
+  const memUsage: MemoryUsage = process.memoryUsage();
   const uptime = process.uptime();
 
   res.json({
@@ -328,8 +408,8 @@ app.get("/health", (req, res) => {
 });
 
 // Metrics endpoint
-app.get("/metrics", (req, res) => {
-  const memUsage = process.memoryUsage();
+app.get("/metrics", (req: Request, res: Response<MetricsResponse>) => {
+  const memUsage: MemoryUsage = process.memoryUsage();
 
   res.json({
     cache: {
@@ -347,7 +427,7 @@ app.get("/metrics", (req, res) => {
 });
 
 // Cache management endpoints
-app.delete("/cache", (req, res) => {
+app.delete("/cache", (req: Request, res: Response) => {
   const size = renderCache.size;
   renderCache.clear();
   logger.info("Cache cleared", { previousSize: size });
@@ -360,7 +440,7 @@ app.delete("/cache", (req, res) => {
 });
 
 // Error handling middleware
-app.use((error, req, res, next) => {
+app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
   logger.error("Unhandled error", {
     error: error.message,
     stack: error.stack,
@@ -374,7 +454,7 @@ app.use((error, req, res, next) => {
 });
 
 // 404 handler
-app.use((req, res) => {
+app.use((req: Request, res: Response) => {
   res.status(404).json({
     error: "Endpoint not found",
     success: false,
@@ -400,4 +480,4 @@ app.listen(PORT, () => {
   });
 });
 
-module.exports = app;
+export default app;

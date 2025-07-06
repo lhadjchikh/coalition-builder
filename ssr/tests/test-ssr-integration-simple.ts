@@ -3,8 +3,7 @@
  * A minimal version that tests the core functionality
  */
 
-// Import utilities
-const { makeRequest, waitForService } = require("./utils");
+import { makeRequest, waitForService, type ResponseData } from "./utils";
 
 // Configuration
 const SSR_URL = process.env.SSR_URL || "http://localhost:3000";
@@ -12,8 +11,13 @@ const API_URL = process.env.API_URL || "http://localhost:8000";
 const NGINX_URL = process.env.NGINX_URL || "http://localhost:80";
 const MAX_TIMEOUT = 30000; // 30 seconds
 
+interface TestResults {
+  passed: number;
+  failed: number;
+}
+
 // Main test function
-async function runTests() {
+async function runTests(): Promise<void> {
   console.log("🚀 Starting Simple SSR Integration Test\n");
 
   let passed = 0;
@@ -28,7 +32,9 @@ async function runTests() {
 
     // Test 2: API Health
     console.log("🔍 Testing API health endpoint...");
-    const apiResponse = await makeRequest(`${API_URL}/api/health/`);
+    const apiResponse: ResponseData = await makeRequest(
+      `${API_URL}/api/health/`,
+    );
     if (apiResponse.statusCode === 200) {
       console.log("✅ API health endpoint working");
       passed++;
@@ -39,7 +45,9 @@ async function runTests() {
 
     // Test 3: API Data Endpoint
     console.log("🔍 Testing API data endpoint...");
-    const apiDataResponse = await makeRequest(`${API_URL}/api/campaigns/`);
+    const apiDataResponse: ResponseData = await makeRequest(
+      `${API_URL}/api/campaigns/`,
+    );
     if (apiDataResponse.statusCode === 200) {
       console.log("✅ API data endpoint working");
       passed++;
@@ -50,7 +58,9 @@ async function runTests() {
 
     // Test 4: SSR Health
     console.log("🔍 Testing SSR health...");
-    const ssrHealthResponse = await makeRequest(`${SSR_URL}/health`);
+    const ssrHealthResponse: ResponseData = await makeRequest(
+      `${SSR_URL}/health`,
+    );
     if (ssrHealthResponse.statusCode === 200) {
       console.log("✅ SSR health endpoint working");
       passed++;
@@ -61,7 +71,7 @@ async function runTests() {
 
     // Test 5: SSR Homepage
     console.log("🔍 Testing SSR homepage...");
-    const homepageResponse = await makeRequest(SSR_URL);
+    const homepageResponse: ResponseData = await makeRequest(SSR_URL);
     if (
       homepageResponse.statusCode === 200 &&
       homepageResponse.data.includes("<html")
@@ -79,17 +89,20 @@ async function runTests() {
       // First check if the load balancer is accessible
       let nginxAvailable = false;
       try {
-        const checkResponse = await makeRequest(NGINX_URL);
+        const checkResponse: ResponseData = await makeRequest(NGINX_URL);
         nginxAvailable = checkResponse.statusCode < 500; // Any non-server error is considered available
       } catch (error) {
+        const err = error as Error;
         console.log(
-          `⚠️  Load balancer at ${NGINX_URL} not accessible: ${error.message}`,
+          `⚠️  Load balancer at ${NGINX_URL} not accessible: ${err.message}`,
         );
       }
 
       if (nginxAvailable) {
-        const lbApiResponse = await makeRequest(`${NGINX_URL}/api/campaigns/`);
-        const lbSSRResponse = await makeRequest(NGINX_URL);
+        const lbApiResponse: ResponseData = await makeRequest(
+          `${NGINX_URL}/api/campaigns/`,
+        );
+        const lbSSRResponse: ResponseData = await makeRequest(NGINX_URL);
 
         if (
           lbApiResponse.statusCode === 200 &&
@@ -108,10 +121,12 @@ async function runTests() {
         // Don't fail the test if nginx is intentionally not running
       }
     } catch (error) {
-      console.log(`⚠️  Load balancer test error: ${error.message} (skipping)`);
+      const err = error as Error;
+      console.log(`⚠️  Load balancer test error: ${err.message} (skipping)`);
     }
   } catch (error) {
-    console.error("💥 Test setup failed:", error.message);
+    const err = error as Error;
+    console.error("💥 Test setup failed:", err.message);
     failed++;
   }
 
@@ -130,12 +145,10 @@ async function runTests() {
 }
 
 // Run the tests
-runTests().catch((error) => {
+runTests().catch((error: Error) => {
   console.error("💥 Test execution failed:", error.message);
   process.exit(1);
 });
 
 // Export for potential use in other test files
-module.exports = {
-  runTests,
-};
+export { runTests, type TestResults };

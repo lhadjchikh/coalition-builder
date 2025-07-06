@@ -82,7 +82,7 @@ services:
     ports:
       - "3000:3000"
     healthcheck:
-      test: ["CMD", "node", "healthcheck.js"]
+      test: ["CMD", "node", "healthcheck.ts"]
       interval: 10s
       timeout: 5s
       retries: 3

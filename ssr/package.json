@@ -9,11 +9,11 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "tsc": "tsc --noEmit",
-    "test": "node tests/test-ssr-integration.js",
-    "test:unit": "node tests/test-middleware-unit.js",
-    "test:integration": "node tests/test-ssr-integration.js",
-    "test:integration:simple": "node tests/test-ssr-integration-simple.js",
-    "test:ci": "node tests/test-ssr-integration-simple.js",
+    "test": "node tests/test-ssr-integration.ts",
+    "test:unit": "node tests/test-middleware-unit.ts",
+    "test:integration": "node tests/test-ssr-integration.ts",
+    "test:integration:simple": "node tests/test-ssr-integration-simple.ts",
+    "test:ci": "node tests/test-ssr-integration-simple.ts",
     "postinstall": "echo 'Disabling Next.js telemetry' && npx next telemetry disable"
   },
   "dependencies": {

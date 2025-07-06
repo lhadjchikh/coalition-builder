@@ -991,7 +991,7 @@ HealthCheckFailure: container health check failed
 
 **Solution**:
 
-- Verify the healthcheck.js file exists and has correct permissions
+- Verify the healthcheck.ts file exists and has correct permissions
 - Check container logs for startup errors:
   ```bash
   aws logs get-log-events --log-group-name /ecs/coalition-task --log-stream-name ssr/latest
