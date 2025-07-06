@@ -48,7 +48,7 @@ const NavItem = styled.li`
   position: relative;
 `;
 
-const NavLink = styled.button<{ as?: string }>`
+const NavLink = styled.button`
   background: none;
   border: none;
   color: white;
@@ -151,11 +151,11 @@ const Navbar: React.FC<NavbarProps> = ({
       <MobileMenuToggle onClick={toggleMenu}>{isMenuOpen ? '✕' : '☰'}</MobileMenuToggle>
 
       <NavMenu $isOpen={isMenuOpen}>
-        {navigationItems.map((item, index) => (
-          <NavItem key={index}>
+        {navigationItems.map(item => (
+          <NavItem key={item.label}>
             <NavLink
               as={item.href ? 'a' : 'button'}
-              href={item.href}
+              {...(item.href ? { href: item.href } : {})}
               onClick={item.href ? undefined : () => handleItemClick(item)}
               className={item.active ? 'active' : ''}
             >

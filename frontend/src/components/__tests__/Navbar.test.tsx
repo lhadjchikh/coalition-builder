@@ -171,6 +171,22 @@ describe('Navbar', () => {
       expect(navMenu).not.toHaveAttribute('isOpen');
       expect(navMenu).not.toHaveAttribute('$isOpen');
     });
+
+    it('does not pass href attribute to button elements', () => {
+      const navItems = [{ label: 'Button Item', onClick: jest.fn() }];
+      render(<Navbar navItems={navItems} />);
+      const buttonElement = screen.getByText('Button Item');
+      expect(buttonElement.tagName).toBe('BUTTON');
+      expect(buttonElement).not.toHaveAttribute('href');
+    });
+
+    it('passes href attribute only to anchor elements', () => {
+      const navItems = [{ label: 'Link Item', href: '/test' }];
+      render(<Navbar navItems={navItems} />);
+      const linkElement = screen.getByText('Link Item');
+      expect(linkElement.tagName).toBe('A');
+      expect(linkElement).toHaveAttribute('href', '/test');
+    });
   });
 
   describe('Edge Cases', () => {

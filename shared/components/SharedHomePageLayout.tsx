@@ -10,7 +10,7 @@ interface SharedHomePageLayoutProps {
   HeroComponent?: React.ComponentType<{ homepage: HomePage }>;
   ContentBlockComponent?: React.ComponentType<{ block: any }>;
   SocialLinksComponent?: React.ComponentType<{ homepage: HomePage }>;
-  NavbarComponent?: React.ComponentType<{ organizationName?: string }>;
+  NavbarComponent?: React.ComponentType<any>;
 }
 
 const SharedHomePageLayout: React.FC<SharedHomePageLayoutProps> = ({
