@@ -3,7 +3,12 @@
  * A minimal version that tests the core functionality
  */
 
-import { makeRequest, waitForService, type ResponseData } from "./utils";
+import {
+  makeRequest,
+  waitForService,
+  createAuthenticatedRequestOptions,
+  type ResponseData,
+} from "./utils";
 
 // Configuration
 const SSR_URL = process.env.SSR_URL || "http://localhost:3000";
@@ -71,29 +76,12 @@ async function runTests(): Promise<void> {
 
     // Test 5: SSR Homepage
     console.log("🔍 Testing SSR homepage...");
-    
-    // Check if site protection is enabled and prepare auth headers if needed
-    const sitePasswordEnabled = ["true", "1", "yes"].includes(
-      (process.env.SITE_PASSWORD_ENABLED || "").toLowerCase(),
+
+    const requestOptions = createAuthenticatedRequestOptions();
+    const homepageResponse: ResponseData = await makeRequest(
+      SSR_URL,
+      requestOptions,
     );
-    
-    let requestOptions: any = {};
-    if (sitePasswordEnabled) {
-      const username = process.env.SITE_USERNAME || "admin";
-      const password = process.env.SITE_PASSWORD || "";
-      
-      if (password) {
-        const credentials = Buffer.from(`${username}:${password}`).toString('base64');
-        requestOptions.headers = {
-          'Authorization': `Basic ${credentials}`
-        };
-        console.log("🔐 Site protection detected - using authentication");
-      } else {
-        console.log("⚠️  Site protection enabled but no password configured");
-      }
-    }
-    
-    const homepageResponse: ResponseData = await makeRequest(SSR_URL, requestOptions);
     if (
       homepageResponse.statusCode === 200 &&
       homepageResponse.data.includes("<html")
@@ -101,8 +89,10 @@ async function runTests(): Promise<void> {
       console.log("✅ SSR homepage working");
       passed++;
     } else {
-      if (homepageResponse.statusCode === 401 && sitePasswordEnabled) {
-        console.log(`❌ SSR homepage authentication failed: ${homepageResponse.statusCode}. Check SITE_USERNAME and SITE_PASSWORD environment variables.`);
+      if (homepageResponse.statusCode === 401) {
+        console.log(
+          `❌ SSR homepage authentication failed: ${homepageResponse.statusCode}. Check SITE_USERNAME and SITE_PASSWORD environment variables.`,
+        );
       } else {
         console.log(`❌ SSR homepage failed: ${homepageResponse.statusCode}`);
       }
@@ -128,7 +118,10 @@ async function runTests(): Promise<void> {
         const lbApiResponse: ResponseData = await makeRequest(
           `${NGINX_URL}/api/campaigns/`,
         );
-        const lbSSRResponse: ResponseData = await makeRequest(NGINX_URL, requestOptions);
+        const lbSSRResponse: ResponseData = await makeRequest(
+          NGINX_URL,
+          requestOptions,
+        );
 
         if (
           lbApiResponse.statusCode === 200 &&

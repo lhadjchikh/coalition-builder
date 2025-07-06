@@ -20,6 +20,7 @@ import {
   waitForService,
   fetchCompatible as fetch,
   fetchWithRetry,
+  createAuthenticatedRequestOptions,
   type FetchResponse,
 } from "./utils";
 
@@ -350,32 +351,15 @@ async function testContainerCommunication(): Promise<boolean> {
 async function testSSRErrorHandlingAndFallback(): Promise<boolean> {
   console.log("🔍 Testing SSR error handling and fallback UI...");
 
-  // Check if site protection is enabled and prepare auth headers if needed
-  const sitePasswordEnabled = ["true", "1", "yes"].includes(
-    (process.env.SITE_PASSWORD_ENABLED || "").toLowerCase(),
+  const requestOptions = createAuthenticatedRequestOptions();
+  const response: FetchResponse = await fetchWithRetry(
+    TEST_CONFIG.SSR_URL,
+    requestOptions,
   );
-  
-  let requestOptions: any = {};
-  if (sitePasswordEnabled) {
-    const username = process.env.SITE_USERNAME || "admin";
-    const password = process.env.SITE_PASSWORD || "";
-    
-    if (password) {
-      const credentials = Buffer.from(`${username}:${password}`).toString('base64');
-      requestOptions.headers = {
-        'Authorization': `Basic ${credentials}`
-      };
-      console.log("🔐 Site protection detected - using authentication");
-    } else {
-      console.log("⚠️  Site protection enabled but no password configured");
-    }
-  }
-
-  const response: FetchResponse = await fetchWithRetry(TEST_CONFIG.SSR_URL, requestOptions);
 
   if (!response.ok) {
-    // If we get 401 and site protection is enabled, provide helpful error message
-    if (response.status === 401 && sitePasswordEnabled) {
+    // If we get 401, provide helpful error message about authentication
+    if (response.status === 401) {
       throw new Error(
         `SSR authentication failed: ${response.status} ${response.statusText}. Check SITE_USERNAME and SITE_PASSWORD environment variables.`,
       );
