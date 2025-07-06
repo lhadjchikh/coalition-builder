@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { NavItemData } from '@shared/types';
 
 const NavbarContainer = styled.nav`
   background-color: #282c34;
@@ -92,13 +93,6 @@ const Breadcrumb = styled.span`
   margin-left: 0.5rem;
   font-size: 0.9rem;
 `;
-
-type NavItemData = {
-  label: string;
-  onClick?: () => void;
-  href?: string;
-  active?: boolean;
-};
 
 interface LayoutNavbarProps {
   organizationName?: string;
