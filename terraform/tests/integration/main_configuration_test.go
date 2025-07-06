@@ -48,9 +48,11 @@ func TestMainConfigurationWithoutSSR(t *testing.T) {
 
 	// Validate key resources are created
 	expectedResources := []string{
-		"aws_vpc.main", "aws_subnet.public", "aws_subnet.private", "aws_subnet.private_db",
-		"aws_db_instance.main", "aws_ecs_cluster.main", "aws_lb.main",
-		"aws_ecr_repository.api", "aws_s3_bucket.static_assets",
+		"module.networking.aws_vpc.main", "module.networking.aws_subnet.public",
+		"module.networking.aws_subnet.private", "module.networking.aws_subnet.private_db",
+		"module.database.aws_db_instance.postgres", "module.compute.aws_ecs_cluster.main",
+		"module.loadbalancer.aws_lb.main", "module.compute.aws_ecr_repository.api",
+		"module.storage.aws_s3_bucket.static_assets",
 	}
 
 	for _, resource := range expectedResources {
@@ -60,7 +62,8 @@ func TestMainConfigurationWithoutSSR(t *testing.T) {
 	// Validate SSR is disabled
 	assert.Contains(t, planOutput, "enable_ssr = false", "Plan should disable SSR")
 	// When SSR is disabled, SSR ECR repo should not be created
-	assert.NotContains(t, planOutput, "aws_ecr_repository.ssr", "Plan should not create SSR ECR when disabled")
+	assert.NotContains(t, planOutput, "module.compute.aws_ecr_repository.ssr",
+		"Plan should not create SSR ECR when disabled")
 }
 
 func TestMainConfigurationWithSSR(t *testing.T) {
@@ -87,11 +90,11 @@ func TestMainConfigurationWithSSR(t *testing.T) {
 	// Validate SSR-specific outputs and resources
 	assert.Contains(t, planOutput, "enable_ssr = true", "Plan should enable SSR")
 	assert.Contains(t, planOutput, "ssr_ecr_repository_url", "Plan should define SSR ECR output")
-	assert.Contains(t, planOutput, "aws_ecr_repository.ssr", "Plan should create SSR ECR when enabled")
+	assert.Contains(t, planOutput, "module.compute.aws_ecr_repository.ssr", "Plan should create SSR ECR when enabled")
 
 	// Validate both API and SSR target groups exist
-	assert.Contains(t, planOutput, "aws_lb_target_group.api", "Plan should create API target group")
-	assert.Contains(t, planOutput, "aws_lb_target_group.ssr", "Plan should create SSR target group")
+	assert.Contains(t, planOutput, "module.loadbalancer.aws_lb_target_group.api", "Plan should create API target group")
+	assert.Contains(t, planOutput, "module.loadbalancer.aws_lb_target_group.ssr", "Plan should create SSR target group")
 }
 
 func TestMainConfigurationValidation(t *testing.T) {
@@ -133,9 +136,9 @@ func TestMainConfigurationValidation(t *testing.T) {
 		planOutput := terraform.Plan(t, terraformOptions)
 
 		// Should succeed and contain main components
-		assert.Contains(t, planOutput, "aws_vpc.main", "Plan should create VPC")
-		assert.Contains(t, planOutput, "aws_db_instance.main", "Plan should create database")
-		assert.Contains(t, planOutput, "aws_ecs_cluster.main", "Plan should create ECS cluster")
+		assert.Contains(t, planOutput, "module.networking.aws_vpc.main", "Plan should create VPC")
+		assert.Contains(t, planOutput, "module.database.aws_db_instance.postgres", "Plan should create database")
+		assert.Contains(t, planOutput, "module.compute.aws_ecs_cluster.main", "Plan should create ECS cluster")
 	})
 }
 
@@ -163,7 +166,7 @@ func TestMainConfigurationCORS(t *testing.T) {
 		terraform.Init(t, terraformOptions)
 		planOutput := terraform.Plan(t, terraformOptions)
 
-		assert.Contains(t, planOutput, "aws_s3_bucket_cors_configuration", "Plan should configure CORS")
+		assert.Contains(t, planOutput, "module.storage.aws_s3_bucket_cors_configuration", "Plan should configure CORS")
 		assert.Contains(t, planOutput, domainName, "Plan should reference domain in CORS config")
 	})
 
