@@ -114,16 +114,7 @@ func TestMainConfigurationValidation(t *testing.T) {
 			// Missing required variables: route53_zone_id, acm_certificate_arn, alert_email, db_password
 		}
 
-		// Create terraform options without the helpful defaults that mask missing variables
-		terraformOptions := &terraform.Options{
-			TerraformDir:    testConfig.TerraformDir,
-			TerraformBinary: "terraform",
-			Vars:            testVars, // Only provide the minimal testVars
-			EnvVars: map[string]string{
-				"AWS_DEFAULT_REGION":  testConfig.AWSRegion,
-				"TERRATEST_TERRAFORM": "terraform",
-			},
-		}
+		terraformOptions := testConfig.GetTerraformOptions(testVars)
 
 		terraform.Init(t, terraformOptions)
 		_, err := terraform.PlanE(t, terraformOptions)
