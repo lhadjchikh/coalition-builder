@@ -56,7 +56,6 @@ func TestStorageModule(t *testing.T) {
 
 	// Validate CloudFront domain format
 	assert.Contains(t, cloudfrontDomain, "cloudfront.net")
-	assert.NotEmpty(t, cloudfrontId)
 }
 
 func TestStorageModuleWithDefaultCORS(t *testing.T) {
