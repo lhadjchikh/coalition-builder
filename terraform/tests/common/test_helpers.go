@@ -577,3 +577,14 @@ func InitTerraformForPlanOnly(t *testing.T, terraformOptions *terraform.Options)
 	terraform.RunTerraformCommand(t, terraformOptions, "init", "-backend=false")
 	t.Logf("Terraform init completed successfully")
 }
+
+// PlanTerraformForPlanOnly runs terraform plan without backend for plan-only tests
+func PlanTerraformForPlanOnly(t *testing.T, terraformOptions *terraform.Options) string {
+	t.Logf("Starting terraform plan")
+	out, err := terraform.RunTerraformCommandE(t, terraformOptions, "plan", "-input=false", "-no-color")
+	if err != nil {
+		t.Fatalf("Terraform plan failed: %v", err)
+	}
+	t.Logf("Terraform plan completed successfully")
+	return out
+}
