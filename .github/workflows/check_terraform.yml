@@ -17,6 +17,12 @@ on:
       - ".github/workflows/lint_go.yml"
       - ".github/workflows/test_terraform.yml"
       - ".github/workflows/check_terraform.yml"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git reference to checkout"
+        required: false
+        default: ""
 
 permissions:
   contents: read
