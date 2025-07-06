@@ -3,7 +3,6 @@ package integration
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"terraform-tests/common"
 
@@ -28,13 +27,6 @@ func TestMainConfigurationWithoutSSR(t *testing.T) {
 	testVars["create_new_key_pair"] = false
 
 	terraformOptions := testConfig.GetTerraformOptionsForPlanOnly(testVars)
-
-	// Add retry configuration with timeouts to prevent hanging
-	terraformOptions.MaxRetries = 1
-	terraformOptions.TimeBetweenRetries = 5 * time.Second
-	terraformOptions.RetryableTerraformErrors = map[string]string{
-		"timeout": "Terraform operation timed out",
-	}
 
 	// Run terraform init and plan - validate configuration works
 	t.Logf("Starting terraform init for directory: %s", terraformOptions.TerraformDir)

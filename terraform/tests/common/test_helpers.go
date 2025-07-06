@@ -118,11 +118,8 @@ func (tc *TestConfig) GetTerraformOptionsForPlanOnly(vars map[string]interface{}
 		TerraformBinary: "terraform", // Explicitly use terraform instead of auto-detecting OpenTofu
 		Vars:            defaultVars,
 		EnvVars: map[string]string{
-			"AWS_DEFAULT_REGION":                  tc.AWSRegion,
-			"TERRATEST_TERRAFORM":                 "terraform", // Force Terratest to use terraform
-			"TF_SKIP_PROVIDER_VERIFY":             "true",      // Skip provider credential verification
-			"AWS_PROVIDER_SKIP_VALIDATION":        "true",      // Skip AWS provider validation
-			"AWS_PROVIDER_SKIP_REGION_VALIDATION": "true",      // Skip region validation
+			"AWS_DEFAULT_REGION":  tc.AWSRegion,
+			"TERRATEST_TERRAFORM": "terraform",
 		},
 	}
 }
