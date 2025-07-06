@@ -26,7 +26,6 @@ on:
 
 permissions:
   contents: read
-  actions: read # Need actions:read for codecov in called workflows
   id-token: write # For AWS authentication in tests
 
 jobs:
@@ -51,6 +50,5 @@ jobs:
     uses: ./.github/workflows/test_terraform.yml
     permissions:
       contents: read
-      actions: read # Need actions:read for codecov
       id-token: write
     secrets: inherit # Pass secrets to the called workflow
