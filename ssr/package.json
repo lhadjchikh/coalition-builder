@@ -9,11 +9,11 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "tsc": "tsc --noEmit",
-    "test": "node tests/test-ssr-integration.ts",
-    "test:unit": "node tests/test-middleware-unit.ts",
-    "test:integration": "node tests/test-ssr-integration.ts",
-    "test:integration:simple": "node tests/test-ssr-integration-simple.ts",
-    "test:ci": "node tests/test-ssr-integration-simple.ts",
+    "test": "tsx tests/test-ssr-integration.ts",
+    "test:unit": "tsx tests/test-middleware-unit.ts",
+    "test:integration": "tsx tests/test-ssr-integration.ts",
+    "test:integration:simple": "tsx tests/test-ssr-integration-simple.ts",
+    "test:ci": "tsx tests/test-ssr-integration-simple.ts",
     "postinstall": "echo 'Disabling Next.js telemetry' && npx next telemetry disable"
   },
   "dependencies": {
@@ -34,6 +34,7 @@
     "eslint-config-next": "15.3.4",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   },
   "engines": {
