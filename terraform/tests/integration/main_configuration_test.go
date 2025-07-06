@@ -26,13 +26,13 @@ func TestMainConfigurationWithoutSSR(t *testing.T) {
 	testVars["bastion_key_name"] = "test-key"
 	testVars["create_new_key_pair"] = false
 
-	terraformOptions := testConfig.GetTerraformOptionsForPlanOnly(testVars)
+	terraformOptions := testConfig.GetTerraformOptions(testVars)
 
 	// Run terraform init and plan - validate configuration works
-	common.InitTerraformForPlanOnly(t, terraformOptions)
+	terraform.Init(t, terraformOptions)
 
 	t.Logf("Starting terraform plan")
-	planOutput := common.PlanTerraformForPlanOnly(t, terraformOptions)
+	planOutput := terraform.Plan(t, terraformOptions)
 	t.Logf("Terraform plan completed successfully")
 
 	// Validate all expected outputs are defined
@@ -79,10 +79,10 @@ func TestMainConfigurationWithSSR(t *testing.T) {
 	testVars["bastion_key_name"] = "test-key"
 	testVars["create_new_key_pair"] = false
 
-	terraformOptions := testConfig.GetTerraformOptionsForPlanOnly(testVars)
+	terraformOptions := testConfig.GetTerraformOptions(testVars)
 
-	common.InitTerraformForPlanOnly(t, terraformOptions)
-	planOutput := common.PlanTerraformForPlanOnly(t, terraformOptions)
+	terraform.Init(t, terraformOptions)
+	planOutput := terraform.Plan(t, terraformOptions)
 
 	// Validate SSR-specific outputs and resources
 	assert.Contains(t, planOutput, "enable_ssr = true", "Plan should enable SSR")
@@ -105,10 +105,10 @@ func TestMainConfigurationValidation(t *testing.T) {
 			"domain_name": "incomplete.example.com",
 		}
 
-		terraformOptions := testConfig.GetTerraformOptionsForPlanOnly(testVars)
+		terraformOptions := testConfig.GetTerraformOptions(testVars)
 
-		common.InitTerraformForPlanOnly(t, terraformOptions)
-		_, err := terraform.RunTerraformCommandE(t, terraformOptions, "plan", "-input=false", "-no-color")
+		terraform.Init(t, terraformOptions)
+		_, err := terraform.PlanE(t, terraformOptions)
 		assert.Error(t, err, "Plan should fail with missing required variables")
 	})
 
@@ -125,10 +125,10 @@ func TestMainConfigurationValidation(t *testing.T) {
 		testVars["bastion_key_name"] = "test-key"
 		testVars["create_new_key_pair"] = false
 
-		terraformOptions := testConfig.GetTerraformOptionsForPlanOnly(testVars)
+		terraformOptions := testConfig.GetTerraformOptions(testVars)
 
-		common.InitTerraformForPlanOnly(t, terraformOptions)
-		planOutput := common.PlanTerraformForPlanOnly(t, terraformOptions)
+		terraform.Init(t, terraformOptions)
+		planOutput := terraform.Plan(t, terraformOptions)
 
 		// Should succeed and contain main components
 		assert.Contains(t, planOutput, "aws_vpc.main", "Plan should create VPC")
@@ -156,10 +156,10 @@ func TestMainConfigurationCORS(t *testing.T) {
 		testVars["create_new_key_pair"] = false
 		// Don't set static_assets_cors_origins - should default to domain_name
 
-		terraformOptions := testConfig.GetTerraformOptionsForPlanOnly(testVars)
+		terraformOptions := testConfig.GetTerraformOptions(testVars)
 
-		common.InitTerraformForPlanOnly(t, terraformOptions)
-		planOutput := common.PlanTerraformForPlanOnly(t, terraformOptions)
+		terraform.Init(t, terraformOptions)
+		planOutput := terraform.Plan(t, terraformOptions)
 
 		assert.Contains(t, planOutput, "aws_s3_bucket_cors_configuration", "Plan should configure CORS")
 		assert.Contains(t, planOutput, domainName, "Plan should reference domain in CORS config")
@@ -179,10 +179,10 @@ func TestMainConfigurationCORS(t *testing.T) {
 		testVars["bastion_key_name"] = "test-key"
 		testVars["create_new_key_pair"] = false
 
-		terraformOptions := testConfig.GetTerraformOptionsForPlanOnly(testVars)
+		terraformOptions := testConfig.GetTerraformOptions(testVars)
 
-		common.InitTerraformForPlanOnly(t, terraformOptions)
-		planOutput := common.PlanTerraformForPlanOnly(t, terraformOptions)
+		terraform.Init(t, terraformOptions)
+		planOutput := terraform.Plan(t, terraformOptions)
 
 		assert.Contains(t, planOutput, "custom1.example.com", "Plan should include custom CORS origin")
 		assert.Contains(t, planOutput, "custom2.example.com", "Plan should include custom CORS origin")
