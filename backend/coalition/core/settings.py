@@ -208,13 +208,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # WhiteNoise configuration for better static file serving
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# WhiteNoise settings for CDN integration
-if CLOUDFRONT_DOMAIN:
-    # Set long cache times since CDN will handle caching
-    WHITENOISE_MAX_AGE = 31536000  # 1 year
-    # Use absolute URLs for CDN
-    WHITENOISE_USE_FINDERS = True
-
 # Static files directories - where Django will look for static files during development
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
