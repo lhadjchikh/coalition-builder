@@ -12,7 +12,7 @@ import (
 
 func TestMainConfigurationWithoutSSR(t *testing.T) {
 
-	testConfig := common.NewTestConfig("../../") // Root terraform directory
+	testConfig := common.SetupIntegrationTest(t)
 	testVars := common.GetIntegrationTestVars()
 
 	// Configure for deployment without SSR
@@ -65,7 +65,7 @@ func TestMainConfigurationWithoutSSR(t *testing.T) {
 
 func TestMainConfigurationWithSSR(t *testing.T) {
 
-	testConfig := common.NewTestConfig("../../")
+	testConfig := common.SetupIntegrationTest(t)
 	testVars := common.GetIntegrationTestVars()
 
 	// Configure for deployment with SSR enabled
@@ -96,10 +96,10 @@ func TestMainConfigurationWithSSR(t *testing.T) {
 
 func TestMainConfigurationValidation(t *testing.T) {
 
-	testConfig := common.NewTestConfig("../../")
-
 	// Test missing required variables
 	t.Run("MissingRequiredVariables", func(t *testing.T) {
+		testConfig := common.SetupIntegrationTest(t)
+
 		// Only provide minimal variables - should fail
 		testVars := map[string]interface{}{
 			"domain_name": "incomplete.example.com",
@@ -114,6 +114,8 @@ func TestMainConfigurationValidation(t *testing.T) {
 
 	// Test with all required variables
 	t.Run("CompleteConfiguration", func(t *testing.T) {
+		testConfig := common.SetupIntegrationTest(t)
+
 		testVars := common.GetIntegrationTestVars()
 		testVars["route53_zone_id"] = "Z123456789ABCDEF"
 		testVars["domain_name"] = fmt.Sprintf("%s-complete.example.com", testConfig.UniqueID)
@@ -139,10 +141,10 @@ func TestMainConfigurationValidation(t *testing.T) {
 
 func TestMainConfigurationCORS(t *testing.T) {
 
-	testConfig := common.NewTestConfig("../../")
-
 	// Test default CORS configuration
 	t.Run("DefaultCORS", func(t *testing.T) {
+		testConfig := common.SetupIntegrationTest(t)
+
 		testVars := common.GetIntegrationTestVars()
 		domainName := fmt.Sprintf("%s-cors.example.com", testConfig.UniqueID)
 		testVars["domain_name"] = domainName
@@ -167,6 +169,8 @@ func TestMainConfigurationCORS(t *testing.T) {
 
 	// Test explicit CORS configuration
 	t.Run("ExplicitCORS", func(t *testing.T) {
+		testConfig := common.SetupIntegrationTest(t)
+
 		testVars := common.GetIntegrationTestVars()
 		testVars["domain_name"] = fmt.Sprintf("%s-explicit.example.com", testConfig.UniqueID)
 		testVars["static_assets_cors_origins"] = []string{"https://custom1.example.com", "https://custom2.example.com"}

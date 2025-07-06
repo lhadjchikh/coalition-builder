@@ -578,13 +578,21 @@ func InitTerraformForPlanOnly(t *testing.T, terraformOptions *terraform.Options)
 	t.Logf("Terraform init completed successfully")
 }
 
-// PlanTerraformForPlanOnly runs terraform plan without backend for plan-only tests
-func PlanTerraformForPlanOnly(t *testing.T, terraformOptions *terraform.Options) string {
-	t.Logf("Starting terraform plan")
-	out, err := terraform.RunTerraformCommandE(t, terraformOptions, "plan", "-input=false", "-no-color")
-	if err != nil {
-		t.Fatalf("Terraform plan failed: %v", err)
+// CleanupTerraformState removes local terraform state to prevent conflicts between tests
+func CleanupTerraformState(t *testing.T, terraformDir string) {
+	terraformStateDir := fmt.Sprintf("%s/.terraform", terraformDir)
+	if err := os.RemoveAll(terraformStateDir); err != nil {
+		t.Logf("Warning: Failed to cleanup terraform state directory: %v", err)
+	} else {
+		t.Logf("Cleaned up terraform state directory: %s", terraformStateDir)
 	}
-	t.Logf("Terraform plan completed successfully")
-	return out
+}
+
+// SetupIntegrationTest creates a TestConfig with automatic cleanup for integration tests
+func SetupIntegrationTest(t *testing.T) *TestConfig {
+	testConfig := NewTestConfig("../../")
+	t.Cleanup(func() {
+		CleanupTerraformState(t, testConfig.TerraformDir)
+	})
+	return testConfig
 }
