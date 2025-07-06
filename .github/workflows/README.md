@@ -7,6 +7,59 @@ testing and other CI/CD processes.
 
 This project uses a structured CI/CD pipeline with the following key workflows:
 
+### Figure 1: Main CI/CD Workflow
+
+The following diagram shows the workflow orchestration from code push to deployment:
+
+> **Note**: This diagram uses Mermaid syntax. It will render automatically on GitHub, GitLab, and other platforms that support Mermaid. If you're viewing this locally, you may need a Mermaid preview extension.
+
+```mermaid
+%%{init: {'theme':'basic'}}%%
+flowchart TD
+    %% Main trigger
+    push[Push/PR to main] --> check_app[Check App]
+
+    %% Check App branches
+    check_app --> frontend_check[Frontend Check]
+    check_app --> backend_check[Backend Check]
+    check_app --> terraform_check[Terraform Check]
+    check_app --> fullstack_tests[Full Stack Tests]
+
+    %% Frontend workflow
+    frontend_check --> ts_lint[TypeScript Lint]
+    frontend_check --> prettier[Prettier Format]
+    ts_lint --> frontend_lint_complete{"Frontend<br/>Linting<br/>Passed?"}
+    prettier --> frontend_lint_complete
+    frontend_lint_complete --> frontend_tests[Frontend Tests]
+    frontend_lint_complete --> ssr_tests[SSR Tests]
+
+    %% Backend workflow
+    backend_check --> python_lint[Python Lint]
+    python_lint --> backend_tests[Backend Tests]
+
+    %% Terraform workflow
+    terraform_check --> tf_lint[Terraform Lint]
+    terraform_check --> go_lint[Go Lint]
+    tf_lint --> terraform_lint_complete{"Terraform<br/>Linting<br/>Passed?"}
+    go_lint --> terraform_lint_complete
+    terraform_lint_complete --> terraform_tests[Terraform Tests]
+
+    %% All tests converge to deployment decision
+    frontend_tests --> tests_complete{"All Tests<br/>Passed?"}
+    ssr_tests --> tests_complete
+    backend_tests --> tests_complete
+    terraform_tests --> tests_complete
+    fullstack_tests --> tests_complete
+
+    %% Decision to deployment
+    tests_complete --> app_deploy[Application Deployment]
+
+    %% Deployment to AWS
+    app_deploy --> ecs[Amazon ECS]
+```
+
+_Figure 1: Workflow dependency tree showing how push/PR events trigger orchestrated quality checks, linting, testing, and deployment processes. Diamond nodes represent quality gates where parallel processes must complete successfully before proceeding._
+
 ### Orchestration Workflows
 
 #### Check App (`check_app.yml`)
@@ -22,7 +75,6 @@ This project uses a structured CI/CD pipeline with the following key workflows:
 - Orchestrates backend-related workflows in the correct order:
   1. Runs Python linting (`lint_python.yml`) first
   2. Only after lint checks pass, runs Backend tests (`test_backend.yml`)
-- Ensures code quality before running potentially expensive test operations
 
 #### Frontend Check (`check_frontend.yml`)
 
@@ -30,7 +82,6 @@ This project uses a structured CI/CD pipeline with the following key workflows:
 - Orchestrates frontend-related workflows in the correct order:
   1. Runs TypeScript linting (`lint_typescript.yml`) and Prettier formatting (`lint_prettier.yml`) in parallel
   2. Only after both lint checks pass, runs Frontend tests (`test_frontend.yml`) and SSR tests (`test_ssr.yml`)
-- Ensures code quality before running potentially expensive test operations
 
 #### Terraform Check (`check_terraform.yml`)
 
@@ -38,8 +89,6 @@ This project uses a structured CI/CD pipeline with the following key workflows:
 - Orchestrates Terraform-related workflows in the correct order:
   1. Runs Terraform linting (`lint_terraform.yml`) and Go linting (`lint_go.yml`) in parallel
   2. Only after both lint checks pass, runs Terraform tests (`test_terraform.yml`)
-- Ensures code quality before running potentially expensive test operations
-- Reduces overall CI time by running lint checks in parallel
 
 ### Code Quality and Linting Workflows
 
@@ -157,35 +206,6 @@ This project uses a structured CI/CD pipeline with the following key workflows:
   - **User Guides**: Written in Markdown and processed by MkDocs
 - Deploys to GitHub Pages automatically on main branch pushes
 - Combines backend API docs, frontend component docs, and user documentation into a unified site
-
-## Workflow Dependencies
-
-```
-Main Orchestration:
-Push/PR to main ──► Check App ──┬─► Frontend Check ──┬─► TypeScript Lint ──┐
-                               │                    └─► Prettier Format ──┼─► Frontend Tests + SSR Tests ────┐
-                               │                                           │                                  │
-                               ├─► Backend Check ──── Python Lint ──────► Backend Tests ─────────────────┼─► Application Deployment ─► Amazon ECS
-                               │                                                                          │              ▲
-                               ├─► Terraform Check ──┬─► Terraform Lint ──┐                              │              │
-                               │                     └─► Go Lint ─────────┼─► Terraform Tests ──► Infrastructure Deployment ─► AWS Resources ─────┐
-                               │                                          │                                                  (triggers app deployment) │
-                               └─► Full Stack Tests ──────────────────────┘                                                                          │
-                                                                                                                                                     │
-                                                                                                                                                     │
-Individual Linting Workflows (can run independently):                                                                                        │
-├── Python Linting                                                                                                                                  │
-├── TypeScript Linting                                                                                                                              │
-├── Prettier Formatting                                                                                                                             │
-├── Terraform Linting                                                                                                                               │
-├── Go Linting                                                                                                                                      │
-└── Shell Script Linting                                                                                                                           │
-                                                                                                                                                     │
-Deployment Workflows:                                                                                                                               │
-├── Application Deployment ─► Amazon ECS                                                                                                          │
-├── Infrastructure Deployment ─► AWS Resources ─────────────────────────────────────────────────────────────────────────────────────────────────┘
-└── Documentation Deployment ─► GitHub Pages
-```
 
 ## Deployment Coordination and Deduplication
 
