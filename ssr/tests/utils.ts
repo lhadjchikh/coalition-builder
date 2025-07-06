@@ -238,11 +238,43 @@ async function fetchWithRetry(
   throw new Error(`Failed after ${retryCount} attempts`);
 }
 
+/**
+ * Creates authentication headers for site protection if enabled
+ * @returns RequestOptions with authentication headers if needed
+ */
+function createAuthenticatedRequestOptions(): RequestOptions {
+  const sitePasswordEnabled = ["true", "1", "yes"].includes(
+    (process.env.SITE_PASSWORD_ENABLED || "").toLowerCase(),
+  );
+
+  const requestOptions: RequestOptions = {};
+
+  if (sitePasswordEnabled) {
+    const username = process.env.SITE_USERNAME || "admin";
+    const password = process.env.SITE_PASSWORD || "";
+
+    if (password) {
+      const credentials = Buffer.from(`${username}:${password}`).toString(
+        "base64",
+      );
+      requestOptions.headers = {
+        Authorization: `Basic ${credentials}`,
+      };
+      console.log("🔐 Site protection detected - using authentication");
+    } else {
+      console.log("⚠️  Site protection enabled but no password configured");
+    }
+  }
+
+  return requestOptions;
+}
+
 export {
   makeRequest,
   waitForService,
   fetchCompatible,
   fetchWithRetry,
+  createAuthenticatedRequestOptions,
   type RequestOptions,
   type ResponseData,
   type WaitForServiceOptions,

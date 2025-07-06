@@ -3,7 +3,12 @@
  * A minimal version that tests the core functionality
  */
 
-import { makeRequest, waitForService, type ResponseData } from "./utils";
+import {
+  makeRequest,
+  waitForService,
+  createAuthenticatedRequestOptions,
+  type ResponseData,
+} from "./utils";
 
 // Configuration
 const SSR_URL = process.env.SSR_URL || "http://localhost:3000";
@@ -71,7 +76,12 @@ async function runTests(): Promise<void> {
 
     // Test 5: SSR Homepage
     console.log("🔍 Testing SSR homepage...");
-    const homepageResponse: ResponseData = await makeRequest(SSR_URL);
+
+    const requestOptions = createAuthenticatedRequestOptions();
+    const homepageResponse: ResponseData = await makeRequest(
+      SSR_URL,
+      requestOptions,
+    );
     if (
       homepageResponse.statusCode === 200 &&
       homepageResponse.data.includes("<html")
@@ -79,7 +89,13 @@ async function runTests(): Promise<void> {
       console.log("✅ SSR homepage working");
       passed++;
     } else {
-      console.log(`❌ SSR homepage failed: ${homepageResponse.statusCode}`);
+      if (homepageResponse.statusCode === 401) {
+        console.log(
+          `❌ SSR homepage authentication failed: ${homepageResponse.statusCode}. Check SITE_USERNAME and SITE_PASSWORD environment variables.`,
+        );
+      } else {
+        console.log(`❌ SSR homepage failed: ${homepageResponse.statusCode}`);
+      }
       failed++;
     }
 
@@ -102,7 +118,10 @@ async function runTests(): Promise<void> {
         const lbApiResponse: ResponseData = await makeRequest(
           `${NGINX_URL}/api/campaigns/`,
         );
-        const lbSSRResponse: ResponseData = await makeRequest(NGINX_URL);
+        const lbSSRResponse: ResponseData = await makeRequest(
+          NGINX_URL,
+          requestOptions,
+        );
 
         if (
           lbApiResponse.statusCode === 200 &&

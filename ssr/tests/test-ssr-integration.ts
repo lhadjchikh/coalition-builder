@@ -20,6 +20,7 @@ import {
   waitForService,
   fetchCompatible as fetch,
   fetchWithRetry,
+  createAuthenticatedRequestOptions,
   type FetchResponse,
 } from "./utils";
 
@@ -350,9 +351,19 @@ async function testContainerCommunication(): Promise<boolean> {
 async function testSSRErrorHandlingAndFallback(): Promise<boolean> {
   console.log("🔍 Testing SSR error handling and fallback UI...");
 
-  const response: FetchResponse = await fetchWithRetry(TEST_CONFIG.SSR_URL);
+  const requestOptions = createAuthenticatedRequestOptions();
+  const response: FetchResponse = await fetchWithRetry(
+    TEST_CONFIG.SSR_URL,
+    requestOptions,
+  );
 
   if (!response.ok) {
+    // If we get 401, provide helpful error message about authentication
+    if (response.status === 401) {
+      throw new Error(
+        `SSR authentication failed: ${response.status} ${response.statusText}. Check SITE_USERNAME and SITE_PASSWORD environment variables.`,
+      );
+    }
     throw new Error(
       `SSR architecture test failed: ${response.status} ${response.statusText}`,
     );
