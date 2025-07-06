@@ -28,7 +28,7 @@ async function runNavbarIntegrationTests(): Promise<TestResults> {
   // Test 1: Check if SSR service is responsive
   try {
     console.log("\n🔍 Test 1: SSR service health check");
-    await waitForService(SSR_URL, MAX_TIMEOUT);
+    await waitForService(SSR_URL, { timeout: MAX_TIMEOUT });
     results.tests.push({ name: "SSR service responsive", status: "PASS" });
     results.passed++;
     console.log("✅ SSR service is responsive");
@@ -47,7 +47,7 @@ async function runNavbarIntegrationTests(): Promise<TestResults> {
   try {
     console.log("\n🔍 Test 2: Navbar element present in SSR");
     const response = await makeRequest(`${SSR_URL}/`);
-    const html = response.body;
+    const html = response.data;
 
     // Check if the HTML contains a nav element
     if (html.includes("<nav") || html.includes('role="navigation"')) {
@@ -74,7 +74,7 @@ async function runNavbarIntegrationTests(): Promise<TestResults> {
   try {
     console.log("\n🔍 Test 3: Navbar contains expected navigation items");
     const response = await makeRequest(`${SSR_URL}/`);
-    const html = response.body;
+    const html = response.data;
 
     // Check for expected navigation items
     const expectedItems = ["About", "Campaigns", "Contact"];
@@ -101,7 +101,7 @@ async function runNavbarIntegrationTests(): Promise<TestResults> {
   try {
     console.log("\n🔍 Test 4: Organization name in navbar");
     const response = await makeRequest(`${SSR_URL}/`);
-    const html = response.body;
+    const html = response.data;
 
     // The organization name should be visible in the navbar
     if (
