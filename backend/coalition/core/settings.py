@@ -199,11 +199,21 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = "/static/"
+# Static files URL - use CloudFront CDN when available
+CLOUDFRONT_DOMAIN = os.getenv("CLOUDFRONT_DOMAIN")
+STATIC_URL = f"https://{CLOUDFRONT_DOMAIN}/static/" if CLOUDFRONT_DOMAIN else "/static/"
+
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # WhiteNoise configuration for better static file serving
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# WhiteNoise settings for CDN integration
+if CLOUDFRONT_DOMAIN:
+    # Set long cache times since CDN will handle caching
+    WHITENOISE_MAX_AGE = 31536000  # 1 year
+    # Use absolute URLs for CDN
+    WHITENOISE_USE_FINDERS = True
 
 # Static files directories - where Django will look for static files during development
 STATICFILES_DIRS = [

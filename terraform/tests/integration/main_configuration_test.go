@@ -40,6 +40,7 @@ func TestMainConfigurationWithoutSSR(t *testing.T) {
 		"vpc_id", "public_subnet_ids", "private_subnet_ids", "database_endpoint",
 		"database_name", "ecs_cluster_name", "load_balancer_dns",
 		"api_ecr_repository_url", "static_assets_bucket_name", "static_assets_bucket_arn",
+		"cloudfront_distribution_domain_name", "cloudfront_distribution_id",
 	}
 
 	for _, output := range expectedOutputs {
@@ -52,7 +53,8 @@ func TestMainConfigurationWithoutSSR(t *testing.T) {
 		"module.networking.aws_subnet.private", "module.networking.aws_subnet.private_db",
 		"module.database.aws_db_instance.postgres", "module.compute.aws_ecs_cluster.main",
 		"module.loadbalancer.aws_lb.main", "module.compute.aws_ecr_repository.api",
-		"module.storage.aws_s3_bucket.static_assets",
+		"module.storage.aws_s3_bucket.static_assets", "module.storage.aws_cloudfront_distribution.static_assets",
+		"module.storage.aws_cloudfront_origin_access_identity.static_assets",
 	}
 
 	for _, resource := range expectedResources {
@@ -92,6 +94,11 @@ func TestMainConfigurationWithSSR(t *testing.T) {
 	// Validate SSR-specific outputs and resources (ECR is always created)
 	assert.Contains(t, planOutput, "ssr_ecr_repository_url", "Plan should define SSR ECR output")
 	assert.Contains(t, planOutput, "module.compute.aws_ecr_repository.ssr", "Plan should create SSR ECR repository")
+
+	// Validate CloudFront resources (always created regardless of SSR setting)
+	assert.Contains(t, planOutput, "cloudfront_distribution_domain_name", "Plan should define CloudFront domain output")
+	assert.Contains(t, planOutput, "module.storage.aws_cloudfront_distribution.static_assets",
+		"Plan should create CloudFront distribution")
 
 	// Verify the plan completes successfully with SSR enabled
 	assert.Contains(t, planOutput, "Plan:", "Plan should complete successfully with SSR enabled")

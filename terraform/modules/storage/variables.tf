@@ -3,6 +3,11 @@ variable "prefix" {
   type        = string
 }
 
+variable "alb_dns_name" {
+  description = "DNS name of the Application Load Balancer for Django static files"
+  type        = string
+}
+
 variable "force_destroy" {
   description = "Whether to force destroy the bucket even if it contains objects"
   type        = bool

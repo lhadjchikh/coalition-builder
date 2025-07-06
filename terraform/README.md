@@ -826,8 +826,9 @@ These different endpoints are intentional and serve different purposes. Do not a
    - VPC Endpoints (single-AZ): ~$0.96/day
    - Application Load Balancer: ~$0.60/day
    - RDS t4g.micro: ~$0.50/day
+   - CloudFront CDN: ~$0.01-0.10/day (varies by usage)
    - ECS Fargate: Variable based on usage
-   - Total baseline: ~$2-3/day
+   - Total baseline: ~$2.50-3.50/day
 
 5. **Cost Monitoring and Alerts**:
    - Monthly budget alerts at 70%, 90%, and 100% forecast
@@ -853,6 +854,13 @@ After deployment, the following outputs are available for integration with exter
 - `database_endpoint` - RDS endpoint for application configuration
 - `api_ecr_repository_url` - ECR repository URL for API container images
 - `ssr_ecr_repository_url` - ECR repository URL for SSR container images
+
+### **Static Assets & CDN Outputs**
+
+- `static_assets_bucket_name` - S3 bucket name for static asset uploads
+- `static_assets_bucket_arn` - S3 bucket ARN for IAM policies
+- `cloudfront_distribution_domain_name` - CloudFront CDN domain for global asset delivery
+- `cloudfront_distribution_id` - CloudFront distribution ID for cache invalidation
 
 ### **Cost Monitoring Outputs**
 
