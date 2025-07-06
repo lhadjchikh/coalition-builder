@@ -4,6 +4,7 @@ import CampaignsList from './components/CampaignsList';
 import CampaignDetail from './components/CampaignDetail';
 import HomePage from './components/HomePage';
 import StyledHomePage from './components/StyledHomePage';
+import Navbar from './components/Navbar';
 import { Campaign } from './types';
 
 const App: React.FC = () => {
@@ -26,15 +27,11 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>{process.env.REACT_APP_ORGANIZATION_NAME || 'Coalition Builder'}</h1>
-        <nav>
-          <button onClick={showCampaignsList} className="nav-button">
-            All Campaigns
-          </button>
-          {currentView === 'detail' && <span className="nav-breadcrumb">→ Campaign Detail</span>}
-        </nav>
-      </header>
+      <Navbar
+        currentView={currentView}
+        onNavigate={setCurrentView}
+        organizationName={process.env.REACT_APP_ORGANIZATION_NAME || 'Coalition Builder'}
+      />
       <main className="App-main">
         {currentView === 'list' ? (
           <div>

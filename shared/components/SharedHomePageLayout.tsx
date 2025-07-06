@@ -7,10 +7,10 @@ interface SharedHomePageLayoutProps {
   homepageError?: string | null;
   campaignsError?: string | null;
   onCampaignSelect?: (campaign: Campaign) => void;
-  showNavBar?: boolean;
   HeroComponent?: React.ComponentType<{ homepage: HomePage }>;
   ContentBlockComponent?: React.ComponentType<{ block: any }>;
   SocialLinksComponent?: React.ComponentType<{ homepage: HomePage }>;
+  NavbarComponent?: React.ComponentType<{ organizationName?: string }>;
 }
 
 const SharedHomePageLayout: React.FC<SharedHomePageLayoutProps> = ({
@@ -19,13 +19,18 @@ const SharedHomePageLayout: React.FC<SharedHomePageLayoutProps> = ({
   homepageError,
   campaignsError,
   onCampaignSelect,
-  showNavBar = false,
   HeroComponent,
   ContentBlockComponent,
   SocialLinksComponent,
+  NavbarComponent,
 }) => {
   return (
     <div className="min-h-screen bg-white">
+      {/* Navigation */}
+      {NavbarComponent && (
+        <NavbarComponent organizationName={homepage.organization_name} />
+      )}
+
       <main role="main">
         {/* Development notice when using fallback data */}
         {process.env.NODE_ENV === "development" && homepageError && (
@@ -189,7 +194,7 @@ const SharedHomePageLayout: React.FC<SharedHomePageLayoutProps> = ({
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900">
+      <footer id="footer" className="bg-gray-900">
         <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h3 className="text-lg font-semibold text-white mb-4">

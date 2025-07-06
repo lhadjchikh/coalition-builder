@@ -18,6 +18,7 @@ import SharedHomePageLayout from "@shared/components/SharedHomePageLayout";
 import HeroSection from "@frontend/components/HeroSection";
 import ContentBlock from "@frontend/components/ContentBlock";
 import SocialLinks from "@frontend/components/SocialLinks";
+import Navbar from "@frontend/components/Navbar";
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
@@ -78,6 +79,18 @@ export default async function HomePage() {
 
   const currentHomepage = homepage || getFallbackHomepage();
 
+  // SSR navbar configuration
+  const SSRNavbar = () => (
+    <Navbar
+      organizationName={currentHomepage.organization_name}
+      navItems={[
+        { label: "About", href: "#about-section" },
+        { label: "Campaigns", href: "#campaigns-section" },
+        { label: "Contact", href: "#footer" },
+      ]}
+    />
+  );
+
   return (
     <>
       {/* Inject theme CSS variables for SSR */}
@@ -95,6 +108,7 @@ export default async function HomePage() {
         HeroComponent={HeroSection}
         ContentBlockComponent={ContentBlock}
         SocialLinksComponent={SocialLinks}
+        NavbarComponent={SSRNavbar}
       />
     </>
   );

@@ -10,7 +10,6 @@ interface HomePageLayoutProps {
   homepageError?: string | null;
   campaignsError?: string | null;
   onCampaignSelect?: (campaign: Campaign) => void;
-  showNavBar?: boolean;
 }
 
 const HomePageLayout: React.FC<HomePageLayoutProps> = ({
@@ -19,7 +18,6 @@ const HomePageLayout: React.FC<HomePageLayoutProps> = ({
   homepageError,
   campaignsError,
   onCampaignSelect,
-  showNavBar = false,
 }) => {
   return (
     <div className="min-h-screen bg-white">
