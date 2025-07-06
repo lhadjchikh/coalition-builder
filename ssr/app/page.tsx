@@ -12,7 +12,7 @@ import {
   getFallbackHomepage,
 } from "@shared/utils/homepage-data";
 import { generateCSSVariables } from "@shared/utils/theme";
-import SharedHomePageLayout from "@shared/components/SharedHomePageLayout";
+import HomePageLayout from "@shared/components/HomePageLayout";
 
 // Import shared components
 import HeroSection from "@frontend/components/HeroSection";
@@ -80,16 +80,22 @@ export default async function HomePage() {
   const currentHomepage = homepage || getFallbackHomepage();
 
   // SSR navbar configuration
-  const SSRNavbar = () => (
-    <Navbar
-      organizationName={currentHomepage.organization_name}
-      navItems={[
-        { label: "About", href: "#about-section" },
-        { label: "Campaigns", href: "#campaigns-section" },
-        { label: "Contact", href: "#footer" },
-      ]}
-    />
-  );
+  const SSRNavbar: React.FC<{
+    organizationName?: string;
+    navItems?: Array<{
+      label: string;
+      href?: string;
+      onClick?: () => void;
+      active?: boolean;
+    }>;
+  }> = ({
+    organizationName,
+    navItems = [
+      { label: "About", href: "#about-section" },
+      { label: "Campaigns", href: "#campaigns-section" },
+      { label: "Contact", href: "#footer" },
+    ],
+  }) => <Navbar organizationName={organizationName} navItems={navItems} />;
 
   return (
     <>
@@ -100,7 +106,7 @@ export default async function HomePage() {
         }}
       />
 
-      <SharedHomePageLayout
+      <HomePageLayout
         homepage={currentHomepage}
         campaigns={campaigns}
         homepageError={homepageError}

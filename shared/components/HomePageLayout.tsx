@@ -1,7 +1,17 @@
 import React from "react";
 import { Campaign, HomePage } from "../utils/homepage-data";
 
-interface SharedHomePageLayoutProps {
+interface NavbarProps {
+  organizationName?: string;
+  navItems?: Array<{
+    label: string;
+    onClick?: () => void;
+    href?: string;
+    active?: boolean;
+  }>;
+}
+
+interface HomePageLayoutProps {
   homepage: HomePage;
   campaigns: Campaign[];
   homepageError?: string | null;
@@ -10,10 +20,10 @@ interface SharedHomePageLayoutProps {
   HeroComponent?: React.ComponentType<{ homepage: HomePage }>;
   ContentBlockComponent?: React.ComponentType<{ block: any }>;
   SocialLinksComponent?: React.ComponentType<{ homepage: HomePage }>;
-  NavbarComponent?: React.ComponentType<any>;
+  NavbarComponent?: React.ComponentType<NavbarProps>;
 }
 
-const SharedHomePageLayout: React.FC<SharedHomePageLayoutProps> = ({
+const HomePageLayout: React.FC<HomePageLayoutProps> = ({
   homepage,
   campaigns,
   homepageError,
@@ -236,4 +246,4 @@ const SharedHomePageLayout: React.FC<SharedHomePageLayoutProps> = ({
   );
 };
 
-export default SharedHomePageLayout;
+export default HomePageLayout;
