@@ -1,0 +1,45 @@
+name: Backend Check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**/*.py"
+      - "scripts/**/*.py"
+      - ".github/workflows/lint_python.yml"
+      - ".github/workflows/test_backend.yml"
+      - ".github/workflows/check_backend.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/**/*.py"
+      - "scripts/**/*.py"
+      - ".github/workflows/lint_python.yml"
+      - ".github/workflows/test_backend.yml"
+      - ".github/workflows/check_backend.yml"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git reference to checkout"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  # Run Python linting first
+  python-lint:
+    name: Python Lint
+    uses: ./.github/workflows/lint_python.yml
+    permissions:
+      contents: read
+
+  # Run tests only after lint passes
+  python-tests:
+    name: Backend Tests
+    needs: [python-lint]
+    uses: ./.github/workflows/test_backend.yml
+    permissions:
+      contents: read
+    secrets: inherit # Pass secrets to the called workflow

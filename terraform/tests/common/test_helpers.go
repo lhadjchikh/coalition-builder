@@ -3,7 +3,6 @@ package common
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"testing"
@@ -13,7 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"github.com/aws/aws-sdk-go-v2/service/sts"
 	terratest_aws "github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
@@ -26,7 +24,6 @@ type TestConfig struct {
 	Prefix       string
 	UniqueID     string
 	AccountID    string // Public field for test access
-	accountID    string // cached account ID to avoid repeated STS calls
 }
 
 // NewTestConfig creates a new test configuration with a unique ID
@@ -42,7 +39,7 @@ func NewTestConfig(terraformDir string) *TestConfig {
 	}
 }
 
-// GetTerraformOptions returns default terraform options for testing
+// GetTerraformOptions returns default terraform options for testing with remote backend
 func (tc *TestConfig) GetTerraformOptions(vars map[string]interface{}) *terraform.Options {
 	defaultVars := map[string]interface{}{
 		"prefix":     tc.Prefix,
@@ -88,47 +85,56 @@ func (tc *TestConfig) GetTerraformOptions(vars map[string]interface{}) *terrafor
 	}
 }
 
-// getAccountID returns the AWS account ID for backend configuration
-func (tc *TestConfig) getAccountID() (string, error) {
-	// Return cached value if available
-	if tc.accountID != "" {
-		return tc.accountID, nil
+// GetTerraformOptionsForPlanOnly returns terraform options for plan-only tests (no backend)
+func (tc *TestConfig) GetTerraformOptionsForPlanOnly(vars map[string]interface{}) *terraform.Options {
+	defaultVars := map[string]interface{}{
+		"prefix":     tc.Prefix,
+		"aws_region": tc.AWSRegion,
+		// Test-specific overrides
+		"create_vpc":             true,
+		"create_public_subnets":  true,
+		"create_private_subnets": true,
+		"create_db_subnets":      true,
+		"enable_ssr":             false, // Disable SSR for most tests to simplify
+		// Use minimal resources for testing
+		"db_allocated_storage": 20,
+		"db_instance_class":    "db.t4g.micro",
+		// Required for some modules but not needed for most tests
+		"route53_zone_id":     "Z123456789",
+		"domain_name":         fmt.Sprintf("%s.example.com", tc.UniqueID),
+		"acm_certificate_arn": fmt.Sprintf("arn:aws:acm:us-east-1:123456789012:certificate/%s", tc.UniqueID),
+		"alert_email":         "test@example.com",
+		"db_password":         "testpassword123!",
+		"app_db_password":     "apppassword123!",
 	}
 
-	// First try from environment variable (set in CI)
-	if accountID := os.Getenv("AWS_ACCOUNT_ID"); accountID != "" {
-		tc.accountID = accountID // cache the value
-		return accountID, nil
+	// Merge with provided vars (provided vars override defaults)
+	for k, v := range vars {
+		defaultVars[k] = v
 	}
 
-	// Fallback to STS call (for local development)
-	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(tc.AWSRegion))
-	if err != nil {
-		return "", fmt.Errorf("failed to load AWS configuration: %w. Please ensure AWS credentials are configured", err)
+	return &terraform.Options{
+		TerraformDir:    tc.TerraformDir,
+		TerraformBinary: "terraform", // Explicitly use terraform instead of auto-detecting OpenTofu
+		Vars:            defaultVars,
+		EnvVars: map[string]string{
+			"AWS_DEFAULT_REGION":  tc.AWSRegion,
+			"TERRATEST_TERRAFORM": "terraform",
+		},
 	}
-
-	stsClient := sts.NewFromConfig(cfg)
-	result, err := stsClient.GetCallerIdentity(context.Background(), &sts.GetCallerIdentityInput{})
-	if err != nil {
-		return "", fmt.Errorf("failed to get AWS caller identity: %w. Please ensure AWS credentials are valid", err)
-	}
-
-	if result == nil || result.Account == nil {
-		return "", fmt.Errorf("AWS STS API returned nil result or account field. Please ensure AWS credentials are valid")
-	}
-
-	tc.accountID = *result.Account // cache the value
-	return *result.Account, nil
 }
 
-// mustGetAccountID is a helper that panics if getAccountID fails
-// This is used in contexts where we can't return an error
+// mustGetAccountID returns the AWS account ID for backend configuration
+// Used only by regular terraform tests that need S3 backend
 func (tc *TestConfig) mustGetAccountID() string {
-	accountID, err := tc.getAccountID()
-	if err != nil {
-		log.Fatalf("Failed to get AWS account ID: %v", err)
+	// Try from environment variable first (set in CI)
+	if accountID := os.Getenv("AWS_ACCOUNT_ID"); accountID != "" {
+		return accountID
 	}
-	return accountID
+
+	// For local development, use a fallback value
+	// Real apply tests should set AWS_ACCOUNT_ID environment variable
+	return "123456789012" // placeholder account ID
 }
 
 // GetAccountID lazily populates and returns the AccountID field
@@ -563,4 +569,30 @@ func LogPhaseStart(t *testing.T, phaseName string) {
 // LogPhaseComplete logs the completion of a test phase with result
 func LogPhaseComplete(t *testing.T, phaseName, result string) {
 	t.Logf("%s complete: %s", phaseName, result)
+}
+
+// InitTerraformForPlanOnly initializes terraform without backend for plan-only tests
+func InitTerraformForPlanOnly(t *testing.T, terraformOptions *terraform.Options) {
+	t.Logf("Starting terraform init for directory: %s", terraformOptions.TerraformDir)
+	terraform.RunTerraformCommand(t, terraformOptions, "init", "-backend=false")
+	t.Logf("Terraform init completed successfully")
+}
+
+// CleanupTerraformState removes local terraform state to prevent conflicts between tests
+func CleanupTerraformState(t *testing.T, terraformDir string) {
+	terraformStateDir := fmt.Sprintf("%s/.terraform", terraformDir)
+	if err := os.RemoveAll(terraformStateDir); err != nil {
+		t.Logf("Warning: Failed to cleanup terraform state directory: %v", err)
+	} else {
+		t.Logf("Cleaned up terraform state directory: %s", terraformStateDir)
+	}
+}
+
+// SetupIntegrationTest creates a TestConfig with automatic cleanup for integration tests
+func SetupIntegrationTest(t *testing.T) *TestConfig {
+	testConfig := NewTestConfig("../../")
+	t.Cleanup(func() {
+		CleanupTerraformState(t, testConfig.TerraformDir)
+	})
+	return testConfig
 }

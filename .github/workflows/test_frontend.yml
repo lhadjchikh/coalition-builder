@@ -1,13 +1,7 @@
 name: Frontend Tests
 
 on:
-  # Allow manual triggers and triggers from other workflows
-  workflow_dispatch:
-    inputs:
-      ref:
-        description: "Git ref to checkout and test"
-        required: false
-        default: ""
+  workflow_call: # Allow this workflow to be called by other workflows
 
 # Set explicit permissions for the GITHUB_TOKEN
 permissions:
@@ -28,8 +22,6 @@ jobs:
         node-version: ["22.x"]
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.ref || github.ref }}
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
@@ -67,6 +59,15 @@ jobs:
       - name: Run tests
         if: steps.check_tests.outputs.skip_full_tests != 'true'
         run: npm run test:ci
+
+      - name: Upload coverage to Codecov
+        if: steps.check_tests.outputs.skip_full_tests != 'true'
+        uses: codecov/codecov-action@v5
+        with:
+          directory: ./frontend/coverage
+          flags: javascript
+          name: javascript-coverage
+          fail_ci_if_error: false # Don't fail CI if Codecov has issues
 
       - name: Build
         run: npm run build

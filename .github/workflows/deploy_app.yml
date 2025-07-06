@@ -1,10 +1,10 @@
 name: Deploy to ECS
 
 on:
-  # This workflow will run after the test app workflow completes successfully on main
+  # This workflow will run after the check app workflow completes successfully on main
   workflow_run:
     workflows:
-      - "Test App"
+      - "Check App"
       - "Terraform Infrastructure CI/CD"
     types:
       - completed
@@ -65,11 +65,11 @@ jobs:
                 console.log('❌ Triggering workflow did not succeed - skipping deployment');
                 shouldDeploy = false;
                 triggerType = 'failed_workflow';
-              } else if (triggerWorkflow === 'Test App') {
-                triggerType = 'test_app';
+              } else if (triggerWorkflow === 'Check App') {
+                triggerType = 'check_app';
                 
                 const currentCommitSha = '${{ github.event.workflow_run.head_sha }}';
-                console.log(`Current Test App commit: ${currentCommitSha}`);
+                console.log(`Current Check App commit: ${currentCommitSha}`);
                 
                 // Check for recent infrastructure deployments
                 const infrastructureRuns = await github.rest.actions.listWorkflowRunsForRepo({
@@ -239,8 +239,8 @@ jobs:
           if [ "$TRIGGER_TYPE" = "infrastructure" ]; then
             echo "🏗️ Infrastructure deployment completed successfully, proceeding with app deployment"
             echo "No additional tests required after infrastructure deployment"
-          elif [ "$TRIGGER_TYPE" = "test_app" ]; then
-            echo "✅ Test App workflow completed successfully, proceeding with deployment"
+          elif [ "$TRIGGER_TYPE" = "check_app" ]; then
+            echo "✅ Check App workflow completed successfully, proceeding with deployment"
           else
             echo "✅ Manual trigger or other workflow completed, proceeding with deployment"
           fi
@@ -293,8 +293,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: prod
     outputs:
-      api_image: ${{ steps.image-outputs.outputs.api_image }}
-      ssr_image: ${{ steps.image-outputs.outputs.ssr_image }}
+      api_image: ${{ steps.image_outputs.outputs.api_image }}
+      ssr_image: ${{ steps.image_outputs.outputs.ssr_image }}
 
     steps:
       - name: Checkout
@@ -308,7 +308,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Login to Amazon ECR
-        id: login-ecr
+        id: login_ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       # Set up Docker Buildx for faster builds
@@ -335,14 +335,14 @@ jobs:
 
       # Build and push the Django app Docker image with layer caching
       - name: Build and push Django app image
-        id: build-app-image
+        id: build_app_image
         uses: docker/build-push-action@v5
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REGISTRY: ${{ steps.login_ecr.outputs.registry }}
         with:
           context: .
           push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.API_ECR_REPOSITORY }}:${{ github.sha }}-${{ github.run_number }}
+          tags: ${{ steps.login_ecr.outputs.registry }}/${{ env.API_ECR_REPOSITORY }}:${{ github.sha }}-${{ github.run_number }}
           cache-from: type=local,src=/tmp/.buildx-cache-api
           cache-to: type=local,dest=/tmp/.buildx-cache-api-new,mode=max
           build-args: |
@@ -351,15 +351,15 @@ jobs:
 
       # Build and push the SSR Docker image with layer caching
       - name: Build and push SSR image
-        id: build-ssr-image
+        id: build_ssr_image
         uses: docker/build-push-action@v5
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REGISTRY: ${{ steps.login_ecr.outputs.registry }}
         with:
           context: .
           file: ./Dockerfile.ssr
           push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.SSR_ECR_REPOSITORY }}:${{ github.sha }}-${{ github.run_number }}
+          tags: ${{ steps.login_ecr.outputs.registry }}/${{ env.SSR_ECR_REPOSITORY }}:${{ github.sha }}-${{ github.run_number }}
           cache-from: type=local,src=/tmp/.buildx-cache-ssr
           cache-to: type=local,dest=/tmp/.buildx-cache-ssr-new,mode=max
           build-args: |
@@ -379,12 +379,12 @@ jobs:
 
       # Set outputs for use in other jobs
       - name: Set output image variables
-        id: image-outputs
+        id: image_outputs
         run: |
           API_IMAGE_TAG="${{ github.sha }}-${{ github.run_number }}"
-          API_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.API_ECR_REPOSITORY }}:$API_IMAGE_TAG"
+          API_IMAGE="${{ steps.login_ecr.outputs.registry }}/${{ env.API_ECR_REPOSITORY }}:$API_IMAGE_TAG"
           SSR_IMAGE_TAG="${{ github.sha }}-${{ github.run_number }}"
-          SSR_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.SSR_ECR_REPOSITORY }}:$SSR_IMAGE_TAG"
+          SSR_IMAGE="${{ steps.login_ecr.outputs.registry }}/${{ env.SSR_ECR_REPOSITORY }}:$SSR_IMAGE_TAG"
           echo "api_image=$API_IMAGE" >> $GITHUB_OUTPUT
           echo "ssr_image=$SSR_IMAGE" >> $GITHUB_OUTPUT
 
@@ -410,7 +410,7 @@ jobs:
           aws ecs describe-task-definition --task-definition coalition --query taskDefinition > task-definition.json
 
       - name: Update Django app container image in ECS task definition
-        id: task-def-app
+        id: task_def_app
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
@@ -419,7 +419,7 @@ jobs:
 
       # Check if SSR container exists in the task definition
       - name: Check for SSR container
-        id: check-ssr
+        id: check_ssr
         run: |
           # Use jq to properly parse JSON and check for SSR container
           if jq -e '.containerDefinitions[] | select(.name=="ssr")' task-definition.json > /dev/null 2>&1; then
@@ -432,30 +432,30 @@ jobs:
 
       # Only update the SSR container if it exists in the task definition
       - name: Update SSR container image in ECS task definition
-        id: task-def-ssr
-        if: ${{ steps.check-ssr.outputs.has_ssr == 'true' }}
+        id: task_def_ssr
+        if: ${{ steps.check_ssr.outputs.has_ssr == 'true' }}
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: ${{ steps.task-def-app.outputs.task-definition }}
+          task-definition: ${{ steps.task_def_app.outputs.task-definition }}
           container-name: ssr
           image: ${{ needs.build_and_push.outputs.ssr_image }}
 
       # Choose the right task definition based on whether SSR was updated
       - name: Set final task definition
-        id: set-final-taskdef
+        id: set_final_taskdef
         run: |
-          if [[ "${{ steps.check-ssr.outputs.has_ssr }}" == "true" ]]; then
-            echo "final_taskdef=${{ steps.task-def-ssr.outputs.task-definition }}" >> $GITHUB_OUTPUT
+          if [[ "${{ steps.check_ssr.outputs.has_ssr }}" == "true" ]]; then
+            echo "final_taskdef=${{ steps.task_def_ssr.outputs.task-definition }}" >> $GITHUB_OUTPUT
             echo "Using task definition with SSR container updated"
           else
-            echo "final_taskdef=${{ steps.task-def-app.outputs.task-definition }}" >> $GITHUB_OUTPUT
+            echo "final_taskdef=${{ steps.task_def_app.outputs.task-definition }}" >> $GITHUB_OUTPUT
             echo "Using task definition with only app container updated (no SSR)"
           fi
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
-          task-definition: ${{ steps.set-final-taskdef.outputs.final_taskdef }}
+          task-definition: ${{ steps.set_final_taskdef.outputs.final_taskdef }}
           service: coalition-service
           cluster: coalition-cluster
           wait-for-service-stability: true

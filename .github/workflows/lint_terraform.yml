@@ -4,16 +4,7 @@ permissions:
   contents: read
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "terraform/**/*.tf"
-      - ".github/workflows/lint_terraform.yml"
-  pull_request:
-    branches: [main]
-    paths:
-      - "terraform/**/*.tf"
-      - ".github/workflows/lint_terraform.yml"
+  workflow_call: # Allow this workflow to be called by other workflows
 
 jobs:
   terraform_lint:

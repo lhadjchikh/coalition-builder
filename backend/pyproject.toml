@@ -38,6 +38,7 @@ black = "^25.1.0"
 ruff = "^0.11.12"
 pytest = "^8.3.3"
 pytest-django = "^4.9.0"
+pytest-cov = "^6.0.0"
 
 [tool.poetry.group.gis]
 optional = true
@@ -82,6 +83,27 @@ ignore = [
 
 [tool.ruff.lint.isort]
 known-first-party = ["coalition", "campaigns", "endorsers", "legislators", "regions", "api"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "coalition.core.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+addopts = [
+    "--cov=coalition",
+    "--cov-report=xml:coverage.xml",
+    "--cov-report=html:htmlcov",
+    "--cov-report=term-missing",
+    "--cov-fail-under=80"
+]
+
+[tool.coverage.run]
+source = ["coalition"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*_tests.py",
+    "*/migrations/*",
+    "*/tests.py"
+]
 
 [build-system]
 requires = ["poetry-core"]
