@@ -71,7 +71,29 @@ async function runTests(): Promise<void> {
 
     // Test 5: SSR Homepage
     console.log("🔍 Testing SSR homepage...");
-    const homepageResponse: ResponseData = await makeRequest(SSR_URL);
+    
+    // Check if site protection is enabled and prepare auth headers if needed
+    const sitePasswordEnabled = ["true", "1", "yes"].includes(
+      (process.env.SITE_PASSWORD_ENABLED || "").toLowerCase(),
+    );
+    
+    let requestOptions: any = {};
+    if (sitePasswordEnabled) {
+      const username = process.env.SITE_USERNAME || "admin";
+      const password = process.env.SITE_PASSWORD || "";
+      
+      if (password) {
+        const credentials = Buffer.from(`${username}:${password}`).toString('base64');
+        requestOptions.headers = {
+          'Authorization': `Basic ${credentials}`
+        };
+        console.log("🔐 Site protection detected - using authentication");
+      } else {
+        console.log("⚠️  Site protection enabled but no password configured");
+      }
+    }
+    
+    const homepageResponse: ResponseData = await makeRequest(SSR_URL, requestOptions);
     if (
       homepageResponse.statusCode === 200 &&
       homepageResponse.data.includes("<html")
@@ -79,7 +101,11 @@ async function runTests(): Promise<void> {
       console.log("✅ SSR homepage working");
       passed++;
     } else {
-      console.log(`❌ SSR homepage failed: ${homepageResponse.statusCode}`);
+      if (homepageResponse.statusCode === 401 && sitePasswordEnabled) {
+        console.log(`❌ SSR homepage authentication failed: ${homepageResponse.statusCode}. Check SITE_USERNAME and SITE_PASSWORD environment variables.`);
+      } else {
+        console.log(`❌ SSR homepage failed: ${homepageResponse.statusCode}`);
+      }
       failed++;
     }
 
@@ -102,7 +128,7 @@ async function runTests(): Promise<void> {
         const lbApiResponse: ResponseData = await makeRequest(
           `${NGINX_URL}/api/campaigns/`,
         );
-        const lbSSRResponse: ResponseData = await makeRequest(NGINX_URL);
+        const lbSSRResponse: ResponseData = await makeRequest(NGINX_URL, requestOptions);
 
         if (
           lbApiResponse.statusCode === 200 &&
