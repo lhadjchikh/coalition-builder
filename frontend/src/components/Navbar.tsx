@@ -71,7 +71,9 @@ const NavLink = styled.button`
   }
 `;
 
-const MobileMenuToggle = styled.button`
+const MobileMenuToggle = styled.button.attrs({
+  'aria-label': 'Toggle navigation menu',
+})`
   display: none;
   background: none;
   border: none;

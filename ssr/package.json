@@ -13,6 +13,7 @@
     "test:unit": "tsx tests/test-middleware-unit.ts",
     "test:integration": "tsx tests/test-ssr-integration.ts",
     "test:integration:simple": "tsx tests/test-ssr-integration-simple.ts",
+    "test:navbar": "tsx tests/test-navbar-integration.ts",
     "test:ci": "tsx tests/test-ssr-integration-simple.ts",
     "postinstall": "echo 'Disabling Next.js telemetry' && npx next telemetry disable"
   },

@@ -108,11 +108,12 @@ describe('Navbar', () => {
       });
     });
 
-    it('renders mobile menu toggle button', () => {
+    it('renders mobile menu toggle button with accessibility label', () => {
       render(<Navbar />);
       // The hamburger menu is always in the DOM but hidden on desktop via CSS
       const toggleButton = screen.getByText('☰');
       expect(toggleButton).toBeInTheDocument();
+      expect(toggleButton).toHaveAttribute('aria-label', 'Toggle navigation menu');
     });
 
     it('toggles mobile menu when button is clicked', () => {
