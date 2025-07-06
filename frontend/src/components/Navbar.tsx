@@ -128,7 +128,7 @@ const Navbar: React.FC<NavbarProps> = ({
     setIsMenuOpen(false);
   };
 
-  const handleItemClick = (item: NavItem) => {
+  const handleItemClick = (item: NavItemData) => {
     if (item.onClick) {
       item.onClick();
     }
@@ -136,7 +136,7 @@ const Navbar: React.FC<NavbarProps> = ({
   };
 
   // Default frontend app navigation
-  const defaultNavItems: NavItem[] = [
+  const defaultNavItems: NavItemData[] = [
     {
       label: 'All Campaigns',
       onClick: () => handleNavigation('list'),
