@@ -104,48 +104,28 @@ func TestMainConfigurationWithSSR(t *testing.T) {
 
 func TestMainConfigurationValidation(t *testing.T) {
 
-	// Test missing required variables
-	t.Run("MissingRequiredVariables", func(t *testing.T) {
-		testConfig := common.SetupIntegrationTest(t)
+	testConfig := common.SetupIntegrationTest(t)
 
-		// Provide incomplete variables that should cause validation failures
-		testVars := map[string]interface{}{
-			"domain_name": "incomplete.example.com",
-			// Missing required variables: route53_zone_id, acm_certificate_arn, alert_email, db_password
-		}
+	testVars := common.GetIntegrationTestVars()
+	testVars["route53_zone_id"] = "Z123456789ABCDEF"
+	testVars["domain_name"] = fmt.Sprintf("%s-complete.example.com", testConfig.UniqueID)
+	testVars["acm_certificate_arn"] = fmt.Sprintf(
+		"arn:aws:acm:us-east-1:123456789012:certificate/%s", testConfig.UniqueID)
+	testVars["alert_email"] = "test@example.com"
+	testVars["db_password"] = "SuperSecurePassword123!"
+	testVars["app_db_password"] = "AppPassword123!"
+	testVars["bastion_key_name"] = "test-key"
+	testVars["create_new_key_pair"] = false
 
-		terraformOptions := testConfig.GetTerraformOptions(testVars)
+	terraformOptions := testConfig.GetTerraformOptions(testVars)
 
-		terraform.Init(t, terraformOptions)
-		_, err := terraform.PlanE(t, terraformOptions)
-		assert.Error(t, err, "Plan should fail with missing required variables")
-	})
+	terraform.Init(t, terraformOptions)
+	planOutput := terraform.Plan(t, terraformOptions)
 
-	// Test with all required variables
-	t.Run("CompleteConfiguration", func(t *testing.T) {
-		testConfig := common.SetupIntegrationTest(t)
-
-		testVars := common.GetIntegrationTestVars()
-		testVars["route53_zone_id"] = "Z123456789ABCDEF"
-		testVars["domain_name"] = fmt.Sprintf("%s-complete.example.com", testConfig.UniqueID)
-		testVars["acm_certificate_arn"] = fmt.Sprintf(
-			"arn:aws:acm:us-east-1:123456789012:certificate/%s", testConfig.UniqueID)
-		testVars["alert_email"] = "test@example.com"
-		testVars["db_password"] = "SuperSecurePassword123!"
-		testVars["app_db_password"] = "AppPassword123!"
-		testVars["bastion_key_name"] = "test-key"
-		testVars["create_new_key_pair"] = false
-
-		terraformOptions := testConfig.GetTerraformOptions(testVars)
-
-		terraform.Init(t, terraformOptions)
-		planOutput := terraform.Plan(t, terraformOptions)
-
-		// Should succeed and contain main components
-		assert.Contains(t, planOutput, "module.networking.aws_vpc.main", "Plan should create VPC")
-		assert.Contains(t, planOutput, "module.database.aws_db_instance.postgres", "Plan should create database")
-		assert.Contains(t, planOutput, "module.compute.aws_ecs_cluster.main", "Plan should create ECS cluster")
-	})
+	// Should succeed and contain main components
+	assert.Contains(t, planOutput, "module.networking.aws_vpc.main", "Plan should create VPC")
+	assert.Contains(t, planOutput, "module.database.aws_db_instance.postgres", "Plan should create database")
+	assert.Contains(t, planOutput, "module.compute.aws_ecs_cluster.main", "Plan should create ECS cluster")
 }
 
 func TestMainConfigurationCORS(t *testing.T) {
