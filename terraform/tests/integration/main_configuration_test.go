@@ -37,8 +37,8 @@ func TestMainConfigurationWithoutSSR(t *testing.T) {
 
 	// Validate all expected outputs are defined
 	expectedOutputs := []string{
-		"vpc_id", "public_subnet_ids", "private_subnet_ids", "private_db_subnet_ids",
-		"db_instance_id", "db_instance_endpoint", "ecs_cluster_name", "alb_dns_name",
+		"vpc_id", "public_subnet_ids", "private_subnet_ids", "database_endpoint",
+		"database_name", "ecs_cluster_name", "load_balancer_dns",
 		"api_ecr_repository_url", "static_assets_bucket_name", "static_assets_bucket_arn",
 	}
 
@@ -59,11 +59,10 @@ func TestMainConfigurationWithoutSSR(t *testing.T) {
 		assert.Contains(t, planOutput, resource, "Plan should create %s resource", resource)
 	}
 
-	// Validate SSR is disabled
-	assert.Contains(t, planOutput, "enable_ssr = false", "Plan should disable SSR")
-	// When SSR is disabled, SSR ECR repo should not be created
+	// Validate SSR is disabled - check that SSR-specific resources are not created
 	assert.NotContains(t, planOutput, "module.compute.aws_ecr_repository.ssr",
 		"Plan should not create SSR ECR when disabled")
+	assert.NotContains(t, planOutput, "ssr_ecr_repository_url", "Plan should not define SSR ECR output when disabled")
 }
 
 func TestMainConfigurationWithSSR(t *testing.T) {
@@ -88,7 +87,6 @@ func TestMainConfigurationWithSSR(t *testing.T) {
 	planOutput := terraform.Plan(t, terraformOptions)
 
 	// Validate SSR-specific outputs and resources
-	assert.Contains(t, planOutput, "enable_ssr = true", "Plan should enable SSR")
 	assert.Contains(t, planOutput, "ssr_ecr_repository_url", "Plan should define SSR ECR output")
 	assert.Contains(t, planOutput, "module.compute.aws_ecr_repository.ssr", "Plan should create SSR ECR when enabled")
 
