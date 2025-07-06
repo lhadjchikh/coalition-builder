@@ -112,6 +112,8 @@ jobs:
       - name: Upload coverage to Codecov
         if: steps.check_tests.outputs.skip_full_tests != 'true'
         uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: lhadjchikh/coalition-builder
