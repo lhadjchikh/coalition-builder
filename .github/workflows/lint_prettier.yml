@@ -6,8 +6,36 @@ permissions:
 on:
   push:
     branches: [main]
+    paths:
+      # Files outside frontend/shared/ssr that prettier should check
+      - "*.md"
+      - "*.yml"
+      - "*.yaml"
+      - "*.json"
+      - "*.css"
+      - "docs/**/*.md"
+      - ".github/workflows/*.yml"
+      - ".github/workflows/*.yaml"
+      # Exclude paths covered by check_frontend
+      - "!frontend/**"
+      - "!shared/**"
+      - "!ssr/**"
   pull_request:
     branches: [main]
+    paths:
+      # Files outside frontend/shared/ssr that prettier should check
+      - "*.md"
+      - "*.yml"
+      - "*.yaml"
+      - "*.json"
+      - "*.css"
+      - "docs/**/*.md"
+      - ".github/workflows/*.yml"
+      - ".github/workflows/*.yaml"
+      # Exclude paths covered by check_frontend
+      - "!frontend/**"
+      - "!shared/**"
+      - "!ssr/**"
   workflow_call: # Allow this workflow to be called by other workflows
 
 jobs:

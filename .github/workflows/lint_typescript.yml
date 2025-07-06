@@ -4,26 +4,6 @@ permissions:
   contents: read
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "frontend/src/**/*.ts"
-      - "frontend/src/**/*.tsx"
-      - "frontend/tsconfig.json"
-      - "frontend/package.json"
-      - "frontend/package-lock.json"
-      - ".github/workflows/lint_typescript.yml"
-  pull_request:
-    branches: [main]
-    paths:
-      - "frontend/src/**/*.ts"
-      - "frontend/src/**/*.tsx"
-      - "frontend/tsconfig.json"
-      - "frontend/package.json"
-      - "frontend/package-lock.json"
-      - ".github/workflows/lint_typescript.yml"
-  # Allow manual triggers
-  workflow_dispatch:
   workflow_call: # Allow this workflow to be called by other workflows
 
 jobs:

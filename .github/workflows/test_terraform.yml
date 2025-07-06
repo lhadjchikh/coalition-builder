@@ -1,17 +1,6 @@
 name: Terraform Tests
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "terraform/**"
-      - ".github/workflows/test_terraform.yml"
-  pull_request:
-    branches: [main]
-    paths:
-      - "terraform/**"
-      - ".github/workflows/test_terraform.yml"
-  workflow_dispatch:
   workflow_call: # Allow this workflow to be called by other workflows
 
 # Permissions needed for testing

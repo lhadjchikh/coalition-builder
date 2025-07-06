@@ -23,7 +23,6 @@ on:
       - ".github/workflows/test_frontend.yml"
       - ".github/workflows/test_ssr.yml"
       - ".github/workflows/check_frontend.yml"
-  workflow_dispatch:
 
 permissions:
   contents: read

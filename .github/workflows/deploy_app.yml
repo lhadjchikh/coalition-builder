@@ -1,10 +1,10 @@
 name: Deploy to ECS
 
 on:
-  # This workflow will run after the test app workflow completes successfully on main
+  # This workflow will run after the check app workflow completes successfully on main
   workflow_run:
     workflows:
-      - "Test App"
+      - "Check App"
       - "Terraform Infrastructure CI/CD"
     types:
       - completed
@@ -65,11 +65,11 @@ jobs:
                 console.log('❌ Triggering workflow did not succeed - skipping deployment');
                 shouldDeploy = false;
                 triggerType = 'failed_workflow';
-              } else if (triggerWorkflow === 'Test App') {
-                triggerType = 'test_app';
+              } else if (triggerWorkflow === 'Check App') {
+                triggerType = 'check_app';
                 
                 const currentCommitSha = '${{ github.event.workflow_run.head_sha }}';
-                console.log(`Current Test App commit: ${currentCommitSha}`);
+                console.log(`Current Check App commit: ${currentCommitSha}`);
                 
                 // Check for recent infrastructure deployments
                 const infrastructureRuns = await github.rest.actions.listWorkflowRunsForRepo({
@@ -239,8 +239,8 @@ jobs:
           if [ "$TRIGGER_TYPE" = "infrastructure" ]; then
             echo "🏗️ Infrastructure deployment completed successfully, proceeding with app deployment"
             echo "No additional tests required after infrastructure deployment"
-          elif [ "$TRIGGER_TYPE" = "test_app" ]; then
-            echo "✅ Test App workflow completed successfully, proceeding with deployment"
+          elif [ "$TRIGGER_TYPE" = "check_app" ]; then
+            echo "✅ Check App workflow completed successfully, proceeding with deployment"
           else
             echo "✅ Manual trigger or other workflow completed, proceeding with deployment"
           fi

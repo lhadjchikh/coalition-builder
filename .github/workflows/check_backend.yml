@@ -1,4 +1,4 @@
-name: Python Check
+name: Backend Check
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
       - "scripts/**/*.py"
       - ".github/workflows/lint_python.yml"
       - ".github/workflows/test_backend.yml"
-      - ".github/workflows/check_python.yml"
+      - ".github/workflows/check_backend.yml"
   pull_request:
     branches: [main]
     paths:
@@ -16,8 +16,7 @@ on:
       - "scripts/**/*.py"
       - ".github/workflows/lint_python.yml"
       - ".github/workflows/test_backend.yml"
-      - ".github/workflows/check_python.yml"
-  workflow_dispatch:
+      - ".github/workflows/check_backend.yml"
 
 permissions:
   contents: read

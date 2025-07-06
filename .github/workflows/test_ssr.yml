@@ -1,13 +1,6 @@
 name: SSR Tests
 
 on:
-  # Allow manual triggers and triggers from other workflows
-  workflow_dispatch:
-    inputs:
-      ref:
-        description: "Git ref to checkout and test"
-        required: false
-        default: ""
   workflow_call: # Allow this workflow to be called by other workflows
 
 # Set explicit permissions for the GITHUB_TOKEN
@@ -29,8 +22,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.ref || github.ref }}
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
