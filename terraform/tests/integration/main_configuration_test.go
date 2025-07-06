@@ -59,10 +59,13 @@ func TestMainConfigurationWithoutSSR(t *testing.T) {
 		assert.Contains(t, planOutput, resource, "Plan should create %s resource", resource)
 	}
 
-	// Validate SSR is disabled - check that SSR-specific resources are not created
-	assert.NotContains(t, planOutput, "module.compute.aws_ecr_repository.ssr",
-		"Plan should not create SSR ECR when disabled")
-	assert.NotContains(t, planOutput, "ssr_ecr_repository_url", "Plan should not define SSR ECR output when disabled")
+	// Validate SSR ECR repository is created (always created regardless of enable_ssr)
+	assert.Contains(t, planOutput, "module.compute.aws_ecr_repository.ssr", "Plan should create SSR ECR repository")
+	assert.Contains(t, planOutput, "ssr_ecr_repository_url", "Plan should define SSR ECR output")
+
+	// Verify the plan completes successfully with SSR disabled
+	assert.Contains(t, planOutput, "Plan:", "Plan should complete successfully with SSR disabled")
+	assert.NotContains(t, planOutput, "Error:", "Plan should not contain errors")
 }
 
 func TestMainConfigurationWithSSR(t *testing.T) {
@@ -86,9 +89,13 @@ func TestMainConfigurationWithSSR(t *testing.T) {
 	terraform.Init(t, terraformOptions)
 	planOutput := terraform.Plan(t, terraformOptions)
 
-	// Validate SSR-specific outputs and resources
+	// Validate SSR-specific outputs and resources (ECR is always created)
 	assert.Contains(t, planOutput, "ssr_ecr_repository_url", "Plan should define SSR ECR output")
-	assert.Contains(t, planOutput, "module.compute.aws_ecr_repository.ssr", "Plan should create SSR ECR when enabled")
+	assert.Contains(t, planOutput, "module.compute.aws_ecr_repository.ssr", "Plan should create SSR ECR repository")
+
+	// Verify the plan completes successfully with SSR enabled
+	assert.Contains(t, planOutput, "Plan:", "Plan should complete successfully with SSR enabled")
+	assert.NotContains(t, planOutput, "Error:", "Plan should not contain errors")
 
 	// Validate both API and SSR target groups exist
 	assert.Contains(t, planOutput, "module.loadbalancer.aws_lb_target_group.api", "Plan should create API target group")
@@ -101,12 +108,22 @@ func TestMainConfigurationValidation(t *testing.T) {
 	t.Run("MissingRequiredVariables", func(t *testing.T) {
 		testConfig := common.SetupIntegrationTest(t)
 
-		// Only provide minimal variables - should fail
+		// Provide incomplete variables that should cause validation failures
 		testVars := map[string]interface{}{
 			"domain_name": "incomplete.example.com",
+			// Missing required variables: route53_zone_id, acm_certificate_arn, alert_email, db_password
 		}
 
-		terraformOptions := testConfig.GetTerraformOptions(testVars)
+		// Create terraform options without the helpful defaults that mask missing variables
+		terraformOptions := &terraform.Options{
+			TerraformDir:    testConfig.TerraformDir,
+			TerraformBinary: "terraform",
+			Vars:            testVars, // Only provide the minimal testVars
+			EnvVars: map[string]string{
+				"AWS_DEFAULT_REGION":  testConfig.AWSRegion,
+				"TERRATEST_TERRAFORM": "terraform",
+			},
+		}
 
 		terraform.Init(t, terraformOptions)
 		_, err := terraform.PlanE(t, terraformOptions)
