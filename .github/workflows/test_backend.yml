@@ -119,7 +119,6 @@ jobs:
           name: python-coverage
           fail_ci_if_error: false # Don't fail CI if Codecov has issues
           verbose: true # Enable verbose logging for debugging
-          use_oidc: true # Use OIDC for authentication as backup
 
       - name: Stop containers
         if: always()
