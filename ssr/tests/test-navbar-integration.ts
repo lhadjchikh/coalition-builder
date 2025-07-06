@@ -104,10 +104,7 @@ async function runNavbarIntegrationTests(): Promise<TestResults> {
     const html = response.data;
 
     // The organization name should be visible in the navbar
-    if (
-      html.includes("Coalition Builder") ||
-      html.includes("organization_name")
-    ) {
+    if (html.includes("Coalition Builder")) {
       results.tests.push({
         name: "Organization name in navbar",
         status: "PASS",

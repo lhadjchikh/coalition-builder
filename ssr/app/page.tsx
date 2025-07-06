@@ -20,6 +20,24 @@ import ContentBlock from "@frontend/components/ContentBlock";
 import SocialLinks from "@frontend/components/SocialLinks";
 import Navbar from "@frontend/components/Navbar";
 
+// SSR navbar configuration
+const SSRNavbar: React.FC<{
+  organizationName?: string;
+  navItems?: Array<{
+    label: string;
+    href?: string;
+    onClick?: () => void;
+    active?: boolean;
+  }>;
+}> = ({
+  organizationName,
+  navItems = [
+    { label: "About", href: "#about-section" },
+    { label: "Campaigns", href: "#campaigns-section" },
+    { label: "Contact", href: "#footer" },
+  ],
+}) => <Navbar organizationName={organizationName} navItems={navItems} />;
+
 export async function generateMetadata(): Promise<Metadata> {
   try {
     const homepage = await ssrApiClient.getHomepage();
@@ -78,24 +96,6 @@ export default async function HomePage() {
   }
 
   const currentHomepage = homepage || getFallbackHomepage();
-
-  // SSR navbar configuration
-  const SSRNavbar: React.FC<{
-    organizationName?: string;
-    navItems?: Array<{
-      label: string;
-      href?: string;
-      onClick?: () => void;
-      active?: boolean;
-    }>;
-  }> = ({
-    organizationName,
-    navItems = [
-      { label: "About", href: "#about-section" },
-      { label: "Campaigns", href: "#campaigns-section" },
-      { label: "Contact", href: "#footer" },
-    ],
-  }) => <Navbar organizationName={organizationName} navItems={navItems} />;
 
   return (
     <>

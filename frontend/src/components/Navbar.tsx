@@ -93,7 +93,7 @@ const Breadcrumb = styled.span`
   font-size: 0.9rem;
 `;
 
-type NavItem = {
+type NavItemData = {
   label: string;
   onClick?: () => void;
   href?: string;
@@ -106,7 +106,7 @@ interface NavbarProps {
   currentView?: 'list' | 'detail';
   onNavigate?: (view: 'list' | 'detail') => void;
   // Custom navigation items (for SSR)
-  navItems?: NavItem[];
+  navItems?: NavItemData[];
 }
 
 const Navbar: React.FC<NavbarProps> = ({
@@ -153,8 +153,8 @@ const Navbar: React.FC<NavbarProps> = ({
       <MobileMenuToggle onClick={toggleMenu}>{isMenuOpen ? '✕' : '☰'}</MobileMenuToggle>
 
       <NavMenu $isOpen={isMenuOpen}>
-        {navigationItems.map(item => (
-          <NavItem key={item.label}>
+        {navigationItems.map((item, index) => (
+          <NavItem key={`nav-item-${index}-${item.label}`}>
             <NavLink
               as={item.href ? 'a' : 'button'}
               {...(item.href ? { href: item.href } : {})}
