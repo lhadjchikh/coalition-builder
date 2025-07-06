@@ -7,6 +7,7 @@ on:
 permissions:
   contents: read
   id-token: write # For AWS authentication
+  actions: read # Need actions:read for codecov in protected branches
 
 env:
   GO_VERSION: "1.24"
@@ -98,6 +99,8 @@ jobs:
           flags: terraform
           name: terraform-coverage
           fail_ci_if_error: false # Don't fail CI if Codecov has issues
+          verbose: true # Enable verbose logging for debugging
+          use_oidc: true # Use OIDC for authentication as backup
 
   # Final summary job
   terraform-tests:
