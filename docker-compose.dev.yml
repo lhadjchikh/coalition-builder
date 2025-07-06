@@ -4,7 +4,7 @@
 services:
   api:
     build:
-      target: deps # Use development build stage
+      target: python-deps # Use development build stage
     environment:
       - DEBUG=True # Override to enable debug mode
     volumes:
@@ -20,6 +20,7 @@ services:
     volumes:
       - ./ssr:/app
       - ./frontend/src:/app/frontend/src:ro
+      - ./shared:/app/shared:ro
       - /app/node_modules
       - /app/.next
     command: ["npm", "run", "dev"]
