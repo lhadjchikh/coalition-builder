@@ -22,7 +22,6 @@ This project uses a structured CI/CD pipeline with the following key workflows:
 - Orchestrates backend-related workflows in the correct order:
   1. Runs Python linting (`lint_python.yml`) first
   2. Only after lint checks pass, runs Backend tests (`test_backend.yml`)
-- Ensures code quality before running potentially expensive test operations
 
 #### Frontend Check (`check_frontend.yml`)
 
@@ -30,7 +29,6 @@ This project uses a structured CI/CD pipeline with the following key workflows:
 - Orchestrates frontend-related workflows in the correct order:
   1. Runs TypeScript linting (`lint_typescript.yml`) and Prettier formatting (`lint_prettier.yml`) in parallel
   2. Only after both lint checks pass, runs Frontend tests (`test_frontend.yml`) and SSR tests (`test_ssr.yml`)
-- Ensures code quality before running potentially expensive test operations
 
 #### Terraform Check (`check_terraform.yml`)
 
@@ -38,8 +36,6 @@ This project uses a structured CI/CD pipeline with the following key workflows:
 - Orchestrates Terraform-related workflows in the correct order:
   1. Runs Terraform linting (`lint_terraform.yml`) and Go linting (`lint_go.yml`) in parallel
   2. Only after both lint checks pass, runs Terraform tests (`test_terraform.yml`)
-- Ensures code quality before running potentially expensive test operations
-- Reduces overall CI time by running lint checks in parallel
 
 ### Code Quality and Linting Workflows
 
