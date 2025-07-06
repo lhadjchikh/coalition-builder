@@ -27,6 +27,7 @@ on:
 permissions:
   contents: read
   actions: read # Need actions:read for codecov in called workflows
+  id-token: write # For Codecov authentication on protected branches
 
 jobs:
   # Run Python linting first
@@ -44,4 +45,5 @@ jobs:
     permissions:
       contents: read
       actions: read # Need actions:read for codecov
+      id-token: write # For Codecov authentication on protected branches
     secrets: inherit # Pass secrets to the called workflow

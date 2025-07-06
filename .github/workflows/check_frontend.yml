@@ -33,6 +33,7 @@ on:
 permissions:
   contents: read
   actions: read # Need actions:read for codecov in called workflows
+  id-token: write # For Codecov authentication on protected branches
 
 jobs:
   # Run frontend linting in parallel
@@ -56,6 +57,7 @@ jobs:
     permissions:
       contents: read
       actions: read # Need actions:read for codecov
+      id-token: write # For Codecov authentication on protected branches
     secrets: inherit
 
   ssr-tests:
