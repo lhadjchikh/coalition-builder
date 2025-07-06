@@ -41,7 +41,7 @@ jobs:
 
   # Run all tests (unit tests don't need AWS, integration tests do)
   tests:
-    name: Go Tests
+    name: Terratests
     runs-on: ubuntu-latest
     needs: validate
     environment: test # Use test environment for AWS credentials
