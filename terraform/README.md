@@ -39,6 +39,80 @@ The infrastructure architecture consists of the following components:
 - **Monitoring**: CloudWatch for logs and metrics
 - **DNS**: Route53 for domain management
 
+### Figure 1: AWS Infrastructure Architecture
+
+The following diagram shows the complete AWS infrastructure layout:
+
+> **Note**: This diagram uses Mermaid syntax. It will render automatically on GitHub, GitLab, and other platforms that support Mermaid.
+
+```mermaid
+%%{init: {'theme':'dark'}}%%
+flowchart TB
+    %% Internet
+    internet[Internet] --> cloudfront[CloudFront CDN]
+    internet --> route53[Route53 DNS]
+
+    %% DNS and CDN
+    route53 --> alb[Application Load Balancer]
+    cloudfront --> s3_assets[S3 Static Assets]
+
+    %% VPC Container
+    subgraph vpc["VPC (10.0.0.0/16)"]
+        %% Public Subnets
+        subgraph public["Public Subnets"]
+            alb
+            bastion[Bastion Host]
+        end
+
+        %% Private Subnets
+        subgraph private["Private Subnets"]
+            subgraph ecs_cluster["ECS Cluster"]
+                django[Django API Container]
+                ssr[Next.js SSR Container<br/>*optional*]
+                redis[Redis Cache]
+            end
+        end
+
+        %% Database Subnets
+        subgraph db_subnets["Database Subnets"]
+            rds[(RDS PostgreSQL<br/>with PostGIS)]
+        end
+    end
+
+    %% External Services
+    subgraph aws_services["AWS Services"]
+        secrets[Secrets Manager]
+        ecr[ECR Repositories]
+        cloudwatch[CloudWatch Logs]
+        s3_assets
+    end
+
+    %% Connections
+    alb --> django
+    alb --> ssr
+    django --> redis
+    django --> rds
+    ssr --> django
+    bastion --> rds
+
+    %% CloudFront connections
+    cloudfront --> alb
+
+    %% Service connections
+    django --> secrets
+    ssr --> secrets
+    django --> cloudwatch
+    ssr --> cloudwatch
+    redis --> cloudwatch
+
+    %% ECR
+    ecr --> django
+    ecr --> ssr
+    ecr --> redis
+```
+
+_Figure 1: AWS infrastructure showing VPC with public/private/database subnets, ECS Fargate containers, RDS database, and supporting AWS services. CloudFront CDN serves static files from both S3 (user uploads) and Django/WhiteNoise (/static/\* paths). The SSR container is optional and controlled by the `enable_ssr` variable._
+
 ## Conditional Server-Side Rendering (SSR)
 
 This infrastructure includes optional Next.js Server-Side Rendering (SSR) capabilities that can be toggled on or off using a single Terraform variable.
