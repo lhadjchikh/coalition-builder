@@ -130,6 +130,10 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      - name: Install SSR test dependencies
+        working-directory: ssr
+        run: npm ci
+
       - name: Check if tests are necessary
         id: check_tests
         run: |
@@ -164,11 +168,12 @@ jobs:
       # Run the SSR integration tests
       - name: Run SSR integration tests
         if: steps.check_tests.outputs.skip_full_tests != 'true'
+        working-directory: ssr
         env:
           SSR_URL: http://localhost:3000
           API_URL: http://localhost:8000
           NGINX_URL: http://localhost:80
-        run: node ssr/tests/test-ssr-integration-simple.js
+        run: npm run test:integration:simple
 
       # Stop all containers when done
       - name: Stop containers
