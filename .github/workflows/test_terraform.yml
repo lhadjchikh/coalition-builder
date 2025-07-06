@@ -98,7 +98,7 @@ jobs:
           file: ./terraform/tests/coverage.out
           flags: terraform
           name: terraform-coverage
-          working-directory: ./terraform/tests
+          root_dir: ./terraform/tests
           fail_ci_if_error: false # Don't fail CI if Codecov has issues
 
   # Final summary job
