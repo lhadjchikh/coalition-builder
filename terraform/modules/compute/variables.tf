@@ -251,3 +251,9 @@ variable "static_assets_bucket_name" {
   default     = ""
 }
 
+variable "cloudfront_domain_name" {
+  description = "Domain name of the CloudFront distribution for static assets"
+  type        = string
+  default     = ""
+}
+

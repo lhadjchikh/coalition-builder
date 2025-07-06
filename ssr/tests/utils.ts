@@ -4,54 +4,97 @@
  * Shared functions for HTTP requests, service checking, and testing
  */
 
-const http = require("http");
-const https = require("https");
-const { URL } = require("url");
+import * as http from "http";
+import * as https from "https";
+import { URL } from "url";
+
+interface RequestOptions {
+  method?: string;
+  headers?: Record<string, string>;
+  timeout?: number;
+}
+
+interface ResponseData {
+  statusCode: number;
+  data: string;
+  headers: http.IncomingHttpHeaders;
+}
+
+interface WaitForServiceOptions {
+  maxAttempts?: number;
+  timeout?: number;
+  initialDelay?: number;
+  maxDelay?: number;
+}
+
+interface FetchResponse {
+  ok: boolean;
+  status: number;
+  statusText: string;
+  headers: http.IncomingHttpHeaders;
+  url: string;
+  json: () => any;
+  text: () => string;
+}
+
+interface RetryOptions {
+  retryCount?: number;
+  initialDelay?: number;
+  maxDelay?: number;
+}
 
 /**
  * Makes an HTTP request to the specified URL
  *
- * @param {string} url - The URL to request
- * @param {object} options - Request options
- * @returns {Promise<object>} Response object
+ * @param url - The URL to request
+ * @param options - Request options
+ * @returns Response object
  */
-function makeRequest(url, options = {}) {
+function makeRequest(
+  url: string,
+  options: RequestOptions = {},
+): Promise<ResponseData> {
   return new Promise((resolve, reject) => {
     try {
       // Parse the URL to get the protocol
       const parsedUrl = new URL(url);
       const httpModule = parsedUrl.protocol === "https:" ? https : http;
 
-      const requestOptions = {
+      const requestOptions: http.RequestOptions = {
         method: options.method || "GET",
         headers: options.headers || {},
         timeout: options.timeout || 30000,
       };
 
-      const req = httpModule.get(url, requestOptions, (response) => {
-        let data = "";
+      const req = httpModule.get(
+        url,
+        requestOptions,
+        (response: http.IncomingMessage) => {
+          let data = "";
 
-        // Handle data chunks
-        response.on("data", (chunk) => {
-          data += chunk;
-        });
+          // Handle data chunks
+          response.on("data", (chunk: Buffer) => {
+            data += chunk;
+          });
 
-        // Handle end of response
-        response.on("end", () => {
-          try {
-            resolve({
-              statusCode: response.statusCode,
-              data: data,
-              headers: response.headers,
-            });
-          } catch (error) {
-            reject(new Error(`Failed to process response: ${error.message}`));
-          }
-        });
-      });
+          // Handle end of response
+          response.on("end", () => {
+            try {
+              resolve({
+                statusCode: response.statusCode || 0,
+                data: data,
+                headers: response.headers,
+              });
+            } catch (error) {
+              const err = error as Error;
+              reject(new Error(`Failed to process response: ${err.message}`));
+            }
+          });
+        },
+      );
 
       // Handle request errors
-      req.on("error", (error) => {
+      req.on("error", (error: Error) => {
         reject(new Error(`Request failed: ${error.message}`));
       });
 
@@ -61,7 +104,8 @@ function makeRequest(url, options = {}) {
         reject(new Error(`Request timeout after ${requestOptions.timeout}ms`));
       });
     } catch (error) {
-      reject(new Error(`Failed to make request: ${error.message}`));
+      const err = error as Error;
+      reject(new Error(`Failed to make request: ${err.message}`));
     }
   });
 }
@@ -69,20 +113,19 @@ function makeRequest(url, options = {}) {
 /**
  * Waits for a service to be ready, with exponential backoff
  *
- * @param {string} url - The URL to check
- * @param {number} maxAttempts - Maximum number of attempts
- * @param {number} timeout - Maximum time to wait in ms
- * @returns {Promise<boolean>} True if service is ready
+ * @param url - The URL to check
+ * @param options - Wait configuration options
+ * @returns True if service is ready
  */
 async function waitForService(
-  url,
+  url: string,
   {
     maxAttempts = 30,
     timeout = 60000,
     initialDelay = 1000,
     maxDelay = 8000,
-  } = {},
-) {
+  }: WaitForServiceOptions = {},
+): Promise<boolean> {
   console.log(`Waiting for service at ${url}...`);
 
   const startTime = Date.now();
@@ -102,7 +145,8 @@ async function waitForService(
         );
       }
     } catch (error) {
-      console.log(`⚠️ Service not ready: ${error.message}`);
+      const err = error as Error;
+      console.log(`⚠️ Service not ready: ${err.message}`);
     }
 
     if (
@@ -129,11 +173,14 @@ async function waitForService(
 /**
  * A fetch-like wrapper around makeRequest for compatibility
  *
- * @param {string} url - The URL to fetch
- * @param {object} options - Fetch options
- * @returns {Promise<object>} Fetch-like response object
+ * @param url - The URL to fetch
+ * @param options - Fetch options
+ * @returns Fetch-like response object
  */
-async function fetchCompatible(url, options = {}) {
+async function fetchCompatible(
+  url: string,
+  options: RequestOptions = {},
+): Promise<FetchResponse> {
   try {
     const response = await makeRequest(url, options);
     return {
@@ -146,7 +193,8 @@ async function fetchCompatible(url, options = {}) {
       text: () => response.data,
     };
   } catch (error) {
-    console.error(`Fetch error: ${error.message}`);
+    const err = error as Error;
+    console.error(`Fetch error: ${err.message}`);
     throw error;
   }
 }
@@ -154,16 +202,16 @@ async function fetchCompatible(url, options = {}) {
 /**
  * Make HTTP requests with retries and exponential backoff
  *
- * @param {string} url - URL to fetch
- * @param {object} options - Fetch options
- * @param {object} retryOptions - Retry configuration
- * @returns {Promise<object>} Fetch response
+ * @param url - URL to fetch
+ * @param options - Fetch options
+ * @param retryOptions - Retry configuration
+ * @returns Fetch response
  */
 async function fetchWithRetry(
-  url,
-  options = {},
-  { retryCount = 5, initialDelay = 3000, maxDelay = 10000 } = {},
-) {
+  url: string,
+  options: RequestOptions = {},
+  { retryCount = 5, initialDelay = 3000, maxDelay = 10000 }: RetryOptions = {},
+): Promise<FetchResponse> {
   let retryDelay = initialDelay;
 
   for (let i = 0; i < retryCount; i++) {
@@ -174,8 +222,9 @@ async function fetchWithRetry(
         throw error;
       }
 
+      const err = error as Error;
       console.log(
-        `Request failed (attempt ${i + 1}/${retryCount}): ${error.message}, retrying...`,
+        `Request failed (attempt ${i + 1}/${retryCount}): ${err.message}, retrying...`,
       );
 
       // Exponential backoff with jitter
@@ -189,9 +238,14 @@ async function fetchWithRetry(
   throw new Error(`Failed after ${retryCount} attempts`);
 }
 
-module.exports = {
+export {
   makeRequest,
   waitForService,
   fetchCompatible,
   fetchWithRetry,
+  type RequestOptions,
+  type ResponseData,
+  type WaitForServiceOptions,
+  type FetchResponse,
+  type RetryOptions,
 };

@@ -42,6 +42,9 @@ ARG API_URL
 # Build with cache enabled
 RUN --mount=type=cache,target=/app/.next/cache npm run build
 
+# Compile TypeScript health check to JavaScript
+RUN npx tsc healthcheck.ts --target es2020 --module commonjs --moduleResolution node
+
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
@@ -67,8 +70,8 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy health check files to avoid any conflicts
-COPY --from=builder --chown=nextjs:nodejs /app/healthcheck*.js /app/
+# Copy compiled health check file
+COPY --from=builder --chown=nextjs:nodejs /app/healthcheck.js /app/
 
 USER nextjs
 

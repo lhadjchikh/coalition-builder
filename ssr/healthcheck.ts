@@ -5,13 +5,20 @@
  * making a request to the dedicated health endpoint.
  */
 
-const http = require("http");
-const os = require("os");
+import * as http from "http";
+import * as os from "os";
+
+interface HealthResponse {
+  status: string;
+  api?: {
+    status: string;
+  };
+}
 
 // Configuration
-const options = {
+const options: http.RequestOptions = {
   hostname: os.hostname() || "localhost",
-  port: parseInt(process.env.PORT) || 3000,
+  port: parseInt(process.env.PORT || "3000"),
   path: "/health",
   method: "GET",
   timeout: 3000,
@@ -21,11 +28,11 @@ const options = {
 };
 
 // Execute health check
-const req = http.request(options, (res) => {
+const req = http.request(options, (res: http.IncomingMessage) => {
   let data = "";
 
   // Collect response data
-  res.on("data", (chunk) => {
+  res.on("data", (chunk: Buffer) => {
     data += chunk;
   });
 
@@ -34,7 +41,7 @@ const req = http.request(options, (res) => {
     if (res.statusCode === 200) {
       try {
         // Parse the JSON response
-        const healthData = JSON.parse(data);
+        const healthData: HealthResponse = JSON.parse(data);
 
         // Check if the SSR service itself is healthy
         // During startup, API might be temporarily disconnected - this is acceptable
@@ -56,9 +63,10 @@ const req = http.request(options, (res) => {
           );
           process.exit(1);
         }
-      } catch (e) {
+      } catch (e: unknown) {
+        const error = e as Error;
         console.error(
-          `❌ Health check failed - Invalid JSON response: ${e.message}`,
+          `❌ Health check failed - Invalid JSON response: ${error.message}`,
         );
         process.exit(1);
       }
@@ -70,7 +78,7 @@ const req = http.request(options, (res) => {
 });
 
 // Handle connection errors
-req.on("error", (err) => {
+req.on("error", (err: Error) => {
   console.error(`❌ Health check failed: ${err.message}`);
   process.exit(1);
 });

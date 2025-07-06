@@ -6,6 +6,8 @@ on:
 # Set explicit permissions for the GITHUB_TOKEN
 permissions:
   contents: read # Only need read access to checkout the code
+  actions: read # Need actions:read for codecov in protected branches
+  id-token: write # For Codecov authentication on protected branches
 
 jobs:
   test:

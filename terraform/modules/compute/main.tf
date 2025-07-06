@@ -9,6 +9,10 @@ locals {
       value = var.static_assets_bucket_name
     },
     {
+      name  = "CLOUDFRONT_DOMAIN"
+      value = var.cloudfront_domain_name
+    },
+    {
       name  = "SITE_PASSWORD_ENABLED"
       value = tostring(var.site_password_enabled)
     }

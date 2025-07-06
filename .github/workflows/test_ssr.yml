@@ -133,19 +133,25 @@ jobs:
           fi
           '
 
+      - name: Install SSR test dependencies
+        working-directory: ssr
+        run: npm ci
+
       - name: Run basic SSR integration tests
         env:
           SSR_URL: http://localhost:3000
           API_URL: http://localhost:8000
           NGINX_URL: http://localhost:80
-        run: node ssr/tests/test-ssr-integration-simple.js
+        working-directory: ssr
+        run: npm run test:integration:simple
 
       - name: Run comprehensive SSR integration tests
         env:
           SSR_URL: http://localhost:3000
           API_URL: http://localhost:8000
           NGINX_URL: http://localhost:80
-        run: node ssr/tests/test-ssr-integration.js
+        working-directory: ssr
+        run: npm run test:integration
 
       # Stop all containers when done
       - name: Stop containers

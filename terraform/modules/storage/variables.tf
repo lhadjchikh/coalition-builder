@@ -3,6 +3,11 @@ variable "prefix" {
   type        = string
 }
 
+variable "alb_dns_name" {
+  description = "DNS name of the Application Load Balancer for Django static files"
+  type        = string
+}
+
 variable "force_destroy" {
   description = "Whether to force destroy the bucket even if it contains objects"
   type        = bool
@@ -31,4 +36,42 @@ variable "noncurrent_version_expiration_days" {
   description = "Number of days after which to expire noncurrent versions"
   type        = number
   default     = 30
+}
+
+# CloudFront TTL variables for S3 content (user uploads, media files)
+variable "s3_cache_min_ttl" {
+  description = "Minimum TTL for S3 content in seconds"
+  type        = number
+  default     = 0
+}
+
+variable "s3_cache_default_ttl" {
+  description = "Default TTL for S3 content in seconds"
+  type        = number
+  default     = 3600 # 1 hour (development-friendly)
+}
+
+variable "s3_cache_max_ttl" {
+  description = "Maximum TTL for S3 content in seconds"
+  type        = number
+  default     = 86400 # 1 day
+}
+
+# CloudFront TTL variables for Django static files
+variable "static_cache_min_ttl" {
+  description = "Minimum TTL for Django static files in seconds"
+  type        = number
+  default     = 0
+}
+
+variable "static_cache_default_ttl" {
+  description = "Default TTL for Django static files in seconds"
+  type        = number
+  default     = 3600 # 1 hour (development-friendly)
+}
+
+variable "static_cache_max_ttl" {
+  description = "Maximum TTL for Django static files in seconds"
+  type        = number
+  default     = 86400 # 1 day
 }

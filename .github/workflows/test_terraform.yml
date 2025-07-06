@@ -81,23 +81,13 @@ jobs:
       - name: Run unit tests
         run: |
           cd terraform/tests
-          go test -short -v -timeout 10m -coverprofile=coverage.out ./modules/
+          go test -short -v -timeout 10m ./modules/
 
       - name: Run integration tests
         run: |
           cd terraform/tests
           echo "Running integration tests (plan-only) at $(date)"
           go test -v -timeout 10m ./integration/
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          slug: lhadjchikh/coalition-builder
-          file: ./terraform/tests/coverage.out
-          flags: terraform
-          name: terraform-coverage
-          fail_ci_if_error: false # Don't fail CI if Codecov has issues
 
   # Final summary job
   terraform-tests:

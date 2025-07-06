@@ -141,6 +141,7 @@ module "compute" {
   site_username                   = var.site_username
   static_assets_upload_policy_arn = module.storage.static_assets_upload_policy_arn
   static_assets_bucket_name       = module.storage.static_assets_bucket_name
+  cloudfront_domain_name          = module.storage.cloudfront_distribution_domain_name
 
   # Make sure load balancer and secrets are created first
   depends_on = [
@@ -155,10 +156,19 @@ module "storage" {
   source = "./modules/storage"
 
   prefix                 = var.prefix
+  alb_dns_name           = module.loadbalancer.alb_dns_name
   force_destroy          = var.static_assets_force_destroy
   cors_allowed_origins   = var.static_assets_cors_origins != null ? var.static_assets_cors_origins : ["https://${var.domain_name}"]
   enable_versioning      = var.static_assets_enable_versioning
   enable_lifecycle_rules = var.static_assets_enable_lifecycle
+
+  # CloudFront TTL configuration
+  s3_cache_min_ttl         = var.cloudfront_s3_cache_min_ttl
+  s3_cache_default_ttl     = var.cloudfront_s3_cache_default_ttl
+  s3_cache_max_ttl         = var.cloudfront_s3_cache_max_ttl
+  static_cache_min_ttl     = var.cloudfront_static_cache_min_ttl
+  static_cache_default_ttl = var.cloudfront_static_cache_default_ttl
+  static_cache_max_ttl     = var.cloudfront_static_cache_max_ttl
 }
 
 # DNS Module

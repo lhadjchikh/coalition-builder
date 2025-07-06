@@ -153,6 +153,16 @@ output "static_assets_upload_policy_arn" {
   value       = module.storage.static_assets_upload_policy_arn
 }
 
+output "cloudfront_distribution_domain_name" {
+  description = "Domain name of the CloudFront distribution for static assets"
+  value       = module.storage.cloudfront_distribution_domain_name
+}
+
+output "cloudfront_distribution_id" {
+  description = "ID of the CloudFront distribution for static assets"
+  value       = module.storage.cloudfront_distribution_id
+}
+
 # Summary output
 output "deployment_summary" {
   description = "Complete deployment summary"

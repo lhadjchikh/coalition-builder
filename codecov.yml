@@ -22,10 +22,6 @@ flag_management:
         - ssr/
         - shared/
       carryforward: true
-    - name: terraform
-      paths:
-        - terraform/tests/
-      carryforward: true
 
 comment:
   layout: "reach,diff,flags,files,footer"

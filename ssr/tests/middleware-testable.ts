@@ -3,15 +3,29 @@
  * This recreates the middleware logic in a Node.js compatible format
  */
 
+interface NextResponseInit {
+  status?: number;
+  headers?: Record<string, string>;
+}
+
+interface MockRequest {
+  nextUrl: { pathname: string };
+  headers: Map<string, string>;
+}
+
 // Mock NextResponse for testing
 class NextResponse {
-  constructor(body, init = {}) {
+  public body: string | null;
+  public status: number;
+  public headers: Map<string, string>;
+
+  constructor(body: string | null = null, init: NextResponseInit = {}) {
     this.body = body;
     this.status = init.status || 200;
     this.headers = new Map(Object.entries(init.headers || {}));
   }
 
-  static next() {
+  static next(): NextResponse {
     return new NextResponse(null, { status: 200 });
   }
 }
@@ -19,7 +33,7 @@ class NextResponse {
 /**
  * Testable middleware function that replicates the logic from middleware.ts
  */
-function middleware(request) {
+function middleware(request: MockRequest): NextResponse {
   // Skip auth for health check endpoints and API routes that should remain public
   if (
     request.nextUrl.pathname.startsWith("/health") ||
@@ -65,7 +79,4 @@ function middleware(request) {
   });
 }
 
-module.exports = {
-  middleware,
-  NextResponse,
-};
+export { middleware, NextResponse, type NextResponseInit, type MockRequest };

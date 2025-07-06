@@ -39,6 +39,80 @@ The infrastructure architecture consists of the following components:
 - **Monitoring**: CloudWatch for logs and metrics
 - **DNS**: Route53 for domain management
 
+### Figure 1: AWS Infrastructure Architecture
+
+The following diagram shows the complete AWS infrastructure layout:
+
+> **Note**: This diagram uses Mermaid syntax. It will render automatically on GitHub, GitLab, and other platforms that support Mermaid.
+
+```mermaid
+%%{init: {'theme':'dark'}}%%
+flowchart TB
+    %% Internet
+    internet[Internet] --> cloudfront[CloudFront CDN]
+    internet --> route53[Route53 DNS]
+
+    %% DNS and CDN
+    route53 --> alb[Application Load Balancer]
+    cloudfront --> s3_assets[S3 Static Assets]
+
+    %% VPC Container
+    subgraph vpc["VPC (10.0.0.0/16)"]
+        %% Public Subnets
+        subgraph public["Public Subnets"]
+            alb
+            bastion[Bastion Host]
+        end
+
+        %% Private Subnets
+        subgraph private["Private Subnets"]
+            subgraph ecs_cluster["ECS Cluster"]
+                django[Django API Container]
+                ssr[Next.js SSR Container<br/>*optional*]
+                redis[Redis Cache]
+            end
+        end
+
+        %% Database Subnets
+        subgraph db_subnets["Database Subnets"]
+            rds[(RDS PostgreSQL<br/>with PostGIS)]
+        end
+    end
+
+    %% External Services
+    subgraph aws_services["AWS Services"]
+        secrets[Secrets Manager]
+        ecr[ECR Repositories]
+        cloudwatch[CloudWatch Logs]
+        s3_assets
+    end
+
+    %% Connections
+    alb --> django
+    alb --> ssr
+    django --> redis
+    django --> rds
+    ssr --> django
+    bastion --> rds
+
+    %% CloudFront connections
+    cloudfront --> alb
+
+    %% Service connections
+    django --> secrets
+    ssr --> secrets
+    django --> cloudwatch
+    ssr --> cloudwatch
+    redis --> cloudwatch
+
+    %% ECR
+    ecr --> django
+    ecr --> ssr
+    ecr --> redis
+```
+
+_Figure 1: AWS infrastructure showing VPC with public/private/database subnets, ECS Fargate containers, RDS database, and supporting AWS services. CloudFront CDN serves static files from both S3 (user uploads) and Django/WhiteNoise (/static/\* paths). The SSR container is optional and controlled by the `enable_ssr` variable._
+
 ## Conditional Server-Side Rendering (SSR)
 
 This infrastructure includes optional Next.js Server-Side Rendering (SSR) capabilities that can be toggled on or off using a single Terraform variable.
@@ -826,8 +900,9 @@ These different endpoints are intentional and serve different purposes. Do not a
    - VPC Endpoints (single-AZ): ~$0.96/day
    - Application Load Balancer: ~$0.60/day
    - RDS t4g.micro: ~$0.50/day
+   - CloudFront CDN: ~$0.01-0.10/day (varies by usage)
    - ECS Fargate: Variable based on usage
-   - Total baseline: ~$2-3/day
+   - Total baseline: ~$2.50-3.50/day
 
 5. **Cost Monitoring and Alerts**:
    - Monthly budget alerts at 70%, 90%, and 100% forecast
@@ -853,6 +928,13 @@ After deployment, the following outputs are available for integration with exter
 - `database_endpoint` - RDS endpoint for application configuration
 - `api_ecr_repository_url` - ECR repository URL for API container images
 - `ssr_ecr_repository_url` - ECR repository URL for SSR container images
+
+### **Static Assets & CDN Outputs**
+
+- `static_assets_bucket_name` - S3 bucket name for static asset uploads
+- `static_assets_bucket_arn` - S3 bucket ARN for IAM policies
+- `cloudfront_distribution_domain_name` - CloudFront CDN domain for global asset delivery
+- `cloudfront_distribution_id` - CloudFront distribution ID for cache invalidation
 
 ### **Cost Monitoring Outputs**
 

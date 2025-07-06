@@ -497,6 +497,17 @@ func GetMonitoringTestVars() map[string]interface{} {
 	}
 }
 
+// GetDefaultStorageTestVars returns default test variables for storage module
+func GetDefaultStorageTestVars() map[string]interface{} {
+	return map[string]interface{}{
+		"alb_dns_name":           "test-alb-123456789.us-east-1.elb.amazonaws.com",
+		"force_destroy":          true,
+		"cors_allowed_origins":   []string{"https://example.com"},
+		"enable_versioning":      true,
+		"enable_lifecycle_rules": true,
+	}
+}
+
 // ValidateTerraformOutput validates that a terraform output exists and is not empty
 func ValidateTerraformOutput(t *testing.T, terraformOptions *terraform.Options, outputName string) string {
 	output := terraform.Output(t, terraformOptions, outputName)
