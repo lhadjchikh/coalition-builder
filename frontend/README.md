@@ -1,11 +1,12 @@
 # Coalition Builder Frontend
 
-[![TypeScript Type Check](https://github.com/lhadjchikh/coalition-builder/actions/workflows/ts-typecheck.yml/badge.svg)](https://github.com/lhadjchikh/coalition-builder/actions/workflows/ts-typecheck.yml)
-[![JavaScript & TypeScript Linting](https://github.com/lhadjchikh/coalition-builder/actions/workflows/js-lint.yml/badge.svg)](https://github.com/lhadjchikh/coalition-builder/actions/workflows/js-lint.yml)
-[![Frontend Tests](https://github.com/lhadjchikh/coalition-builder/actions/workflows/frontend-tests.yml/badge.svg)](https://github.com/lhadjchikh/coalition-builder/actions/workflows/frontend-tests.yml)
+[![Frontend Tests](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_frontend.yml/badge.svg)](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_frontend.yml)
+[![TypeScript Coverage](https://codecov.io/gh/lhadjchikh/coalition-builder/branch/main/graph/badge.svg?flag=javascript&token=VGUU4R6NR3)](https://codecov.io/gh/lhadjchikh/coalition-builder)
+[![React 19](https://img.shields.io/badge/react-19-blue.svg)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/typescript-5.7-blue.svg)](https://www.typescriptlang.org/)
 
-This is the frontend for Coalition Builder. It's a React application with TypeScript
-that interacts with the Django backend API to provide campaign management and stakeholder endorsement features.
+This is the React frontend for Coalition Builder. It provides a user interface for managing
+policy campaigns, submitting endorsements, and viewing campaign supporters.
 
 ## 📚 Documentation
 
@@ -13,163 +14,95 @@ that interacts with the Django backend API to provide campaign management and st
 
 Quick links:
 
-- [Development Guide](https://lhadjchikh.github.io/coalition-builder/development/)
 - [Installation Guide](https://lhadjchikh.github.io/coalition-builder/installation/)
+- [Development Guide](https://lhadjchikh.github.io/coalition-builder/development/)
+- [Frontend API Reference](https://lhadjchikh.github.io/coalition-builder/frontend-api/)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app) and has been
-migrated to TypeScript.
+## Technology Stack
 
-## 🌟 Key Features
+- **React 19**: UI library
+- **TypeScript 5.7**: Type-safe JavaScript
+- **styled-components**: CSS-in-JS styling
+- **React Router**: Client-side routing
+- **Webpack**: Module bundler
+- **Jest & React Testing Library**: Testing framework
+- **npm**: Package management
 
-### Campaign Management
+## Project Structure
 
-- **CampaignsList** - Displays all active policy campaigns with endorsement counts
-- **CampaignDetail** - Shows detailed campaign information with endorsement functionality
+```
+frontend/
+├── src/
+│   ├── components/         # React components
+│   ├── services/          # API integration
+│   ├── types/            # TypeScript type definitions
+│   ├── utils/            # Utility functions
+│   ├── tests/            # Test suites
+│   └── index.tsx         # Application entry point
+├── public/               # Static assets
+├── build/               # Production build output
+├── package.json         # Dependencies and scripts
+└── tsconfig.json        # TypeScript configuration
+```
 
-### Stakeholder Endorsements
+## Quick Setup
 
-- **EndorsementForm** - Form for stakeholders to submit endorsements for campaigns
-- **EndorsementsList** - Displays all endorsements with stakeholder information
-- **Endorsement Management** - Integration with backend API for creating and fetching endorsements
+### Install Dependencies
 
-### API Integration
+```bash
+npm install
+```
 
-- **API Service** - Centralized service for all backend API calls
-- **Type Safety** - Full TypeScript types for campaigns, stakeholders, and endorsements
-- **Error Handling** - Comprehensive error handling with user-friendly messages
+### Start Development Server
 
-### Components Overview
+```bash
+npm start
+```
 
-#### Core Components
+The app will be available at [http://localhost:3000](http://localhost:3000)
 
-- `src/components/CampaignsList.tsx` - Lists all active campaigns
-- `src/components/EndorsementForm.tsx` - Form for submitting endorsements
-- `src/components/EndorsementsList.tsx` - Displays campaign endorsements
-- `src/components/CampaignDetail.tsx` - Combines endorsement form and list
+### Run Tests
 
-#### Services
+```bash
+# Run all tests
+npm test
 
-- `src/services/api.ts` - API integration with backend
-- `src/types/index.ts` - TypeScript type definitions
+# Run tests with coverage
+npm run test:coverage
 
-#### Styling
+# Run tests in CI mode (no watch)
+npm run test:ci
+```
 
-- `src/components/Endorsements.css` - Comprehensive styling for all endorsement components
+### Build for Production
 
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### Testing
-
-#### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more
-information.
-
-#### `npm run test:ci`
-
-Runs all tests except the E2E tests in non-watch mode. This is used by the CI pipeline.
-
-#### `npm run test:e2e`
-
-Runs only the E2E tests that require the backend to be running. These tests verify the integration between frontend and
-backend.
-
-## Test Structure
-
-- `src/__tests__`: Unit tests for components
-- `src/tests/integration`: Integration tests with mocked API
-- `src/tests/e2e`: End-to-end tests with the real backend
-
-See `src/tests/README.md` for more information on running tests.
+```bash
+npm run build
+```
 
 ## Code Quality
 
-### TypeScript
-
-This project uses TypeScript for type safety. You can run the type checker with:
+### Type Checking
 
 ```bash
-npm run typecheck   # Check for type errors
+npm run typecheck
 ```
 
 ### Linting
 
-This project uses ESLint for code quality. You can run the linter with:
-
 ```bash
-npm run lint        # Check for linting errors
-npm run lint:fix    # Fix automatically fixable errors
+# Check for issues
+npm run lint
+
+# Auto-fix issues
+npm run lint:fix
 ```
 
-The linting configuration extends the standard Create React App rules and includes Jest rules. E2E tests have some rules
-relaxed due to their specific testing needs.
+## Environment Variables
 
-### `npm run build`
+Key environment variables:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- `REACT_APP_API_URL`: Backend API URL (defaults to `/api`)
+- `REACT_APP_SITE_PASSWORD`: Optional site-wide password protection
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will
-remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right
-into your project so you have full control over them. All of the commands except `eject` will still work, but they will
-point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you
-shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't
-customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the
-[Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-To learn TypeScript, check out the [TypeScript documentation](https://www.typescriptlang.org/docs/).
-
-### Code Splitting
-
-This section has moved here:
-[https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here:
-[https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here:
-[https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here:
-[https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here:
-[https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+For complete environment variable reference, see the [Configuration Guide](https://lhadjchikh.github.io/coalition-builder/configuration/).
