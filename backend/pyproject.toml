@@ -98,12 +98,11 @@ addopts = [
 [tool.coverage.run]
 source = ["coalition"]
 omit = [
-    "*/tests/*",
-    "*/*/tests/*",
-    "*/test_*.py",
-    "*_tests.py",
-    "*/migrations/*",
-    "*/tests.py"
+    "**/migrations/*",
+    "**/tests/*",
+    "**/tests.py",
+    "**/test_*.py",
+    "**/*_tests.py"
 ]
 
 [build-system]
