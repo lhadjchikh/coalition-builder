@@ -74,7 +74,7 @@ describe('App Integration Test', () => {
   });
 
   test('fetches and displays campaigns in the app', async () => {
-    // Act - Render the App
+    // Act - Render the App (without act to see initial loading state)
     render(<App />);
 
     // Initial loading state

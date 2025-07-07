@@ -291,3 +291,174 @@ class IPValidationTest(TestCase):
         # The IP should be consistent across multiple calls
         ip2 = get_client_ip(request)
         assert ip == ip2
+
+    def test_secure_ip_key_function(self) -> None:
+        """Test secure_ip_key function used for rate limiting"""
+        from ..spam_prevention import secure_ip_key
+
+        request = HttpRequest()
+        request.META = {"REMOTE_ADDR": TEST_PUBLIC_IP}
+
+        # Should return the same IP as get_client_ip
+        key = secure_ip_key("test_group", request)
+        expected_ip = get_client_ip(request)
+        assert key == expected_ip
+
+    def test_check_rate_limit_not_limited(self) -> None:
+        """Test rate limit check when user is not rate limited"""
+        request = HttpRequest()
+        request.META = {"REMOTE_ADDR": TEST_PUBLIC_IP}
+
+        # First call should not be rate limited
+        result = SpamPreventionService.check_rate_limit(request)
+        assert result["allowed"] is True
+        assert result["remaining"] > 0
+
+    def test_record_submission_attempt(self) -> None:
+        """Test recording submission attempts"""
+        request = HttpRequest()
+        request.META = {
+            "REMOTE_ADDR": TEST_PUBLIC_IP,
+            "HTTP_USER_AGENT": "Test Browser",
+        }
+
+        # Should record attempt without errors
+        try:
+            SpamPreventionService.record_submission_attempt(request)
+        except Exception as e:
+            self.fail(f"record_submission_attempt raised {e}")
+
+    def test_email_validator_private_methods(self) -> None:
+        """Test private email validation methods"""
+        # Test _validate_with_email_validator if available
+        try:
+            # Valid email
+            reasons = SpamPreventionService._validate_with_email_validator(
+                "john@example.com",
+            )
+            # Note: email-validator may still flag this as suspicious in some cases
+            # We just ensure it doesn't crash
+            assert isinstance(reasons, list)
+
+            # Invalid email
+            reasons = SpamPreventionService._validate_with_email_validator(
+                "invalid-email",
+            )
+            assert len(reasons) > 0
+            assert any("invalid" in reason.lower() for reason in reasons)
+
+        except ImportError:
+            # email_validator not available, test basic checks instead
+            pass
+
+        # Test _validate_with_basic_checks (always available)
+        valid_reasons = SpamPreventionService._validate_with_basic_checks(
+            "john@example.com",
+        )
+        assert len(valid_reasons) == 0
+
+        invalid_reasons = SpamPreventionService._validate_with_basic_checks(
+            "invalid-email",
+        )
+        assert len(invalid_reasons) > 0
+
+    def test_check_email_patterns_method(self) -> None:
+        """Test _check_email_patterns private method"""
+        # Clean email
+        reasons = SpamPreventionService._check_email_patterns("john.doe@gmail.com")
+        assert len(reasons) == 0
+
+        # Test pattern email with + and test
+        reasons = SpamPreventionService._check_email_patterns("test+user@example.com")
+        assert len(reasons) > 0
+        assert any("test" in reason.lower() for reason in reasons)
+
+        # Sequential numbers (three zeros)
+        reasons = SpamPreventionService._check_email_patterns("user000@example.com")
+        assert len(reasons) > 0
+        assert any("sequential" in reason.lower() for reason in reasons)
+
+        # Multiple issues
+        reasons = SpamPreventionService._check_email_patterns("test+000@temp-mail.com")
+        assert len(reasons) >= 2  # Should detect both test pattern and sequential zeros
+
+    def test_comprehensive_spam_check_rate_limited(self) -> None:
+        """Test comprehensive spam check when rate limited"""
+        request = HttpRequest()
+        request.META = {"REMOTE_ADDR": TEST_PUBLIC_IP}
+
+        stakeholder_data = {
+            "name": "John Doe",
+            "email": "john@example.com",
+        }
+
+        form_data = {"message": "Test message"}
+
+        # Integration test - actual rate limiting behavior depends on Redis/cache
+        # We mainly test that the method doesn't crash
+        result = SpamPreventionService.comprehensive_spam_check(
+            request,
+            stakeholder_data,
+            "Test endorsement",
+            form_data,
+        )
+
+        # Should return a result dict with expected keys
+        assert "is_spam" in result
+        assert "reasons" in result
+        assert "rate_limit" in result
+        assert isinstance(result["reasons"], list)
+
+    def test_content_quality_edge_cases(self) -> None:
+        """Test content quality check edge cases"""
+        # Empty content with proper org name and role (avoid minimal content flag)
+        result = SpamPreventionService.check_content_quality(
+            {"name": "John", "organization": "Corp", "role": "Manager"},
+            "",
+        )
+        assert result["suspicious"] is False
+
+        # None values with proper organization name and role
+        result = SpamPreventionService.check_content_quality(
+            {"name": "John", "organization": "Corp", "role": "Manager"},
+            None,
+        )
+        assert result["suspicious"] is False
+
+        # Very short content with proper organization name
+        result = SpamPreventionService.check_content_quality(
+            {"name": "A", "organization": "Corp"},
+            "B",
+        )
+        assert (
+            result["suspicious"] is False
+        )  # Short content is not necessarily suspicious
+
+        # Test minimal content flag specifically
+        result = SpamPreventionService.check_content_quality(
+            {"name": "John", "organization": "Corp"},
+            "",
+        )
+        assert result["suspicious"] is True
+        assert any("minimal" in reason.lower() for reason in result["reasons"])
+
+        # All caps content - test the method still works
+        result = SpamPreventionService.check_content_quality(
+            {"name": "JOHN DOE", "organization": "Corp"},
+            "THIS IS ALL CAPS MESSAGE!!!",
+        )
+        assert "suspicious" in result
+        assert isinstance(result["reasons"], list)
+
+    def test_timing_validation_edge_cases(self) -> None:
+        """Test timing validation edge cases"""
+        # Invalid timestamp format
+        form_data = {"form_start_time": "invalid-timestamp"}
+        assert (
+            SpamPreventionService.validate_timing(form_data) is True
+        )  # Should default to True on parse error
+
+        # Future timestamp (should be invalid)
+        future_time = (timezone.now() + timedelta(minutes=5)).isoformat()
+        form_data = {"form_start_time": future_time}
+        assert SpamPreventionService.validate_timing(form_data) is False

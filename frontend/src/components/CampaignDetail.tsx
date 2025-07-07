@@ -41,6 +41,10 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({ campaignId, campaignNam
 
     if (campaignId || campaignName) {
       fetchCampaign();
+    } else {
+      // Handle the case where neither ID nor name is provided
+      setLoading(false);
+      setError('Either campaignId or campaignName must be provided');
     }
   }, [campaignId, campaignName]);
 
@@ -69,13 +73,17 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({ campaignId, campaignNam
       </header>
 
       {campaign.description && (
-        <section className="campaign-description">
-          <h2>About This Campaign</h2>
+        <section
+          className="campaign-description"
+          role="region"
+          aria-labelledby="campaign-description-heading"
+        >
+          <h2 id="campaign-description-heading">About This Campaign</h2>
           <div dangerouslySetInnerHTML={{ __html: campaign.description }} />
         </section>
       )}
 
-      <section className="campaign-endorsements">
+      <section className="campaign-endorsements" role="region" aria-label="Campaign Endorsements">
         <div className="endorsements-container">
           <div className="endorsements-display">
             <EndorsementsList campaignId={campaign.id} refreshTrigger={refreshEndorsements} />

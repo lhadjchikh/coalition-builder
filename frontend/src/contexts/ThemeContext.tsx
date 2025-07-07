@@ -22,27 +22,39 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
   const [loading, setLoading] = useState(!initialTheme);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchActiveTheme = async (): Promise<void> => {
+  const fetchActiveTheme = async (signal?: AbortSignal): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/themes/active/');
+      const response = await fetch('/api/themes/active/', {
+        signal,
+      });
+
+      if (signal?.aborted) return;
 
       if (response.ok) {
         const themeData = await response.json();
-        setThemeState(themeData);
+        if (!signal?.aborted) {
+          setThemeState(themeData);
+        }
       } else if (response.status === 404) {
         // No active theme found
-        setThemeState(null);
+        if (!signal?.aborted) {
+          setThemeState(null);
+        }
       } else {
         throw new Error('Failed to fetch theme');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load theme');
-      setThemeState(null);
+      if (!signal?.aborted) {
+        setError(err instanceof Error ? err.message : 'Failed to load theme');
+        setThemeState(null);
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
   };
 
@@ -136,7 +148,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
   // Load theme on mount if not provided initially
   useEffect(() => {
     if (!initialTheme) {
-      fetchActiveTheme();
+      const controller = new AbortController();
+      fetchActiveTheme(controller.signal);
+
+      return () => {
+        controller.abort();
+      };
     }
   }, [initialTheme]);
 

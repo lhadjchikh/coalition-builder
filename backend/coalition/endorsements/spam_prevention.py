@@ -390,7 +390,7 @@ class SpamPreventionService:
             reasons.append("Suspicious organization name")
 
         # Check for excessive character repetition
-        if re.search(r"(.)\1{3,}", statement.lower()):
+        if statement and re.search(r"(.)\1{3,}", statement.lower()):
             reasons.append("Excessive character repetition in statement")
 
         # Check for missing required context
