@@ -15,12 +15,20 @@ global.fetch = mockFetch;
 describe('API Service', () => {
   const originalEnv = process.env;
 
+  // Helper to create clean environment without CI variables affecting tests
+  const createCleanEnv = (overrides = {}) => ({
+    ...Object.fromEntries(
+      Object.entries(originalEnv).filter(
+        ([key]) => !['CI', 'NEXT_PUBLIC_API_URL', 'REACT_APP_API_URL'].includes(key)
+      )
+    ),
+    ...overrides,
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
-    // Mock process.env with a fresh object
-    jest.replaceProperty(process, 'env', {
-      ...originalEnv,
-    });
+    // Start with clean environment for each test
+    jest.replaceProperty(process, 'env', createCleanEnv());
   });
 
   afterAll(() => {
@@ -30,30 +38,40 @@ describe('API Service', () => {
 
   describe('getBaseUrl', () => {
     it('should return NEXT_PUBLIC_API_URL when set', () => {
-      jest.replaceProperty(process, 'env', {
-        ...originalEnv,
-        NEXT_PUBLIC_API_URL: 'https://next-api.example.com',
-      });
+      jest.replaceProperty(
+        process,
+        'env',
+        createCleanEnv({
+          NEXT_PUBLIC_API_URL: 'https://next-api.example.com',
+        })
+      );
       expect(API.getBaseUrl()).toBe('https://next-api.example.com');
     });
 
     it('should return REACT_APP_API_URL when NEXT_PUBLIC_API_URL is not set', () => {
-      jest.replaceProperty(process, 'env', {
-        ...originalEnv,
-        REACT_APP_API_URL: 'https://react-api.example.com',
-      });
+      jest.replaceProperty(
+        process,
+        'env',
+        createCleanEnv({
+          REACT_APP_API_URL: 'https://react-api.example.com',
+        })
+      );
       expect(API.getBaseUrl()).toBe('https://react-api.example.com');
     });
 
     it('should return localhost:8000 when in CI environment', () => {
-      jest.replaceProperty(process, 'env', {
-        ...originalEnv,
-        CI: 'true',
-      });
+      jest.replaceProperty(
+        process,
+        'env',
+        createCleanEnv({
+          CI: 'true',
+        })
+      );
       expect(API.getBaseUrl()).toBe('http://localhost:8000');
     });
 
     it('should return empty string for local development', () => {
+      // Clean environment is already set in beforeEach
       expect(API.getBaseUrl()).toBe('');
     });
   });
@@ -97,7 +115,14 @@ describe('API Service', () => {
     });
 
     it('should use correct URL with base URL', async () => {
-      process.env.NEXT_PUBLIC_API_URL = 'https://api.example.com';
+      jest.replaceProperty(
+        process,
+        'env',
+        createCleanEnv({
+          NEXT_PUBLIC_API_URL: 'https://api.example.com',
+        })
+      );
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockCampaigns,
