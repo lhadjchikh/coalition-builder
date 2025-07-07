@@ -1,5 +1,16 @@
 import React from 'react';
-import { render, act } from '@testing-library/react';
+import { render, act, RenderOptions } from '@testing-library/react';
+import { ThemeProvider } from 'styled-components';
+import { defaultTheme } from '../../styles/theme';
+import {
+  Campaign,
+  Endorser,
+  Legislator,
+  Endorsement,
+  HomePage,
+  ContentBlock,
+  Theme,
+} from '../../types';
 
 // Utility function to wait for all async operations to complete
 export const waitForAsyncUpdates = async () => {
@@ -41,4 +52,208 @@ export const rejectPromiseInTest = async (rejectFunction: (reason: any) => void,
   await act(async () => {
     rejectFunction(reason);
   });
+};
+
+// Theme-aware wrapper for tests
+const ThemeWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <ThemeProvider theme={defaultTheme}>{children}</ThemeProvider>
+);
+
+// Custom render function with theme provider
+export const renderWithTheme = (
+  ui: React.ReactElement,
+  options?: Omit<RenderOptions, 'wrapper'>
+) => {
+  return render(ui, { wrapper: ThemeWrapper, ...options });
+};
+
+// Mock data factories
+export const createMockCampaign = (overrides: Partial<Campaign> = {}): Campaign => ({
+  id: 1,
+  name: 'test-campaign',
+  title: 'Test Campaign',
+  summary: 'Test campaign summary',
+  description: 'Test campaign description',
+  active: true,
+  created_at: '2023-01-01T00:00:00Z',
+  allow_endorsements: true,
+  endorsement_statement: 'I support this campaign',
+  endorsement_form_instructions: 'Please fill out the form',
+  ...overrides,
+});
+
+export const createMockEndorser = (overrides: Partial<Endorser> = {}): Endorser => ({
+  id: 1,
+  name: 'John Doe',
+  organization: 'Test Organization',
+  email: 'john@example.com',
+  state: 'CA',
+  type: 'individual',
+  role: 'Citizen',
+  created_at: '2023-01-01T00:00:00Z',
+  updated_at: '2023-01-01T00:00:00Z',
+  ...overrides,
+});
+
+export const createMockLegislator = (overrides: Partial<Legislator> = {}): Legislator => ({
+  id: 1,
+  first_name: 'Jane',
+  last_name: 'Smith',
+  chamber: 'Senate',
+  state: 'CA',
+  district: '1st',
+  is_senior: false,
+  ...overrides,
+});
+
+export const createMockEndorsement = (overrides: Partial<Endorsement> = {}): Endorsement => ({
+  id: 1,
+  stakeholder: createMockEndorser(),
+  campaign: createMockCampaign(),
+  statement: 'I support this campaign',
+  public_display: true,
+  created_at: '2023-01-01T00:00:00Z',
+  ...overrides,
+});
+
+export const createMockHomePage = (overrides: Partial<HomePage> = {}): HomePage => ({
+  id: 1,
+  organization_name: 'Test Organization',
+  tagline: 'Test Tagline',
+  hero_title: 'Test Hero Title',
+  hero_subtitle: 'Test Hero Subtitle',
+  hero_background_image: 'hero.jpg',
+  about_section_title: 'About Us',
+  about_section_content: '<p>About content</p>',
+  cta_title: 'Get Involved',
+  cta_content: 'Join our mission',
+  cta_button_text: 'Learn More',
+  cta_button_url: 'https://example.com',
+  contact_email: 'contact@test.org',
+  contact_phone: '555-1234',
+  facebook_url: 'https://facebook.com/test',
+  twitter_url: 'https://twitter.com/test',
+  instagram_url: 'https://instagram.com/test',
+  linkedin_url: 'https://linkedin.com/test',
+  campaigns_section_title: 'Our Campaigns',
+  campaigns_section_subtitle: 'Current initiatives',
+  show_campaigns_section: true,
+  content_blocks: [],
+  is_active: true,
+  created_at: '2023-01-01T00:00:00Z',
+  updated_at: '2023-01-01T00:00:00Z',
+  ...overrides,
+});
+
+export const createMockContentBlock = (overrides: Partial<ContentBlock> = {}): ContentBlock => ({
+  id: 1,
+  title: 'Test Block',
+  block_type: 'text',
+  content: '<p>Test content</p>',
+  image_url: '',
+  image_alt_text: '',
+  image_title: '',
+  image_author: '',
+  image_license: '',
+  image_source_url: '',
+  css_classes: '',
+  background_color: '',
+  order: 1,
+  is_visible: true,
+  created_at: '2023-01-01T00:00:00Z',
+  updated_at: '2023-01-01T00:00:00Z',
+  ...overrides,
+});
+
+export const createMockTheme = (overrides: Partial<Theme> = {}): Theme => ({
+  id: 1,
+  name: 'Test Theme',
+  description: 'Test theme description',
+  primary_color: '#2563eb',
+  secondary_color: '#64748b',
+  accent_color: '#059669',
+  background_color: '#ffffff',
+  section_background_color: '#f9fafb',
+  card_background_color: '#ffffff',
+  heading_color: '#111827',
+  body_text_color: '#374151',
+  muted_text_color: '#6b7280',
+  link_color: '#2563eb',
+  link_hover_color: '#1d4ed8',
+  heading_font_family: 'Inter, sans-serif',
+  body_font_family: 'Inter, sans-serif',
+  google_fonts: ['Inter'],
+  font_size_base: 1,
+  font_size_small: 0.875,
+  font_size_large: 1.125,
+  logo_url: 'https://example.com/logo.png',
+  logo_alt_text: 'Test Logo',
+  favicon_url: 'https://example.com/favicon.ico',
+  custom_css: '.custom { color: red; }',
+  is_active: true,
+  created_at: '2023-01-01T00:00:00Z',
+  updated_at: '2023-01-01T00:00:00Z',
+  ...overrides,
+});
+
+// Accessibility testing utilities
+export const getByAriaLabel = (container: HTMLElement, label: string) => {
+  return container.querySelector(`[aria-label="${label}"]`);
+};
+
+export const getByRole = (container: HTMLElement, role: string) => {
+  return container.querySelector(`[role="${role}"]`);
+};
+
+export const hasValidAltText = (img: HTMLImageElement) => {
+  return img.alt && img.alt.trim().length > 0;
+};
+
+export const hasValidHeadingHierarchy = (container: HTMLElement) => {
+  const headings = container.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  if (headings.length === 0) return true;
+
+  let lastLevel = 0;
+  for (const heading of headings) {
+    const level = parseInt(heading.tagName.charAt(1));
+    if (lastLevel > 0 && level > lastLevel + 1) {
+      return false; // Skipped a level
+    }
+    lastLevel = level;
+  }
+  return true;
+};
+
+// Performance testing utilities
+export const measureRenderTime = async (renderFn: () => void) => {
+  const start = performance.now();
+  await act(async () => {
+    renderFn();
+  });
+  const end = performance.now();
+  return end - start;
+};
+
+// Network mocking utilities
+export const mockFetchSuccess = (data: any) => {
+  global.fetch = jest.fn(() =>
+    Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve(data),
+    })
+  ) as jest.Mock;
+};
+
+export const mockFetchError = (status: number, message?: string) => {
+  global.fetch = jest.fn(() =>
+    Promise.resolve({
+      ok: false,
+      status,
+      json: () => Promise.resolve({ detail: message || 'Error occurred' }),
+    })
+  ) as jest.Mock;
+};
+
+export const mockFetchNetworkError = () => {
+  global.fetch = jest.fn(() => Promise.reject(new Error('Network error'))) as jest.Mock;
 };
