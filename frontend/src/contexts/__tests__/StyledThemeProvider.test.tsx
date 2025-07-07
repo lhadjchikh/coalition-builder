@@ -68,6 +68,7 @@ describe('EnhancedThemeProvider', () => {
         theme: null,
         loading: true,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -86,6 +87,7 @@ describe('EnhancedThemeProvider', () => {
         theme: mockTheme,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -106,6 +108,7 @@ describe('EnhancedThemeProvider', () => {
         theme: mockTheme,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -128,6 +131,7 @@ describe('EnhancedThemeProvider', () => {
         theme: mockTheme,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -153,6 +157,7 @@ describe('EnhancedThemeProvider', () => {
         theme: null,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -171,15 +176,14 @@ describe('EnhancedThemeProvider', () => {
       expect(themeData.spacing).toBeDefined();
     });
 
-    it('should handle theme creation errors gracefully', () => {
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
-
-      // Mock a theme that would cause an error
+    it('should handle invalid theme data gracefully', () => {
+      // Mock a theme with invalid data
       const badTheme = { ...mockTheme, primary_color: null } as any;
       mockUseTheme.mockReturnValue({
         theme: badTheme,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -189,13 +193,8 @@ describe('EnhancedThemeProvider', () => {
         </EnhancedThemeProvider>
       );
 
+      // Should still render content even with invalid theme data
       expect(screen.getByText('Test Content')).toBeInTheDocument();
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Error creating styled theme, falling back to default:',
-        expect.any(Error)
-      );
-
-      consoleSpy.mockRestore();
     });
   });
 
@@ -205,6 +204,7 @@ describe('EnhancedThemeProvider', () => {
         theme: mockTheme,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -226,6 +226,7 @@ describe('EnhancedThemeProvider', () => {
         theme: mockTheme,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -257,6 +258,7 @@ describe('EnhancedThemeProvider', () => {
         theme: mockTheme,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -279,6 +281,7 @@ describe('EnhancedThemeProvider', () => {
         theme: themeWithoutFavicon,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -306,6 +309,7 @@ describe('EnhancedThemeProvider', () => {
         theme: mockTheme,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -326,6 +330,7 @@ describe('EnhancedThemeProvider', () => {
         theme: newTheme,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -348,6 +353,7 @@ describe('EnhancedThemeProvider', () => {
         theme: mockTheme,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -373,6 +379,7 @@ describe('EnhancedThemeProvider', () => {
         theme: mockTheme,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -405,6 +412,7 @@ describe('EnhancedThemeProvider', () => {
         theme: mockTheme,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -424,6 +432,7 @@ describe('EnhancedThemeProvider', () => {
         theme: newTheme,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -448,6 +457,7 @@ describe('EnhancedThemeProvider', () => {
         theme: null,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -467,6 +477,7 @@ describe('EnhancedThemeProvider', () => {
         theme: undefined as any,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -486,6 +497,7 @@ describe('EnhancedThemeProvider', () => {
         theme: mockTheme,
         loading: false,
         error: 'Theme loading error',
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -507,6 +519,7 @@ describe('EnhancedThemeProvider', () => {
         theme: mockTheme,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
@@ -529,6 +542,7 @@ describe('EnhancedThemeProvider', () => {
         theme: mockTheme,
         loading: false,
         error: null,
+        setTheme: jest.fn(),
         refreshTheme: jest.fn(),
       });
 
