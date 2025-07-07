@@ -12,6 +12,63 @@ A comprehensive platform for organizing and managing policy advocacy campaigns, 
 | **TypeScript** | [![Frontend Tests](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_frontend.yml/badge.svg)](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_frontend.yml) | [![TypeScript Coverage](https://codecov.io/gh/lhadjchikh/coalition-builder/branch/main/graph/badge.svg?flag=javascript&token=VGUU4R6NR3)](https://codecov.io/gh/lhadjchikh/coalition-builder) |
 | **HCL**        | [![IaC Tests](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_terraform.yml/badge.svg)](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_terraform.yml)    | N/A                                                                                                                                                                                           |
 
+## 📈 How Organizations Use Coalition Builder
+
+> **Note**: The Mermaid diagrams below are best viewed on GitHub or in the [online documentation](https://lhadjchikh.github.io/coalition-builder/).
+
+### Campaign Lifecycle & Advocacy Workflow
+
+```mermaid
+%%{init: {'theme':'basic'}}%%
+flowchart TD
+    A[🎯 Create Campaign] --> B[👥 Build Coalition]
+    B --> C[✅ Collect Endorsements]
+    C --> D[📊 Track Progress]
+    D --> E[🏛️ Engage Legislators]
+    E --> F[📢 Drive Policy Change]
+```
+
+Coalition Builder guides your organization through the complete advocacy process:
+
+- **Create Campaign**: Launch policy initiatives around federal or state legislation
+- **Build Coalition**: Recruit diverse stakeholders (businesses, nonprofits, citizens, government officials)
+- **Collect Endorsements**: Secure verified support with built-in spam protection
+- **Track Progress**: Analyze geographic distribution and engagement metrics
+- **Engage Legislators**: Target representatives using congressional district data
+- **Drive Policy Change**: Export supporter data and coordinate strategic advocacy
+
+### Core Components & Relationships
+
+```mermaid
+%%{init: {'theme':'basic'}}%%
+flowchart TD
+    Stakeholders[👥 Stakeholders<br/>Businesses, Nonprofits, Citizens, Government]
+    Regions[🗺️ Regions<br/>States, Districts, Counties]
+    Legislators[🏛️ Legislators<br/>Federal, State]
+
+    subgraph Core["🎯 Core Platform"]
+        Campaigns[📋 Policy Campaigns]
+        Endorsements[📝 Verified Endorsements]
+    end
+
+    Legislation[📜 Legislation<br/>Federal Bills, State Bills]
+
+    Stakeholders --> Endorsements
+    Campaigns --> Endorsements
+    Campaigns --> Legislation
+    Regions --> Stakeholders
+    Regions --> Legislators
+    Regions --> Legislation
+    Legislators --> Legislation
+```
+
+**Coalition Builder manages**:
+
+- **Diverse stakeholder categories** across sectors and organizational types
+- **Multi-level campaigns** linking federal and state legislation
+- **Verified endorsements** with geographic and legislative targeting
+- **Geographic intelligence** for strategic advocacy and outreach
+
 ## 🚀 Quick Start
 
 ```bash
