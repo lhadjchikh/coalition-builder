@@ -16,12 +16,19 @@ describe('API Service', () => {
   const originalEnv = process.env;
 
   // Helper to create clean environment without CI variables affecting tests
-  const createCleanEnv = (overrides = {}) => ({
+  const createCleanEnv = (
+    overrides: Record<string, string | undefined> = {}
+  ): NodeJS.ProcessEnv => ({
     ...Object.fromEntries(
       Object.entries(originalEnv).filter(
         ([key]) => !['CI', 'NEXT_PUBLIC_API_URL', 'REACT_APP_API_URL'].includes(key)
       )
     ),
+    // Ensure required properties are present for NodeJS.ProcessEnv
+    NODE_ENV: originalEnv.NODE_ENV || 'test',
+    PUBLIC_URL: originalEnv.PUBLIC_URL || '',
+    PATH: originalEnv.PATH || '',
+    HOME: originalEnv.HOME || '',
     ...overrides,
   });
 
