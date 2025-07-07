@@ -1,6 +1,11 @@
-# Coalition Builder - Server-Side Rendering (SSR)
+# Coalition Builder SSR
 
-This directory contains the Next.js application that provides server-side rendering for the Coalition Builder project.
+[![Frontend Tests](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_frontend.yml/badge.svg)](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_frontend.yml)
+[![TypeScript Coverage](https://codecov.io/gh/lhadjchikh/coalition-builder/branch/main/graph/badge.svg?flag=javascript&token=VGUU4R6NR3)](https://codecov.io/gh/lhadjchikh/coalition-builder)
+[![Next.js 15](https://img.shields.io/badge/next.js-15-black.svg)](https://nextjs.org/)
+[![React 19](https://img.shields.io/badge/react-19-blue.svg)](https://react.dev/)
+
+This is the Next.js Server-Side Rendering (SSR) component for Coalition Builder. It provides SEO-optimized, server-rendered pages using React components from the frontend.
 
 ## 📚 Documentation
 
@@ -8,121 +13,43 @@ This directory contains the Next.js application that provides server-side render
 
 Quick links:
 
-- [Development Guide](https://lhadjchikh.github.io/coalition-builder/development/)
 - [Installation Guide](https://lhadjchikh.github.io/coalition-builder/installation/)
+- [Development Guide](https://lhadjchikh.github.io/coalition-builder/development/)
+- [Frontend API Reference](https://lhadjchikh.github.io/coalition-builder/frontend-api/)
 
-## Architecture
+## Technology Stack
 
-This implementation uses Next.js App Router for server-side rendering. Key aspects:
+- **Next.js 15**: React framework with SSR capabilities
+- **React 19**: UI library (shared with frontend)
+- **TypeScript**: Type-safe JavaScript
+- **styled-components**: CSS-in-JS styling (shared with frontend)
+- **Docker**: Containerized deployment
+- **npm**: Package management
 
-- **App Router**: Uses Next.js 15's App Router architecture
-- **API Integration**: Fetches data from the Django backend API
-- **Docker Ready**: Optimized for containerized deployment
-- **Health Monitoring**: Includes health check and metrics endpoints
-
-## Development
-
-```bash
-# Install dependencies
-npm install
-
-# Run development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm run start
-
-# Run linting
-npm run lint
-
-# Type checking
-npm run type-check
-```
-
-## Directory Structure
+## Project Structure
 
 ```
-/app                   # App Router directory
-  /health              # Health check endpoint
-    /route.ts          # Health API implementation
-  /metrics             # Metrics endpoint
-    /route.ts          # Metrics API implementation
-  /page.tsx            # Main landing page
-  /layout.tsx          # Root layout with metadata
-  /globals.css         # Global styles
-/lib
-  /api.ts              # API client for backend communication
-/scripts
-  /setup-integration-test.sh  # Setup script for integration tests
-  /run-integration-test.sh    # Runner script for integration tests
-/tests
-  /test-ssr-integration.js        # Comprehensive integration tests
-  /test-ssr-integration-simple.js # Simple integration tests
-/types
-  /index.ts            # TypeScript type definitions
+ssr/
+├── app/                     # Next.js App Router pages
+├── lib/
+│   ├── components/          # Local components and shared imports
+│   ├── contexts/            # React contexts
+│   ├── hooks/               # Custom React hooks
+│   └── styles/              # Styling utilities
+├── public/                  # Static assets
+├── next.config.js           # Next.js configuration
+├── package.json             # Dependencies and scripts
+├── tsconfig.json            # TypeScript configuration
+└── Dockerfile               # Container configuration
 ```
 
-## Configuration
-
-Environment variables can be set in `.env` file or via Docker:
-
-- `API_URL`: URL of the Django backend API (server-side only)
-- `NEXT_PUBLIC_API_URL`: URL of the API (client-side accessible)
-- `PORT`: Port to run the Next.js server on (default: 3000)
-- `NODE_ENV`: Environment ('development' or 'production')
-
-## Docker Usage
-
-```bash
-# Build the Docker image
-docker build -t coalition-ssr .
-
-# Run the container
-docker run -p 3000:3000 -e API_URL=http://api:8000 coalition-ssr
 ```
 
-## Testing
+## Key Features
 
-### Running Tests
-
-Integration tests are included in the `tests` directory and can be run using npm scripts:
-
-```bash
-# Run comprehensive integration test
-npm test
-
-# Run simple integration test
-npm run test:simple
-
-# Run tests for CI environment
-npm run test:ci
+- **Server-Side Rendering**: Pre-renders pages for better SEO and performance
+- **Component Sharing**: Reuses React components from the frontend via TypeScript path mapping
+- **API Integration**: Fetches data from Django backend during server-side rendering
+- **Static Generation**: Supports both SSR and static site generation
+- **Docker Ready**: Containerized for deployment in AWS ECS
 ```
-
-You can also run the tests directly:
-
-```bash
-# Run simple integration test
-node tests/test-ssr-integration-simple.js
-
-# Run comprehensive integration test
-node tests/test-ssr-integration.js
-```
-
-### Test Scripts
-
-Helper scripts in the `scripts` directory make it easier to set up and run tests:
-
-```bash
-# Set up integration tests (creates necessary files and installs dependencies)
-./scripts/setup-integration-test.sh
-
-# Run a full integration test with Docker Compose
-./scripts/run-integration-test.sh
-```
-
-## Deployment
-
-This application is deployed to AWS ECS alongside the Django backend. Both containers run within the same task definition, with routing handled by an Application Load Balancer.

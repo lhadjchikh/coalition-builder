@@ -11,7 +11,7 @@ Coalition Builder is designed for containerized deployment with Docker. The appl
 ### Service Components
 
 ```
-docker-compose.yml
+docker compose.yml
 ├── backend (Django API)
 ├── frontend (React - development only)
 ├── ssr (Next.js - optional)
@@ -36,13 +36,13 @@ git clone https://github.com/lhadjchikh/coalition-builder.git
 cd coalition-builder
 
 # Start all services
-docker-compose up -d
+docker compose up -d
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
 
 # Stop services
-docker-compose down
+docker compose down
 ```
 
 Services will be available at:
@@ -125,7 +125,7 @@ volumes:
 ### Production Compose Override
 
 ```yaml
-# docker-compose.prod.yml
+# docker compose.prod.yml
 version: "3.8"
 
 services:
@@ -551,65 +551,65 @@ http {
 
 ```bash
 # Development
-docker-compose up -d
+docker compose up -d
 
 # Production
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+docker compose -f docker compose.yml -f docker compose.prod.yml up -d
 
 # Specific service
-docker-compose up -d backend
+docker compose up -d backend
 
 # With build
-docker-compose up --build -d
+docker compose up --build -d
 ```
 
 ### Monitoring
 
 ```bash
 # View logs
-docker-compose logs -f [service]
+docker compose logs -f [service]
 
 # Service status
-docker-compose ps
+docker compose ps
 
 # Resource usage
 docker stats
 
 # Health status
-docker-compose exec backend python healthcheck.py
-docker-compose exec ssr node healthcheck.js
+docker compose exec backend python healthcheck.py
+docker compose exec ssr node healthcheck.js
 ```
 
 ### Database Operations
 
 ```bash
 # Database shell
-docker-compose exec db psql -U postgres -d coalition
+docker compose exec db psql -U postgres -d coalition
 
 # Run migrations
-docker-compose exec backend poetry run python manage.py migrate
+docker compose exec backend poetry run python manage.py migrate
 
 # Create superuser
-docker-compose exec backend poetry run python manage.py createsuperuser
+docker compose exec backend poetry run python manage.py createsuperuser
 
 # Load test data
-docker-compose exec backend poetry run python scripts/create_test_data.py
+docker compose exec backend poetry run python scripts/create_test_data.py
 
 # Database backup
-docker-compose exec db pg_dump -U postgres coalition > backup.sql
+docker compose exec db pg_dump -U postgres coalition > backup.sql
 
 # Database restore
-docker-compose exec -T db psql -U postgres coalition < backup.sql
+docker compose exec -T db psql -U postgres coalition < backup.sql
 ```
 
 ### Scaling Services
 
 ```bash
 # Scale SSR service
-docker-compose up -d --scale ssr=3
+docker compose up -d --scale ssr=3
 
 # Scale backend service
-docker-compose up -d --scale backend=2
+docker compose up -d --scale backend=2
 ```
 
 ## Troubleshooting
@@ -620,27 +620,27 @@ docker-compose up -d --scale backend=2
 
 ```bash
 # Check logs for errors
-docker-compose logs backend
+docker compose logs backend
 
 # Rebuild containers
-docker-compose build --no-cache
+docker compose build --no-cache
 
 # Reset volumes
-docker-compose down -v
-docker-compose up -d
+docker compose down -v
+docker compose up -d
 ```
 
 **Database connection issues:**
 
 ```bash
 # Check database health
-docker-compose exec db pg_isready -U postgres
+docker compose exec db pg_isready -U postgres
 
 # Verify network connectivity
-docker-compose exec backend ping db
+docker compose exec backend ping db
 
 # Check environment variables
-docker-compose exec backend env | grep DATABASE
+docker compose exec backend env | grep DATABASE
 ```
 
 **Permission issues:**
@@ -650,9 +650,9 @@ docker-compose exec backend env | grep DATABASE
 sudo chown -R $USER:$USER .
 
 # Reset Docker permissions
-docker-compose down
+docker compose down
 sudo rm -rf volumes/
-docker-compose up -d
+docker compose up -d
 ```
 
 **Performance issues:**
@@ -662,7 +662,7 @@ docker-compose up -d
 docker stats
 
 # Check container health
-docker-compose ps
+docker compose ps
 
 # View detailed container info
 docker inspect <container_id>

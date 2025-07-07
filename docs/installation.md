@@ -19,7 +19,7 @@ cd coalition-builder
 docker compose up -d
 
 # For development (live code reload)
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+docker compose -f docker compose.yml -f docker compose.dev.yml up -d
 
 # Create test data
 docker compose exec api python scripts/create_test_data.py
@@ -40,7 +40,7 @@ docker compose exec api python manage.py createsuperuser
 
 - Python 3.13+
 - Node.js 22+
-- PostgreSQL 13+ with PostGIS extension
+- PostgreSQL 16+ with PostGIS extension
 - Redis (for caching)
 
 1. **Clone and setup backend:**
@@ -54,7 +54,7 @@ docker compose exec api python manage.py createsuperuser
 2. **Configure environment:**
 
    ```bash
-   cp .env.example .env
+   cp ../.env.example .env
    # Edit .env with your database credentials
    ```
 
@@ -75,7 +75,7 @@ docker compose exec api python manage.py createsuperuser
    ```bash
    cd ../frontend
    npm install
-   npm start
+   npm run dev
    ```
 
 ## Production Deployment

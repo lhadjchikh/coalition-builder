@@ -295,75 +295,75 @@ poetry run mypy --html-report=mypy_report .
 
 ```bash
 # Start all services
-docker-compose up
+docker compose up
 
 # Start services in background
-docker-compose up -d
+docker compose up -d
 
 # Start specific service
-docker-compose up backend
+docker compose up backend
 
 # Build and start services
-docker-compose up --build
+docker compose up --build
 
 # View logs
-docker-compose logs
+docker compose logs
 
 # View logs for specific service
-docker-compose logs backend
+docker compose logs backend
 
 # Follow logs in real-time
-docker-compose logs -f backend
+docker compose logs -f backend
 
 # Stop all services
-docker-compose down
+docker compose down
 
 # Stop and remove volumes
-docker-compose down -v
+docker compose down -v
 
 # Restart specific service
-docker-compose restart backend
+docker compose restart backend
 ```
 
 ### Service Management
 
 ```bash
 # Run command in service container
-docker-compose exec backend poetry run python manage.py migrate
+docker compose exec backend poetry run python manage.py migrate
 
 # Open shell in service container
-docker-compose exec backend bash
+docker compose exec backend bash
 
 # Run Django shell in container
-docker-compose exec backend poetry run python manage.py shell
+docker compose exec backend poetry run python manage.py shell
 
 # Create superuser in container
-docker-compose exec backend poetry run python manage.py createsuperuser
+docker compose exec backend poetry run python manage.py createsuperuser
 
 # Check service status
-docker-compose ps
+docker compose ps
 
 # View resource usage
-docker-compose top
+docker compose top
 ```
 
 ### Database Operations with Docker
 
 ```bash
 # Access database shell
-docker-compose exec db psql -U postgres -d coalition
+docker compose exec db psql -U postgres -d coalition
 
 # Run SQL file in database
-docker-compose exec -T db psql -U postgres -d coalition < backup.sql
+docker compose exec -T db psql -U postgres -d coalition < backup.sql
 
 # Create database backup
-docker-compose exec db pg_dump -U postgres coalition > backup.sql
+docker compose exec db pg_dump -U postgres coalition > backup.sql
 
 # Restore database from backup
-docker-compose exec -T db psql -U postgres coalition < backup.sql
+docker compose exec -T db psql -U postgres coalition < backup.sql
 
 # Check database connectivity
-docker-compose exec backend poetry run python manage.py dbshell -c "SELECT 1;"
+docker compose exec backend poetry run python manage.py dbshell -c "SELECT 1;"
 ```
 
 ## AWS Deployment Commands
@@ -439,7 +439,7 @@ aws ecs register-task-definition --cli-input-json file://task-def.json
 cd frontend && npm install
 
 # Start development server
-npm start
+npm run dev
 
 # Build for production
 npm run build
@@ -541,7 +541,7 @@ curl http://localhost:8000/health/
 curl http://localhost:3000/health
 
 # Check database connectivity
-docker-compose exec backend poetry run python manage.py dbshell -c "SELECT 1;"
+docker compose exec backend poetry run python manage.py dbshell -c "SELECT 1;"
 
 # Check all services
 curl http://localhost:8000/health/ && \
@@ -573,21 +573,21 @@ poetry run python manage.py shell
 
 ```bash
 # Check container logs
-docker-compose logs backend
-docker-compose logs frontend
-docker-compose logs db
+docker compose logs backend
+docker compose logs frontend
+docker compose logs db
 
 # Check container health
-docker-compose ps
+docker compose ps
 
 # Inspect container details
 docker inspect coalition-builder_backend_1
 
 # Debug container startup
-docker-compose up --no-deps backend
+docker compose up --no-deps backend
 
 # Run container with debugging
-docker-compose run --rm backend bash
+docker compose run --rm backend bash
 ```
 
 ## Performance and Monitoring
@@ -596,21 +596,21 @@ docker-compose run --rm backend bash
 
 ```bash
 # Analyze database performance
-docker-compose exec db psql -U postgres -d coalition -c "
+docker compose exec db psql -U postgres -d coalition -c "
 SELECT query, calls, total_time, mean_time
 FROM pg_stat_statements
 ORDER BY total_time DESC
 LIMIT 10;"
 
 # Check slow queries
-docker-compose exec db psql -U postgres -d coalition -c "
+docker compose exec db psql -U postgres -d coalition -c "
 SELECT query, state, query_start
 FROM pg_stat_activity
 WHERE state = 'active'
 AND query_start < NOW() - INTERVAL '5 minutes';"
 
 # Database size analysis
-docker-compose exec db psql -U postgres -d coalition -c "
+docker compose exec db psql -U postgres -d coalition -c "
 SELECT schemaname, tablename,
 pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size
 FROM pg_tables
@@ -625,13 +625,13 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;"
 docker stats coalition-builder_backend_1
 
 # Process monitoring
-docker-compose exec backend ps aux
+docker compose exec backend ps aux
 
 # Disk usage monitoring
-docker-compose exec backend df -h
+docker compose exec backend df -h
 
 # Network monitoring
-docker-compose exec backend netstat -tulpn
+docker compose exec backend netstat -tulpn
 ```
 
 This comprehensive CLI reference covers all the essential commands for developing, testing, and deploying Coalition Builder. Use these commands to efficiently manage your development workflow and troubleshoot issues when they arise.

@@ -8,10 +8,10 @@ The simplest way to deploy Coalition Builder is using Docker Compose:
 
 ```bash
 # Production deployment
-docker-compose -f docker-compose.prod.yml up -d
+docker compose up -d
 
 # Development with hot reloading
-docker-compose up -d
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 ```
 
 ### Prerequisites

@@ -8,7 +8,10 @@ Run all tests with the provided scripts:
 
 ```bash
 # Run all linters and tests
-./scripts/lint.py && ./scripts/test-all.sh
+./scripts/lint.py
+cd backend && poetry run pytest
+cd ../frontend && npm test
+cd ../terraform && go test ./tests/...
 
 # Individual test suites
 cd backend && poetry run pytest    # Backend tests
