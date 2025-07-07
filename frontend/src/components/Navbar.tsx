@@ -160,7 +160,7 @@ const Navbar: React.FC<LayoutNavbarProps> = ({
           </NavItem>
         ))}
         {currentView === 'detail' && (
-          <NavItem>
+          <NavItem key="breadcrumb-detail">
             <Breadcrumb>→ Campaign Detail</Breadcrumb>
           </NavItem>
         )}

@@ -96,9 +96,25 @@ async function runNavbarIntegrationTests(): Promise<TestResults> {
   try {
     console.log("\n🔍 Test 3: Navbar contains expected navigation items");
 
+    // Parse HTML with JSDOM for reliable navigation item detection
+    const dom = new JSDOM(html);
+    const document = dom.window.document;
+    const navElement = document.querySelector('nav, [role="navigation"]');
+
+    if (!navElement) {
+      throw new Error("No navigation element found for navigation items test");
+    }
+
+    // Collect all text content from navigation items
+    const navItems = Array.from(navElement.querySelectorAll("li, a")).map(
+      (el) => el.textContent?.trim() || "",
+    );
+
     // Check for expected navigation items using shared config
     const expectedItems = DEFAULT_NAV_ITEMS.map((item) => item.label);
-    const missingItems = expectedItems.filter((item) => !html.includes(item));
+    const missingItems = expectedItems.filter(
+      (item) => !navItems.includes(item),
+    );
 
     if (missingItems.length === 0) {
       results.tests.push({ name: "Navigation items present", status: "PASS" });
