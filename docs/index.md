@@ -97,6 +97,7 @@ Comprehensive guides for managing your coalition platform:
 
 ## Documentation
 
+- **[Database Models](architecture/models.md)** - Visual diagrams and documentation of database structure
 - **[API Reference](api/)** - Auto-generated from Django models and views
 - **[Frontend Components](frontend-api/)** - Auto-generated from React components
 - **[Environment Variables](reference/environment.md)** - Complete configuration reference

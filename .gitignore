@@ -65,6 +65,7 @@ override.tf.json
 
 # Documentation
 site/
+*.dot
 
 # General
 .idea/

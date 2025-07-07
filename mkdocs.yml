@@ -45,6 +45,8 @@ nav:
       - Endorsement Workflow: user-guides/endorsement-workflow.md
       - Content Management: user-guides/content-management.md
   - Deployment: deployment.md
+  - Architecture:
+      - Database Models: architecture/models.md
   - Reference:
       - Environment Variables: reference/environment.md
       - CLI Reference: reference/cli.md
