@@ -153,7 +153,7 @@ Comprehensive guides for managing your coalition platform:
 ## Documentation
 
 - **[Database Models](architecture/models.md)** - Visual diagrams and documentation of database structure
-- **[Endorsement Workflow](architecture/endorsement-workflow.md)** - Complete endorsement system process flow with Mermaid diagrams
+- **[Endorsement Workflow](user-guides/endorsement-workflow.md)** - Complete endorsement system process flow with Mermaid diagrams
 - **[API Reference](api/)** - Auto-generated from Django models and views
 - **[Frontend Components](frontend-api/)** - Auto-generated from React components
 - **[Environment Variables](reference/environment.md)** - Complete configuration reference

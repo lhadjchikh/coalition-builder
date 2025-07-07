@@ -12,6 +12,101 @@ Coalition Builder's endorsement system allows stakeholders to publicly support y
 - **Public display** of approved endorsements
 - **Spam protection** and security measures
 
+## Complete Workflow Diagram
+
+The following diagram illustrates the complete endorsement system workflow from form submission to public display:
+
+> **Note**: This diagram uses Mermaid syntax and will render automatically on GitHub and other platforms that support Mermaid.
+
+```mermaid
+%%{init: {'theme':'basic'}}%%
+flowchart TD
+    %% User Journey
+    A[User Loads Endorsement Form] --> B[User Fills Form Data]
+    B --> C{Form Submission}
+
+    %% Spam Prevention Layer
+    C --> D[Rate Limiting Check]
+    D --> E[Honeypot Field Validation]
+    E --> F[Form Timing Analysis]
+    F --> G[Email Reputation Check]
+    G --> H[Content Quality Analysis]
+    H --> I[IP Validation]
+
+    %% Spam Detection Decision
+    I --> J{Spam Detected?}
+    J -->|Yes| K[❌ Block Submission]
+    J -->|No| L[Process Stakeholder Data]
+
+    %% Stakeholder Processing
+    L --> M[Email-based Deduplication]
+    M --> N{Stakeholder Exists?}
+    N -->|Yes| O[Validate Data Match]
+    N -->|No| P[Create New Stakeholder]
+    O --> Q[HTML Sanitization]
+    P --> R[Geocoding & District Assignment]
+    R --> Q
+
+    %% Endorsement Creation
+    Q --> S[Create Endorsement Record]
+    S --> T[Status: PENDING]
+    T --> U[Generate Verification Token]
+    U --> V[Send Verification Email]
+
+    %% Email Verification Flow
+    V --> W[User Receives Email]
+    W --> X{User Clicks Link?}
+    X -->|No| Y[Token Expires 24hrs]
+    X -->|Yes| Z[Verify Token]
+
+    Z --> AA{Token Valid?}
+    AA -->|No| BB[❌ Invalid Token]
+    AA -->|Yes| CC{Auto-Approval Enabled?}
+
+    %% Status Transitions
+    CC -->|Yes| DD[Status: APPROVED]
+    CC -->|No| EE[Status: VERIFIED]
+
+    DD --> FF[Send Approval Email]
+    EE --> GG[Admin Review Queue]
+
+    %% Admin Moderation
+    GG --> HH{Admin Action}
+    HH -->|Approve| II[Status: APPROVED]
+    HH -->|Reject| JJ[Status: REJECTED]
+
+    II --> KK[Send Approval Email]
+    JJ --> LL[Send Rejection Email]
+
+    %% Public Display
+    FF --> MM[Public Display Check]
+    KK --> MM
+    MM --> NN{Display Criteria Met?}
+    NN -->|Yes| OO[✅ Publicly Displayed]
+    NN -->|No| PP[❌ Not Displayed]
+
+    %% Error Paths
+    K --> QQ[Show Error Message]
+    BB --> RR[Show Verification Error]
+    Y --> SS[Allow Resend Email]
+    LL --> TT[Internal Record Only]
+
+    %% Styling
+    classDef pending fill:#ffeb3b,stroke:#f57f17,color:#000
+    classDef verified fill:#2196f3,stroke:#0d47a1,color:#fff
+    classDef approved fill:#4caf50,stroke:#1b5e20,color:#fff
+    classDef rejected fill:#f44336,stroke:#b71c1c,color:#fff
+    classDef error fill:#ff5722,stroke:#bf360c,color:#fff
+    classDef process fill:#e3f2fd,stroke:#1976d2,color:#000
+
+    class T,U,V pending
+    class EE,GG verified
+    class DD,II,FF,KK,OO approved
+    class JJ,LL,PP,TT rejected
+    class K,BB,QQ,RR error
+    class D,E,F,G,H,I,L,M,Q,S process
+```
+
 ## How Endorsements Work
 
 ### Public Endorsement Process
