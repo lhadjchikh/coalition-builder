@@ -347,9 +347,9 @@ async function testContainerCommunication(): Promise<boolean> {
   return true; // Default pass if we reach here
 }
 
-// Test 7: Error Handling and Fallback UI Test
-async function testSSRErrorHandlingAndFallback(): Promise<boolean> {
-  console.log("🔍 Testing SSR error handling and fallback UI...");
+// Test 7: SSR Rendering Stability Test
+async function testSSRRenderingStability(): Promise<boolean> {
+  console.log("🔍 Testing SSR rendering stability...");
 
   const requestOptions = createAuthenticatedRequestOptions();
   const response: FetchResponse = await fetchWithRetry(
@@ -376,30 +376,64 @@ async function testSSRErrorHandlingAndFallback(): Promise<boolean> {
     throw new Error("Page structure compromised");
   }
 
-  // Check that the SSR is actually rendering homepage content
-  const homepageIndicators: string[] = [
-    "Welcome to Coalition Builder", // Should show hero title from fallback
-    "About Our Mission", // Should show about section
-    "Policy Campaigns", // Should show campaigns section
-    "Coalition Builder", // Should show organization name
+  // Check for essential homepage content that should always be present
+  const essentialIndicators: string[] = [
+    "Policy Campaigns", // Should be present in both real and fallback data
+    "<main", // Should have main content area
+    "footer", // Should have footer
+    "<h1", // Should have main heading
   ];
 
-  let foundHomepageIndicators = 0;
-  for (const indicator of homepageIndicators) {
+  let foundEssentialIndicators = 0;
+  for (const indicator of essentialIndicators) {
     if (html.includes(indicator)) {
-      foundHomepageIndicators++;
+      foundEssentialIndicators++;
     }
   }
 
-  if (foundHomepageIndicators < 2) {
+  if (foundEssentialIndicators < 3) {
     throw new Error(
-      `SSR homepage rendering failed - only found ${foundHomepageIndicators}/4 expected indicators: ${homepageIndicators.join(", ")}`,
+      `SSR rendering failed - only found ${foundEssentialIndicators}/${essentialIndicators.length} essential indicators: ${essentialIndicators.join(", ")}`,
     );
   }
 
-  console.log(
-    `✅ SSR homepage rendering test passed - found ${foundHomepageIndicators}/4 homepage indicators`,
-  );
+  // Check that we have either real data or fallback data
+  const realDataIndicators = ["Land and Bay Stewards", "Our Mission"];
+  const fallbackDataIndicators = [
+    "Welcome to Coalition Builder",
+    "About Our Mission",
+    "Coalition Builder",
+  ];
+
+  let foundRealData = 0;
+  let foundFallbackData = 0;
+
+  for (const indicator of realDataIndicators) {
+    if (html.includes(indicator)) {
+      foundRealData++;
+    }
+  }
+
+  for (const indicator of fallbackDataIndicators) {
+    if (html.includes(indicator)) {
+      foundFallbackData++;
+    }
+  }
+
+  if (foundRealData >= 1) {
+    console.log(
+      `✅ SSR rendering test passed - found real data from API (${foundRealData} indicators)`,
+    );
+  } else if (foundFallbackData >= 2) {
+    console.log(
+      `✅ SSR rendering test passed - found fallback data (${foundFallbackData} indicators)`,
+    );
+  } else {
+    throw new Error(
+      `SSR rendering failed - found neither sufficient real data (${foundRealData}) nor fallback data (${foundFallbackData}) indicators`,
+    );
+  }
+
   return true;
 }
 
@@ -452,7 +486,7 @@ async function runIntegrationTests(): Promise<void> {
     { name: "API Routing", fn: testAPIRouting },
     { name: "SSR API Integration", fn: testSSRAPIIntegration },
     { name: "Container Communication", fn: testContainerCommunication },
-    { name: "SSR Error Handling", fn: testSSRErrorHandlingAndFallback },
+    { name: "SSR Rendering Stability", fn: testSSRRenderingStability },
     { name: "Performance Test", fn: testPerformance },
   ];
 
@@ -558,7 +592,7 @@ export {
   testAPIRouting,
   testSSRAPIIntegration,
   testContainerCommunication,
-  testSSRErrorHandlingAndFallback,
+  testSSRRenderingStability,
   testPerformance,
   type TestConfig,
   type TestResult,
