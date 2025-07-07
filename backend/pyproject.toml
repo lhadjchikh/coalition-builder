@@ -99,6 +99,7 @@ addopts = [
 source = ["coalition"]
 omit = [
     "*/tests/*",
+    "*/*/tests/*",
     "*/test_*.py",
     "*_tests.py",
     "*/migrations/*",
