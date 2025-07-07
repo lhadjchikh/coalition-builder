@@ -5,6 +5,7 @@ Test HTML sanitization to prevent XSS attacks.
 from django.test import TestCase
 
 from coalition.campaigns.models import PolicyCampaign
+from coalition.core.html_sanitizer import HTMLSanitizer
 from coalition.core.models import ContentBlock, HomePage
 
 
@@ -188,3 +189,31 @@ class HTMLSanitizationTest(TestCase):
         assert "<p>About us</p>" in homepage.about_section_content
         assert "<iframe>" not in homepage.about_section_content
         assert "javascript:" not in homepage.cta_content
+
+    def test_html_sanitizer_direct_null_input_handling(self) -> None:
+        """Test HTMLSanitizer direct methods with null/empty inputs."""
+        # Test sanitize method with None and empty string
+        assert HTMLSanitizer.sanitize(None) == ""
+        assert HTMLSanitizer.sanitize("") == ""
+        assert HTMLSanitizer.sanitize("   ") == "   "  # Whitespace preserved
+
+        # Test sanitize_plain_text method with None and empty string
+        assert HTMLSanitizer.sanitize_plain_text(None) == ""
+        assert HTMLSanitizer.sanitize_plain_text("") == ""
+        assert HTMLSanitizer.sanitize_plain_text("   ") == "   "  # Whitespace preserved
+
+    def test_html_sanitizer_edge_cases(self) -> None:
+        """Test additional edge cases for HTML sanitizer."""
+        # Test with only whitespace in HTML
+        result = HTMLSanitizer.sanitize("  <p>   </p>  ")
+        assert "<p>   </p>" in result
+
+        # Test plain text with HTML-like content
+        result = HTMLSanitizer.sanitize_plain_text("<not>really</html>")
+        assert result == "&lt;not&gt;really&lt;/html&gt;"
+
+        # Test with mixed content
+        result = HTMLSanitizer.sanitize("<p>Good</p><script>bad()</script>")
+        assert "<p>Good</p>" in result
+        assert "<script>" not in result
+        assert "bad()" in result  # Content preserved, tag removed
