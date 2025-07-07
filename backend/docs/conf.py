@@ -129,7 +129,7 @@ def process_django_model_docstring(
                     lines.append("")
 
                     for field in fields:
-                        # Skip reverse foreign keys and many-to-many reverse relationships
+                        # Skip reverse foreign keys and many-to-many reverse relations
                         if (
                             hasattr(field, "related_model")
                             and field.many_to_one is False
