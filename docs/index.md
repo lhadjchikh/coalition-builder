@@ -2,15 +2,70 @@
 
 A modern platform for organizing and managing policy advocacy campaigns with stakeholder engagement tracking, endorsement collection, and geographic intelligence.
 
-## Overview
+## Key Capabilities
 
-Coalition Builder enables organizations to:
+Organizations use this platform to:
 
-- **Build Coalitions**: Manage advocacy campaigns and stakeholder engagement
-- **Collect Endorsements**: Streamlined collection with verification and moderation
-- **Manage Content**: Dynamic homepage with customizable content blocks
-- **Custom Branding**: Comprehensive theme system for visual customization
-- **Geographic Intelligence**: PostGIS integration for address geocoding and district assignment
+- **Manage Advocacy Campaigns**: Create and track policy initiatives at federal and state levels
+- **Collect Verified Endorsements**: Streamline supporter engagement with built-in verification and moderation
+- **Customize Their Presence**: Dynamic content management and comprehensive theming system
+- **Target Geographically**: Leverage PostGIS integration for precise district-based organizing
+- **Track Campaign Impact**: Monitor endorsement metrics and stakeholder distribution
+
+## How Organizations Use Coalition Builder
+
+### Campaign Lifecycle & Advocacy Workflow
+
+```mermaid
+%%{init: {'theme':'basic'}}%%
+flowchart TD
+    A[🎯 Create Campaign] --> B[👥 Recruit Stakeholders]
+    B --> C[✅ Collect Endorsements]
+    C --> D[📊 Track Progress]
+    D --> E[🏛️ Engage Legislators]
+    E --> F[📢 Drive Policy Change]
+```
+
+Coalition Builder guides your organization through the complete advocacy process:
+
+- **Create Campaign**: Launch policy initiatives around federal or state legislation
+- **Recruit Stakeholders**: Identify and engage diverse supporters (businesses, nonprofits, citizens, government officials)
+- **Collect Endorsements**: Secure verified support with built-in spam protection
+- **Track Progress**: Analyze geographic distribution and engagement metrics
+- **Engage Legislators**: Target representatives using congressional district data
+- **Drive Policy Change**: Export supporter data and coordinate strategic advocacy
+
+### Core Components & Relationships
+
+```mermaid
+%%{init: {'theme':'basic'}}%%
+flowchart TD
+    Stakeholders[👥 Stakeholders<br/>Businesses, Nonprofits, Citizens, Government]
+    Regions[🗺️ Regions<br/>States, Counties, Districts]
+    Legislators[🏛️ Legislators<br/>Federal, State]
+
+    subgraph Core["🎯 Core Platform"]
+        Campaigns[📋 Policy Campaigns]
+        Endorsements[📝 Verified Endorsements]
+    end
+
+    Legislation[📜 Legislation<br/>Federal Bills, State Bills]
+
+    Stakeholders --> Endorsements
+    Campaigns --> Endorsements
+    Campaigns --> Legislation
+    Regions --> Stakeholders
+    Regions --> Legislators
+    Regions --> Legislation
+    Legislators --> Legislation
+```
+
+**Coalition Builder manages**:
+
+- **Diverse stakeholder categories** across sectors and organizational types
+- **Multi-level campaigns** linking federal and state legislation
+- **Verified endorsements** with geographic and legislative targeting
+- **Geographic intelligence** for strategic advocacy and outreach
 
 ## Architecture
 
@@ -97,6 +152,8 @@ Comprehensive guides for managing your coalition platform:
 
 ## Documentation
 
+- **[Database Models](architecture/models.md)** - Visual diagrams and documentation of database structure
+- **[Endorsement Workflow](architecture/endorsement-workflow.md)** - Complete endorsement system process flow with Mermaid diagrams
 - **[API Reference](api/)** - Auto-generated from Django models and views
 - **[Frontend Components](frontend-api/)** - Auto-generated from React components
 - **[Environment Variables](reference/environment.md)** - Complete configuration reference
