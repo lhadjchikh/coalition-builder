@@ -362,14 +362,23 @@ describe('CampaignDetail', () => {
 
   describe('loading state management', () => {
     it('should reset loading state properly on successful fetch', async () => {
-      mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
-
-      await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+      // Create a promise that we can control
+      let resolvePromise: (value: Campaign) => void;
+      const controlledPromise = new Promise<Campaign>(resolve => {
+        resolvePromise = resolve;
       });
+
+      mockAPI.getCampaignById.mockReturnValue(controlledPromise);
+
+      render(<CampaignDetail campaignId={1} />);
 
       // Should start with loading
       expect(screen.getByTestId('campaign-loading')).toBeInTheDocument();
+
+      // Resolve the promise
+      await act(async () => {
+        resolvePromise!(mockCampaign);
+      });
 
       // Should transition to loaded state
       await waitFor(() => {
@@ -379,14 +388,23 @@ describe('CampaignDetail', () => {
     });
 
     it('should reset loading state properly on error', async () => {
-      mockAPI.getCampaignById.mockRejectedValue(new Error('Test error'));
-
-      await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+      // Create a promise that we can control
+      let rejectPromise: (error: Error) => void;
+      const controlledPromise = new Promise<Campaign>((_, reject) => {
+        rejectPromise = reject;
       });
+
+      mockAPI.getCampaignById.mockReturnValue(controlledPromise);
+
+      render(<CampaignDetail campaignId={1} />);
 
       // Should start with loading
       expect(screen.getByTestId('campaign-loading')).toBeInTheDocument();
+
+      // Reject the promise
+      await act(async () => {
+        rejectPromise!(new Error('Test error'));
+      });
 
       // Should transition to error state
       await waitFor(() => {

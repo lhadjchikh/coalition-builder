@@ -51,7 +51,11 @@ describe('ContentBlock', () => {
       render(<ContentBlock block={block} />);
 
       expect(screen.getByText('Text Block Title')).toBeInTheDocument();
-      expect(screen.getByText('This is bold text content.')).toBeInTheDocument();
+      // Check the paragraph contains the expected text
+      const paragraph = screen.getByText((content, element) => {
+        return element?.tagName === 'P' && element?.textContent === 'This is bold text content.';
+      });
+      expect(paragraph).toBeInTheDocument();
       expect(screen.getByText('bold')).toBeInTheDocument();
     });
 
