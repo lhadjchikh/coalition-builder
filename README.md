@@ -21,7 +21,7 @@ A comprehensive platform for organizing and managing policy advocacy campaigns, 
 ```mermaid
 %%{init: {'theme':'basic'}}%%
 flowchart TD
-    A[🎯 Create Campaign] --> B[👥 Build Coalition]
+    A[🎯 Create Campaign] --> B[👥 Recruit Stakeholders]
     B --> C[✅ Collect Endorsements]
     C --> D[📊 Track Progress]
     D --> E[🏛️ Engage Legislators]
@@ -31,7 +31,7 @@ flowchart TD
 Coalition Builder guides your organization through the complete advocacy process:
 
 - **Create Campaign**: Launch policy initiatives around federal or state legislation
-- **Build Coalition**: Recruit diverse stakeholders (businesses, nonprofits, citizens, government officials)
+- **Recruit Stakeholders**: Identify and engage diverse supporters (businesses, nonprofits, citizens, government officials)
 - **Collect Endorsements**: Secure verified support with built-in spam protection
 - **Track Progress**: Analyze geographic distribution and engagement metrics
 - **Engage Legislators**: Target representatives using district data

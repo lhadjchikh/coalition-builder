@@ -2,15 +2,15 @@
 
 A modern platform for organizing and managing policy advocacy campaigns with stakeholder engagement tracking, endorsement collection, and geographic intelligence.
 
-## Overview
+## Key Capabilities
 
-Coalition Builder enables organizations to:
+Organizations use this platform to:
 
-- **Build Coalitions**: Manage advocacy campaigns and stakeholder engagement
-- **Collect Endorsements**: Streamlined collection with verification and moderation
-- **Manage Content**: Dynamic homepage with customizable content blocks
-- **Custom Branding**: Comprehensive theme system for visual customization
-- **Geographic Intelligence**: PostGIS integration for address geocoding and district assignment
+- **Manage Advocacy Campaigns**: Create and track policy initiatives at federal and state levels
+- **Collect Verified Endorsements**: Streamline supporter engagement with built-in verification and moderation
+- **Customize Their Presence**: Dynamic content management and comprehensive theming system
+- **Target Geographically**: Leverage PostGIS integration for precise district-based organizing
+- **Track Campaign Impact**: Monitor endorsement metrics and stakeholder distribution
 
 ## How Organizations Use Coalition Builder
 
@@ -19,7 +19,7 @@ Coalition Builder enables organizations to:
 ```mermaid
 %%{init: {'theme':'basic'}}%%
 flowchart TD
-    A[🎯 Create Campaign] --> B[👥 Build Coalition]
+    A[🎯 Create Campaign] --> B[👥 Recruit Stakeholders]
     B --> C[✅ Collect Endorsements]
     C --> D[📊 Track Progress]
     D --> E[🏛️ Engage Legislators]
@@ -29,7 +29,7 @@ flowchart TD
 Coalition Builder guides your organization through the complete advocacy process:
 
 - **Create Campaign**: Launch policy initiatives around federal or state legislation
-- **Build Coalition**: Recruit diverse stakeholders (businesses, nonprofits, citizens, government officials)
+- **Recruit Stakeholders**: Identify and engage diverse supporters (businesses, nonprofits, citizens, government officials)
 - **Collect Endorsements**: Secure verified support with built-in spam protection
 - **Track Progress**: Analyze geographic distribution and engagement metrics
 - **Engage Legislators**: Target representatives using congressional district data
