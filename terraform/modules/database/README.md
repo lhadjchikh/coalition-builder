@@ -1,16 +1,16 @@
 # Database Module
 
-This module creates and configures an Amazon RDS PostgreSQL database with appropriate parameter groups, security settings, and user management.
+Terraform module for creating and configuring an Amazon RDS PostgreSQL database with PostGIS extension, encryption, and application user management.
 
-## Features
+**For complete deployment guide, see: [AWS Deployment Guide](../../../docs/deployment/aws.md)**
 
-- PostgreSQL database with configurable instance class and storage
-- PostGIS extension enabled automatically
-- KMS encryption for data at rest
-- Application-specific user with restricted privileges
-- Secrets Manager integration for credential storage
-- Configurable backup retention period
-- DB subnet group and security group configuration
+## Key Features
+
+- PostgreSQL 16.9 with PostGIS extension
+- KMS encryption and Secrets Manager integration
+- Split parameter group management (dynamic vs static)
+- Application user with restricted privileges
+- Automated backup configuration
 
 ## Parameter Group Management
 
@@ -37,19 +37,19 @@ Without these steps, static parameter changes will not take effect.
 
 We've separated the parameters this way to ensure Terraform can successfully apply without errors while still documenting the intended static parameter configuration.
 
-## Usage
+## Quick Start
 
 ```hcl
 module "database" {
   source = "./modules/database"
 
-  prefix              = "myapp"
+  prefix              = "coalition"
   db_subnet_ids       = module.networking.database_subnet_ids
   db_security_group_id = module.networking.database_security_group_id
-  db_name             = "myappdb"
-  db_username         = "admin"
-  db_password         = "securepassword"
-  app_db_username     = "app_user"
+  db_name             = "coalition"
+  db_username         = "postgres"
+  db_password         = var.db_password
+  app_db_username     = "coalition_app"
   use_secrets_manager = true
 }
 ```
@@ -81,3 +81,11 @@ module "database" {
 | db_name                     | The name of the database                                                      |
 | master_username             | The master username for the database                                          |
 | app_database_url_secret_arn | The ARN of the Secrets Manager secret containing the application database URL |
+
+## Complete Documentation
+
+This module is part of the Coalition Builder infrastructure. For:
+
+- **Architecture Overview**: See [AWS Deployment Guide](../../../docs/deployment/aws.md)
+- **Full Infrastructure**: See [Terraform README](../../README.md)
+- **Project Documentation**: Visit [lhadjchikh.github.io/coalition-builder](https://lhadjchikh.github.io/coalition-builder/)
