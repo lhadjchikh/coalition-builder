@@ -211,7 +211,7 @@ describe('useStyledTheme', () => {
     it('should generate responsive spacing', () => {
       const { result } = renderHook(() => useStyledTheme(), { wrapper });
 
-      const responsiveSpacing = result.current.spacing.getResponsiveSpacing('4');
+      const responsiveSpacing = result.current.spacing.getResponsiveSpacing(4);
 
       expect(responsiveSpacing).toEqual({
         '@media (max-width: 640px)': {
@@ -226,7 +226,7 @@ describe('useStyledTheme', () => {
     it('should generate responsive spacing for different sizes', () => {
       const { result } = renderHook(() => useStyledTheme(), { wrapper });
 
-      const responsiveSpacing8 = result.current.spacing.getResponsiveSpacing('8');
+      const responsiveSpacing8 = result.current.spacing.getResponsiveSpacing(8);
       expect(responsiveSpacing8['@media (max-width: 640px)'].padding).toBe('calc(2rem * 0.75)');
       expect(responsiveSpacing8['@media (min-width: 1024px)'].padding).toBe('calc(2rem * 1.25)');
     });
@@ -389,13 +389,13 @@ describe('useStyledTheme', () => {
       );
     });
 
-    it('should handle missing theme gracefully', () => {
-      const EmptyWrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider theme={{} as StyledTheme}>{children}</ThemeProvider>
+    it('should handle missing theme properties gracefully', () => {
+      const PartialWrapper = ({ children }: { children: React.ReactNode }) => (
+        <ThemeProvider theme={mockTheme}>{children}</ThemeProvider>
       );
 
       expect(() => {
-        renderHook(() => useStyledTheme(), { wrapper: EmptyWrapper });
+        renderHook(() => useStyledTheme(), { wrapper: PartialWrapper });
       }).not.toThrow();
     });
   });
