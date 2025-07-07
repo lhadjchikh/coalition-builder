@@ -47,17 +47,9 @@ terraform/
 │   └── common/               # Test utilities
 ├── main.tf                   # Main configuration
 ├── variables.tf              # Input variables
-├── outputs.tf               # Output values
-└── backend.tf               # Remote state configuration
+├── outputs.tf                # Output values
+└── backend.tf                # Remote state configuration
 ```
-
-## Key Features
-
-- ✅ **Multi-environment support** with account-specific remote state
-- ✅ **Conditional SSR** for cost optimization and flexible deployment
-- ✅ **Secure credentials** with AWS Secrets Manager integration
-- ✅ **Comprehensive testing** with Terratest and AWS SDK v2
-- ✅ **Production-ready** security and monitoring
 
 ## Architecture Overview
 
@@ -141,7 +133,7 @@ The infrastructure uses a layered security model with:
 - **CloudWatch**: Logging and monitoring
 - **Cost Alerts**: Budget monitoring and anomaly detection
 
-## Security Features
+### Security Features
 
 - **Network Isolation**: VPC with public/private/database subnets
 - **Encryption**: KMS encryption for RDS and Secrets Manager
@@ -149,12 +141,3 @@ The infrastructure uses a layered security model with:
 - **WAF Protection**: Web Application Firewall rules
 - **SSH Access**: Secure bastion host for database access
 - **Credential Management**: AWS Secrets Manager integration
-
-## Cost Optimization
-
-- **Single-AZ VPC Endpoints**: ~50% cost savings on endpoints
-- **No NAT Gateway**: Uses VPC endpoints instead (~$90/month savings)
-- **Conditional SSR**: Disable when not needed to reduce container costs
-- **Budget Alerts**: Automated cost monitoring and alerts
-
-Daily baseline cost: ~$2.50-3.50/day
