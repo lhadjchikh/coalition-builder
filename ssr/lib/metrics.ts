@@ -26,9 +26,7 @@ export const metrics = {
     const uptime = Math.floor((Date.now() - this.startTime) / 1000);
     return {
       seconds: uptime,
-      formatted: `${Math.floor(uptime / 3600)}h ${Math.floor(
-        (uptime % 3600) / 60,
-      )}m ${uptime % 60}s`,
+      formatted: `${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m ${uptime % 60}s`,
     };
   },
 

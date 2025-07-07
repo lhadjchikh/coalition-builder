@@ -398,11 +398,7 @@ async function testSSRRenderingStability(): Promise<boolean> {
 
   if (foundEssentialIndicators < ESSENTIAL_INDICATORS_THRESHOLD) {
     throw new Error(
-      `SSR rendering failed - only found ${foundEssentialIndicators}/${
-        essentialIndicators.length
-      } essential indicators (threshold: ${ESSENTIAL_INDICATORS_THRESHOLD}): ${essentialIndicators.join(
-        ", ",
-      )}`,
+      `SSR rendering failed - only found ${foundEssentialIndicators}/${essentialIndicators.length} essential indicators (threshold: ${ESSENTIAL_INDICATORS_THRESHOLD}): ${essentialIndicators.join(", ")}`,
     );
   }
 
