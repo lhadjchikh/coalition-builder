@@ -87,10 +87,12 @@ describe('App component', () => {
     expect(demoButton2).toBeInTheDocument();
   });
 
-  test('app header has correct styling', () => {
+  test('app navigation is rendered correctly', () => {
     render(<App />);
-    const appHeader = screen.getByRole('banner');
-    expect(appHeader).toHaveClass('App-header');
+    const appNavigation = screen.getByRole('navigation');
+    expect(appNavigation).toBeInTheDocument();
+    // The navbar should contain the organization name
+    expect(screen.getByText('Coalition Builder')).toBeInTheDocument();
   });
 
   test('renders CampaignsList component', async () => {

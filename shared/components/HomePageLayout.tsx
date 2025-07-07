@@ -1,31 +1,47 @@
 import React from "react";
 import { Campaign, HomePage } from "../utils/homepage-data";
+import { NavItemData } from "../types";
 
-interface SharedHomePageLayoutProps {
+interface NavbarProps {
+  organizationName?: string;
+  navItems?: NavItemData[];
+}
+
+interface HomePageLayoutProps {
   homepage: HomePage;
   campaigns: Campaign[];
   homepageError?: string | null;
   campaignsError?: string | null;
   onCampaignSelect?: (campaign: Campaign) => void;
-  showNavBar?: boolean;
   HeroComponent?: React.ComponentType<{ homepage: HomePage }>;
   ContentBlockComponent?: React.ComponentType<{ block: any }>;
   SocialLinksComponent?: React.ComponentType<{ homepage: HomePage }>;
+  NavbarComponent?: React.ComponentType<NavbarProps>;
+  navItems?: NavItemData[];
 }
 
-const SharedHomePageLayout: React.FC<SharedHomePageLayoutProps> = ({
+const HomePageLayout: React.FC<HomePageLayoutProps> = ({
   homepage,
   campaigns,
   homepageError,
   campaignsError,
   onCampaignSelect,
-  showNavBar = false,
   HeroComponent,
   ContentBlockComponent,
   SocialLinksComponent,
+  NavbarComponent,
+  navItems,
 }) => {
   return (
     <div className="min-h-screen bg-white">
+      {/* Navigation */}
+      {NavbarComponent && (
+        <NavbarComponent
+          organizationName={homepage.organization_name}
+          navItems={navItems}
+        />
+      )}
+
       <main role="main">
         {/* Development notice when using fallback data */}
         {process.env.NODE_ENV === "development" && homepageError && (
@@ -189,7 +205,7 @@ const SharedHomePageLayout: React.FC<SharedHomePageLayoutProps> = ({
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900">
+      <footer id="footer" className="bg-gray-900">
         <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h3 className="text-lg font-semibold text-white mb-4">
@@ -231,4 +247,4 @@ const SharedHomePageLayout: React.FC<SharedHomePageLayoutProps> = ({
   );
 };
 
-export default SharedHomePageLayout;
+export default HomePageLayout;
