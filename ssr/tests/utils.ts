@@ -166,7 +166,9 @@ async function waitForService(
   }
 
   throw new Error(
-    `Service at ${url} not ready after ${attempts} attempts or ${Date.now() - startTime}ms`,
+    `Service at ${url} not ready after ${attempts} attempts or ${
+      Date.now() - startTime
+    }ms`,
   );
 }
 
@@ -224,7 +226,9 @@ async function fetchWithRetry(
 
       const err = error as Error;
       console.log(
-        `Request failed (attempt ${i + 1}/${retryCount}): ${err.message}, retrying...`,
+        `Request failed (attempt ${i + 1}/${retryCount}): ${
+          err.message
+        }, retrying...`,
       );
 
       // Exponential backoff with jitter

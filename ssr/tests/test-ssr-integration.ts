@@ -384,6 +384,11 @@ async function testSSRRenderingStability(): Promise<boolean> {
     "<h1", // Should have main heading
   ];
 
+  // Require most essential indicators to be present
+  const ESSENTIAL_INDICATORS_THRESHOLD = Math.ceil(
+    essentialIndicators.length * 0.75,
+  );
+
   let foundEssentialIndicators = 0;
   for (const indicator of essentialIndicators) {
     if (html.includes(indicator)) {
@@ -391,9 +396,13 @@ async function testSSRRenderingStability(): Promise<boolean> {
     }
   }
 
-  if (foundEssentialIndicators < 3) {
+  if (foundEssentialIndicators < ESSENTIAL_INDICATORS_THRESHOLD) {
     throw new Error(
-      `SSR rendering failed - only found ${foundEssentialIndicators}/${essentialIndicators.length} essential indicators: ${essentialIndicators.join(", ")}`,
+      `SSR rendering failed - only found ${foundEssentialIndicators}/${
+        essentialIndicators.length
+      } essential indicators (threshold: ${ESSENTIAL_INDICATORS_THRESHOLD}): ${essentialIndicators.join(
+        ", ",
+      )}`,
     );
   }
 
@@ -404,6 +413,10 @@ async function testSSRRenderingStability(): Promise<boolean> {
     "About Our Mission",
     "Coalition Builder",
   ];
+
+  // Require at least half of fallback indicators to be present
+  const FALLBACK_DATA_THRESHOLD = Math.ceil(fallbackDataIndicators.length / 2);
+  const REAL_DATA_THRESHOLD = 1; // At least one real data indicator
 
   let foundRealData = 0;
   let foundFallbackData = 0;
@@ -420,13 +433,13 @@ async function testSSRRenderingStability(): Promise<boolean> {
     }
   }
 
-  if (foundRealData >= 1) {
+  if (foundRealData >= REAL_DATA_THRESHOLD) {
     console.log(
-      `✅ SSR rendering test passed - found real data from API (${foundRealData} indicators)`,
+      `✅ SSR rendering test passed - found real data from API (${foundRealData} indicators, threshold: ${REAL_DATA_THRESHOLD})`,
     );
-  } else if (foundFallbackData >= 2) {
+  } else if (foundFallbackData >= FALLBACK_DATA_THRESHOLD) {
     console.log(
-      `✅ SSR rendering test passed - found fallback data (${foundFallbackData} indicators)`,
+      `✅ SSR rendering test passed - found fallback data (${foundFallbackData} indicators, threshold: ${FALLBACK_DATA_THRESHOLD})`,
     );
   } else {
     throw new Error(

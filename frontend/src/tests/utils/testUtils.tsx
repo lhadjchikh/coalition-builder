@@ -50,7 +50,11 @@ export const resolvePromiseInTest = async <T,>(resolveFunction: (value: T) => vo
 // Utility to reject promises in tests with proper act() wrapping
 export const rejectPromiseInTest = async (rejectFunction: (reason: any) => void, reason: any) => {
   await act(async () => {
-    rejectFunction(reason);
+    // Create a new promise that rejects immediately
+    await new Promise((_, reject) => {
+      rejectFunction(reason);
+      reject(reason);
+    });
   });
 };
 
