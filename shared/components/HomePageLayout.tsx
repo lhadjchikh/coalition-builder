@@ -17,6 +17,7 @@ interface HomePageLayoutProps {
   ContentBlockComponent?: React.ComponentType<{ block: any }>;
   SocialLinksComponent?: React.ComponentType<{ homepage: HomePage }>;
   NavbarComponent?: React.ComponentType<NavbarProps>;
+  navItems?: NavItemData[];
 }
 
 const HomePageLayout: React.FC<HomePageLayoutProps> = ({
@@ -29,12 +30,16 @@ const HomePageLayout: React.FC<HomePageLayoutProps> = ({
   ContentBlockComponent,
   SocialLinksComponent,
   NavbarComponent,
+  navItems,
 }) => {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
       {NavbarComponent && (
-        <NavbarComponent organizationName={homepage.organization_name} />
+        <NavbarComponent
+          organizationName={homepage.organization_name}
+          navItems={navItems}
+        />
       )}
 
       <main role="main">

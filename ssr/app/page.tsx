@@ -19,20 +19,15 @@ import HeroSection from "@frontend/components/HeroSection";
 import ContentBlock from "@frontend/components/ContentBlock";
 import SocialLinks from "@frontend/components/SocialLinks";
 import Navbar from "@frontend/components/Navbar";
-import { NavItemData } from "@shared/types";
+import { NavItemData, DEFAULT_NAV_ITEMS } from "@shared/types";
 
 // SSR navbar configuration
 const SSRNavbar: React.FC<{
   organizationName?: string;
   navItems?: NavItemData[];
-}> = ({
-  organizationName,
-  navItems = [
-    { label: "About", href: "#about-section" },
-    { label: "Campaigns", href: "#campaigns-section" },
-    { label: "Contact", href: "#footer" },
-  ],
-}) => <Navbar organizationName={organizationName} navItems={navItems} />;
+}> = ({ organizationName, navItems = DEFAULT_NAV_ITEMS }) => (
+  <Navbar organizationName={organizationName} navItems={navItems} />
+);
 
 export async function generateMetadata(): Promise<Metadata> {
   try {

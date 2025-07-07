@@ -3,7 +3,9 @@
  * Tests that the Navbar component is properly integrated into SSR rendering
  */
 
+import { JSDOM } from "jsdom";
 import { makeRequest, waitForService } from "./utils";
+import { DEFAULT_NAV_ITEMS } from "@shared/types";
 
 // Configuration
 const SSR_URL = process.env.SSR_URL || "http://localhost:3000";
@@ -65,8 +67,12 @@ async function runNavbarIntegrationTests(): Promise<TestResults> {
   try {
     console.log("\n🔍 Test 2: Navbar element present in SSR");
 
-    // Check if the HTML contains a nav element
-    if (html.includes("<nav") || html.includes('role="navigation"')) {
+    // Parse HTML with JSDOM for reliable element detection
+    const dom = new JSDOM(html);
+    const document = dom.window.document;
+    const navElement = document.querySelector('nav, [role="navigation"]');
+
+    if (navElement) {
       results.tests.push({
         name: "Navbar element in SSR HTML",
         status: "PASS",
@@ -90,8 +96,8 @@ async function runNavbarIntegrationTests(): Promise<TestResults> {
   try {
     console.log("\n🔍 Test 3: Navbar contains expected navigation items");
 
-    // Check for expected navigation items
-    const expectedItems = ["About", "Campaigns", "Contact"];
+    // Check for expected navigation items using shared config
+    const expectedItems = DEFAULT_NAV_ITEMS.map((item) => item.label);
     const missingItems = expectedItems.filter((item) => !html.includes(item));
 
     if (missingItems.length === 0) {
