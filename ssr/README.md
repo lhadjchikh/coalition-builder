@@ -30,74 +30,26 @@ Quick links:
 
 ```
 ssr/
-├── src/
-│   ├── components/           # Shared React components (symlinked from frontend)
-│   ├── pages/               # Next.js pages and routing
-│   ├── styles/              # Global styles and themes
-│   └── utils/               # Utility functions
+├── app/                     # Next.js App Router pages
+├── lib/
+│   ├── components/          # Local components and shared imports
+│   ├── contexts/            # React contexts
+│   ├── hooks/               # Custom React hooks
+│   └── styles/              # Styling utilities
 ├── public/                  # Static assets
-├── next.config.js          # Next.js configuration
-├── package.json            # Dependencies and scripts
-├── tsconfig.json           # TypeScript configuration
-└── Dockerfile              # Container configuration
+├── next.config.js           # Next.js configuration
+├── package.json             # Dependencies and scripts
+├── tsconfig.json            # TypeScript configuration
+└── Dockerfile               # Container configuration
 ```
 
-## Quick Setup
-
-### Install Dependencies
-
-```bash
-npm install
-```
-
-### Start Development Server
-
-```bash
-npm run dev
-```
-
-The SSR server will be available at [http://localhost:3000](http://localhost:3000)
-
-### Build for Production
-
-```bash
-npm run build
-npm start
 ```
 
 ## Key Features
 
 - **Server-Side Rendering**: Pre-renders pages for better SEO and performance
-- **Component Sharing**: Reuses React components from the frontend via symlinks
+- **Component Sharing**: Reuses React components from the frontend via TypeScript path mapping
 - **API Integration**: Fetches data from Django backend during server-side rendering
 - **Static Generation**: Supports both SSR and static site generation
 - **Docker Ready**: Containerized for deployment in AWS ECS
-
-## Environment Variables
-
-Key environment variables:
-
-- `NEXT_PUBLIC_API_URL`: Frontend API URL (public, client-side)
-- `API_URL`: Server-side API URL for SSR data fetching
-- `NODE_ENV`: Environment mode (development/production)
-
-For complete environment variable reference, see the [Configuration Guide](https://lhadjchikh.github.io/coalition-builder/configuration/).
-
-## Development Notes
-
-### Component Sharing
-
-The SSR application shares React components with the frontend through symbolic links:
-
-```bash
-# Components are symlinked from frontend/src/components
-ln -sf ../../frontend/src/components src/components
 ```
-
-This ensures consistency between SSR and SPA modes while avoiding code duplication.
-
-### API Integration
-
-- **Server-side**: Uses `API_URL` for data fetching during rendering
-- **Client-side**: Uses `NEXT_PUBLIC_API_URL` for hydration and client interactions
-- **Fallback**: Gracefully degrades to client-side rendering if server-side data fetching fails

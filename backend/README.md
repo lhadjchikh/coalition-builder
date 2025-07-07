@@ -45,16 +45,20 @@ The backend is organized into several Django apps:
 ```
 backend/
 ├── coalition/                 # Main package
-│   ├── api/                    # API endpoints and schemas
-│   ├── campaigns/              # Campaign models and views
-│   ├── core/                   # Homepage models, settings, and configuration
-│   ├── endorsements/           # Endorsement models and views
-│   ├── legislators/            # Legislator models and views
-│   ├── regions/                # Region models and views
-│   └── stakeholders/           # Stakeholder models and views
-├── scripts/                    # Utility scripts for development
-├── sample_data/                # Sample fixtures for testing
-├── manage.py                   # Django management script
-├── pyproject.toml              # Poetry dependencies and tool configuration
-└── poetry.lock                 # Locked dependencies
+│   ├── api/                   # API endpoints and schemas
+│   ├── campaigns/             # Campaign models and views
+│   ├── core/                  # Homepage models, settings, and configuration
+│   ├── endorsements/          # Endorsement models and views
+│   ├── legislators/           # Legislator models and views
+│   ├── regions/               # Region models and views
+│   └── stakeholders/          # Stakeholder models and views
+├── scripts/                   # Utility scripts for development
+├── sample_data/               # Sample fixtures for testing
+├── manage.py                  # Django management script
+├── pyproject.toml             # Poetry dependencies and tool configuration
+└── poetry.lock                # Locked dependencies
+```
+
+```
+
 ```

@@ -33,76 +33,14 @@ Quick links:
 ```
 frontend/
 ├── src/
-│   ├── components/         # React components
-│   ├── services/          # API integration
+│   ├── components/       # React components
+│   ├── services/         # API integration
 │   ├── types/            # TypeScript type definitions
 │   ├── utils/            # Utility functions
 │   ├── tests/            # Test suites
 │   └── index.tsx         # Application entry point
 ├── public/               # Static assets
-├── build/               # Production build output
-├── package.json         # Dependencies and scripts
-└── tsconfig.json        # TypeScript configuration
+├── build/                # Production build output
+├── package.json          # Dependencies and scripts
+└── tsconfig.json         # TypeScript configuration
 ```
-
-## Quick Setup
-
-### Install Dependencies
-
-```bash
-npm install
-```
-
-### Start Development Server
-
-```bash
-npm start
-```
-
-The app will be available at [http://localhost:3000](http://localhost:3000)
-
-### Run Tests
-
-```bash
-# Run all tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run tests in CI mode (no watch)
-npm run test:ci
-```
-
-### Build for Production
-
-```bash
-npm run build
-```
-
-## Code Quality
-
-### Type Checking
-
-```bash
-npm run typecheck
-```
-
-### Linting
-
-```bash
-# Check for issues
-npm run lint
-
-# Auto-fix issues
-npm run lint:fix
-```
-
-## Environment Variables
-
-Key environment variables:
-
-- `REACT_APP_API_URL`: Backend API URL (defaults to `/api`)
-- `REACT_APP_SITE_PASSWORD`: Optional site-wide password protection
-
-For complete environment variable reference, see the [Configuration Guide](https://lhadjchikh.github.io/coalition-builder/configuration/).

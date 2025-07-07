@@ -12,17 +12,17 @@ For most developers, the [Installation guide](installation.md) provides everythi
 
 Coalition Builder uses two Docker Compose configurations:
 
-#### Production Configuration (`docker-compose.yml`)
+#### Production Configuration (`docker compose.yml`)
 
 - **Purpose**: Production deployments and CI/CD pipelines
 - **Features**: Optimized builds, production environment variables, no volume mounts
 - **Usage**: `docker compose up -d`
 
-#### Development Configuration (`docker-compose.dev.yml`)
+#### Development Configuration (`docker compose.dev.yml`)
 
 - **Purpose**: Local development with live code reload
 - **Features**: Volume mounts for instant code changes, development build targets, debug mode
-- **Usage**: `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d`
+- **Usage**: `docker compose -f docker compose.yml -f docker compose.dev.yml up -d`
 
 **Key Differences:**
 
@@ -48,8 +48,14 @@ poetry run pytest
 cd frontend
 npm test
 
-# All tests
-./scripts/test-all.sh
+# Backend tests
+cd backend && poetry run pytest
+
+# Frontend tests
+cd frontend && npm test
+
+# Infrastructure tests
+cd terraform && go test ./tests/...
 ```
 
 For comprehensive testing documentation, see the [Testing Guide](development/testing.md).
@@ -143,8 +149,8 @@ coalition-builder/
 
 ## Key Technologies
 
-- **Backend**: Django 5.0, Django Ninja, PostGIS
-- **Frontend**: React 18, TypeScript, Tailwind CSS
+- **Backend**: Django 5.2, Django Ninja, PostGIS
+- **Frontend**: React 19, TypeScript, Tailwind CSS
 - **Database**: PostgreSQL with PostGIS extension
 - **Infrastructure**: AWS, Terraform
 - **Documentation**: Sphinx, TypeDoc, MkDocs

@@ -373,7 +373,7 @@ SITE_URL="http://localhost:3000"
 ENDORSEMENT_RATE_LIMIT_WINDOW=300
 ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS=3
 
-# Cache (for rate limiting) - Redis container in docker-compose
+# Cache (for rate limiting) - Redis container in docker compose
 CACHE_URL=redis://redis:6379/1
 
 # Frontend
