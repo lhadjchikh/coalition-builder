@@ -14,6 +14,20 @@ if TYPE_CHECKING:
 
 
 class Endorsement(models.Model):
+    """
+    Represents a stakeholder's endorsement of a policy campaign.
+
+    The endorsement workflow involves multiple steps:
+    1. Initial submission (status: pending)
+    2. Email verification (status: verified)
+    3. Administrative review (status: approved/rejected)
+    4. Public display (if approved and consent given)
+
+    Each endorsement links a stakeholder to a campaign and includes
+    verification tokens, submission metadata, and moderation tracking.
+    Only one endorsement per stakeholder per campaign is allowed.
+    """
+
     STATUS_CHOICES = [
         ("pending", "Pending Email Verification"),
         ("verified", "Email Verified"),
@@ -25,6 +39,7 @@ class Endorsement(models.Model):
         Stakeholder,
         on_delete=models.CASCADE,
         related_name="endorsements",
+        help_text="The stakeholder making this endorsement",
     )
     campaign = models.ForeignKey(
         "campaigns.PolicyCampaign",

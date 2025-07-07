@@ -30,6 +30,7 @@ extensions = [
     "sphinx_autodoc_typehints",
     "autoapi.extension",
     "myst_parser",
+    "sphinxcontrib_django",  # Django-specific improvements
 ]
 
 # AutoAPI configuration for Django
@@ -98,7 +99,65 @@ autodoc_default_options = {
 }
 
 
-# Add custom CSS for better styling
+# Custom docstring processor for Django models
+def process_django_model_docstring(
+    app: "Sphinx",
+    what: str,
+    name: str,
+    obj: object,
+    options: dict,
+    lines: list[str],
+) -> None:
+    """Process Django model docstrings to include field information from help_text."""
+    import inspect
+
+    from django.db import models
+    from django.utils.encoding import force_str
+    from django.utils.html import strip_tags
+
+    # Only process Django model classes
+    if inspect.isclass(obj) and issubclass(obj, models.Model):
+        # Get all model fields
+        fields = obj._meta.get_fields()
+
+        # Add field documentation
+        if fields:
+            lines.append("")
+            lines.append("**Model Fields:**")
+            lines.append("")
+
+            for field in fields:
+                # Skip reverse foreign keys and many-to-many reverse relationships
+                if (
+                    hasattr(field, "related_model")
+                    and field.many_to_one is False
+                    and field.one_to_many is True
+                ):
+                    continue
+
+                field_name = field.name
+                field_type = field.__class__.__name__
+
+                # Get help text or verbose name
+                if hasattr(field, "help_text") and field.help_text:
+                    help_text = strip_tags(force_str(field.help_text))
+                elif hasattr(field, "verbose_name") and field.verbose_name:
+                    help_text = force_str(field.verbose_name).capitalize()
+                else:
+                    help_text = f"{field_type} field"
+
+                # Add field choices if they exist
+                if hasattr(field, "choices") and field.choices:
+                    choices = [f"'{choice[0]}'" for choice in field.choices]
+                    help_text += f" (choices: {', '.join(choices)})"
+
+                # Format as parameter
+                lines.append(f":param {field_name}: {help_text}")
+                lines.append(f":type {field_name}: {field_type}")
+
+
+# Add custom CSS for better styling and configure Django docstring processing
 def setup(app: "Sphinx") -> None:
-    """Set up Sphinx configuration with custom CSS."""
+    """Set up Sphinx configuration with custom CSS and Django model processing."""
     app.add_css_file("custom.css")
+    app.connect("autodoc-process-docstring", process_django_model_docstring)
