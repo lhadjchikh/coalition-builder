@@ -30,7 +30,6 @@ extensions = [
     "sphinx_autodoc_typehints",
     "autoapi.extension",
     "myst_parser",
-    "sphinxcontrib_django",  # Django-specific improvements
 ]
 
 # AutoAPI configuration for Django
