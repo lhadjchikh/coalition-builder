@@ -47,7 +47,6 @@ nav:
   - Deployment: deployment.md
   - Architecture:
       - Database Models: architecture/models.md
-      - Endorsement Workflow: architecture/endorsement-workflow.md
   - Reference:
       - Environment Variables: reference/environment.md
       - CLI Reference: reference/cli.md
@@ -95,6 +94,7 @@ plugins:
   - search
   - git-revision-date-localized:
       enable_creation_date: true
+      enable_git_follow: false
 
 extra:
   social:

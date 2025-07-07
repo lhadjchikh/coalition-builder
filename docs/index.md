@@ -154,8 +154,8 @@ Comprehensive guides for managing your coalition platform:
 
 - **[Database Models](architecture/models.md)** - Visual diagrams and documentation of database structure
 - **[Endorsement Workflow](user-guides/endorsement-workflow.md)** - Complete endorsement system process flow with Mermaid diagrams
-- **[API Reference](api/)** - Auto-generated from Django models and views
-- **[Frontend Components](frontend-api/)** - Auto-generated from React components
+- **[API Reference](https://lhadjchikh.github.io/coalition-builder/api/)** - Auto-generated from Django models and views
+- **[Frontend Components](https://lhadjchikh.github.io/coalition-builder/frontend-api/)** - Auto-generated from React components
 - **[Environment Variables](reference/environment.md)** - Complete configuration reference
 - **[CLI Reference](reference/cli.md)** - Command-line tools and Django management commands
 
