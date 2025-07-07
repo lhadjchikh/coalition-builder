@@ -47,11 +47,18 @@ async function runNavbarIntegrationTests(): Promise<TestResults> {
 
   // Fetch SSR HTML once for all tests
   let html: string;
+  let dom: JSDOM;
+  let document: Document;
   try {
     console.log("\n🔍 Fetching SSR HTML");
     const response = await makeRequest(`${SSR_URL}/`);
     html = response.data;
-    console.log("✅ SSR HTML fetched successfully");
+
+    // Parse HTML with JSDOM once for all tests
+    dom = new JSDOM(html);
+    document = dom.window.document;
+
+    console.log("✅ SSR HTML fetched and parsed successfully");
   } catch (error) {
     results.tests.push({
       name: "Fetch SSR HTML",
@@ -67,9 +74,6 @@ async function runNavbarIntegrationTests(): Promise<TestResults> {
   try {
     console.log("\n🔍 Test 2: Navbar element present in SSR");
 
-    // Parse HTML with JSDOM for reliable element detection
-    const dom = new JSDOM(html);
-    const document = dom.window.document;
     const navElement = document.querySelector('nav, [role="navigation"]');
 
     if (navElement) {
@@ -96,9 +100,6 @@ async function runNavbarIntegrationTests(): Promise<TestResults> {
   try {
     console.log("\n🔍 Test 3: Navbar contains expected navigation items");
 
-    // Parse HTML with JSDOM for reliable navigation item detection
-    const dom = new JSDOM(html);
-    const document = dom.window.document;
     const navElement = document.querySelector('nav, [role="navigation"]');
 
     if (!navElement) {
@@ -137,8 +138,8 @@ async function runNavbarIntegrationTests(): Promise<TestResults> {
   try {
     console.log("\n🔍 Test 4: Organization name in navbar");
 
-    // The organization name should be visible in the navbar
-    if (html.includes("Coalition Builder")) {
+    const navElement = document.querySelector('nav, [role="navigation"]');
+    if (navElement && navElement.textContent?.includes("Coalition Builder")) {
       results.tests.push({
         name: "Organization name in navbar",
         status: "PASS",
