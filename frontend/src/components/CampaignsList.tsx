@@ -13,18 +13,28 @@ const CampaignsList: React.FC<CampaignsListProps> = ({ onCampaignSelect }) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchCampaigns = async (): Promise<void> => {
       try {
         const data = await API.getCampaigns();
-        setCampaigns(data);
-        setLoading(false);
+        if (isMounted) {
+          setCampaigns(data);
+          setLoading(false);
+        }
       } catch (err) {
-        setError('Failed to fetch campaigns');
-        setLoading(false);
+        if (isMounted) {
+          setError('Failed to fetch campaigns');
+          setLoading(false);
+        }
       }
     };
 
     fetchCampaigns();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   if (loading) return <div data-testid="loading">Loading campaigns...</div>;

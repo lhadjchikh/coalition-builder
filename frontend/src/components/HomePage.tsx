@@ -21,12 +21,16 @@ const HomePage: React.FC<HomePageProps> = ({ onCampaignSelect }) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchData = async () => {
       // Fetch homepage and campaigns in parallel for better performance
       const [homepageResult, campaignsResult] = await Promise.allSettled([
         API.getHomepage(),
         API.getCampaigns(),
       ]);
+
+      if (!isMounted) return;
 
       // Handle homepage result
       if (homepageResult.status === 'fulfilled') {
@@ -56,6 +60,10 @@ const HomePage: React.FC<HomePageProps> = ({ onCampaignSelect }) => {
     };
 
     fetchData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Fallback homepage data if API fails

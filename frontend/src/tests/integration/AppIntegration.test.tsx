@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import App from '../../App';
 import API from '../../services/api';
 
@@ -74,7 +74,7 @@ describe('App Integration Test', () => {
   });
 
   test('fetches and displays campaigns in the app', async () => {
-    // Act - Render the App
+    // Act - Render the App (without act to see initial loading state)
     render(<App />);
 
     // Initial loading state

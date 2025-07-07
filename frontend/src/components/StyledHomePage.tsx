@@ -172,11 +172,15 @@ const StyledHomePage: React.FC<StyledHomePageProps> = ({ onCampaignSelect }) => 
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchData = async () => {
       const [homepageResult, campaignsResult] = await Promise.allSettled([
         API.getHomepage(),
         API.getCampaigns(),
       ]);
+
+      if (!isMounted) return;
 
       if (homepageResult.status === 'fulfilled') {
         setHomepage(homepageResult.value);
@@ -204,6 +208,10 @@ const StyledHomePage: React.FC<StyledHomePageProps> = ({ onCampaignSelect }) => 
     };
 
     fetchData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const fallbackHomepage: HomePageType = {
