@@ -25,7 +25,7 @@ This diagram shows only the Coalition Builder project models, excluding Django b
 - **Stakeholders**: Individuals and organizations with geographic data
 - **Endorsements**: Relationships between stakeholders and campaigns
 - **Legislators**: Elected officials with district assignments
-- **Regions**: Geographic boundaries (states, districts, counties)
+- **Regions**: Geographic boundaries (States, Counties, Districts)
 - **Content Management**: Themes, homepage configuration, and content blocks
 
 ## Key Relationships

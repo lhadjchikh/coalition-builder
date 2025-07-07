@@ -41,7 +41,7 @@ Coalition Builder guides your organization through the complete advocacy process
 %%{init: {'theme':'basic'}}%%
 flowchart TD
     Stakeholders[👥 Stakeholders<br/>Businesses, Nonprofits, Citizens, Government]
-    Regions[🗺️ Regions<br/>States, Districts, Counties]
+    Regions[🗺️ Regions<br/>States, Counties, Districts]
     Legislators[🏛️ Legislators<br/>Federal, State]
 
     subgraph Core["🎯 Core Platform"]

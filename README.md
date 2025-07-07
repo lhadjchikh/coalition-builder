@@ -34,7 +34,7 @@ Coalition Builder guides your organization through the complete advocacy process
 - **Build Coalition**: Recruit diverse stakeholders (businesses, nonprofits, citizens, government officials)
 - **Collect Endorsements**: Secure verified support with built-in spam protection
 - **Track Progress**: Analyze geographic distribution and engagement metrics
-- **Engage Legislators**: Target representatives using congressional district data
+- **Engage Legislators**: Target representatives using district data
 - **Drive Policy Change**: Export supporter data and coordinate strategic advocacy
 
 ### Core Components & Relationships
@@ -43,7 +43,7 @@ Coalition Builder guides your organization through the complete advocacy process
 %%{init: {'theme':'basic'}}%%
 flowchart TD
     Stakeholders[👥 Stakeholders<br/>Businesses, Nonprofits, Citizens, Government]
-    Regions[🗺️ Regions<br/>States, Districts, Counties]
+    Regions[🗺️ Regions<br/>States, Counties, Districts]
     Legislators[🏛️ Legislators<br/>Federal, State]
 
     subgraph Core["🎯 Core Platform"]
@@ -111,9 +111,8 @@ docker compose exec api python scripts/create_test_data.py
 
 - **Dynamic Homepage Management** - Database-driven content with flexible blocks
 - **Campaign Management** - Create and track policy advocacy campaigns at federal and state levels
-- **Multi-Level Bill Tracking** - Support for both federal (H.R./S.) and state legislative bills
+- **Multi-Level Bill Tracking** - Support for both federal and state legislative bills
 - **Stakeholder Management** - Organize supporters and endorsers with detailed profiles
-- **Legislator Tracking** - Monitor federal and state representatives and their positions
 - **Content Management** - Easy-to-use Django admin interface
 - **API Integration** - RESTful API for custom integrations
 - **SEO Optimized** - Server-side rendering with Next.js
@@ -122,11 +121,10 @@ docker compose exec api python scripts/create_test_data.py
 ### Endorsement System
 
 - **🔐 Email Verification** - Secure token-based email verification for all endorsements
-- **👨‍💼 Admin Review** - Comprehensive moderation workflow with bulk actions
 - **🛡️ Spam Prevention** - Multi-layer protection including rate limiting and content analysis
-- **📊 Data Export** - CSV/JSON export capabilities with filtering options
+- **👨‍💼 Admin Review** - Comprehensive moderation workflow with bulk actions
 - **📧 Automated Notifications** - Email workflows for verification, approval, and admin alerts
-- **🧪 Quality Assurance** - 71 comprehensive tests covering all functionality
+- **📊 Data Export** - CSV/JSON export capabilities with filtering options
 
 ## 🏗️ Architecture
 
@@ -134,7 +132,6 @@ docker compose exec api python scripts/create_test_data.py
 - **Frontend**: React 19 + TypeScript
 - **SSR**: Next.js 15 (optional)
 - **Infrastructure**: AWS + Terraform
-- **Testing**: Comprehensive test coverage
 
 ## 🤝 Contributing
 
