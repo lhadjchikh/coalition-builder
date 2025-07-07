@@ -58,7 +58,3 @@ backend/
 ├── pyproject.toml             # Poetry dependencies and tool configuration
 └── poetry.lock                # Locked dependencies
 ```
-
-```
-
-```

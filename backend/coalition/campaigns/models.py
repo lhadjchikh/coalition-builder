@@ -12,12 +12,29 @@ if TYPE_CHECKING:
 
 
 class PolicyCampaign(models.Model):
+    """
+    Represents a policy advocacy campaign that stakeholders can endorse.
+
+    Campaigns are the central organizing unit of the platform. Each campaign
+    represents a specific policy position that organizations and individuals
+    can publicly endorse. Campaigns can be linked to specific legislation
+    at federal and state levels.
+
+    The campaign includes public-facing content (title, summary, description)
+    as well as administrative settings for endorsement collection and moderation.
+    """
+
     name = models.SlugField(
         unique=True,
         help_text="Machine-readable name for the campaign",
     )
-    title = models.CharField(max_length=200)
-    summary = models.TextField()
+    title = models.CharField(
+        max_length=200,
+        help_text="Public-facing title of the campaign",
+    )
+    summary = models.TextField(
+        help_text="Brief summary of the campaign's goals and position",
+    )
     description = models.TextField(
         blank=True,
         help_text="Additional context/details about the campaign",
@@ -34,8 +51,14 @@ class PolicyCampaign(models.Model):
         blank=True,
         help_text="Custom instructions shown above the endorsement form",
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="Timestamp when campaign was created",
+    )
+    active = models.BooleanField(
+        default=True,
+        help_text="Whether campaign is active and accepting endorsements",
+    )
 
     def __str__(self) -> str:
         return self.title

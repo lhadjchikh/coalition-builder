@@ -93,4 +93,4 @@ All configuration is handled through environment variables. See the [Configurati
 
 - [Configuration](configuration.md) - Environment variables and settings
 - [Development Guide](development.md) - Contributing and development workflow
-- [API Documentation](api/) - Auto-generated API reference
+- [API Documentation](https://lhadjchikh.github.io/coalition-builder/api/) - Auto-generated API reference

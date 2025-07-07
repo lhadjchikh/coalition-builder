@@ -137,12 +137,12 @@ This architecture allows organizations to start simple (Django + React SPA) and 
 
 Comprehensive guides for managing your coalition platform:
 
-- **[Theme Management](user-guides/theme-management.md)** - Customize branding, colors, and visual appearance
-- **[Homepage Management](user-guides/homepage-management.md)** - Configure organization branding and homepage content
-- **[Campaign Management](user-guides/campaign-management.md)** - Create and manage policy advocacy campaigns
-- **[Stakeholder Management](user-guides/stakeholder-management.md)** - Organize and engage with supporters and partners
 - **[Endorsement Workflow](user-guides/endorsement-workflow.md)** - Collect and manage campaign endorsements
 - **[Content Management](user-guides/content-management.md)** - Complete guide to the Django admin interface
+  - **[Campaign Management](user-guides/campaign-management.md)** - Create and manage policy advocacy campaigns
+  - **[Stakeholder Management](user-guides/stakeholder-management.md)** - Organize and engage with supporters and partners
+  - **[Homepage Management](user-guides/homepage-management.md)** - Configure organization branding and homepage content
+  - **[Theme Management](user-guides/theme-management.md)** - Customize branding, colors, and visual appearance
 
 ## Development Guides
 
@@ -153,9 +153,9 @@ Comprehensive guides for managing your coalition platform:
 ## Documentation
 
 - **[Database Models](architecture/models.md)** - Visual diagrams and documentation of database structure
-- **[Endorsement Workflow](architecture/endorsement-workflow.md)** - Complete endorsement system process flow with Mermaid diagrams
-- **[API Reference](api/)** - Auto-generated from Django models and views
-- **[Frontend Components](frontend-api/)** - Auto-generated from React components
+- **[Endorsement Workflow](user-guides/endorsement-workflow.md)** - Complete endorsement system process flow with Mermaid diagrams
+- **[API Reference](https://lhadjchikh.github.io/coalition-builder/api/)** - Auto-generated from Django models and views
+- **[Frontend Components](https://lhadjchikh.github.io/coalition-builder/frontend-api/)** - Auto-generated from React components
 - **[Environment Variables](reference/environment.md)** - Complete configuration reference
 - **[CLI Reference](reference/cli.md)** - Command-line tools and Django management commands
 

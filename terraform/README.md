@@ -55,7 +55,7 @@ terraform/
 
 The following diagram shows the complete AWS infrastructure layout:
 
-> **Note**: This diagram uses Mermaid syntax and will render automatically on GitHub and other platforms that support Mermaid.
+> **Note**: This diagram uses Mermaid syntax and will render automatically on GitHub and other platforms that support Mermaid. For detailed deployment documentation including this diagram, see the [AWS Deployment Guide](https://lhadjchikh.github.io/coalition-builder/deployment/aws/).
 
 ```mermaid
 %%{init: {'theme':'basic'}}%%

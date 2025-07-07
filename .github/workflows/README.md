@@ -11,7 +11,7 @@ This project uses a structured CI/CD pipeline with the following key workflows:
 
 The following diagram shows the workflow orchestration from code push to deployment:
 
-> **Note**: This diagram uses Mermaid syntax. It will render automatically on GitHub, GitLab, and other platforms that support Mermaid. If you're viewing this locally, you may need a Mermaid preview extension.
+> **Note**: This diagram uses Mermaid syntax and will render automatically on GitHub and other platforms that support Mermaid. For detailed development documentation including this diagram, see the [Development Guide](https://lhadjchikh.github.io/coalition-builder/development/).
 
 ```mermaid
 %%{init: {'theme':'basic'}}%%

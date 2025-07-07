@@ -11,13 +11,32 @@ router = Router()
 
 @router.get("/", response=list[PolicyCampaignOut])
 def list_campaigns(request: HttpRequest) -> list[PolicyCampaign]:
-    """List all active campaigns"""
+    """
+    List all active policy campaigns.
+
+    Returns all campaigns that are currently active and accepting endorsements.
+    Campaigns are ordered by creation date (newest first).
+
+    Returns:
+        List of PolicyCampaignOut objects containing campaign details
+    """
     return PolicyCampaign.objects.filter(active=True).all()
 
 
 @router.get("/by-name/{name}/", response=PolicyCampaignOut)
 def get_campaign_by_name(request: HttpRequest, name: str) -> PolicyCampaign:
-    """Get a specific campaign by name"""
+    """
+    Retrieve a specific campaign by its machine-readable name.
+
+    Args:
+        name: The slug/machine-readable name of the campaign
+
+    Returns:
+        PolicyCampaignOut object with full campaign details
+
+    Raises:
+        404: If no campaign exists with the given name
+    """
     return get_object_or_404(PolicyCampaign, name=name, active=True)
 
 

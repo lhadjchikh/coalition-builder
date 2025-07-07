@@ -1,21 +1,18 @@
 # Networking Module
 
-This module creates and manages the networking infrastructure for the Coalition Builder application.
+Terraform module for creating secure, cost-optimized VPC infrastructure with VPC endpoints instead of NAT Gateway.
 
-## Features
+**For complete deployment guide, see: [AWS Deployment Guide](../../../docs/deployment/aws.md)**
 
-- **VPC Creation**: Creates a new VPC or uses an existing one
-- **Multi-AZ Subnets**: Creates subnets across multiple availability zones
-- **Public Subnets**: For internet-facing resources like load balancers
-- **Private Application Subnets**: For application containers (ECS tasks) - **no internet access, VPC endpoints only**
-- **Private Database Subnets**: Isolated subnets for database instances
-- **VPC Endpoints**: Cost-effective alternative to NAT Gateway for AWS service access
-- **VPC Endpoints**: Provides private connectivity to AWS services:
-  - S3 Gateway Endpoint: For S3 access without going through the internet
-  - Interface Endpoints: For ECR, CloudWatch Logs, and Secrets Manager
-- **Security Groups**: Including a dedicated security group for VPC endpoints
+## Key Features
 
-## Usage
+- **Cost-Optimized Design**: VPC endpoints instead of NAT Gateway (~$45/month savings)
+- **Multi-AZ Subnets**: Public, private app, and database subnets
+- **No Internet Access**: Private subnets use VPC endpoints for AWS services
+- **VPC Endpoints**: S3 Gateway + Interface endpoints (ECR, CloudWatch, Secrets Manager)
+- **Security Groups**: Dedicated endpoint security group configuration
+
+## Quick Start
 
 ```hcl
 module "networking" {
@@ -23,12 +20,8 @@ module "networking" {
 
   prefix     = "coalition"
   aws_region = "us-east-1"
-
-  # VPC Configuration
-  create_vpc = true
   vpc_cidr   = "10.0.0.0/16"
 
-  # Subnet Configuration
   create_public_subnets  = true
   create_private_subnets = true
   create_db_subnets      = true
@@ -84,3 +77,11 @@ See `variables.tf` for a complete list of input parameters.
 | s3_endpoint_id              | ID of the S3 VPC endpoint                   |
 | s3_endpoint_prefix_list_id  | Prefix list ID of the S3 VPC endpoint       |
 | endpoints_security_group_id | ID of the security group for VPC endpoints  |
+
+## Complete Documentation
+
+This module is part of the Coalition Builder infrastructure. For:
+
+- **Architecture Overview**: See [AWS Deployment Guide](../../../docs/deployment/aws.md)
+- **Full Infrastructure**: See [Terraform README](../../README.md)
+- **Project Documentation**: Visit [lhadjchikh.github.io/coalition-builder](https://lhadjchikh.github.io/coalition-builder/)

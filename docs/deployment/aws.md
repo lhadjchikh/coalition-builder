@@ -16,6 +16,87 @@ This deployment strategy uses:
 - **Application Load Balancer** for routing traffic
 - **AWS Secrets Manager** for secure credentials management
 
+## Architecture Overview
+
+The following diagram shows the complete AWS infrastructure layout:
+
+> **Note**: This diagram uses Mermaid syntax and will render automatically on GitHub and other platforms that support Mermaid.
+
+```mermaid
+%%{init: {'theme':'basic'}}%%
+flowchart TB
+    %% Internet
+    internet[Internet] --> cloudfront[CloudFront CDN]
+    internet --> route53[Route53 DNS]
+
+    %% DNS and CDN
+    route53 --> alb[Application Load Balancer]
+    cloudfront --> s3_assets[S3 Static Assets]
+
+    %% VPC Container
+    subgraph vpc["VPC (10.0.0.0/16)"]
+        %% Public Subnets
+        subgraph public["Public Subnets"]
+            alb
+            bastion[Bastion Host]
+        end
+
+        %% Private Subnets
+        subgraph private["Private Subnets"]
+            subgraph ecs_cluster["ECS Cluster"]
+                django[Django API Container]
+                ssr[Next.js SSR Container<br/>*optional*]
+                redis[Redis Cache]
+            end
+        end
+
+        %% Database Subnets
+        subgraph db_subnets["Database Subnets"]
+            rds[(RDS PostgreSQL<br/>with PostGIS)]
+        end
+    end
+
+    %% External Services
+    subgraph aws_services["AWS Services"]
+        secrets[Secrets Manager]
+        ecr[ECR Repositories]
+        cloudwatch[CloudWatch Logs]
+        s3_assets
+    end
+
+    %% Connections
+    alb --> django
+    alb --> ssr
+    django --> redis
+    django --> rds
+    ssr --> django
+    bastion --> rds
+
+    %% CloudFront connections
+    cloudfront --> alb
+
+    %% Service connections
+    django --> secrets
+    ssr --> secrets
+    django --> cloudwatch
+    ssr --> cloudwatch
+    redis --> cloudwatch
+
+    %% ECR
+    ecr --> django
+    ecr --> ssr
+    ecr --> redis
+```
+
+The infrastructure uses a layered security model with:
+
+- **Public Subnets**: Load balancer and bastion host
+- **Private Subnets**: ECS containers (Django API + optional Next.js SSR)
+- **Database Subnets**: RDS PostgreSQL with PostGIS
+- **Security Groups**: Component isolation with least privilege
+- **Secrets Manager**: Secure credential storage
+- **CloudWatch**: Logging and monitoring
+
 ## Prerequisites
 
 1. An AWS account with appropriate permissions

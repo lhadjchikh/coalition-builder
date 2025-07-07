@@ -3,6 +3,18 @@ from django.db import models
 
 
 class Stakeholder(models.Model):
+    """
+    Represents individuals and organizations that can endorse policy campaigns.
+
+    Stakeholders are automatically geocoded and assigned to legislative districts
+    based on their address, including congressional districts, state senate districts,
+    and state house districts. They can endorse multiple campaigns and are categorized
+    by type (business, nonprofit, individual, etc.).
+
+    The model includes comprehensive address fields and geographic coordinates
+    for mapping and district assignment purposes.
+    """
+
     STAKEHOLDER_TYPE_CHOICES = [
         ("farmer", "Farmer"),
         ("waterman", "Waterman"),
@@ -13,17 +25,40 @@ class Stakeholder(models.Model):
         ("other", "Other"),
     ]
 
-    name = models.CharField(max_length=200)
-    organization = models.CharField(max_length=200)
-    role = models.CharField(max_length=100, blank=True)
-    email = models.EmailField(unique=True)
+    name = models.CharField(
+        max_length=200,
+        help_text="Full name of the individual or primary contact person",
+    )
+    organization = models.CharField(
+        max_length=200,
+        help_text="Organization or company name (can be same as name for individuals)",
+    )
+    role = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Job title or role within the organization",
+    )
+    email = models.EmailField(
+        unique=True,
+        help_text="Primary email address for verification and communication",
+    )
 
     # Address fields
-    street_address = models.CharField(max_length=255)
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=2)
-    zip_code = models.CharField(max_length=10)
-    county = models.CharField(max_length=100, blank=True)
+    street_address = models.CharField(
+        max_length=255,
+        help_text="Street address including number and street name",
+    )
+    city = models.CharField(max_length=100, help_text="City or town name")
+    state = models.CharField(
+        max_length=2,
+        help_text="Two-letter state abbreviation (e.g., 'CA', 'NY')",
+    )
+    zip_code = models.CharField(max_length=10, help_text="ZIP or postal code")
+    county = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="County name (optional, auto-populated when possible)",
+    )
 
     # Geographic coordinates
     location = PointField(
@@ -43,6 +78,7 @@ class Stakeholder(models.Model):
         blank=True,
         related_name="congressional_stakeholders",
         limit_choices_to={"type": "congressional_district"},
+        help_text="Congressional district assigned based on address geocoding",
     )
     state_senate_district = models.ForeignKey(
         "regions.Region",
@@ -51,6 +87,7 @@ class Stakeholder(models.Model):
         blank=True,
         related_name="state_senate_stakeholders",
         limit_choices_to={"type": "state_senate_district"},
+        help_text="State senate district assigned based on address geocoding",
     )
     state_house_district = models.ForeignKey(
         "regions.Region",
@@ -59,11 +96,22 @@ class Stakeholder(models.Model):
         blank=True,
         related_name="state_house_stakeholders",
         limit_choices_to={"type": "state_house_district"},
+        help_text="State house district assigned based on address geocoding",
     )
 
-    type = models.CharField(max_length=50, choices=STAKEHOLDER_TYPE_CHOICES)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    type = models.CharField(
+        max_length=50,
+        choices=STAKEHOLDER_TYPE_CHOICES,
+        help_text="Category of stakeholder (business, nonprofit, individual, etc.)",
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="Timestamp when stakeholder record was first created",
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text="Timestamp when stakeholder record was last modified",
+    )
 
     def save(self, *args: object, **kwargs: object) -> None:
         """Normalize email and state to consistent format"""

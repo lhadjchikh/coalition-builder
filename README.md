@@ -41,7 +41,7 @@ Coalition Builder assists your organization through the complete advocacy proces
 
 ### Core Components & Relationships
 
-> **Note**: The Mermaid diagrams below are best viewed on GitHub or in the [online documentation](https://lhadjchikh.github.io/coalition-builder/).
+> **Note**: This diagram uses Mermaid syntax and will render automatically on GitHub and other platforms that support Mermaid. For detailed documentation about how organizations use Coalition Builder, see the [Project Overview](https://lhadjchikh.github.io/coalition-builder/).
 
 ```mermaid
 %%{init: {'theme':'basic'}}%%
