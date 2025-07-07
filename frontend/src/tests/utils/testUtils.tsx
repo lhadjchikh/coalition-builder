@@ -50,11 +50,8 @@ export const resolvePromiseInTest = async <T,>(resolveFunction: (value: T) => vo
 // Utility to reject promises in tests with proper act() wrapping
 export const rejectPromiseInTest = async (rejectFunction: (reason: any) => void, reason: any) => {
   await act(async () => {
-    // Create a new promise that rejects immediately
-    await new Promise((_, reject) => {
-      rejectFunction(reason);
-      reject(reason);
-    });
+    // Call the reject function within act() wrapper
+    rejectFunction(reason);
   });
 };
 
@@ -218,7 +215,7 @@ export const hasValidHeadingHierarchy = (container: HTMLElement) => {
   if (headings.length === 0) return true;
 
   let lastLevel = 0;
-  for (const heading of headings) {
+  for (const heading of Array.from(headings)) {
     const level = parseInt(heading.tagName.charAt(1));
     if (lastLevel > 0 && level > lastLevel + 1) {
       return false; // Skipped a level
