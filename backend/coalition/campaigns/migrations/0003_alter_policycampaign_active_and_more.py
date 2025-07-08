@@ -22,21 +22,23 @@ class Migration(migrations.Migration):
             model_name="policycampaign",
             name="created_at",
             field=models.DateTimeField(
-                auto_now_add=True, help_text="Timestamp when campaign was created"
+                auto_now_add=True,
+                help_text="Timestamp when campaign was created",
             ),
         ),
         migrations.AlterField(
             model_name="policycampaign",
             name="summary",
             field=models.TextField(
-                help_text="Brief summary of the campaign's goals and position"
+                help_text="Brief summary of the campaign's goals and position",
             ),
         ),
         migrations.AlterField(
             model_name="policycampaign",
             name="title",
             field=models.CharField(
-                help_text="Public-facing title of the campaign", max_length=200
+                help_text="Public-facing title of the campaign",
+                max_length=200,
             ),
         ),
     ]
