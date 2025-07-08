@@ -141,10 +141,10 @@ resource "aws_cloudfront_distribution" "static_assets" {
     }
   }
 
-  # ALB origin for Django static files served by WhiteNoise
+  # Domain origin for Django static files served by WhiteNoise via ALB
   origin {
-    domain_name = var.alb_dns_name
-    origin_id   = "ALB-Django"
+    domain_name = var.domain_name
+    origin_id   = "Django-Static"
 
     custom_origin_config {
       http_port              = 80
@@ -184,7 +184,7 @@ resource "aws_cloudfront_distribution" "static_assets" {
     path_pattern           = "/static/*"
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
-    target_origin_id       = "ALB-Django"
+    target_origin_id       = "Django-Static"
     compress               = true
     viewer_protocol_policy = "redirect-to-https"
 
