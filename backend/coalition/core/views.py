@@ -8,7 +8,7 @@ from django.db import connection
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_http_methods
 
 from .models import Theme
 from .theme_service import ThemeService
@@ -228,7 +228,7 @@ def robots_txt(request: HttpRequest) -> HttpResponse:
     return HttpResponse("User-agent: *\nDisallow: /\n", content_type="text/plain")
 
 
-@require_GET
+@require_http_methods(["GET", "HEAD"])
 def health_check(request: HttpRequest) -> JsonResponse:
     """
     Dedicated health check endpoint for the Django backend.
