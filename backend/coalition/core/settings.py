@@ -16,6 +16,7 @@ from pathlib import Path
 from urllib.parse import quote
 
 import dj_database_url
+import requests
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -38,6 +39,15 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 # Add testserver for Django tests
 if "test" in sys.argv or "testserver" not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append("testserver")
+
+# For Elastic Container Service (ECS) deployments, get the internal IP
+# address from the EC2 instance's metadata and add it to ALLOWED_HOSTS.
+# This prevents health checks from failing due to disallowed host.
+# See: https://stackoverflow.com/a/58595305/1143466
+if metadata_uri := os.getenv("ECS_CONTAINER_METADATA_URI"):
+    container_metadata = requests.get(metadata_uri).json()
+    container_ip_address = container_metadata["Networks"][0]["IPv4Addresses"][0]
+    ALLOWED_HOSTS.append(container_ip_address)
 
 # CSRF Protection Configuration
 # Define trusted origins for CSRF token validation

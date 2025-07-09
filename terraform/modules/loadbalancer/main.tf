@@ -33,7 +33,7 @@ resource "aws_lb_target_group" "api" {
     unhealthy_threshold = 3
     timeout             = 5
     interval            = 30
-    matcher             = "200,400"
+    matcher             = "200"
   }
 
   tags = {
