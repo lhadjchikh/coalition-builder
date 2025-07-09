@@ -135,6 +135,7 @@ module "compute" {
   enable_ssr                      = var.enable_ssr
   health_check_path_api           = var.health_check_path_api
   allowed_hosts                   = var.allowed_hosts
+  alb_dns_name                    = module.loadbalancer.alb_dns_name
   csrf_trusted_origins            = var.csrf_trusted_origins
   site_password_enabled           = var.site_password_enabled
   site_password_secret_arn        = module.secrets.site_password_secret_arn
