@@ -3,8 +3,8 @@ variable "prefix" {
   type        = string
 }
 
-variable "alb_dns_name" {
-  description = "DNS name of the Application Load Balancer for Django static files"
+variable "domain_name" {
+  description = "The domain name for the application"
   type        = string
 }
 
