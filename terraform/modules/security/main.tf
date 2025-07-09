@@ -128,48 +128,44 @@ resource "aws_security_group" "alb_sg" {
 
 # Add cross-references separately to avoid circular dependencies
 
-# Allow ALB to send traffic to App containers
-resource "aws_security_group_rule" "alb_to_app" {
-  type                     = "egress"
-  from_port                = 8000
-  to_port                  = 8000
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.app_sg.id
-  security_group_id        = aws_security_group.alb_sg.id
-  description              = "ALB to application containers on port 8000"
+# Allow ALB to send traffic to App containers (egress from ALB)
+resource "aws_vpc_security_group_egress_rule" "alb_to_app" {
+  security_group_id            = aws_security_group.alb_sg.id
+  referenced_security_group_id = aws_security_group.app_sg.id
+  from_port                    = 8000
+  to_port                      = 8000
+  ip_protocol                  = "tcp"
+  description                  = "ALB to application containers on port 8000"
 }
 
-# Allow ALB to send traffic to SSR containers
-resource "aws_security_group_rule" "alb_to_app_ssr" {
-  type                     = "egress"
-  from_port                = 3000
-  to_port                  = 3000
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.app_sg.id
-  security_group_id        = aws_security_group.alb_sg.id
-  description              = "ALB to SSR container on port 3000"
+# Allow ALB to send traffic to SSR containers (egress from ALB)
+resource "aws_vpc_security_group_egress_rule" "alb_to_app_ssr" {
+  security_group_id            = aws_security_group.alb_sg.id
+  referenced_security_group_id = aws_security_group.app_sg.id
+  from_port                    = 3000
+  to_port                      = 3000
+  ip_protocol                  = "tcp"
+  description                  = "ALB to SSR container on port 3000"
 }
 
-# Allow App containers to receive traffic from ALB
-resource "aws_security_group_rule" "app_from_alb" {
-  type                     = "ingress"
-  from_port                = 8000
-  to_port                  = 8000
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.alb_sg.id
-  security_group_id        = aws_security_group.app_sg.id
-  description              = "Accept traffic from ALB on port 8000"
+# Allow App containers to receive traffic from ALB (ingress to app)
+resource "aws_vpc_security_group_ingress_rule" "app_from_alb" {
+  security_group_id            = aws_security_group.app_sg.id
+  referenced_security_group_id = aws_security_group.alb_sg.id
+  from_port                    = 8000
+  to_port                      = 8000
+  ip_protocol                  = "tcp"
+  description                  = "Accept traffic from ALB on port 8000"
 }
 
-# Allow App containers to receive SSR traffic from ALB
-resource "aws_security_group_rule" "app_from_alb_ssr" {
-  type                     = "ingress"
-  from_port                = 3000
-  to_port                  = 3000
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.alb_sg.id
-  security_group_id        = aws_security_group.app_sg.id
-  description              = "Accept traffic from ALB on port 3000"
+# Allow App containers to receive SSR traffic from ALB (ingress to app)
+resource "aws_vpc_security_group_ingress_rule" "app_from_alb_ssr" {
+  security_group_id            = aws_security_group.app_sg.id
+  referenced_security_group_id = aws_security_group.alb_sg.id
+  from_port                    = 3000
+  to_port                      = 3000
+  ip_protocol                  = "tcp"
+  description                  = "Accept traffic from ALB on port 3000"
 }
 
 # Database Security Group
