@@ -320,7 +320,7 @@ LOCKDOWN_URL_EXCEPTIONS = [
     r"^/health/$",  # Django health check
     r"^/health$",  # Next.js health check
     r"^/admin/",  # Django admin (has its own auth)
-    r"^/api/health/",  # API health endpoint
+    r"^/api/",  # API endpoints
 ]
 
 # Session-based lockdown (user stays logged in)
