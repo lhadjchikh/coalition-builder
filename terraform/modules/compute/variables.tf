@@ -216,6 +216,11 @@ variable "allowed_hosts" {
   default     = "localhost,127.0.0.1"
 }
 
+variable "alb_dns_name" {
+  description = "ALB DNS name to include in Django ALLOWED_HOSTS for health checks"
+  type        = string
+}
+
 variable "csrf_trusted_origins" {
   description = "Django CSRF_TRUSTED_ORIGINS setting"
   type        = string

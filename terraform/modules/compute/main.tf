@@ -26,7 +26,7 @@ locals {
     },
     {
       name  = "ALLOWED_HOSTS"
-      value = var.allowed_hosts
+      value = "${var.allowed_hosts},${var.alb_dns_name}"
     },
     {
       name  = "CSRF_TRUSTED_ORIGINS"
