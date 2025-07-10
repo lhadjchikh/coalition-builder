@@ -34,8 +34,13 @@ describe('CampaignsList Integration', () => {
       },
     ];
 
-    // Setup the API mock to return data
-    (API.getCampaigns as jest.Mock).mockResolvedValue(mockData);
+    // Use delayed promise to ensure we can test loading state
+    let resolveCampaigns: (value: Campaign[]) => void;
+    const campaignsPromise = new Promise<Campaign[]>(resolve => {
+      resolveCampaigns = resolve;
+    });
+
+    (API.getCampaigns as jest.Mock).mockReturnValue(campaignsPromise);
 
     await act(async () => {
       render(<CampaignsList />);
@@ -44,7 +49,13 @@ describe('CampaignsList Integration', () => {
     // Initially should show loading state
     expect(screen.getByTestId('loading')).toBeInTheDocument();
 
-    // Wait for the component to update with a longer timeout
+    // Resolve the promise
+    await act(async () => {
+      resolveCampaigns!(mockData);
+      await campaignsPromise;
+    });
+
+    // Wait for the component to update
     await act(async () => {
       await waitFor(
         () => {
@@ -63,8 +74,13 @@ describe('CampaignsList Integration', () => {
   });
 
   test('handles API error states', async () => {
-    // Mock API error
-    (API.getCampaigns as jest.Mock).mockRejectedValue(new Error('API Error'));
+    // Use delayed promise to ensure we can test loading state
+    let rejectCampaigns: (reason: Error) => void;
+    const campaignsPromise = new Promise<Campaign[]>((_, reject) => {
+      rejectCampaigns = reject;
+    });
+
+    (API.getCampaigns as jest.Mock).mockReturnValue(campaignsPromise);
 
     await act(async () => {
       render(<CampaignsList />);
@@ -73,7 +89,17 @@ describe('CampaignsList Integration', () => {
     // Initially should show loading state
     expect(screen.getByTestId('loading')).toBeInTheDocument();
 
-    // Wait for the error message with a longer timeout
+    // Reject the promise
+    await act(async () => {
+      rejectCampaigns!(new Error('API Error'));
+      try {
+        await campaignsPromise;
+      } catch {
+        // Expected rejection
+      }
+    });
+
+    // Wait for the error message
     await act(async () => {
       await waitFor(
         () => {
@@ -87,8 +113,13 @@ describe('CampaignsList Integration', () => {
   });
 
   test('handles empty response from API', async () => {
-    // Mock empty array response
-    (API.getCampaigns as jest.Mock).mockResolvedValue([]);
+    // Use delayed promise to ensure we can test loading state
+    let resolveCampaigns: (value: Campaign[]) => void;
+    const campaignsPromise = new Promise<Campaign[]>(resolve => {
+      resolveCampaigns = resolve;
+    });
+
+    (API.getCampaigns as jest.Mock).mockReturnValue(campaignsPromise);
 
     await act(async () => {
       render(<CampaignsList />);
@@ -97,7 +128,13 @@ describe('CampaignsList Integration', () => {
     // Initially should show loading state
     expect(screen.getByTestId('loading')).toBeInTheDocument();
 
-    // Wait for the component to load with a longer timeout
+    // Resolve with empty array
+    await act(async () => {
+      resolveCampaigns!([]);
+      await campaignsPromise;
+    });
+
+    // Wait for the component to load
     await act(async () => {
       await waitFor(
         () => {
@@ -123,14 +160,25 @@ describe('CampaignsList Integration', () => {
       },
     ];
 
-    // Setup the API mock to return data
-    (API.getCampaigns as jest.Mock).mockResolvedValue(mockData);
+    // Use delayed promise
+    let resolveCampaigns: (value: Campaign[]) => void;
+    const campaignsPromise = new Promise<Campaign[]>(resolve => {
+      resolveCampaigns = resolve;
+    });
+
+    (API.getCampaigns as jest.Mock).mockReturnValue(campaignsPromise);
 
     // Mock callback function
     const mockOnCampaignSelect = jest.fn();
 
     await act(async () => {
       render(<CampaignsList onCampaignSelect={mockOnCampaignSelect} />);
+    });
+
+    // Resolve the campaigns data
+    await act(async () => {
+      resolveCampaigns!(mockData);
+      await campaignsPromise;
     });
 
     // Wait for the component to load
@@ -169,12 +217,23 @@ describe('CampaignsList Integration', () => {
       },
     ];
 
-    // Setup the API mock to return data
-    (API.getCampaigns as jest.Mock).mockResolvedValue(mockData);
+    // Use delayed promise
+    let resolveCampaigns: (value: Campaign[]) => void;
+    const campaignsPromise = new Promise<Campaign[]>(resolve => {
+      resolveCampaigns = resolve;
+    });
+
+    (API.getCampaigns as jest.Mock).mockReturnValue(campaignsPromise);
 
     // Render without callback - should not throw an error
     await act(async () => {
       render(<CampaignsList />);
+    });
+
+    // Resolve the campaigns data
+    await act(async () => {
+      resolveCampaigns!(mockData);
+      await campaignsPromise;
     });
 
     // Wait for the component to load
