@@ -75,7 +75,7 @@ describe('HomePage Error Handling', () => {
     // Use delayed promises to ensure we can test loading state
     let resolveHomepage: (value: any) => void;
     let resolveCampaigns: (value: any) => void;
-    
+
     const homepagePromise = new Promise(resolve => {
       resolveHomepage = resolve;
     });
