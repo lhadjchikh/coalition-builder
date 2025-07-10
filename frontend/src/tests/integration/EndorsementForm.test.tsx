@@ -4,7 +4,7 @@ import '@testing-library/jest-dom';
 import EndorsementForm from '../../components/EndorsementForm';
 import { Campaign } from '../../types';
 import API from '../../services/api';
-import { withSuppressedAPIErrors } from '../utils/testUtils';
+import { withSuppressedErrors } from '../utils/testUtils';
 
 // Mock the API
 jest.mock('../../services/api');
@@ -131,7 +131,7 @@ describe('EndorsementForm', () => {
   });
 
   it('shows error message when submission fails', async () => {
-    await withSuppressedAPIErrors(async () => {
+    await withSuppressedErrors(['Submission failed'], async () => {
       mockAPI.createEndorsement.mockRejectedValue(new Error('Submission failed'));
 
       render(<EndorsementForm campaign={mockCampaign} />);
@@ -167,7 +167,7 @@ describe('EndorsementForm', () => {
   });
 
   it('prevents submission when honeypot fields are filled (bot detection)', async () => {
-    await withSuppressedAPIErrors(async () => {
+    await withSuppressedErrors(['spam detection'], async () => {
       // Mock API to simulate honeypot detection rejection
       mockAPI.createEndorsement.mockRejectedValue(
         new Error('Submission rejected due to spam detection')

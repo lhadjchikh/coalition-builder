@@ -3,7 +3,7 @@ import { render } from "@testing-library/react";
 import { notFound } from "next/navigation";
 import CampaignPage, { generateStaticParams, generateMetadata } from "../page";
 import { apiClient } from "../../../../lib/api";
-import { withSuppressedAPIErrors } from "../../../../frontend/src/tests/utils/testUtils";
+import { withSuppressedErrors } from "../../../../../frontend/src/tests/utils/testUtils";
 
 
 // Mock dependencies
@@ -89,7 +89,7 @@ describe("CampaignPage", () => {
     });
 
     it("should call notFound when campaign is not found", async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(["Campaign not found"], async () => {
         (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
           new Error("Campaign not found"),
         );
@@ -109,7 +109,7 @@ describe("CampaignPage", () => {
     });
 
     it("should call notFound when API throws error", async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(["API Error"], async () => {
         (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
           new Error("API Error"),
         );
@@ -151,7 +151,7 @@ describe("CampaignPage", () => {
     });
 
     it("should return empty array when API throws error", async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(["API Error"], async () => {
         (apiClient.getCampaigns as jest.Mock).mockRejectedValue(
           new Error("API Error"),
         );
@@ -188,7 +188,7 @@ describe("CampaignPage", () => {
     });
 
     it("should return not found metadata when campaign not found", async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(["No campaign found with name:"], async () => {
         (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
           new Error("No campaign found with name: non-existent-campaign"),
         );
@@ -208,7 +208,7 @@ describe("CampaignPage", () => {
     });
 
     it("should return default metadata on error", async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(["API Error"], async () => {
         (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
           new Error("API Error"),
         );

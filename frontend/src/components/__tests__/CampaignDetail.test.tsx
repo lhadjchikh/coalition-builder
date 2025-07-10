@@ -4,7 +4,7 @@ import '@testing-library/jest-dom';
 import CampaignDetail from '../CampaignDetail';
 import API from '../../services/api';
 import { Campaign } from '../../types';
-import { withSuppressedAPIErrors } from '../../tests/utils/testUtils';
+import { withSuppressedErrors } from '../../tests/utils/testUtils';
 
 // Mock the API service
 jest.mock('../../services/api');
@@ -165,7 +165,7 @@ describe('CampaignDetail', () => {
 
   describe('error handling', () => {
     it('should display error when campaign fetch by ID fails', async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(['Campaign not found'], async () => {
         const errorMessage = 'Campaign not found';
         mockAPI.getCampaignById.mockRejectedValue(new Error(errorMessage));
 
@@ -182,7 +182,7 @@ describe('CampaignDetail', () => {
     });
 
     it('should display error when campaign fetch by name fails', async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(['Network error'], async () => {
         const errorMessage = 'Network error';
         mockAPI.getCampaignByName.mockRejectedValue(new Error(errorMessage));
 
@@ -199,7 +199,7 @@ describe('CampaignDetail', () => {
     });
 
     it('should handle non-Error objects in catch block', async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(['Failed to fetch campaign'], async () => {
         mockAPI.getCampaignById.mockRejectedValue('String error');
 
         await act(async () => {
@@ -421,7 +421,7 @@ describe('CampaignDetail', () => {
     });
 
     it('should reset error state when retrying after error', async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(['First error'], async () => {
         mockAPI.getCampaignById.mockRejectedValue(new Error('First error'));
 
         const { rerender } = render(<CampaignDetail campaignId={1} />);

@@ -4,7 +4,7 @@ import '@testing-library/jest-dom';
 import HomePage from '../HomePage';
 import API from '../../services/api';
 import { Campaign, HomePage as HomePageType } from '../../types';
-import { withSuppressedAPIErrors } from '../../tests/utils/testUtils';
+import { withSuppressedErrors } from '../../tests/utils/testUtils';
 
 // Mock the API module
 jest.mock('../../services/api');
@@ -114,7 +114,7 @@ describe('HomePage Error Handling', () => {
   });
 
   it('renders fallback homepage data when homepage API fails', async () => {
-    await withSuppressedAPIErrors(async () => {
+    await withSuppressedErrors(['Error fetching homepage'], async () => {
       mockAPI.getHomepage.mockRejectedValue(new Error('Homepage API failed'));
       mockAPI.getCampaigns.mockResolvedValue(mockCampaigns);
 
@@ -138,7 +138,7 @@ describe('HomePage Error Handling', () => {
   });
 
   it('shows graceful error message when campaigns API fails', async () => {
-    await withSuppressedAPIErrors(async () => {
+    await withSuppressedErrors(['Error fetching campaigns'], async () => {
       mockAPI.getHomepage.mockResolvedValue(mockHomepage);
       mockAPI.getCampaigns.mockRejectedValue(new Error('Campaigns API failed'));
 
@@ -161,7 +161,7 @@ describe('HomePage Error Handling', () => {
   });
 
   it('handles both APIs failing gracefully', async () => {
-    await withSuppressedAPIErrors(async () => {
+    await withSuppressedErrors(['Error fetching homepage', 'Error fetching campaigns'], async () => {
       mockAPI.getHomepage.mockRejectedValue(new Error('Homepage API failed'));
       mockAPI.getCampaigns.mockRejectedValue(new Error('Campaigns API failed'));
 
@@ -202,7 +202,7 @@ describe('HomePage Error Handling', () => {
   });
 
   it('uses environment variables for fallback data', async () => {
-    await withSuppressedAPIErrors(async () => {
+    await withSuppressedErrors(['Error fetching homepage'], async () => {
       process.env.NEXT_PUBLIC_ORGANIZATION_NAME = 'Custom Org';
       process.env.NEXT_PUBLIC_TAGLINE = 'Custom tagline';
 
@@ -226,7 +226,7 @@ describe('HomePage Error Handling', () => {
   });
 
   it('does not expose raw error messages to users', async () => {
-    await withSuppressedAPIErrors(async () => {
+    await withSuppressedErrors(['Internal server error 500', 'Connection refused', 'Error fetching homepage', 'Error fetching campaigns'], async () => {
       mockAPI.getHomepage.mockRejectedValue(new Error('Internal server error 500'));
       mockAPI.getCampaigns.mockRejectedValue(new Error('Connection refused'));
 
@@ -251,7 +251,7 @@ describe('HomePage Error Handling', () => {
   });
 
   it('shows development notices in development mode', async () => {
-    await withSuppressedAPIErrors(async () => {
+    await withSuppressedErrors(['Error fetching homepage', 'Error fetching campaigns'], async () => {
       process.env = { ...process.env, NODE_ENV: 'development' };
 
       mockAPI.getHomepage.mockRejectedValue(new Error('Homepage API failed'));
@@ -274,7 +274,7 @@ describe('HomePage Error Handling', () => {
   });
 
   it('renders page structure correctly even with API failures', async () => {
-    await withSuppressedAPIErrors(async () => {
+    await withSuppressedErrors(['Error fetching homepage', 'Error fetching campaigns'], async () => {
       mockAPI.getHomepage.mockRejectedValue(new Error('API failed'));
       mockAPI.getCampaigns.mockRejectedValue(new Error('API failed'));
 

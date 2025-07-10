@@ -4,7 +4,7 @@ import '@testing-library/jest-dom';
 import EndorsementsList from '../../components/EndorsementsList';
 import { Endorsement } from '../../types';
 import API from '../../services/api';
-import { withSuppressedAPIErrors } from '../utils/testUtils';
+import { withSuppressedErrors } from '../utils/testUtils';
 
 // Mock the API
 jest.mock('../../services/api');
@@ -124,7 +124,7 @@ describe('EndorsementsList', () => {
   });
 
   it('shows error message when fetching fails', async () => {
-    await withSuppressedAPIErrors(async () => {
+    await withSuppressedErrors(['Network error'], async () => {
       mockAPI.getEndorsements.mockRejectedValue(new Error('Network error'));
 
       render(<EndorsementsList />);

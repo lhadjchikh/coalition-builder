@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import App from '../../App';
 import API from '../../services/api';
-import { withSuppressedAPIErrors } from '../utils/testUtils';
+import { withSuppressedErrors } from '../utils/testUtils';
 
 // Mock the API module
 jest.mock('../../services/api', () => ({
@@ -119,7 +119,7 @@ describe('App Integration Test', () => {
   });
 
   test('handles API error in the app context', async () => {
-    await withSuppressedAPIErrors(async () => {
+    await withSuppressedErrors(['Failed to fetch data'], async () => {
       // Override the mock for this specific test to simulate an error
       (API.getCampaigns as jest.Mock).mockRejectedValueOnce(new Error('Failed to fetch data'));
 

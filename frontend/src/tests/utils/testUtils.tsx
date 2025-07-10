@@ -260,38 +260,30 @@ export const mockFetchNetworkError = () => {
 };
 
 // Error suppression utilities for cleaner test output
-export const suppressAPIErrors = () => {
+export const withSuppressedErrors = async (
+  expectedPatterns: (string | RegExp)[],
+  testFn: () => Promise<void>
+) => {
   const originalConsoleError = console.error;
 
   console.error = (...args: any[]) => {
     const message = args.join(' ');
-    const isAPIError =
-      message.includes('Error fetching') ||
-      message.includes('API failed') ||
-      message.includes('fetch failed') ||
-      message.includes('Network error') ||
-      message.includes('API request failed') ||
-      message.includes('Campaign not found') ||
-      message.includes('Error generating static params') ||
-      message.includes('Error creating endorsement');
+    const isExpectedError = expectedPatterns.some(pattern => {
+      if (typeof pattern === 'string') {
+        return message.includes(pattern);
+      }
+      return pattern.test(message);
+    });
 
-    // Only log if it's not an API-related error
-    if (!isAPIError) {
+    // Only log if it's not an expected error
+    if (!isExpectedError) {
       originalConsoleError(...args);
     }
   };
 
-  return () => {
-    console.error = originalConsoleError;
-  };
-};
-
-// Wrapper for tests that expect API errors
-export const withSuppressedAPIErrors = async (testFn: () => Promise<void>) => {
-  const restore = suppressAPIErrors();
   try {
     await testFn();
   } finally {
-    restore();
+    console.error = originalConsoleError;
   }
 };

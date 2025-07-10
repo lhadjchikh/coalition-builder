@@ -1,6 +1,6 @@
 import { apiClient } from "../api";
 import type { Campaign } from "@frontend/types";
-import { withSuppressedAPIErrors } from "../../frontend/src/tests/utils/testUtils";
+import { withSuppressedErrors } from "../../../frontend/src/tests/utils/testUtils";
 
 // Mock fetch globally
 global.fetch = jest.fn();
@@ -73,7 +73,7 @@ describe("ApiClient", () => {
     });
 
     it("should handle HTTP errors from the API", async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(["HTTP error! status: 500"], async () => {
         (fetch as jest.Mock).mockResolvedValueOnce({
           ok: false,
           status: 500,
@@ -86,7 +86,7 @@ describe("ApiClient", () => {
     });
 
     it("should handle network errors", async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(["Network error"], async () => {
         (fetch as jest.Mock).mockRejectedValueOnce(new Error("Network error"));
 
         await expect(

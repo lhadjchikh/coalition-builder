@@ -7,7 +7,7 @@ import {
   EndorsementCreate,
   HomePage,
 } from '../../types';
-import { withSuppressedAPIErrors } from '../../tests/utils/testUtils';
+import { withSuppressedErrors } from '../../tests/utils/testUtils';
 
 // Mock fetch globally
 const mockFetch = jest.fn();
@@ -108,7 +108,7 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses', async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(['HTTP error! status: 404'], async () => {
         mockFetch.mockResolvedValueOnce({
           ok: false,
           status: 404,
@@ -119,7 +119,7 @@ describe('API Service', () => {
     });
 
     it('should handle network failures', async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(['Network error'], async () => {
         mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
         await expect(API.getCampaigns()).rejects.toThrow('Network error');
@@ -169,7 +169,7 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses', async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(['HTTP error! status: 500'], async () => {
         mockFetch.mockResolvedValueOnce({
           ok: false,
           status: 500,
@@ -203,7 +203,7 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses', async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(['HTTP error! status: 403'], async () => {
         mockFetch.mockResolvedValueOnce({
           ok: false,
           status: 403,
@@ -252,7 +252,7 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses', async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(['HTTP error! status: 401'], async () => {
         mockFetch.mockResolvedValueOnce({
           ok: false,
           status: 401,
@@ -301,7 +301,7 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses', async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(['HTTP error! status: 404'], async () => {
         mockFetch.mockResolvedValueOnce({
           ok: false,
           status: 404,
@@ -367,7 +367,7 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses with error details', async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(['Invalid endorsement data'], async () => {
         const errorData = { detail: 'Invalid endorsement data' };
         mockFetch.mockResolvedValueOnce({
           ok: false,
@@ -382,7 +382,7 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses without error details', async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(['HTTP error! status: 500'], async () => {
         mockFetch.mockResolvedValueOnce({
           ok: false,
           status: 500,
@@ -396,7 +396,7 @@ describe('API Service', () => {
     });
 
     it('should handle network failures during creation', async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(['Network error'], async () => {
         mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
         await expect(API.createEndorsement(mockEndorsementData)).rejects.toThrow('Network error');
@@ -426,7 +426,7 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses', async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(['HTTP error! status: 404'], async () => {
         mockFetch.mockResolvedValueOnce({
           ok: false,
           status: 404,
@@ -459,7 +459,7 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses', async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(['HTTP error! status: 404'], async () => {
         mockFetch.mockResolvedValueOnce({
           ok: false,
           status: 404,
@@ -513,7 +513,7 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses', async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(['HTTP error! status: 500'], async () => {
         mockFetch.mockResolvedValueOnce({
           ok: false,
           status: 500,
@@ -526,7 +526,7 @@ describe('API Service', () => {
 
   describe('Error handling and edge cases', () => {
     it('should handle malformed JSON responses', async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(['Invalid JSON'], async () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: async () => {
@@ -539,7 +539,7 @@ describe('API Service', () => {
     });
 
     it('should handle fetch rejections', async () => {
-      await withSuppressedAPIErrors(async () => {
+      await withSuppressedErrors(['Fetch failed'], async () => {
         mockFetch.mockRejectedValueOnce(new Error('Fetch failed'));
 
         await expect(API.getCampaigns()).rejects.toThrow('Fetch failed');
