@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import App from '../../App';
 import API from '../../services/api';
+import { withSuppressedErrors } from '../utils/testUtils';
 
 // Mock the API module
 jest.mock('../../services/api', () => ({
@@ -118,20 +119,22 @@ describe('App Integration Test', () => {
   });
 
   test('handles API error in the app context', async () => {
-    // Override the mock for this specific test to simulate an error
-    (API.getCampaigns as jest.Mock).mockRejectedValueOnce(new Error('Failed to fetch data'));
+    await withSuppressedErrors(['Failed to fetch data'], async () => {
+      // Override the mock for this specific test to simulate an error
+      (API.getCampaigns as jest.Mock).mockRejectedValueOnce(new Error('Failed to fetch data'));
 
-    // Act - Render the App
-    render(<App />);
+      // Act - Render the App
+      render(<App />);
 
-    // Assert - Verify error state is displayed
-    await waitFor(() => {
-      expect(screen.getByTestId('error')).toBeInTheDocument();
+      // Assert - Verify error state is displayed
+      await waitFor(() => {
+        expect(screen.getByTestId('error')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText('Failed to fetch campaigns')).toBeInTheDocument();
+
+      // Verify that even with an error, the app header is still displayed
+      expect(screen.getByText('Coalition Builder')).toBeInTheDocument();
     });
-
-    expect(screen.getByText('Failed to fetch campaigns')).toBeInTheDocument();
-
-    // Verify that even with an error, the app header is still displayed
-    expect(screen.getByText('Coalition Builder')).toBeInTheDocument();
   });
 });

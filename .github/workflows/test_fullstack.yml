@@ -173,7 +173,7 @@ jobs:
           SSR_URL: http://localhost:3000
           API_URL: http://localhost:8000
           NGINX_URL: http://localhost:80
-        run: npm run test:integration:simple
+        run: npm run test:integration
 
       # Stop all containers when done
       - name: Stop containers

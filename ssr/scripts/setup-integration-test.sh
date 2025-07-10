@@ -35,21 +35,11 @@ echo "📦 Updating package.json with test scripts..."
 if ! command -v jq &>/dev/null; then
   echo "⚠️  jq is not installed. Please install jq or manually add test scripts to package.json."
   echo "   Add these to the scripts section:"
-  echo '   "test": "node tests/test-ssr-integration.js",'
-  echo '   "test:simple": "node tests/test-ssr-integration-simple.js",'
-  echo '   "test:ci": "node tests/test-ssr-integration-simple.js"'
+  echo '   "test:integration": "tsx tests/test-ssr-integration.ts"'
 else
   # Add test scripts using jq if not already present
-  if ! grep -q '"test"' package.json; then
-    jq '.scripts.test = "node tests/test-ssr-integration.js"' package.json >package.json.tmp && mv package.json.tmp package.json
-  fi
-
-  if ! grep -q '"test:simple"' package.json; then
-    jq '.scripts."test:simple" = "node tests/test-ssr-integration-simple.js"' package.json >package.json.tmp && mv package.json.tmp package.json
-  fi
-
-  if ! grep -q '"test:ci"' package.json; then
-    jq '.scripts."test:ci" = "node tests/test-ssr-integration-simple.js"' package.json >package.json.tmp && mv package.json.tmp package.json
+  if ! grep -q '"test:integration"' package.json; then
+    jq '.scripts."test:integration" = "tsx tests/test-ssr-integration.ts"' package.json >package.json.tmp && mv package.json.tmp package.json
   fi
 fi
 

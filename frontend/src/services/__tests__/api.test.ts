@@ -7,6 +7,7 @@ import {
   EndorsementCreate,
   HomePage,
 } from '../../types';
+import { withSuppressedErrors } from '../../tests/utils/testUtils';
 
 // Mock fetch globally
 const mockFetch = jest.fn();
@@ -107,18 +108,22 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-      });
+      await withSuppressedErrors(['HTTP error! status: 404'], async () => {
+        mockFetch.mockResolvedValueOnce({
+          ok: false,
+          status: 404,
+        });
 
-      await expect(API.getCampaigns()).rejects.toThrow('HTTP error! status: 404');
+        await expect(API.getCampaigns()).rejects.toThrow('HTTP error! status: 404');
+      });
     });
 
     it('should handle network failures', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+      await withSuppressedErrors(['Network error'], async () => {
+        mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-      await expect(API.getCampaigns()).rejects.toThrow('Network error');
+        await expect(API.getCampaigns()).rejects.toThrow('Network error');
+      });
     });
 
     it('should use correct URL with base URL', async () => {
@@ -164,12 +169,14 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-      });
+      await withSuppressedErrors(['HTTP error! status: 500'], async () => {
+        mockFetch.mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+        });
 
-      await expect(API.getEndorsers()).rejects.toThrow('HTTP error! status: 500');
+        await expect(API.getEndorsers()).rejects.toThrow('HTTP error! status: 500');
+      });
     });
   });
 
@@ -196,12 +203,14 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 403,
-      });
+      await withSuppressedErrors(['HTTP error! status: 403'], async () => {
+        mockFetch.mockResolvedValueOnce({
+          ok: false,
+          status: 403,
+        });
 
-      await expect(API.getLegislators()).rejects.toThrow('HTTP error! status: 403');
+        await expect(API.getLegislators()).rejects.toThrow('HTTP error! status: 403');
+      });
     });
   });
 
@@ -243,12 +252,14 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-      });
+      await withSuppressedErrors(['HTTP error! status: 401'], async () => {
+        mockFetch.mockResolvedValueOnce({
+          ok: false,
+          status: 401,
+        });
 
-      await expect(API.getEndorsements()).rejects.toThrow('HTTP error! status: 401');
+        await expect(API.getEndorsements()).rejects.toThrow('HTTP error! status: 401');
+      });
     });
   });
 
@@ -290,12 +301,14 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-      });
+      await withSuppressedErrors(['HTTP error! status: 404'], async () => {
+        mockFetch.mockResolvedValueOnce({
+          ok: false,
+          status: 404,
+        });
 
-      await expect(API.getCampaignEndorsements(1)).rejects.toThrow('HTTP error! status: 404');
+        await expect(API.getCampaignEndorsements(1)).rejects.toThrow('HTTP error! status: 404');
+      });
     });
   });
 
@@ -354,34 +367,40 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses with error details', async () => {
-      const errorData = { detail: 'Invalid endorsement data' };
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: async () => errorData,
-      });
+      await withSuppressedErrors(['Invalid endorsement data'], async () => {
+        const errorData = { detail: 'Invalid endorsement data' };
+        mockFetch.mockResolvedValueOnce({
+          ok: false,
+          status: 400,
+          json: async () => errorData,
+        });
 
-      await expect(API.createEndorsement(mockEndorsementData)).rejects.toThrow(
-        'Invalid endorsement data'
-      );
+        await expect(API.createEndorsement(mockEndorsementData)).rejects.toThrow(
+          'Invalid endorsement data'
+        );
+      });
     });
 
     it('should handle HTTP error responses without error details', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        json: async () => ({}),
-      });
+      await withSuppressedErrors(['HTTP error! status: 500'], async () => {
+        mockFetch.mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          json: async () => ({}),
+        });
 
-      await expect(API.createEndorsement(mockEndorsementData)).rejects.toThrow(
-        'HTTP error! status: 500'
-      );
+        await expect(API.createEndorsement(mockEndorsementData)).rejects.toThrow(
+          'HTTP error! status: 500'
+        );
+      });
     });
 
     it('should handle network failures during creation', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+      await withSuppressedErrors(['Network error'], async () => {
+        mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-      await expect(API.createEndorsement(mockEndorsementData)).rejects.toThrow('Network error');
+        await expect(API.createEndorsement(mockEndorsementData)).rejects.toThrow('Network error');
+      });
     });
   });
 
@@ -407,12 +426,14 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-      });
+      await withSuppressedErrors(['HTTP error! status: 404'], async () => {
+        mockFetch.mockResolvedValueOnce({
+          ok: false,
+          status: 404,
+        });
 
-      await expect(API.getCampaignById(1)).rejects.toThrow('HTTP error! status: 404');
+        await expect(API.getCampaignById(1)).rejects.toThrow('HTTP error! status: 404');
+      });
     });
   });
 
@@ -438,12 +459,16 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-      });
+      await withSuppressedErrors(['HTTP error! status: 404'], async () => {
+        mockFetch.mockResolvedValueOnce({
+          ok: false,
+          status: 404,
+        });
 
-      await expect(API.getCampaignByName('nonexistent')).rejects.toThrow('HTTP error! status: 404');
+        await expect(API.getCampaignByName('nonexistent')).rejects.toThrow(
+          'HTTP error! status: 404'
+        );
+      });
     });
   });
 
@@ -488,31 +513,37 @@ describe('API Service', () => {
     });
 
     it('should handle HTTP error responses', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-      });
+      await withSuppressedErrors(['HTTP error! status: 500'], async () => {
+        mockFetch.mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+        });
 
-      await expect(API.getHomepage()).rejects.toThrow('HTTP error! status: 500');
+        await expect(API.getHomepage()).rejects.toThrow('HTTP error! status: 500');
+      });
     });
   });
 
   describe('Error handling and edge cases', () => {
     it('should handle malformed JSON responses', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => {
-          throw new Error('Invalid JSON');
-        },
-      });
+      await withSuppressedErrors(['Invalid JSON'], async () => {
+        mockFetch.mockResolvedValueOnce({
+          ok: true,
+          json: async () => {
+            throw new Error('Invalid JSON');
+          },
+        });
 
-      await expect(API.getCampaigns()).rejects.toThrow('Invalid JSON');
+        await expect(API.getCampaigns()).rejects.toThrow('Invalid JSON');
+      });
     });
 
     it('should handle fetch rejections', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Fetch failed'));
+      await withSuppressedErrors(['Fetch failed'], async () => {
+        mockFetch.mockRejectedValueOnce(new Error('Fetch failed'));
 
-      await expect(API.getCampaigns()).rejects.toThrow('Fetch failed');
+        await expect(API.getCampaigns()).rejects.toThrow('Fetch failed');
+      });
     });
 
     it('should handle empty responses', async () => {

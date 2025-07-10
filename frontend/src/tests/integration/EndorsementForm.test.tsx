@@ -4,6 +4,7 @@ import '@testing-library/jest-dom';
 import EndorsementForm from '../../components/EndorsementForm';
 import { Campaign } from '../../types';
 import API from '../../services/api';
+import { withSuppressedErrors } from '../utils/testUtils';
 
 // Mock the API
 jest.mock('../../services/api');
@@ -130,23 +131,25 @@ describe('EndorsementForm', () => {
   });
 
   it('shows error message when submission fails', async () => {
-    mockAPI.createEndorsement.mockRejectedValue(new Error('Submission failed'));
+    await withSuppressedErrors(['Submission failed'], async () => {
+      mockAPI.createEndorsement.mockRejectedValue(new Error('Submission failed'));
 
-    render(<EndorsementForm campaign={mockCampaign} />);
+      render(<EndorsementForm campaign={mockCampaign} />);
 
-    // Fill out required fields
-    fireEvent.change(screen.getByTestId('name-input'), { target: { value: 'John Doe' } });
-    fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Test Org' } });
-    fireEvent.change(screen.getByTestId('email-input'), { target: { value: 'john@test.com' } });
-    fireEvent.change(screen.getByTestId('state-select'), { target: { value: 'MD' } });
+      // Fill out required fields
+      fireEvent.change(screen.getByTestId('name-input'), { target: { value: 'John Doe' } });
+      fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Test Org' } });
+      fireEvent.change(screen.getByTestId('email-input'), { target: { value: 'john@test.com' } });
+      fireEvent.change(screen.getByTestId('state-select'), { target: { value: 'MD' } });
 
-    // Submit the form
-    fireEvent.click(screen.getByTestId('submit-button'));
+      // Submit the form
+      fireEvent.click(screen.getByTestId('submit-button'));
 
-    await waitFor(() => {
-      expect(screen.getByTestId('error-message')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('error-message')).toBeInTheDocument();
+      });
+      expect(screen.getByText('Error: Submission failed')).toBeInTheDocument();
     });
-    expect(screen.getByText('Error: Submission failed')).toBeInTheDocument();
   });
 
   it('validates required fields', () => {
@@ -164,47 +167,49 @@ describe('EndorsementForm', () => {
   });
 
   it('prevents submission when honeypot fields are filled (bot detection)', async () => {
-    // Mock API to simulate honeypot detection rejection
-    mockAPI.createEndorsement.mockRejectedValue(
-      new Error('Submission rejected due to spam detection')
-    );
-
-    render(<EndorsementForm campaign={mockCampaign} />);
-
-    // Fill out required fields
-    fireEvent.change(screen.getByTestId('name-input'), { target: { value: 'Bot User' } });
-    fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Bot Org' } });
-    fireEvent.change(screen.getByTestId('email-input'), { target: { value: 'bot@spam.com' } });
-    fireEvent.change(screen.getByTestId('state-select'), { target: { value: 'CA' } });
-
-    // Fill honeypot fields (this simulates bot behavior)
-    const websiteField = screen.getByLabelText(/website.*leave blank/i);
-    const urlField = screen.getByLabelText(/url.*leave blank/i);
-    fireEvent.change(websiteField, { target: { value: 'http://spam.com' } });
-    fireEvent.change(urlField, { target: { value: 'http://malicious.com' } });
-
-    // Submit the form
-    fireEvent.click(screen.getByTestId('submit-button'));
-
-    // Verify that API was called with honeypot fields filled
-    await waitFor(() => {
-      expect(mockAPI.createEndorsement).toHaveBeenCalledWith(
-        expect.objectContaining({
-          form_metadata: expect.objectContaining({
-            website: 'http://spam.com',
-            url: 'http://malicious.com',
-          }),
-        })
+    await withSuppressedErrors(['spam detection'], async () => {
+      // Mock API to simulate honeypot detection rejection
+      mockAPI.createEndorsement.mockRejectedValue(
+        new Error('Submission rejected due to spam detection')
       );
-    });
 
-    // Verify that submission was rejected (spam detection)
-    await waitFor(() => {
-      expect(screen.getByTestId('error-message')).toBeInTheDocument();
-      expect(screen.getByTestId('error-message')).toHaveTextContent(/spam detection/i);
-    });
+      render(<EndorsementForm campaign={mockCampaign} />);
 
-    // Verify success callback was not called
-    expect(screen.queryByTestId('success-message')).not.toBeInTheDocument();
+      // Fill out required fields
+      fireEvent.change(screen.getByTestId('name-input'), { target: { value: 'Bot User' } });
+      fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Bot Org' } });
+      fireEvent.change(screen.getByTestId('email-input'), { target: { value: 'bot@spam.com' } });
+      fireEvent.change(screen.getByTestId('state-select'), { target: { value: 'CA' } });
+
+      // Fill honeypot fields (this simulates bot behavior)
+      const websiteField = screen.getByLabelText(/website.*leave blank/i);
+      const urlField = screen.getByLabelText(/url.*leave blank/i);
+      fireEvent.change(websiteField, { target: { value: 'http://spam.com' } });
+      fireEvent.change(urlField, { target: { value: 'http://malicious.com' } });
+
+      // Submit the form
+      fireEvent.click(screen.getByTestId('submit-button'));
+
+      // Verify that API was called with honeypot fields filled
+      await waitFor(() => {
+        expect(mockAPI.createEndorsement).toHaveBeenCalledWith(
+          expect.objectContaining({
+            form_metadata: expect.objectContaining({
+              website: 'http://spam.com',
+              url: 'http://malicious.com',
+            }),
+          })
+        );
+      });
+
+      // Verify that submission was rejected (spam detection)
+      await waitFor(() => {
+        expect(screen.getByTestId('error-message')).toBeInTheDocument();
+        expect(screen.getByTestId('error-message')).toHaveTextContent(/spam detection/i);
+      });
+
+      // Verify success callback was not called
+      expect(screen.queryByTestId('success-message')).not.toBeInTheDocument();
+    });
   });
 });

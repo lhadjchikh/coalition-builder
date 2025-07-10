@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./*"],
+      "@frontend/*": ["../frontend/src/*"],
+      "@frontend/types": ["../frontend/src/types/index.ts"],
+      "@frontend/components/*": ["../frontend/src/components/*"],
+      "@frontend/contexts/*": ["../frontend/src/contexts/*"],
+      "@shared/*": ["../shared/*"]
+    }
+  }
+}

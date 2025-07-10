@@ -1,3 +1,4 @@
+/// <reference path="../../styles/styled.d.ts" />
 import styled, { css } from 'styled-components';
 import { lighten, darken, rgba, transparentize } from 'polished';
 

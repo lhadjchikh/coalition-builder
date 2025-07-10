@@ -160,7 +160,7 @@ cd ssr
 npm install
 
 # Run unit tests
-npm run test:unit
+npm test
 
 # Run integration tests with backend
 npm run test:integration

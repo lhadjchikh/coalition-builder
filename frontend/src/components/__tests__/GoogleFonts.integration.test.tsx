@@ -2,11 +2,11 @@ import React from 'react';
 import { render, waitFor, screen } from '@testing-library/react';
 import { ThemeProvider, useTheme } from '../../contexts/ThemeContext';
 import { Theme } from '@shared/utils/theme';
-import * as googleFontsModule from '@shared/utils/googleFonts';
 
 // Mock the loadGoogleFonts function
-const mockLoadGoogleFonts = jest.fn();
-jest.spyOn(googleFontsModule, 'loadGoogleFonts').mockImplementation(mockLoadGoogleFonts);
+jest.mock('@shared/utils/googleFonts');
+import { loadGoogleFonts } from '@shared/utils/googleFonts';
+const mockLoadGoogleFonts = loadGoogleFonts as jest.MockedFunction<typeof loadGoogleFonts>;
 
 // Test component that uses CSS custom properties set by the theme
 const FontTestComponent: React.FC = () => {

@@ -258,3 +258,32 @@ export const mockFetchError = (status: number, message?: string) => {
 export const mockFetchNetworkError = () => {
   global.fetch = jest.fn(() => Promise.reject(new Error('Network error'))) as jest.Mock;
 };
+
+// Error suppression utilities for cleaner test output
+export const withSuppressedErrors = async (
+  expectedPatterns: (string | RegExp)[],
+  testFn: () => Promise<void>
+) => {
+  const originalConsoleError = console.error;
+
+  console.error = (...args: any[]) => {
+    const message = args.join(' ');
+    const isExpectedError = expectedPatterns.some(pattern => {
+      if (typeof pattern === 'string') {
+        return message.includes(pattern);
+      }
+      return pattern.test(message);
+    });
+
+    // Only log if it's not an expected error
+    if (!isExpectedError) {
+      originalConsoleError(...args);
+    }
+  };
+
+  try {
+    await testFn();
+  } finally {
+    console.error = originalConsoleError;
+  }
+};

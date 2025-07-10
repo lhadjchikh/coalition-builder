@@ -59,7 +59,7 @@ docker-compose up -d
 # Run tests
 docker-compose exec backend poetry run python manage.py test
 docker-compose exec frontend npm run test:ci
-docker-compose exec ssr npm run test:ci
+docker-compose exec ssr npm test
 ```
 
 ### Local Development
@@ -73,8 +73,8 @@ cd backend && poetry run python manage.py test
 # Frontend unit/integration tests (requires: cd frontend && npm install)
 cd frontend && npm run test:ci
 
-# SSR integration tests (requires backend running and: cd ssr && npm install)
-cd ssr && npm run test:ci
+# SSR tests (requires: cd ssr && npm install)
+cd ssr && npm test
 ```
 
 The SSR tests expect the backend API running at `http://localhost:8000`. Use `docker-compose up -d` or run the Django server manually if you need to execute them locally.

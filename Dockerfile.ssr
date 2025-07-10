@@ -15,8 +15,8 @@ RUN \
   else echo "Lockfile not found." && exit 1; \
   fi
 
-# Rebuild the source code only when needed
-FROM base AS builder
+# Stage for development and testing
+FROM base AS ssr-builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY ssr/ .
@@ -27,12 +27,21 @@ COPY frontend/src/components ./frontend/src/components
 COPY frontend/src/services ./frontend/src/services
 COPY frontend/src/contexts ./frontend/src/contexts
 COPY frontend/src/styles ./frontend/src/styles
+COPY frontend/src/tests ./frontend/src/tests
+COPY frontend/src/App.css ./frontend/src/App.css
 COPY shared/ ./shared/
 
 RUN mkdir -p ./public
 
-# Environment variables for build time
+# Environment variables for development/testing
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=development
+
+# Production build stage - rebuild the source code only when needed
+FROM ssr-builder AS production-builder
+WORKDIR /app
+
+# Environment variables for build time
 ENV NODE_ENV=production
 
 # Enable build caching
@@ -59,7 +68,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=production-builder --chown=nextjs:nodejs /app/public ./public
 
 # Set the correct permission for prerender cache
 RUN mkdir -p .next
@@ -67,11 +76,11 @@ RUN chown nextjs:nodejs .next
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=production-builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=production-builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Copy compiled health check file
-COPY --from=builder --chown=nextjs:nodejs /app/healthcheck.js /app/
+COPY --from=production-builder --chown=nextjs:nodejs /app/healthcheck.js /app/
 
 USER nextjs
 
