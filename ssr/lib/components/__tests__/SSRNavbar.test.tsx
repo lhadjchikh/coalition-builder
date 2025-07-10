@@ -101,7 +101,7 @@ describe("SSRNavbar", () => {
     render(<SSRNavbar organizationName="Test Org" navItems={[]} />);
 
     expect(screen.getByText("Test Org")).toBeInTheDocument();
-    expect(screen.queryByRole("list")).toBeInTheDocument();
+    expect(screen.getByRole("list")).toBeInTheDocument();
   });
 
   it("should handle missing organization name", () => {
