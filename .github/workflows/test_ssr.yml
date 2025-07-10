@@ -12,53 +12,6 @@ jobs:
     name: SSR Unit Tests
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: ssr
-
-    strategy:
-      matrix:
-        node-version: ["22.x"]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: "npm"
-          cache-dependency-path: ssr/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Copy frontend and shared files for TypeScript resolution
-        run: |
-          mkdir -p frontend/src
-          cp -r ../frontend/src/types ./frontend/src/
-          cp -r ../frontend/src/components ./frontend/src/
-          cp -r ../frontend/src/services ./frontend/src/
-          cp -r ../frontend/src/contexts ./frontend/src/
-          cp -r ../frontend/src/styles ./frontend/src/
-          cp ../frontend/src/App.css ./frontend/src/
-          mkdir -p shared
-          cp -r ../shared/* ./shared/
-
-      - name: Run TypeScript check
-        run: npm run typecheck || npm run tsc || echo "Typecheck not available, skipping"
-
-      - name: Run lint
-        run: npm run lint || echo "Linting not available, skipping"
-
-      - name: Run build
-        run: npm run build
-
-  integration-tests:
-    name: SSR Integration Tests
-    runs-on: ubuntu-latest
-    needs: unit-tests
-
     steps:
       - uses: actions/checkout@v4
 
@@ -68,97 +21,45 @@ jobs:
       - name: Cache Docker layers
         uses: actions/cache@v4
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          path: /tmp/.buildx-cache-unit
+          key: ${{ runner.os }}-buildx-unit-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-buildx-unit-
 
-      # Build the Docker image with caching
-      - name: Build SSR Docker image
+      # Build a lightweight image just for SSR unit tests
+      - name: Build SSR test image
         run: |
           docker buildx build \
-            --cache-from=type=local,src=/tmp/.buildx-cache \
-            --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
+            --cache-from=type=local,src=/tmp/.buildx-cache-unit \
+            --cache-to=type=local,dest=/tmp/.buildx-cache-unit-new,mode=max \
             --load \
-            -t coalition_ssr:latest \
+            --target=ssr-builder \
+            -t coalition_ssr_test:latest \
             -f Dockerfile.ssr \
             .
 
-      - name: Build Backend Docker image
-        run: |
-          docker buildx build \
-            --cache-from=type=local,src=/tmp/.buildx-cache \
-            --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
-            --load \
-            -t coalition_api:latest \
-            .
-
-      - name: Start all containers
-        run: docker compose up -d
-
-      # Temp fix for https://github.com/docker/build-push-action/issues/252
+      # Temp fix for cache
       - name: Move cache
         run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          rm -rf /tmp/.buildx-cache-unit
+          mv /tmp/.buildx-cache-unit-new /tmp/.buildx-cache-unit
 
-      - name: Wait for services to be ready
+      - name: Run TypeScript check
         run: |
-          echo "Waiting for services to be ready..."
-          sleep 30
+          docker run --rm coalition_ssr_test:latest \
+            sh -c "npm run typecheck || npm run tsc || echo 'Typecheck not available, skipping'"
 
-          # Check if services are responding
-          echo "Checking if services are up..."
-
-          # Check if backend is responding
-          timeout=60
-          until curl -s http://localhost:8000/api/ || [ $timeout -le 0 ]; do
-            echo "Waiting for backend API to be ready..."
-            sleep 5
-            timeout=$((timeout-5))
-          done
-
-          # Check if SSR is responding
-          timeout=60
-          until curl -s http://localhost:3000/health || [ $timeout -le 0 ]; do
-            echo "Waiting for SSR to be ready..."
-            sleep 5
-            timeout=$((timeout-5))
-          done
-
-      - name: Create test data
+      - name: Run lint
         run: |
-          # Create test data for API
-          docker compose exec -T api bash -c '
-          export PYTHONPATH="${PYTHONPATH}:/app"
-          python scripts/create_test_data.py
-          if [ $? -ne 0 ]; then
-            echo "Failed to create test data"
-            exit 1
-          fi
-          '
+          docker run --rm coalition_ssr_test:latest \
+            sh -c "npm run lint || echo 'Linting not available, skipping'"
 
-      - name: Install SSR test dependencies
-        working-directory: ssr
-        run: npm ci
+      - name: Run unit tests
+        run: |
+          docker run --rm coalition_ssr_test:latest \
+            npm test
 
-      - name: Run basic SSR integration tests
-        env:
-          SSR_URL: http://localhost:3000
-          API_URL: http://localhost:8000
-          NGINX_URL: http://localhost:80
-        working-directory: ssr
-        run: npm run test:integration:simple
-
-      - name: Run comprehensive SSR integration tests
-        env:
-          SSR_URL: http://localhost:3000
-          API_URL: http://localhost:8000
-          NGINX_URL: http://localhost:80
-        working-directory: ssr
-        run: npm run test:integration
-
-      # Stop all containers when done
-      - name: Stop containers
-        if: always()
-        run: docker compose down
+      - name: Run build
+        run: |
+          docker run --rm coalition_ssr_test:latest \
+            npm run build

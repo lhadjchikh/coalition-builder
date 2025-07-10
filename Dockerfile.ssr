@@ -15,8 +15,8 @@ RUN \
   else echo "Lockfile not found." && exit 1; \
   fi
 
-# Rebuild the source code only when needed
-FROM base AS builder
+# Stage for development and testing
+FROM base AS ssr-builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY ssr/ .
@@ -32,8 +32,15 @@ COPY shared/ ./shared/
 
 RUN mkdir -p ./public
 
-# Environment variables for build time
+# Environment variables for development/testing
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=development
+
+# Rebuild the source code only when needed
+FROM ssr-builder AS builder
+WORKDIR /app
+
+# Environment variables for build time
 ENV NODE_ENV=production
 
 # Enable build caching
