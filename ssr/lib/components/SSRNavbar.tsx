@@ -54,13 +54,24 @@ const SSRNavbar: React.FC<SSRNavbarProps> = ({
                 textDecoration: "none",
                 padding: "0.5rem 1rem",
                 borderRadius: "4px",
-                transition: "background-color 0.2s",
+                transition: "background-color 0.2s, outline 0.2s",
+                outline: "2px solid transparent",
+                outlineOffset: "2px",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor =
                   "rgba(255, 255, 255, 0.1)";
               }}
               onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "transparent";
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.outline = "2px solid #61dafb";
+                e.currentTarget.style.backgroundColor =
+                  "rgba(255, 255, 255, 0.1)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.outline = "2px solid transparent";
                 e.currentTarget.style.backgroundColor = "transparent";
               }}
             >
