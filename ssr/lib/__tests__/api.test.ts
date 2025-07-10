@@ -1,5 +1,6 @@
 import { apiClient } from "../api";
 import type { Campaign } from "@frontend/types";
+import { withSuppressedAPIErrors } from "../../frontend/src/tests/utils/testUtils";
 
 // Mock fetch globally
 global.fetch = jest.fn();
@@ -72,22 +73,26 @@ describe("ApiClient", () => {
     });
 
     it("should handle HTTP errors from the API", async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-      });
+      await withSuppressedAPIErrors(async () => {
+        (fetch as jest.Mock).mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+        });
 
-      await expect(
-        apiClient.getCampaignByName("test-campaign"),
-      ).rejects.toThrow("HTTP error! status: 500");
+        await expect(
+          apiClient.getCampaignByName("test-campaign"),
+        ).rejects.toThrow("HTTP error! status: 500");
+      });
     });
 
     it("should handle network errors", async () => {
-      (fetch as jest.Mock).mockRejectedValueOnce(new Error("Network error"));
+      await withSuppressedAPIErrors(async () => {
+        (fetch as jest.Mock).mockRejectedValueOnce(new Error("Network error"));
 
-      await expect(
-        apiClient.getCampaignByName("test-campaign"),
-      ).rejects.toThrow("Network error");
+        await expect(
+          apiClient.getCampaignByName("test-campaign"),
+        ).rejects.toThrow("Network error");
+      });
     });
 
     it("should return single campaign when array has one item", async () => {

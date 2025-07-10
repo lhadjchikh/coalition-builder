@@ -3,6 +3,8 @@ import { render } from "@testing-library/react";
 import { notFound } from "next/navigation";
 import CampaignPage, { generateStaticParams, generateMetadata } from "../page";
 import { apiClient } from "../../../../lib/api";
+import { withSuppressedAPIErrors } from "../../../../frontend/src/tests/utils/testUtils";
+
 
 // Mock dependencies
 jest.mock("next/navigation", () => ({
@@ -87,37 +89,43 @@ describe("CampaignPage", () => {
     });
 
     it("should call notFound when campaign is not found", async () => {
-      (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
-        new Error("Campaign not found"),
-      );
+      await withSuppressedAPIErrors(async () => {
+        (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
+          new Error("Campaign not found"),
+        );
 
-      await expect(async () => {
-        await CampaignPage({
-          params: Promise.resolve({ name: "non-existent-campaign" }),
-        });
-      }).rejects.toThrow("notFound called");
+        await expect(async () => {
+          await CampaignPage({
+            params: Promise.resolve({ name: "non-existent-campaign" }),
+          });
+        }).rejects.toThrow("notFound called");
 
-      expect(apiClient.getCampaignByName).toHaveBeenCalledWith(
-        "non-existent-campaign",
-      );
-      expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
-      expect(notFound).toHaveBeenCalled();
+        expect(apiClient.getCampaignByName).toHaveBeenCalledWith(
+          "non-existent-campaign",
+        );
+        expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
+        expect(notFound).toHaveBeenCalled();
+      });
     });
 
     it("should call notFound when API throws error", async () => {
-      (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
-        new Error("API Error"),
-      );
+      await withSuppressedAPIErrors(async () => {
+        (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
+          new Error("API Error"),
+        );
 
-      await expect(async () => {
-        await CampaignPage({
-          params: Promise.resolve({ name: "test-campaign" }),
-        });
-      }).rejects.toThrow("notFound called");
+        await expect(async () => {
+          await CampaignPage({
+            params: Promise.resolve({ name: "test-campaign" }),
+          });
+        }).rejects.toThrow("notFound called");
 
-      expect(apiClient.getCampaignByName).toHaveBeenCalledWith("test-campaign");
-      expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
-      expect(notFound).toHaveBeenCalled();
+        expect(apiClient.getCampaignByName).toHaveBeenCalledWith(
+          "test-campaign",
+        );
+        expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
+        expect(notFound).toHaveBeenCalled();
+      });
     });
   });
 
@@ -143,14 +151,16 @@ describe("CampaignPage", () => {
     });
 
     it("should return empty array when API throws error", async () => {
-      (apiClient.getCampaigns as jest.Mock).mockRejectedValue(
-        new Error("API Error"),
-      );
+      await withSuppressedAPIErrors(async () => {
+        (apiClient.getCampaigns as jest.Mock).mockRejectedValue(
+          new Error("API Error"),
+        );
 
-      const params = await generateStaticParams();
+        const params = await generateStaticParams();
 
-      expect(params).toEqual([]);
-      expect(apiClient.getCampaigns).toHaveBeenCalledTimes(1);
+        expect(params).toEqual([]);
+        expect(apiClient.getCampaigns).toHaveBeenCalledTimes(1);
+      });
     });
   });
 
@@ -178,37 +188,43 @@ describe("CampaignPage", () => {
     });
 
     it("should return not found metadata when campaign not found", async () => {
-      (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
-        new Error("No campaign found with name: non-existent-campaign"),
-      );
+      await withSuppressedAPIErrors(async () => {
+        (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
+          new Error("No campaign found with name: non-existent-campaign"),
+        );
 
-      const metadata = await generateMetadata({
-        params: Promise.resolve({ name: "non-existent-campaign" }),
-      });
+        const metadata = await generateMetadata({
+          params: Promise.resolve({ name: "non-existent-campaign" }),
+        });
 
-      expect(metadata).toEqual({
-        title: "Campaign Not Found",
+        expect(metadata).toEqual({
+          title: "Campaign Not Found",
+        });
+        expect(apiClient.getCampaignByName).toHaveBeenCalledWith(
+          "non-existent-campaign",
+        );
+        expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
       });
-      expect(apiClient.getCampaignByName).toHaveBeenCalledWith(
-        "non-existent-campaign",
-      );
-      expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
     });
 
     it("should return default metadata on error", async () => {
-      (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
-        new Error("API Error"),
-      );
+      await withSuppressedAPIErrors(async () => {
+        (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
+          new Error("API Error"),
+        );
 
-      const metadata = await generateMetadata({
-        params: Promise.resolve({ name: "test-campaign" }),
-      });
+        const metadata = await generateMetadata({
+          params: Promise.resolve({ name: "test-campaign" }),
+        });
 
-      expect(metadata).toEqual({
-        title: "Campaign Not Found",
+        expect(metadata).toEqual({
+          title: "Campaign Not Found",
+        });
+        expect(apiClient.getCampaignByName).toHaveBeenCalledWith(
+          "test-campaign",
+        );
+        expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
       });
-      expect(apiClient.getCampaignByName).toHaveBeenCalledWith("test-campaign");
-      expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
     });
   });
 });

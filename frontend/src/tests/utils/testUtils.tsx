@@ -269,7 +269,11 @@ export const suppressAPIErrors = () => {
       message.includes('Error fetching') ||
       message.includes('API failed') ||
       message.includes('fetch failed') ||
-      message.includes('Network error');
+      message.includes('Network error') ||
+      message.includes('API request failed') ||
+      message.includes('Campaign not found') ||
+      message.includes('Error generating static params') ||
+      message.includes('Error creating endorsement');
 
     // Only log if it's not an API-related error
     if (!isAPIError) {
