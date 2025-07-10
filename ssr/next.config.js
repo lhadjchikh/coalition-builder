@@ -25,6 +25,23 @@ const nextConfig = {
       "@shared": sharedPath,
     };
 
+    // Exclude styled components and related files from compilation
+    config.module.rules.push({
+      test: /\.(ts|tsx)$/,
+      include: [
+        path.resolve(__dirname, "./frontend/src/components/styled"),
+        path.resolve(__dirname, "./frontend/src/components/StyledHomePage.tsx"),
+        path.resolve(__dirname, "./frontend/src/components/ThemeStyles.tsx"),
+        path.resolve(
+          __dirname,
+          "./frontend/src/contexts/StyledThemeProvider.tsx",
+        ),
+        path.resolve(__dirname, "./frontend/src/hooks/useStyledTheme.ts"),
+        path.resolve(__dirname, "./frontend/src/styles/styled.d.ts"),
+      ],
+      loader: "null-loader",
+    });
+
     return config;
   },
 

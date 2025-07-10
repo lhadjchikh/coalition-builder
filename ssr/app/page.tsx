@@ -18,7 +18,7 @@ import HomePageLayout from "@shared/components/HomePageLayout";
 import HeroSection from "@frontend/components/HeroSection";
 import ContentBlock from "@frontend/components/ContentBlock";
 import SocialLinks from "@frontend/components/SocialLinks";
-import Navbar from "@frontend/components/Navbar";
+import SSRNavbarComponent from "../lib/components/SSRNavbar";
 import { NavItemData, DEFAULT_NAV_ITEMS } from "@shared/types";
 
 // SSR navbar configuration
@@ -26,7 +26,10 @@ const SSRNavbar: React.FC<{
   organizationName?: string;
   navItems?: NavItemData[];
 }> = ({ organizationName, navItems = DEFAULT_NAV_ITEMS }) => (
-  <Navbar organizationName={organizationName} navItems={navItems} />
+  <SSRNavbarComponent
+    organizationName={organizationName || ""}
+    navItems={navItems}
+  />
 );
 
 export async function generateMetadata(): Promise<Metadata> {
