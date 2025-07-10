@@ -60,7 +60,7 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
       },
     ]);
 
-    console.log('API endpoint being tested:', process.env.REACT_APP_API_URL || 'mocked API');
+    // API endpoint being tested: process.env.REACT_APP_API_URL || 'mocked API'
   });
 
   // Restore all mocks after each test
