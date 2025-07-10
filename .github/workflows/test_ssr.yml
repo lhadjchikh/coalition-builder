@@ -39,6 +39,8 @@ jobs:
           cp -r ../frontend/src/types ./frontend/src/
           cp -r ../frontend/src/components ./frontend/src/
           cp -r ../frontend/src/services ./frontend/src/
+          cp -r ../frontend/src/contexts ./frontend/src/
+          cp -r ../frontend/src/styles ./frontend/src/
           cp ../frontend/src/App.css ./frontend/src/
           mkdir -p shared
           cp -r ../shared/* ./shared/
