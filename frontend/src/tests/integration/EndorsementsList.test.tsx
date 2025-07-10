@@ -4,6 +4,7 @@ import '@testing-library/jest-dom';
 import EndorsementsList from '../../components/EndorsementsList';
 import { Endorsement } from '../../types';
 import API from '../../services/api';
+import { withSuppressedAPIErrors } from '../utils/testUtils';
 
 // Mock the API
 jest.mock('../../services/api');
@@ -123,14 +124,16 @@ describe('EndorsementsList', () => {
   });
 
   it('shows error message when fetching fails', async () => {
-    mockAPI.getEndorsements.mockRejectedValue(new Error('Network error'));
+    await withSuppressedAPIErrors(async () => {
+      mockAPI.getEndorsements.mockRejectedValue(new Error('Network error'));
 
-    render(<EndorsementsList />);
+      render(<EndorsementsList />);
 
-    await waitFor(() => {
-      expect(screen.getByTestId('endorsements-error')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('endorsements-error')).toBeInTheDocument();
+      });
+      expect(screen.getByText('Error: Network error')).toBeInTheDocument();
     });
-    expect(screen.getByText('Error: Network error')).toBeInTheDocument();
   });
 
   it('refreshes endorsements when refreshTrigger changes', async () => {

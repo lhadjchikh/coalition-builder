@@ -258,3 +258,36 @@ export const mockFetchError = (status: number, message?: string) => {
 export const mockFetchNetworkError = () => {
   global.fetch = jest.fn(() => Promise.reject(new Error('Network error'))) as jest.Mock;
 };
+
+// Error suppression utilities for cleaner test output
+export const suppressAPIErrors = () => {
+  const originalConsoleError = console.error;
+
+  console.error = (...args: any[]) => {
+    const message = args.join(' ');
+    const isAPIError =
+      message.includes('Error fetching') ||
+      message.includes('API failed') ||
+      message.includes('fetch failed') ||
+      message.includes('Network error');
+
+    // Only log if it's not an API-related error
+    if (!isAPIError) {
+      originalConsoleError(...args);
+    }
+  };
+
+  return () => {
+    console.error = originalConsoleError;
+  };
+};
+
+// Wrapper for tests that expect API errors
+export const withSuppressedAPIErrors = async (testFn: () => Promise<void>) => {
+  const restore = suppressAPIErrors();
+  try {
+    await testFn();
+  } finally {
+    restore();
+  }
+};

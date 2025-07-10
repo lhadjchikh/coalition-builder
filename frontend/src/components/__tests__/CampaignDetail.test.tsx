@@ -4,6 +4,7 @@ import '@testing-library/jest-dom';
 import CampaignDetail from '../CampaignDetail';
 import API from '../../services/api';
 import { Campaign } from '../../types';
+import { withSuppressedAPIErrors } from '../../tests/utils/testUtils';
 
 // Mock the API service
 jest.mock('../../services/api');
@@ -164,47 +165,53 @@ describe('CampaignDetail', () => {
 
   describe('error handling', () => {
     it('should display error when campaign fetch by ID fails', async () => {
-      const errorMessage = 'Campaign not found';
-      mockAPI.getCampaignById.mockRejectedValue(new Error(errorMessage));
+      await withSuppressedAPIErrors(async () => {
+        const errorMessage = 'Campaign not found';
+        mockAPI.getCampaignById.mockRejectedValue(new Error(errorMessage));
 
-      await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        await act(async () => {
+          render(<CampaignDetail campaignId={1} />);
+        });
+
+        await waitFor(() => {
+          expect(screen.getByTestId('campaign-error')).toBeInTheDocument();
+        });
+
+        expect(screen.getByText(`Error: ${errorMessage}`)).toBeInTheDocument();
       });
-
-      await waitFor(() => {
-        expect(screen.getByTestId('campaign-error')).toBeInTheDocument();
-      });
-
-      expect(screen.getByText(`Error: ${errorMessage}`)).toBeInTheDocument();
     });
 
     it('should display error when campaign fetch by name fails', async () => {
-      const errorMessage = 'Network error';
-      mockAPI.getCampaignByName.mockRejectedValue(new Error(errorMessage));
+      await withSuppressedAPIErrors(async () => {
+        const errorMessage = 'Network error';
+        mockAPI.getCampaignByName.mockRejectedValue(new Error(errorMessage));
 
-      await act(async () => {
-        render(<CampaignDetail campaignName="test-campaign" />);
+        await act(async () => {
+          render(<CampaignDetail campaignName="test-campaign" />);
+        });
+
+        await waitFor(() => {
+          expect(screen.getByTestId('campaign-error')).toBeInTheDocument();
+        });
+
+        expect(screen.getByText(`Error: ${errorMessage}`)).toBeInTheDocument();
       });
-
-      await waitFor(() => {
-        expect(screen.getByTestId('campaign-error')).toBeInTheDocument();
-      });
-
-      expect(screen.getByText(`Error: ${errorMessage}`)).toBeInTheDocument();
     });
 
     it('should handle non-Error objects in catch block', async () => {
-      mockAPI.getCampaignById.mockRejectedValue('String error');
+      await withSuppressedAPIErrors(async () => {
+        mockAPI.getCampaignById.mockRejectedValue('String error');
 
-      await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        await act(async () => {
+          render(<CampaignDetail campaignId={1} />);
+        });
+
+        await waitFor(() => {
+          expect(screen.getByTestId('campaign-error')).toBeInTheDocument();
+        });
+
+        expect(screen.getByText('Error: Failed to fetch campaign')).toBeInTheDocument();
       });
-
-      await waitFor(() => {
-        expect(screen.getByTestId('campaign-error')).toBeInTheDocument();
-      });
-
-      expect(screen.getByText('Error: Failed to fetch campaign')).toBeInTheDocument();
     });
 
     it('should display error when neither campaignId nor campaignName provided', async () => {
@@ -414,24 +421,26 @@ describe('CampaignDetail', () => {
     });
 
     it('should reset error state when retrying after error', async () => {
-      mockAPI.getCampaignById.mockRejectedValue(new Error('First error'));
+      await withSuppressedAPIErrors(async () => {
+        mockAPI.getCampaignById.mockRejectedValue(new Error('First error'));
 
-      const { rerender } = render(<CampaignDetail campaignId={1} />);
+        const { rerender } = render(<CampaignDetail campaignId={1} />);
 
-      await waitFor(() => {
-        expect(screen.getByTestId('campaign-error')).toBeInTheDocument();
-      });
+        await waitFor(() => {
+          expect(screen.getByTestId('campaign-error')).toBeInTheDocument();
+        });
 
-      // Now return success
-      mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
+        // Now return success
+        mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
-      await act(async () => {
-        rerender(<CampaignDetail campaignId={2} />);
-      });
+        await act(async () => {
+          rerender(<CampaignDetail campaignId={2} />);
+        });
 
-      await waitFor(() => {
-        expect(screen.queryByTestId('campaign-error')).not.toBeInTheDocument();
-        expect(screen.getByTestId('campaign-detail')).toBeInTheDocument();
+        await waitFor(() => {
+          expect(screen.queryByTestId('campaign-error')).not.toBeInTheDocument();
+          expect(screen.getByTestId('campaign-detail')).toBeInTheDocument();
+        });
       });
     });
   });
