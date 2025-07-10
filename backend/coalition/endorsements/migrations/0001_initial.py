@@ -30,15 +30,51 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("statement", models.TextField(blank=True)),
-                ("public_display", models.BooleanField(default=True)),
+                (
+                    "statement",
+                    models.TextField(
+                        blank=True,
+                        help_text="Optional endorsement statement from the stakeholder",
+                    ),
+                ),
+                (
+                    "public_display",
+                    models.BooleanField(
+                        default=True,
+                        help_text="Whether this endorsement should be displayed publicly",
+                    ),
+                ),
                 (
                     "verification_token",
-                    models.UUIDField(default=uuid.uuid4, unique=True),
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        help_text="Unique token for email verification",
+                        unique=True,
+                    ),
                 ),
-                ("email_verified", models.BooleanField(default=False)),
-                ("verification_sent_at", models.DateTimeField(blank=True, null=True)),
-                ("verified_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "email_verified",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Whether the stakeholder's email has been verified",
+                    ),
+                ),
+                (
+                    "verification_sent_at",
+                    models.DateTimeField(
+                        blank=True,
+                        help_text="When the verification email was sent",
+                        null=True,
+                    ),
+                ),
+                (
+                    "verified_at",
+                    models.DateTimeField(
+                        blank=True,
+                        help_text="When the email verification was completed",
+                        null=True,
+                    ),
+                ),
                 (
                     "status",
                     models.CharField(
@@ -49,6 +85,7 @@ class Migration(migrations.Migration):
                             ("rejected", "Rejected"),
                         ],
                         default="pending",
+                        help_text="Current status of the endorsement",
                         max_length=20,
                     ),
                 ),
@@ -56,12 +93,32 @@ class Migration(migrations.Migration):
                     "admin_notes",
                     models.TextField(blank=True, help_text="Internal notes for admins"),
                 ),
-                ("reviewed_at", models.DateTimeField(blank=True, null=True)),
-                ("created_at", models.DateTimeField(auto_now_add=True)),
-                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "reviewed_at",
+                    models.DateTimeField(
+                        blank=True,
+                        help_text="When this endorsement was reviewed by an admin",
+                        null=True,
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        auto_now_add=True,
+                        help_text="When this endorsement was created",
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(
+                        auto_now=True,
+                        help_text="When this endorsement was last updated",
+                    ),
+                ),
                 (
                     "campaign",
                     models.ForeignKey(
+                        help_text="The policy campaign being endorsed",
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="endorsements",
                         to="campaigns.policycampaign",
@@ -71,6 +128,7 @@ class Migration(migrations.Migration):
                     "reviewed_by",
                     models.ForeignKey(
                         blank=True,
+                        help_text="Admin user who reviewed this endorsement",
                         null=True,
                         on_delete=django.db.models.deletion.SET_NULL,
                         related_name="reviewed_endorsements",

@@ -28,10 +28,24 @@ class Region(models.Model):
         null=True,
         blank=True,
         related_name="children",
+        help_text="Parent region (e.g., state for a county)",
     )
-    geoid = models.CharField(max_length=100, db_index=True)
-    name = models.CharField(unique=True, max_length=255)
-    label = models.CharField(max_length=255, blank=True, null=True)
+    geoid = models.CharField(
+        max_length=100,
+        db_index=True,
+        help_text="Geographic identifier from Census data",
+    )
+    name = models.CharField(
+        unique=True,
+        max_length=255,
+        help_text="Full name of the region",
+    )
+    label = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Alternative display label for the region",
+    )
     abbrev = models.CharField(
         max_length=10,
         blank=True,
@@ -39,7 +53,12 @@ class Region(models.Model):
         db_index=True,
         help_text="Abbreviation for the region (e.g., 'MD', 'CA-12')",
     )
-    type = models.CharField(choices=REGION_TYPE_CHOICES, max_length=30, db_index=True)
+    type = models.CharField(
+        choices=REGION_TYPE_CHOICES,
+        max_length=30,
+        db_index=True,
+        help_text="Type of region (state, county, congressional district, etc.)",
+    )
     coords = PointField(
         blank=True,
         null=True,
@@ -48,7 +67,12 @@ class Region(models.Model):
         verbose_name="coordinates",
         help_text="Internal point",
     )
-    geom = MultiPolygonField(blank=True, null=True, spatial_index=True)
+    geom = MultiPolygonField(
+        blank=True,
+        null=True,
+        spatial_index=True,
+        help_text="Full geometry for spatial operations",
+    )
     geojson = models.JSONField(
         blank=True,
         null=True,

@@ -29,6 +29,7 @@ class ContentBlock(models.Model):
         "content.HomePage",
         on_delete=models.CASCADE,
         related_name="content_blocks",
+        help_text="The homepage this content block belongs to",
     )
 
     title = models.CharField(
@@ -104,8 +105,14 @@ class ContentBlock(models.Model):
         help_text="Whether this block is visible on the homepage",
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When this content block was created",
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text="When this content block was last updated",
+    )
 
     class Meta:
         db_table = "content_block"

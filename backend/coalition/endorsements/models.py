@@ -45,18 +45,45 @@ class Endorsement(models.Model):
         "campaigns.PolicyCampaign",
         on_delete=models.CASCADE,
         related_name="endorsements",
+        help_text="The policy campaign being endorsed",
     )
-    statement = models.TextField(blank=True)
-    public_display = models.BooleanField(default=True)
+    statement = models.TextField(
+        blank=True,
+        help_text="Optional endorsement statement from the stakeholder",
+    )
+    public_display = models.BooleanField(
+        default=True,
+        help_text="Whether this endorsement should be displayed publicly",
+    )
 
     # Email verification fields
-    verification_token = models.UUIDField(default=uuid.uuid4, unique=True)
-    email_verified = models.BooleanField(default=False)
-    verification_sent_at = models.DateTimeField(null=True, blank=True)
-    verified_at = models.DateTimeField(null=True, blank=True)
+    verification_token = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        help_text="Unique token for email verification",
+    )
+    email_verified = models.BooleanField(
+        default=False,
+        help_text="Whether the stakeholder's email has been verified",
+    )
+    verification_sent_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the verification email was sent",
+    )
+    verified_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the email verification was completed",
+    )
 
     # Admin moderation fields
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending",
+        help_text="Current status of the endorsement",
+    )
     admin_notes = models.TextField(blank=True, help_text="Internal notes for admins")
     reviewed_by = models.ForeignKey(
         "auth.User",
@@ -64,11 +91,22 @@ class Endorsement(models.Model):
         null=True,
         blank=True,
         related_name="reviewed_endorsements",
+        help_text="Admin user who reviewed this endorsement",
     )
-    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When this endorsement was reviewed by an admin",
+    )
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When this endorsement was created",
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text="When this endorsement was last updated",
+    )
 
     class Meta:
         db_table = "endorsement"

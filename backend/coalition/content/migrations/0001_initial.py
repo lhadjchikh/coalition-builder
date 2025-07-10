@@ -165,8 +165,20 @@ class Migration(migrations.Migration):
                         help_text="Whether this homepage configuration is active",
                     ),
                 ),
-                ("created_at", models.DateTimeField(auto_now_add=True)),
-                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        auto_now_add=True,
+                        help_text="When this homepage configuration was created",
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(
+                        auto_now=True,
+                        help_text="When this homepage configuration was last updated",
+                    ),
+                ),
             ],
             options={
                 "verbose_name": "Homepage Configuration",
@@ -449,8 +461,20 @@ class Migration(migrations.Migration):
                         help_text="Whether this theme is currently active",
                     ),
                 ),
-                ("created_at", models.DateTimeField(auto_now_add=True)),
-                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        auto_now_add=True,
+                        help_text="When this theme was created",
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(
+                        auto_now=True,
+                        help_text="When this theme was last updated",
+                    ),
+                ),
             ],
             options={
                 "verbose_name": "Theme",
@@ -579,11 +603,24 @@ class Migration(migrations.Migration):
                         help_text="Whether this block is visible on the homepage",
                     ),
                 ),
-                ("created_at", models.DateTimeField(auto_now_add=True)),
-                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        auto_now_add=True,
+                        help_text="When this content block was created",
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(
+                        auto_now=True,
+                        help_text="When this content block was last updated",
+                    ),
+                ),
                 (
                     "homepage",
                     models.ForeignKey(
+                        help_text="The homepage this content block belongs to",
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="content_blocks",
                         to="content.homepage",

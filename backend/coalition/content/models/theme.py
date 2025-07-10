@@ -186,8 +186,14 @@ class Theme(models.Model):
         default=False,
         help_text="Whether this theme is currently active",
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When this theme was created",
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text="When this theme was last updated",
+    )
 
     class Meta:
         db_table = "theme"
