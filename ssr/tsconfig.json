@@ -14,20 +14,11 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@frontend/*": ["./frontend/src/*", "../frontend/src/*"],
-      "@frontend/types": [
-        "./frontend/src/types/index.ts",
-        "../frontend/src/types/index.ts"
-      ],
-      "@frontend/components/*": [
-        "./frontend/src/components/*",
-        "../frontend/src/components/*"
-      ],
-      "@frontend/contexts/*": [
-        "./lib/contexts/*",
-        "../frontend/src/contexts/*"
-      ],
-      "@shared/*": ["./shared/*", "../shared/*"]
+      "@frontend/*": ["./frontend/src/*"],
+      "@frontend/types": ["./frontend/src/types/index.ts"],
+      "@frontend/components/*": ["./frontend/src/components/*"],
+      "@frontend/contexts/*": ["./frontend/src/contexts/*"],
+      "@shared/*": ["./shared/*"]
     },
     "typeRoots": ["./node_modules/@types"],
     "types": ["node", "react", "react-dom"],
@@ -60,6 +51,7 @@
   ],
   "exclude": [
     "node_modules",
+    "./tests/**/*",
     "./frontend/src/**/*.test.tsx",
     "./frontend/src/**/*.test.ts",
     "./frontend/src/tests/**/*",

@@ -26,6 +26,10 @@ next-env.d.ts
 ssr/next-env.d.ts
 ssr/tsconfig.tsbuildinfo
 
+# SSR symlinks (created by setup script)
+ssr/frontend
+ssr/shared
+
 # Docker
 *.pid
 *.log
