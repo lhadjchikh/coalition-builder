@@ -143,12 +143,12 @@ describe("HomePageLayout", () => {
       render(<HomePageLayout {...defaultProps} />);
       expect(screen.getByText("Get Involved")).toBeInTheDocument();
       expect(screen.getByText("Join our mission")).toBeInTheDocument();
-      expect(screen.getByText("Learn More")).toBeInTheDocument();
+      expect(screen.getAllByText("Learn More")).toHaveLength(2); // Hero and CTA sections
     });
 
     it("should render footer", () => {
       render(<HomePageLayout {...defaultProps} />);
-      expect(screen.getByText("Test Organization")).toBeInTheDocument();
+      expect(screen.getAllByText("Test Organization")).toHaveLength(1); // Only in footer for basic test
       expect(screen.getByText("Test Tagline")).toBeInTheDocument();
       expect(screen.getByText("contact@test.org")).toBeInTheDocument();
       expect(screen.getByText("555-1234")).toBeInTheDocument();
@@ -173,7 +173,7 @@ describe("HomePageLayout", () => {
         />,
       );
       expect(screen.getByTestId("mock-navbar")).toBeInTheDocument();
-      expect(screen.getByText("Test Organization")).toBeInTheDocument();
+      expect(screen.getAllByText("Test Organization")).toHaveLength(2); // Navbar and footer
       expect(screen.getByText("About")).toBeInTheDocument();
       expect(screen.getByText("Campaigns")).toBeInTheDocument();
     });

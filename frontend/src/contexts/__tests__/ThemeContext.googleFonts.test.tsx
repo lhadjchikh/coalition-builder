@@ -2,11 +2,12 @@ import React from 'react';
 import { render, waitFor, act } from '@testing-library/react';
 import { ThemeProvider, useTheme } from '../ThemeContext';
 import { Theme } from '@shared/utils/theme';
-import * as googleFontsModule from '@shared/utils/googleFonts';
 
 // Mock the loadGoogleFonts function
 const mockLoadGoogleFonts = jest.fn();
-jest.spyOn(googleFontsModule, 'loadGoogleFonts').mockImplementation(mockLoadGoogleFonts);
+jest.mock('@shared/utils/googleFonts', () => ({
+  loadGoogleFonts: mockLoadGoogleFonts,
+}));
 
 // Mock fetch
 const mockFetch = jest.fn();
