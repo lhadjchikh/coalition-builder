@@ -27,6 +27,7 @@ COPY frontend/src/components ./frontend/src/components
 COPY frontend/src/services ./frontend/src/services
 COPY frontend/src/contexts ./frontend/src/contexts
 COPY frontend/src/styles ./frontend/src/styles
+COPY frontend/src/tests ./frontend/src/tests
 COPY frontend/src/App.css ./frontend/src/App.css
 COPY shared/ ./shared/
 
