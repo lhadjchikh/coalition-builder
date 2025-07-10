@@ -104,26 +104,32 @@ describe('App component', () => {
 
     (API.getCampaigns as jest.Mock).mockImplementationOnce(() => delayedResponse);
 
-    render(<App />);
+    await act(async () => {
+      render(<App />);
+    });
 
     // First it should show loading state
     expect(screen.getByTestId('loading')).toBeInTheDocument();
 
     // Resolve the promise after checking loading state
-    await resolvePromiseInTest(resolvePromise!, [
-      {
-        id: 1,
-        name: 'test-campaign',
-        title: 'Test Campaign',
-        summary: 'This is a test campaign',
-        active: true,
-        created_at: '2024-01-01T00:00:00Z',
-      },
-    ]);
+    await act(async () => {
+      await resolvePromiseInTest(resolvePromise!, [
+        {
+          id: 1,
+          name: 'test-campaign',
+          title: 'Test Campaign',
+          summary: 'This is a test campaign',
+          active: true,
+          created_at: '2024-01-01T00:00:00Z',
+        },
+      ]);
+    });
 
     // Wait for campaigns to load
-    await waitFor(() => {
-      expect(screen.getByTestId('campaigns-list')).toBeInTheDocument();
+    await act(async () => {
+      await waitFor(() => {
+        expect(screen.getByTestId('campaigns-list')).toBeInTheDocument();
+      });
     });
 
     // Verify API was called (may be called multiple times by different components)
@@ -142,17 +148,23 @@ describe('App component', () => {
 
     (API.getCampaigns as jest.Mock).mockImplementationOnce(() => delayedRejection);
 
-    render(<App />);
+    await act(async () => {
+      render(<App />);
+    });
 
     // First it should show loading state
     expect(screen.getByTestId('loading')).toBeInTheDocument();
 
     // Trigger the rejection after checking loading state
-    await rejectPromiseInTest(rejectPromise!, new Error('API Error'));
+    await act(async () => {
+      await rejectPromiseInTest(rejectPromise!, new Error('API Error'));
+    });
 
     // Wait for the error message
-    await waitFor(() => {
-      expect(screen.getByTestId('error')).toBeInTheDocument();
+    await act(async () => {
+      await waitFor(() => {
+        expect(screen.getByTestId('error')).toBeInTheDocument();
+      });
     });
 
     expect(screen.getByText('Failed to fetch campaigns')).toBeInTheDocument();

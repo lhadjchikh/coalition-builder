@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { EnhancedThemeProvider } from '../StyledThemeProvider';
 import { useTheme } from '../ThemeContext';
@@ -208,16 +208,20 @@ describe('EnhancedThemeProvider', () => {
         refreshTheme: jest.fn(),
       });
 
-      render(
-        <EnhancedThemeProvider>
-          <div>Test Content</div>
-        </EnhancedThemeProvider>
-      );
+      await act(async () => {
+        render(
+          <EnhancedThemeProvider>
+            <div>Test Content</div>
+          </EnhancedThemeProvider>
+        );
+      });
 
-      await waitFor(() => {
-        const faviconLink = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-        expect(faviconLink).toBeTruthy();
-        expect(faviconLink.href).toBe('https://example.com/favicon.ico');
+      await act(async () => {
+        await waitFor(() => {
+          const faviconLink = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+          expect(faviconLink).toBeTruthy();
+          expect(faviconLink.href).toBe('https://example.com/favicon.ico');
+        });
       });
     });
 
@@ -233,17 +237,21 @@ describe('EnhancedThemeProvider', () => {
       // Ensure no favicon link exists initially
       expect(document.querySelector("link[rel~='icon']")).toBeNull();
 
-      render(
-        <EnhancedThemeProvider>
-          <div>Test Content</div>
-        </EnhancedThemeProvider>
-      );
+      await act(async () => {
+        render(
+          <EnhancedThemeProvider>
+            <div>Test Content</div>
+          </EnhancedThemeProvider>
+        );
+      });
 
-      await waitFor(() => {
-        const faviconLink = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-        expect(faviconLink).toBeTruthy();
-        expect(faviconLink.rel).toBe('icon');
-        expect(faviconLink.href).toBe('https://example.com/favicon.ico');
+      await act(async () => {
+        await waitFor(() => {
+          const faviconLink = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+          expect(faviconLink).toBeTruthy();
+          expect(faviconLink.rel).toBe('icon');
+          expect(faviconLink.href).toBe('https://example.com/favicon.ico');
+        });
       });
     });
 
@@ -262,16 +270,20 @@ describe('EnhancedThemeProvider', () => {
         refreshTheme: jest.fn(),
       });
 
-      render(
-        <EnhancedThemeProvider>
-          <div>Test Content</div>
-        </EnhancedThemeProvider>
-      );
+      await act(async () => {
+        render(
+          <EnhancedThemeProvider>
+            <div>Test Content</div>
+          </EnhancedThemeProvider>
+        );
+      });
 
-      await waitFor(() => {
-        const faviconLink = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-        expect(faviconLink).toBe(existingLink); // Should be the same element
-        expect(faviconLink.href).toBe('https://example.com/favicon.ico'); // But with updated href
+      await act(async () => {
+        await waitFor(() => {
+          const faviconLink = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+          expect(faviconLink).toBe(existingLink); // Should be the same element
+          expect(faviconLink.href).toBe('https://example.com/favicon.ico'); // But with updated href
+        });
       });
     });
 
@@ -285,24 +297,32 @@ describe('EnhancedThemeProvider', () => {
         refreshTheme: jest.fn(),
       });
 
-      render(
-        <EnhancedThemeProvider>
-          <div>Test Content</div>
-        </EnhancedThemeProvider>
-      );
+      await act(async () => {
+        render(
+          <EnhancedThemeProvider>
+            <div>Test Content</div>
+          </EnhancedThemeProvider>
+        );
+      });
 
       // Wait a bit to ensure the effect has run
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 10));
+      });
 
       expect(document.querySelector("link[rel~='icon']")).toBeNull();
     });
 
     it('should update favicon when theme changes', async () => {
-      const { rerender } = render(
-        <EnhancedThemeProvider>
-          <div>Test Content</div>
-        </EnhancedThemeProvider>
-      );
+      let rerender: any;
+      await act(async () => {
+        const result = render(
+          <EnhancedThemeProvider>
+            <div>Test Content</div>
+          </EnhancedThemeProvider>
+        );
+        rerender = result.rerender;
+      });
 
       // First theme
       mockUseTheme.mockReturnValue({
@@ -313,15 +333,19 @@ describe('EnhancedThemeProvider', () => {
         refreshTheme: jest.fn(),
       });
 
-      rerender(
-        <EnhancedThemeProvider>
-          <div>Test Content</div>
-        </EnhancedThemeProvider>
-      );
+      await act(async () => {
+        rerender(
+          <EnhancedThemeProvider>
+            <div>Test Content</div>
+          </EnhancedThemeProvider>
+        );
+      });
 
-      await waitFor(() => {
-        const faviconLink = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-        expect(faviconLink.href).toBe('https://example.com/favicon.ico');
+      await act(async () => {
+        await waitFor(() => {
+          const faviconLink = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+          expect(faviconLink.href).toBe('https://example.com/favicon.ico');
+        });
       });
 
       // Change theme
@@ -334,15 +358,19 @@ describe('EnhancedThemeProvider', () => {
         refreshTheme: jest.fn(),
       });
 
-      rerender(
-        <EnhancedThemeProvider>
-          <div>Test Content</div>
-        </EnhancedThemeProvider>
-      );
+      await act(async () => {
+        rerender(
+          <EnhancedThemeProvider>
+            <div>Test Content</div>
+          </EnhancedThemeProvider>
+        );
+      });
 
-      await waitFor(() => {
-        const faviconLink = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-        expect(faviconLink.href).toBe('https://new-example.com/new-favicon.ico');
+      await act(async () => {
+        await waitFor(() => {
+          const faviconLink = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+          expect(faviconLink.href).toBe('https://new-example.com/new-favicon.ico');
+        });
       });
     });
   });
