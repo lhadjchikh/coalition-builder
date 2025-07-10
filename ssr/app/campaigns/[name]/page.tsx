@@ -25,10 +25,13 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
 // Generate static params for all campaigns
 export async function generateStaticParams() {
   // Skip API calls during test builds when no API server is available
-  if (process.env.NODE_ENV === 'test' || process.env.SKIP_STATIC_GENERATION === 'true') {
+  if (
+    process.env.NODE_ENV === "test" ||
+    process.env.SKIP_STATIC_GENERATION === "true"
+  ) {
     return [];
   }
-  
+
   try {
     const campaigns = await apiClient.getCampaigns();
     return campaigns.map((campaign) => ({
