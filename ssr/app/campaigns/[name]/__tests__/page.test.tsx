@@ -12,6 +12,7 @@ jest.mock("next/navigation", () => ({
 jest.mock("../../../../lib/api", () => ({
   apiClient: {
     getCampaigns: jest.fn(),
+    getCampaignByName: jest.fn(),
   },
 }));
 
@@ -63,9 +64,9 @@ describe("CampaignPage", () => {
     });
 
     it("should render campaign detail when campaign is found", async () => {
-      (apiClient.getCampaigns as jest.Mock).mockResolvedValue([
-        ...mockCampaigns,
-      ]);
+      (apiClient.getCampaignByName as jest.Mock).mockResolvedValue(
+        mockCampaigns[0],
+      );
       (notFound as jest.Mock).mockImplementation(() => {}); // Override for this test
 
       const { container } = render(
@@ -74,7 +75,8 @@ describe("CampaignPage", () => {
         }),
       );
 
-      expect(apiClient.getCampaigns).toHaveBeenCalledTimes(1);
+      expect(apiClient.getCampaignByName).toHaveBeenCalledWith("test-campaign");
+      expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
       expect(notFound).not.toHaveBeenCalled();
 
       const wrapper = container.querySelector(
@@ -85,9 +87,9 @@ describe("CampaignPage", () => {
     });
 
     it("should call notFound when campaign is not found", async () => {
-      (apiClient.getCampaigns as jest.Mock).mockResolvedValue([
-        ...mockCampaigns,
-      ]);
+      (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
+        new Error("Campaign not found"),
+      );
 
       await expect(async () => {
         await CampaignPage({
@@ -95,12 +97,15 @@ describe("CampaignPage", () => {
         });
       }).rejects.toThrow("notFound called");
 
-      expect(apiClient.getCampaigns).toHaveBeenCalledTimes(1);
+      expect(apiClient.getCampaignByName).toHaveBeenCalledWith(
+        "non-existent-campaign",
+      );
+      expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
       expect(notFound).toHaveBeenCalled();
     });
 
     it("should call notFound when API throws error", async () => {
-      (apiClient.getCampaigns as jest.Mock).mockRejectedValue(
+      (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
         new Error("API Error"),
       );
 
@@ -110,7 +115,8 @@ describe("CampaignPage", () => {
         });
       }).rejects.toThrow("notFound called");
 
-      expect(apiClient.getCampaigns).toHaveBeenCalledTimes(1);
+      expect(apiClient.getCampaignByName).toHaveBeenCalledWith("test-campaign");
+      expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
       expect(notFound).toHaveBeenCalled();
     });
   });

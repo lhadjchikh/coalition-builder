@@ -11,13 +11,8 @@ interface CampaignPageProps {
 export default async function CampaignPage({ params }: CampaignPageProps) {
   const resolvedParams = await params;
   try {
-    // First, fetch all campaigns to find the one with matching name
-    const campaigns = await apiClient.getCampaigns();
-    const campaign = campaigns.find((c) => c.name === resolvedParams.name);
-
-    if (!campaign) {
-      notFound();
-    }
+    // Efficiently fetch the specific campaign by name
+    const campaign = await apiClient.getCampaignByName(resolvedParams.name);
 
     // Return the CampaignDetail component with the campaign ID
     return <CampaignDetailWrapper campaignId={campaign.id} />;

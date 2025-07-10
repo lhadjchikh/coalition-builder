@@ -52,6 +52,12 @@ class ApiClient {
     return this.request<Campaign>(`/api/campaigns/${id}/`);
   }
 
+  async getCampaignByName(name: string): Promise<Campaign> {
+    return this.request<Campaign>(
+      `/api/campaigns/?name=${encodeURIComponent(name)}`,
+    );
+  }
+
   // Endorsers
   async getEndorsers(): Promise<Endorser[]> {
     return this.request<Endorser[]>("/api/endorsers/");
