@@ -39,14 +39,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: CampaignPageProps) {
   const resolvedParams = await params;
   try {
-    const campaigns = await apiClient.getCampaigns();
-    const campaign = campaigns.find((c) => c.name === resolvedParams.name);
-
-    if (!campaign) {
-      return {
-        title: "Campaign Not Found",
-      };
-    }
+    const campaign = await apiClient.getCampaignByName(resolvedParams.name);
 
     return {
       title: campaign.title,
@@ -54,7 +47,7 @@ export async function generateMetadata({ params }: CampaignPageProps) {
     };
   } catch (error) {
     return {
-      title: "Campaign",
+      title: "Campaign Not Found",
     };
   }
 }

@@ -53,9 +53,13 @@ class ApiClient {
   }
 
   async getCampaignByName(name: string): Promise<Campaign> {
-    return this.request<Campaign>(
+    const campaigns = await this.request<Campaign[]>(
       `/api/campaigns/?name=${encodeURIComponent(name)}`,
     );
+    if (campaigns.length === 0) {
+      throw new Error(`No campaign found with name: ${name}`);
+    }
+    return campaigns[0];
   }
 
   // Endorsers

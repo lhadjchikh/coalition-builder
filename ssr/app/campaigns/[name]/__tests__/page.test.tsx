@@ -161,9 +161,9 @@ describe("CampaignPage", () => {
     });
 
     it("should return campaign metadata when found", async () => {
-      (apiClient.getCampaigns as jest.Mock).mockResolvedValue([
-        ...mockCampaigns,
-      ]);
+      (apiClient.getCampaignByName as jest.Mock).mockResolvedValue(
+        mockCampaigns[0],
+      );
 
       const metadata = await generateMetadata({
         params: Promise.resolve({ name: "test-campaign" }),
@@ -173,13 +173,14 @@ describe("CampaignPage", () => {
         title: "Test Campaign",
         description: "Test campaign summary",
       });
-      expect(apiClient.getCampaigns).toHaveBeenCalledTimes(1);
+      expect(apiClient.getCampaignByName).toHaveBeenCalledWith("test-campaign");
+      expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
     });
 
     it("should return not found metadata when campaign not found", async () => {
-      (apiClient.getCampaigns as jest.Mock).mockResolvedValue([
-        ...mockCampaigns,
-      ]);
+      (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
+        new Error("No campaign found with name: non-existent-campaign"),
+      );
 
       const metadata = await generateMetadata({
         params: Promise.resolve({ name: "non-existent-campaign" }),
@@ -188,11 +189,14 @@ describe("CampaignPage", () => {
       expect(metadata).toEqual({
         title: "Campaign Not Found",
       });
-      expect(apiClient.getCampaigns).toHaveBeenCalledTimes(1);
+      expect(apiClient.getCampaignByName).toHaveBeenCalledWith(
+        "non-existent-campaign",
+      );
+      expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
     });
 
     it("should return default metadata on error", async () => {
-      (apiClient.getCampaigns as jest.Mock).mockRejectedValue(
+      (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
         new Error("API Error"),
       );
 
@@ -201,9 +205,10 @@ describe("CampaignPage", () => {
       });
 
       expect(metadata).toEqual({
-        title: "Campaign",
+        title: "Campaign Not Found",
       });
-      expect(apiClient.getCampaigns).toHaveBeenCalledTimes(1);
+      expect(apiClient.getCampaignByName).toHaveBeenCalledWith("test-campaign");
+      expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
     });
   });
 });
