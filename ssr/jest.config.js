@@ -33,7 +33,7 @@ const customJestConfig = {
     "<rootDir>/__tests__/**/*.test.{ts,tsx,js,jsx}",
   ],
   testPathIgnorePatterns: [
-    "<rootDir>/.next/", 
+    "<rootDir>/.next/",
     "<rootDir>/node_modules/",
     "<rootDir>/frontend/", // Ignore copied frontend tests - they're tested in frontend workflow
     "<rootDir>/shared/", // Ignore copied shared tests - they're tested in other workflows
