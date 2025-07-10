@@ -25,7 +25,9 @@ const nextConfig = {
       "@shared": sharedPath,
     };
 
-    // Exclude styled components and related files from compilation
+    // Exclude styled components and related files from compilation to avoid build errors
+    // and ensure compatibility with server-side rendering (SSR). These files contain
+    // styled-components that are not compatible with SSR compilation.
     config.module.rules.push({
       test: /\.(ts|tsx)$/,
       include: [
