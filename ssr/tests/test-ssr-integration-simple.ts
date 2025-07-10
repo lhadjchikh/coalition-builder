@@ -143,6 +143,71 @@ async function runTests(): Promise<void> {
       const err = error as Error;
       console.log(`⚠️  Load balancer test error: ${err.message} (skipping)`);
     }
+
+    // Test 7: Campaign Routing
+    console.log("🔍 Testing campaign routing...");
+    try {
+      // First, get campaigns from API to test with real data
+      const campaignsResponse: ResponseData = await makeRequest(
+        `${API_URL}/api/campaigns/`,
+      );
+
+      if (campaignsResponse.statusCode === 200 && campaignsResponse.data) {
+        const campaigns = JSON.parse(campaignsResponse.data);
+
+        if (Array.isArray(campaigns) && campaigns.length > 0) {
+          // Test with the first campaign
+          const firstCampaign = campaigns[0];
+          if (firstCampaign.name) {
+            const campaignPageResponse: ResponseData = await makeRequest(
+              `${SSR_URL}/campaigns/${firstCampaign.name}`,
+              requestOptions,
+            );
+
+            if (
+              campaignPageResponse.statusCode === 200 &&
+              campaignPageResponse.data.includes('data-ssr="true"')
+            ) {
+              console.log("✅ Campaign routing working");
+              passed++;
+            } else {
+              console.log(
+                `❌ Campaign routing failed: ${campaignPageResponse.statusCode}`,
+              );
+              failed++;
+            }
+          } else {
+            console.log(
+              "⚠️  Campaign missing name field (skipping routing test)",
+            );
+          }
+        } else {
+          console.log("⚠️  No campaigns in database (skipping routing test)");
+        }
+      } else {
+        console.log("⚠️  Could not fetch campaigns for routing test");
+      }
+
+      // Test 404 for non-existent campaign
+      const notFoundResponse: ResponseData = await makeRequest(
+        `${SSR_URL}/campaigns/definitely-does-not-exist-${Date.now()}`,
+        requestOptions,
+      );
+
+      if (notFoundResponse.statusCode === 404) {
+        console.log("✅ Campaign 404 handling working");
+        passed++;
+      } else {
+        console.log(
+          `❌ Campaign 404 handling failed: ${notFoundResponse.statusCode}`,
+        );
+        failed++;
+      }
+    } catch (error) {
+      const err = error as Error;
+      console.log(`❌ Campaign routing test error: ${err.message}`);
+      failed++;
+    }
   } catch (error) {
     const err = error as Error;
     console.error("💥 Test setup failed:", err.message);
