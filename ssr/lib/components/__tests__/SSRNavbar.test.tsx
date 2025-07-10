@@ -122,6 +122,6 @@ describe("SSRNavbar", () => {
 
     expect(nav).toBeInTheDocument();
     expect(list).toBeInTheDocument();
-    expect(links).toHaveLength(4); // 3 nav items + organization name link
+    expect(links).toHaveLength(3); // 3 nav items (organization name is not a link)
   });
 });

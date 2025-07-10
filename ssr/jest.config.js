@@ -14,6 +14,7 @@ const customJestConfig = {
     "^@/(.*)$": "<rootDir>/$1",
     "^@frontend/types$": "<rootDir>/../frontend/src/types/index.ts",
     "^@frontend/(.*)$": "<rootDir>/../frontend/src/$1",
+    "^@shared/(.*)$": "<rootDir>/../shared/$1",
 
     // Handle CSS imports (with CSS modules)
     "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy",
