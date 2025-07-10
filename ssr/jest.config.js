@@ -27,7 +27,17 @@ const customJestConfig = {
       "<rootDir>/__mocks__/fileMock.js",
   },
   testEnvironment: "jest-environment-jsdom",
-  testPathIgnorePatterns: ["<rootDir>/.next/", "<rootDir>/node_modules/"],
+  testMatch: [
+    "<rootDir>/app/**/*.test.{ts,tsx,js,jsx}",
+    "<rootDir>/lib/**/*.test.{ts,tsx,js,jsx}",
+    "<rootDir>/__tests__/**/*.test.{ts,tsx,js,jsx}",
+  ],
+  testPathIgnorePatterns: [
+    "<rootDir>/.next/", 
+    "<rootDir>/node_modules/",
+    "<rootDir>/frontend/", // Ignore copied frontend tests - they're tested in frontend workflow
+    "<rootDir>/shared/", // Ignore copied shared tests - they're tested in other workflows
+  ],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
   collectCoverageFrom: [
     "app/**/*.{js,jsx,ts,tsx}",
