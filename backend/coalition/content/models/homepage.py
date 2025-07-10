@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from coalition.core.html_sanitizer import HTMLSanitizer
+from coalition.content.html_sanitizer import HTMLSanitizer
 
 if TYPE_CHECKING:
     from typing import Any
@@ -21,7 +21,7 @@ class HomePage(models.Model):
 
     # Theme relationship
     theme = models.ForeignKey(
-        "core.Theme",
+        "content.Theme",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

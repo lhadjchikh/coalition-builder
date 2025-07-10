@@ -3,7 +3,7 @@ import json
 from django.test import TestCase
 from django.test.client import Client
 
-from coalition.core.models import Theme
+from coalition.content.models import Theme
 
 
 class ThemeAPITest(TestCase):

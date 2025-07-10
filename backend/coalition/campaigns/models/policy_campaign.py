@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from django.db import models
 from django.utils import timezone
 
-from coalition.core.html_sanitizer import HTMLSanitizer
+from coalition.content.html_sanitizer import HTMLSanitizer
 
 if TYPE_CHECKING:
     from typing import Any

@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 
-from coalition.core.html_sanitizer import HTMLSanitizer
+from coalition.content.html_sanitizer import HTMLSanitizer
 
 if TYPE_CHECKING:
     from typing import Any

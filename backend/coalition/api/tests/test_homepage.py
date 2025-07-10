@@ -3,7 +3,7 @@ from unittest.mock import patch
 from django.test import TestCase
 from django.test.client import Client
 
-from coalition.core.models import ContentBlock, HomePage
+from coalition.content.models import ContentBlock, HomePage
 
 
 class HomepageAPITest(TestCase):

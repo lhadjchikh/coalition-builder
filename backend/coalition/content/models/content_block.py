@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from django.db import models
 
-from coalition.core.html_sanitizer import HTMLSanitizer
+from coalition.content.html_sanitizer import HTMLSanitizer
 
 if TYPE_CHECKING:
     from typing import Any
@@ -26,7 +26,7 @@ class ContentBlock(models.Model):
     ]
 
     homepage = models.ForeignKey(
-        "core.HomePage",
+        "content.HomePage",
         on_delete=models.CASCADE,
         related_name="content_blocks",
     )

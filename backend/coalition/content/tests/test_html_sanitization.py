@@ -5,8 +5,8 @@ Test HTML sanitization to prevent XSS attacks.
 from django.test import TestCase
 
 from coalition.campaigns.models import PolicyCampaign
-from coalition.core.html_sanitizer import HTMLSanitizer
-from coalition.core.models import ContentBlock, HomePage
+from coalition.content.html_sanitizer import HTMLSanitizer
+from coalition.content.models import ContentBlock, HomePage
 
 
 class HTMLSanitizationTest(TestCase):

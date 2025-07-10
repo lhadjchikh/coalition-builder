@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 
-from coalition.core.html_sanitizer import HTMLSanitizer
+from coalition.content.html_sanitizer import HTMLSanitizer
 from coalition.stakeholders.models import Stakeholder
 
 if TYPE_CHECKING:

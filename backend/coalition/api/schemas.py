@@ -8,11 +8,11 @@ from coalition.stakeholders.validators import AddressValidator
 if TYPE_CHECKING:
     from django.db.models import QuerySet
 
-    from coalition.core.models import ContentBlock, HomePage, Theme
+    from coalition.content.models import ContentBlock, HomePage, Theme
 
 # Import models for ModelSchema
 from coalition.campaigns.models import Bill, PolicyCampaign
-from coalition.core.models import ContentBlock, HomePage, Theme
+from coalition.content.models import ContentBlock, HomePage, Theme
 from coalition.endorsements.models import Endorsement
 from coalition.legislators.models import Legislator
 from coalition.stakeholders.models import Stakeholder
