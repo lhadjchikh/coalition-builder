@@ -45,24 +45,24 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx",
-    "./frontend/src/types/**/*.ts",
-    "./frontend/src/components/**/*.tsx",
-    "./frontend/src/services/**/*.ts"
+    "frontend/src/types/**/*.ts",
+    "frontend/src/components/**/*.tsx",
+    "frontend/src/services/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "./tests/**/*",
-    "./frontend/src/**/*.test.tsx",
-    "./frontend/src/**/*.test.ts",
-    "./frontend/src/tests/**/*",
-    "./frontend/src/App.test.tsx",
-    "./frontend/src/setupTests.ts",
-    "./frontend/src/components/HomePage.tsx",
-    "./frontend/src/components/StyledHomePage.tsx",
-    "./frontend/src/components/ThemeStyles.tsx",
-    "./frontend/src/components/styled/**/*",
-    "./frontend/src/contexts/StyledThemeProvider.tsx",
-    "./frontend/src/hooks/useStyledTheme.ts",
-    "./frontend/src/styles/styled.d.ts"
+    "tests/**/*",
+    "frontend/src/**/*.test.tsx",
+    "frontend/src/**/*.test.ts",
+    "frontend/src/tests/**/*",
+    "frontend/src/App.test.tsx",
+    "frontend/src/setupTests.ts",
+    "frontend/src/components/HomePage.tsx",
+    "frontend/src/components/StyledHomePage.tsx",
+    "frontend/src/components/ThemeStyles.tsx",
+    "frontend/src/components/styled/**/*",
+    "frontend/src/contexts/StyledThemeProvider.tsx",
+    "frontend/src/hooks/useStyledTheme.ts",
+    "frontend/src/styles/styled.d.ts"
   ]
 }
