@@ -15,8 +15,6 @@ interface TestConfig {
   SSR_URL: string;
   API_URL: string;
   TIMEOUT: number;
-  RETRY_COUNT: number;
-  RETRY_DELAY: number;
 }
 
 interface TestResult {
@@ -30,8 +28,6 @@ const config: TestConfig = {
   SSR_URL: process.env.SSR_URL || "http://localhost:3001",
   API_URL: process.env.API_URL || "http://localhost:8000",
   TIMEOUT: parseInt(process.env.TIMEOUT || "30000"),
-  RETRY_COUNT: parseInt(process.env.RETRY_COUNT || "30"),
-  RETRY_DELAY: parseInt(process.env.RETRY_DELAY || "1000"),
 };
 
 const results: TestResult[] = [];
