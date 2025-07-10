@@ -56,10 +56,15 @@ jobs:
 
       - name: Run unit tests
         run: |
-          docker run --rm coalition_ssr_test:latest \
+          docker run --rm \
+            -e NODE_ENV=test \
+            coalition_ssr_test:latest \
             npm test
 
       - name: Run build
         run: |
-          docker run --rm coalition_ssr_test:latest \
+          docker run --rm \
+            -e NODE_ENV=test \
+            -e SKIP_STATIC_GENERATION=true \
+            coalition_ssr_test:latest \
             npm run build

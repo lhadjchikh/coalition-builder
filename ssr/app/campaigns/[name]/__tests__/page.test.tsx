@@ -130,9 +130,18 @@ describe("CampaignPage", () => {
 
   // These test suites now have proper mock isolation
   describe("generateStaticParams", () => {
+    const originalEnv = process.env;
+
     beforeEach(() => {
       jest.clearAllMocks();
       jest.resetAllMocks();
+      // Set production environment to test actual business logic
+      process.env.NODE_ENV = "production";
+      delete process.env.SKIP_STATIC_GENERATION;
+    });
+
+    afterEach(() => {
+      process.env = originalEnv;
     });
 
     it("should return campaign names as params", async () => {
