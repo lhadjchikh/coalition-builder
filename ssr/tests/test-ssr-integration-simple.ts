@@ -32,12 +32,8 @@ async function runTests(): Promise<void> {
     // Test 1: Wait for services
     console.log("⏳ Waiting for services to be ready...");
 
-    // Check if we're in a unit test environment (services not expected to be running)
-    if (
-      process.env.NODE_ENV === "test" ||
-      process.env.UNIT_TEST_MODE === "true"
-    ) {
-      console.log("⚠️  Running in unit test mode - skipping service checks");
+    if (process.env.SKIP_SERVICE_CHECKS === "true") {
+      console.log("⚠️  Skipping service checks as per configuration");
       console.log("✅ All tests passed!");
       process.exit(0);
     }
