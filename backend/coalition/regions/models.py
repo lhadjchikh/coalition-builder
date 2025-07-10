@@ -56,6 +56,7 @@ class Region(models.Model):
     )
 
     class Meta:
+        db_table = "region"
         constraints = [
             models.UniqueConstraint(
                 fields=["geoid", "type"],

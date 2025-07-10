@@ -67,6 +67,9 @@ class PolicyCampaign(models.Model):
         session = f"{((timezone.now().date().year - 1789) // 2) + 1}th"
         return self.bills.filter(congress_session=session)
 
+    class Meta:
+        db_table = "campaign"
+
     def save(self, *args: "Any", **kwargs: "Any") -> None:
         """Sanitize HTML fields before saving to prevent XSS attacks."""
         # Sanitize description field if it contains HTML
@@ -187,6 +190,7 @@ class Bill(models.Model):
             raise ValidationError("Federal bills should not have a state specified")
 
     class Meta:
+        db_table = "bill"
         verbose_name = "Bill"
         verbose_name_plural = "Bills"
         ordering = ["-introduced_date", "chamber", "number"]

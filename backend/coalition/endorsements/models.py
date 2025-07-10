@@ -71,6 +71,7 @@ class Endorsement(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        db_table = "endorsement"
         unique_together = ["stakeholder", "campaign"]
 
     def __str__(self) -> str:

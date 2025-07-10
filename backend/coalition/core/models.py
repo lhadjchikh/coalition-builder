@@ -188,6 +188,7 @@ class Theme(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        db_table = "theme"
         verbose_name = "Theme"
         verbose_name_plural = "Themes"
         ordering = ["-is_active", "-updated_at"]
@@ -383,6 +384,7 @@ class HomePage(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        db_table = "homepage"
         verbose_name = "Homepage Configuration"
         verbose_name_plural = "Homepage Configurations"
 
@@ -547,6 +549,7 @@ class ContentBlock(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        db_table = "content_block"
         ordering = ["order", "created_at"]
         verbose_name = "Content Block"
         verbose_name_plural = "Content Blocks"
