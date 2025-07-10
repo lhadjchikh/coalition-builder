@@ -1,203 +1,108 @@
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import App from './App';
-import API from './services/api';
-import { Campaign } from './types';
-import { resolvePromiseInTest, rejectPromiseInTest } from './tests/utils/testUtils';
 
-// Mock the API calls
-jest.mock('./services/api', () => ({
-  __esModule: true,
-  default: {
-    getCampaigns: jest.fn(),
-    getEndorsers: jest.fn(),
-    getLegislators: jest.fn(),
-    getHomepage: jest.fn(),
-    getBaseUrl: jest.fn(() => ''),
-  },
-}));
+// Mock child components to focus on App's responsibilities
+jest.mock('./components/CampaignsList', () => {
+  return function MockCampaignsList({
+    onCampaignSelect,
+  }: {
+    onCampaignSelect?: (campaign: any) => void;
+  }) {
+    return (
+      <div data-testid="campaigns-list">
+        <p>Mock Campaigns List</p>
+        <button
+          data-testid="mock-campaign-button"
+          onClick={() => onCampaignSelect?.({ id: 1, name: 'test', title: 'Test Campaign' })}
+        >
+          Test Campaign
+        </button>
+      </div>
+    );
+  };
+});
+
+jest.mock('./components/HomePage', () => {
+  return function MockHomePage() {
+    return <div data-testid="homepage">Mock HomePage</div>;
+  };
+});
+
+jest.mock('./components/StyledHomePage', () => {
+  return function MockStyledHomePage() {
+    return <div data-testid="styled-homepage">Mock StyledHomePage</div>;
+  };
+});
+
+jest.mock('./components/CampaignDetail', () => {
+  return function MockCampaignDetail({ campaignId }: { campaignId?: number }) {
+    return <div data-testid="campaign-detail">Mock Campaign Detail for ID: {campaignId}</div>;
+  };
+});
 
 describe('App component', () => {
-  beforeEach(() => {
-    // Default mock implementation for API calls
-    (API.getCampaigns as jest.Mock).mockResolvedValue([
-      {
-        id: 1,
-        name: 'test-campaign',
-        title: 'Test Campaign',
-        summary: 'This is a test campaign',
-        active: true,
-        created_at: '2024-01-01T00:00:00Z',
-      },
-    ]);
-
-    // Mock homepage API to prevent errors in components that call it
-    (API.getHomepage as jest.Mock).mockResolvedValue({
-      id: 1,
-      organization_name: 'Test Coalition',
-      tagline: 'Building partnerships',
-      hero_title: 'Welcome to Coalition Builder',
-      hero_subtitle: 'Building strong advocacy partnerships',
-      hero_background_image: '',
-      about_section_title: 'About Our Mission',
-      about_section_content: 'Test content',
-      cta_title: 'Get Involved',
-      cta_content: 'Join our coalition',
-      cta_button_text: 'Join Now',
-      cta_button_url: '/join',
-      contact_email: 'contact@test.org',
-      contact_phone: '',
-      facebook_url: '',
-      twitter_url: '',
-      instagram_url: '',
-      linkedin_url: '',
-      campaigns_section_title: 'Our Campaigns',
-      campaigns_section_subtitle: 'Current initiatives',
-      show_campaigns_section: true,
-      content_blocks: [],
-      is_active: true,
-      created_at: '2024-01-01T00:00:00Z',
-      updated_at: '2024-01-01T00:00:00Z',
-    });
+  test('renders Coalition Builder title', () => {
+    render(<App />);
+    const headingElement = screen.getByText(/Coalition Builder/i);
+    expect(headingElement).toBeInTheDocument();
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
+  test('renders navigation elements', () => {
+    render(<App />);
+    const navButton = screen.getByText(/All Campaigns/i);
+    expect(navButton).toBeInTheDocument();
   });
 
-  test('renders Coalition Builder title', async () => {
-    await act(async () => {
-      render(<App />);
-    });
+  test('renders demo information', () => {
+    render(<App />);
+    const demoHeading = screen.getByText(/Frontend Endorsement Demo/i);
+    expect(demoHeading).toBeInTheDocument();
 
-    // Wait for async operations to complete
-    await waitFor(
-      () => {
-        const headingElement = screen.getByText(/Coalition Builder/i);
-        expect(headingElement).toBeInTheDocument();
-      },
-      { timeout: 10000 }
-    );
+    const demoButton1 = screen.getByText(/Demo: View Campaign 1/i);
+    const demoButton2 = screen.getByText(/Demo: View Campaign 2/i);
+    expect(demoButton1).toBeInTheDocument();
+    expect(demoButton2).toBeInTheDocument();
   });
 
-  test('renders navigation elements', async () => {
-    await act(async () => {
-      render(<App />);
-    });
+  test('renders all main components', () => {
+    render(<App />);
 
-    // Wait for async operations to complete
-    await waitFor(() => {
-      const navButton = screen.getByText(/All Campaigns/i);
-      expect(navButton).toBeInTheDocument();
-    });
+    // Check that all main components are rendered
+    expect(screen.getByTestId('campaigns-list')).toBeInTheDocument();
+    expect(screen.getByTestId('homepage')).toBeInTheDocument();
+    expect(screen.getByTestId('styled-homepage')).toBeInTheDocument();
   });
 
-  test('renders demo information', async () => {
-    await act(async () => {
-      render(<App />);
-    });
+  test('handles campaign selection navigation', () => {
+    render(<App />);
 
-    // Wait for async operations to complete
-    await waitFor(() => {
-      const demoHeading = screen.getByText(/Frontend Endorsement Demo/i);
-      expect(demoHeading).toBeInTheDocument();
+    // Initially should show campaigns list view
+    expect(screen.getByTestId('campaigns-list')).toBeInTheDocument();
+    expect(screen.queryByTestId('campaign-detail')).not.toBeInTheDocument();
 
-      const demoButton1 = screen.getByText(/Demo: View Campaign 1/i);
-      const demoButton2 = screen.getByText(/Demo: View Campaign 2/i);
-      expect(demoButton1).toBeInTheDocument();
-      expect(demoButton2).toBeInTheDocument();
-    });
+    // Click on a campaign
+    const campaignButton = screen.getByTestId('mock-campaign-button');
+    fireEvent.click(campaignButton);
+
+    // Should now show campaign detail view
+    expect(screen.queryByTestId('campaigns-list')).not.toBeInTheDocument();
+    expect(screen.getByTestId('campaign-detail')).toBeInTheDocument();
+    expect(screen.getByText(/Mock Campaign Detail for ID: 1/)).toBeInTheDocument();
   });
 
-  test('app navigation is rendered correctly', async () => {
-    await act(async () => {
-      render(<App />);
-    });
+  test('handles demo navigation buttons', () => {
+    render(<App />);
 
-    // Wait for async operations to complete
-    await waitFor(() => {
-      const appNavigation = screen.getByRole('navigation');
-      expect(appNavigation).toBeInTheDocument();
-      // The navbar should contain the organization name
-      expect(screen.getByText('Coalition Builder')).toBeInTheDocument();
-    });
-  });
+    // Initially should show campaigns list view
+    expect(screen.getByTestId('campaigns-list')).toBeInTheDocument();
 
-  test('renders CampaignsList component', async () => {
-    // Setup a delayed response to ensure we can see the loading state
-    let resolvePromise: (value: Campaign[]) => void;
-    const delayedResponse = new Promise<Campaign[]>(resolve => {
-      resolvePromise = resolve;
-    });
+    // Click demo button for campaign 2
+    const demoButton2 = screen.getByText(/Demo: View Campaign 2/i);
+    fireEvent.click(demoButton2);
 
-    (API.getCampaigns as jest.Mock).mockImplementationOnce(() => delayedResponse);
-
-    await act(async () => {
-      render(<App />);
-    });
-
-    // First it should show loading state
-    expect(screen.getByTestId('loading')).toBeInTheDocument();
-
-    // Resolve the promise after checking loading state
-    await act(async () => {
-      await resolvePromiseInTest(resolvePromise!, [
-        {
-          id: 1,
-          name: 'test-campaign',
-          title: 'Test Campaign',
-          summary: 'This is a test campaign',
-          active: true,
-          created_at: '2024-01-01T00:00:00Z',
-        },
-      ]);
-    });
-
-    // Wait for campaigns to load
-    await act(async () => {
-      await waitFor(() => {
-        expect(screen.getByTestId('campaigns-list')).toBeInTheDocument();
-      });
-    });
-
-    // Verify API was called (may be called multiple times by different components)
-    expect(API.getCampaigns).toHaveBeenCalled();
-
-    // Verify campaign data is displayed in campaigns list
-    await waitFor(() => {
-      expect(screen.getByTestId('campaigns-list-campaign-1')).toBeInTheDocument();
-    });
-  });
-
-  test('handles API errors gracefully', async () => {
-    // Create a delayed rejection
-    let rejectPromise: (reason?: any) => void;
-    const delayedRejection = new Promise<Campaign[]>((_, reject) => {
-      rejectPromise = reject;
-    });
-
-    (API.getCampaigns as jest.Mock).mockImplementationOnce(() => delayedRejection);
-
-    await act(async () => {
-      render(<App />);
-    });
-
-    // First it should show loading state
-    expect(screen.getByTestId('loading')).toBeInTheDocument();
-
-    // Trigger the rejection after checking loading state
-    await act(async () => {
-      await rejectPromiseInTest(rejectPromise!, new Error('API Error'));
-    });
-
-    // Wait for the error message
-    await act(async () => {
-      await waitFor(() => {
-        expect(screen.getByTestId('error')).toBeInTheDocument();
-      });
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText('Failed to fetch campaigns')).toBeInTheDocument();
-    });
+    // Should show campaign detail for ID 2
+    expect(screen.queryByTestId('campaigns-list')).not.toBeInTheDocument();
+    expect(screen.getByTestId('campaign-detail')).toBeInTheDocument();
+    expect(screen.getByText(/Mock Campaign Detail for ID: 2/)).toBeInTheDocument();
   });
 });
