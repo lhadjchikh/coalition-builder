@@ -5,7 +5,6 @@ import CampaignPage, { generateStaticParams, generateMetadata } from "../page";
 import { apiClient } from "../../../../lib/api";
 import { withSuppressedErrors } from "../../../../../frontend/src/tests/utils/testUtils";
 
-
 // Mock dependencies
 jest.mock("next/navigation", () => ({
   notFound: jest.fn(),

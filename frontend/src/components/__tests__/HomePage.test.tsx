@@ -161,26 +161,29 @@ describe('HomePage Error Handling', () => {
   });
 
   it('handles both APIs failing gracefully', async () => {
-    await withSuppressedErrors(['Error fetching homepage', 'Error fetching campaigns'], async () => {
-      mockAPI.getHomepage.mockRejectedValue(new Error('Homepage API failed'));
-      mockAPI.getCampaigns.mockRejectedValue(new Error('Campaigns API failed'));
+    await withSuppressedErrors(
+      ['Error fetching homepage', 'Error fetching campaigns'],
+      async () => {
+        mockAPI.getHomepage.mockRejectedValue(new Error('Homepage API failed'));
+        mockAPI.getCampaigns.mockRejectedValue(new Error('Campaigns API failed'));
 
-      await act(async () => {
-        render(<HomePage />);
-      });
-
-      await act(async () => {
-        await waitFor(() => {
-          expect(screen.getByText('Welcome to Coalition Builder')).toBeInTheDocument();
+        await act(async () => {
+          render(<HomePage />);
         });
-      });
 
-      // Should use fallback homepage data
-      expect(screen.getByText('Building strong advocacy partnerships')).toBeInTheDocument();
+        await act(async () => {
+          await waitFor(() => {
+            expect(screen.getByText('Welcome to Coalition Builder')).toBeInTheDocument();
+          });
+        });
 
-      // Should show campaigns error
-      expect(screen.getByText('Unable to load campaigns at this time.')).toBeInTheDocument();
-    });
+        // Should use fallback homepage data
+        expect(screen.getByText('Building strong advocacy partnerships')).toBeInTheDocument();
+
+        // Should show campaigns error
+        expect(screen.getByText('Unable to load campaigns at this time.')).toBeInTheDocument();
+      }
+    );
   });
 
   it('shows empty campaigns message when no campaigns exist', async () => {
@@ -226,75 +229,91 @@ describe('HomePage Error Handling', () => {
   });
 
   it('does not expose raw error messages to users', async () => {
-    await withSuppressedErrors(['Internal server error 500', 'Connection refused', 'Error fetching homepage', 'Error fetching campaigns'], async () => {
-      mockAPI.getHomepage.mockRejectedValue(new Error('Internal server error 500'));
-      mockAPI.getCampaigns.mockRejectedValue(new Error('Connection refused'));
+    await withSuppressedErrors(
+      [
+        'Internal server error 500',
+        'Connection refused',
+        'Error fetching homepage',
+        'Error fetching campaigns',
+      ],
+      async () => {
+        mockAPI.getHomepage.mockRejectedValue(new Error('Internal server error 500'));
+        mockAPI.getCampaigns.mockRejectedValue(new Error('Connection refused'));
 
-      await act(async () => {
-        render(<HomePage />);
-      });
-
-      await act(async () => {
-        await waitFor(() => {
-          expect(screen.getByText('Welcome to Coalition Builder')).toBeInTheDocument();
+        await act(async () => {
+          render(<HomePage />);
         });
-      });
 
-      // Should NOT show raw error messages
-      expect(screen.queryByText('Internal server error 500')).not.toBeInTheDocument();
-      expect(screen.queryByText('Connection refused')).not.toBeInTheDocument();
-      expect(screen.queryByText('fetch failed')).not.toBeInTheDocument();
+        await act(async () => {
+          await waitFor(() => {
+            expect(screen.getByText('Welcome to Coalition Builder')).toBeInTheDocument();
+          });
+        });
 
-      // Should show user-friendly message
-      expect(screen.getByText('Unable to load campaigns at this time.')).toBeInTheDocument();
-    });
+        // Should NOT show raw error messages
+        expect(screen.queryByText('Internal server error 500')).not.toBeInTheDocument();
+        expect(screen.queryByText('Connection refused')).not.toBeInTheDocument();
+        expect(screen.queryByText('fetch failed')).not.toBeInTheDocument();
+
+        // Should show user-friendly message
+        expect(screen.getByText('Unable to load campaigns at this time.')).toBeInTheDocument();
+      }
+    );
   });
 
   it('shows development notices in development mode', async () => {
-    await withSuppressedErrors(['Error fetching homepage', 'Error fetching campaigns'], async () => {
-      process.env = { ...process.env, NODE_ENV: 'development' };
+    await withSuppressedErrors(
+      ['Error fetching homepage', 'Error fetching campaigns'],
+      async () => {
+        process.env = { ...process.env, NODE_ENV: 'development' };
 
-      mockAPI.getHomepage.mockRejectedValue(new Error('Homepage API failed'));
-      mockAPI.getCampaigns.mockRejectedValue(new Error('Campaigns API failed'));
+        mockAPI.getHomepage.mockRejectedValue(new Error('Homepage API failed'));
+        mockAPI.getCampaigns.mockRejectedValue(new Error('Campaigns API failed'));
 
-      await act(async () => {
-        render(<HomePage />);
-      });
-
-      await act(async () => {
-        await waitFor(() => {
-          expect(screen.getByText('Welcome to Coalition Builder')).toBeInTheDocument();
+        await act(async () => {
+          render(<HomePage />);
         });
-      });
 
-      // Should show development notices
-      expect(screen.getByText('Development Notice')).toBeInTheDocument();
-      expect(screen.getByText(/Using fallback homepage data due to API error/)).toBeInTheDocument();
-    });
+        await act(async () => {
+          await waitFor(() => {
+            expect(screen.getByText('Welcome to Coalition Builder')).toBeInTheDocument();
+          });
+        });
+
+        // Should show development notices
+        expect(screen.getByText('Development Notice')).toBeInTheDocument();
+        expect(
+          screen.getByText(/Using fallback homepage data due to API error/)
+        ).toBeInTheDocument();
+      }
+    );
   });
 
   it('renders page structure correctly even with API failures', async () => {
-    await withSuppressedErrors(['Error fetching homepage', 'Error fetching campaigns'], async () => {
-      mockAPI.getHomepage.mockRejectedValue(new Error('API failed'));
-      mockAPI.getCampaigns.mockRejectedValue(new Error('API failed'));
+    await withSuppressedErrors(
+      ['Error fetching homepage', 'Error fetching campaigns'],
+      async () => {
+        mockAPI.getHomepage.mockRejectedValue(new Error('API failed'));
+        mockAPI.getCampaigns.mockRejectedValue(new Error('API failed'));
 
-      await act(async () => {
-        render(<HomePage />);
-      });
-
-      await act(async () => {
-        await waitFor(() => {
-          expect(screen.getByText('Welcome to Coalition Builder')).toBeInTheDocument();
+        await act(async () => {
+          render(<HomePage />);
         });
-      });
 
-      // Essential page structure should be intact
-      expect(
-        screen.getByRole('main') || document.querySelector('.min-h-screen')
-      ).toBeInTheDocument();
-      expect(screen.getByText('About Our Mission')).toBeInTheDocument();
-      expect(screen.getByText('Get Involved')).toBeInTheDocument();
-    });
+        await act(async () => {
+          await waitFor(() => {
+            expect(screen.getByText('Welcome to Coalition Builder')).toBeInTheDocument();
+          });
+        });
+
+        // Essential page structure should be intact
+        expect(
+          screen.getByRole('main') || document.querySelector('.min-h-screen')
+        ).toBeInTheDocument();
+        expect(screen.getByText('About Our Mission')).toBeInTheDocument();
+        expect(screen.getByText('Get Involved')).toBeInTheDocument();
+      }
+    );
   });
 
   it('calls APIs in parallel for better performance', async () => {
