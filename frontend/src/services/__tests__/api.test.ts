@@ -14,6 +14,7 @@ global.fetch = mockFetch;
 
 describe('API Service', () => {
   const originalEnv = process.env;
+  let originalConsoleError: typeof console.error;
 
   // Helper to create clean environment without CI variables affecting tests
   const createCleanEnv = (
@@ -36,6 +37,14 @@ describe('API Service', () => {
     jest.clearAllMocks();
     // Start with clean environment for each test
     jest.replaceProperty(process, 'env', createCleanEnv());
+    // Suppress console.error during error tests
+    originalConsoleError = console.error;
+    console.error = jest.fn();
+  });
+
+  afterEach(() => {
+    // Restore console.error
+    console.error = originalConsoleError;
   });
 
   afterAll(() => {
