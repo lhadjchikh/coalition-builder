@@ -64,35 +64,62 @@ describe('App component', () => {
     jest.clearAllMocks();
   });
 
-  test('renders Coalition Builder title', () => {
-    render(<App />);
-    const headingElement = screen.getByText(/Coalition Builder/i);
-    expect(headingElement).toBeInTheDocument();
+  test('renders Coalition Builder title', async () => {
+    await act(async () => {
+      render(<App />);
+    });
+
+    // Wait for async operations to complete
+    await waitFor(
+      () => {
+        const headingElement = screen.getByText(/Coalition Builder/i);
+        expect(headingElement).toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
   });
 
-  test('renders navigation elements', () => {
-    render(<App />);
-    const navButton = screen.getByText(/All Campaigns/i);
-    expect(navButton).toBeInTheDocument();
+  test('renders navigation elements', async () => {
+    await act(async () => {
+      render(<App />);
+    });
+
+    // Wait for async operations to complete
+    await waitFor(() => {
+      const navButton = screen.getByText(/All Campaigns/i);
+      expect(navButton).toBeInTheDocument();
+    });
   });
 
-  test('renders demo information', () => {
-    render(<App />);
-    const demoHeading = screen.getByText(/Frontend Endorsement Demo/i);
-    expect(demoHeading).toBeInTheDocument();
+  test('renders demo information', async () => {
+    await act(async () => {
+      render(<App />);
+    });
 
-    const demoButton1 = screen.getByText(/Demo: View Campaign 1/i);
-    const demoButton2 = screen.getByText(/Demo: View Campaign 2/i);
-    expect(demoButton1).toBeInTheDocument();
-    expect(demoButton2).toBeInTheDocument();
+    // Wait for async operations to complete
+    await waitFor(() => {
+      const demoHeading = screen.getByText(/Frontend Endorsement Demo/i);
+      expect(demoHeading).toBeInTheDocument();
+
+      const demoButton1 = screen.getByText(/Demo: View Campaign 1/i);
+      const demoButton2 = screen.getByText(/Demo: View Campaign 2/i);
+      expect(demoButton1).toBeInTheDocument();
+      expect(demoButton2).toBeInTheDocument();
+    });
   });
 
-  test('app navigation is rendered correctly', () => {
-    render(<App />);
-    const appNavigation = screen.getByRole('navigation');
-    expect(appNavigation).toBeInTheDocument();
-    // The navbar should contain the organization name
-    expect(screen.getByText('Coalition Builder')).toBeInTheDocument();
+  test('app navigation is rendered correctly', async () => {
+    await act(async () => {
+      render(<App />);
+    });
+
+    // Wait for async operations to complete
+    await waitFor(() => {
+      const appNavigation = screen.getByRole('navigation');
+      expect(appNavigation).toBeInTheDocument();
+      // The navbar should contain the organization name
+      expect(screen.getByText('Coalition Builder')).toBeInTheDocument();
+    });
   });
 
   test('renders CampaignsList component', async () => {
@@ -136,7 +163,9 @@ describe('App component', () => {
     expect(API.getCampaigns).toHaveBeenCalled();
 
     // Verify campaign data is displayed in campaigns list
-    expect(screen.getByTestId('campaigns-list-campaign-1')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('campaigns-list-campaign-1')).toBeInTheDocument();
+    });
   });
 
   test('handles API errors gracefully', async () => {
@@ -167,6 +196,8 @@ describe('App component', () => {
       });
     });
 
-    expect(screen.getByText('Failed to fetch campaigns')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Failed to fetch campaigns')).toBeInTheDocument();
+    });
   });
 });
