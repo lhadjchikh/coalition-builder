@@ -64,8 +64,8 @@ async function testCampaignRoute(campaignName: string): Promise<void> {
       `${config.SSR_URL}/campaigns/${campaignName}`,
     );
 
-    if (response.status === 200) {
-      const html = await response.text();
+    if (response.statusCode === 200) {
+      const html = response.data;
 
       // Check if the page contains expected SSR markers
       const hasSSRMarker = html.includes('data-ssr="true"');
@@ -74,7 +74,7 @@ async function testCampaignRoute(campaignName: string): Promise<void> {
 
       if (hasSSRMarker && hasCampaignDetail) {
         logTest(testName, "PASSED", {
-          status: response.status,
+          status: response.statusCode,
           hasSSRMarker,
           hasCampaignDetail,
         });
@@ -86,7 +86,7 @@ async function testCampaignRoute(campaignName: string): Promise<void> {
           `Missing expected content. SSR marker: ${hasSSRMarker}, Campaign content: ${hasCampaignDetail}`,
         );
       }
-    } else if (response.status === 404) {
+    } else if (response.statusCode === 404) {
       // This might be expected for non-existent campaigns
       logTest(`${testName} (404 expected)`, "PASSED", { status: 404 });
     } else {
@@ -94,7 +94,7 @@ async function testCampaignRoute(campaignName: string): Promise<void> {
         testName,
         "FAILED",
         null,
-        `Unexpected status: ${response.status}`,
+        `Unexpected status: ${response.statusCode}`,
       );
     }
   } catch (error) {
@@ -113,17 +113,17 @@ async function testCampaignAPIIntegration(): Promise<void> {
     // First, get the list of campaigns from the API
     const apiResponse = await makeRequest(`${config.API_URL}/api/campaigns/`);
 
-    if (apiResponse.status !== 200) {
+    if (apiResponse.statusCode !== 200) {
       logTest(
         testName,
         "FAILED",
         null,
-        `API returned status ${apiResponse.status}`,
+        `API returned status ${apiResponse.statusCode}`,
       );
       return;
     }
 
-    const campaigns = await apiResponse.json();
+    const campaigns = JSON.parse(apiResponse.data);
 
     if (!Array.isArray(campaigns) || campaigns.length === 0) {
       logTest(testName, "PASSED", {
@@ -143,10 +143,10 @@ async function testCampaignAPIIntegration(): Promise<void> {
     const ssrResponse = await makeRequest(
       `${config.SSR_URL}/campaigns/${firstCampaign.name}`,
     );
-    const html = await ssrResponse.text();
+    const html = ssrResponse.data;
 
     if (
-      ssrResponse.status === 200 &&
+      ssrResponse.statusCode === 200 &&
       html.includes(firstCampaign.title || firstCampaign.name)
     ) {
       logTest(testName, "PASSED", {
@@ -159,7 +159,7 @@ async function testCampaignAPIIntegration(): Promise<void> {
         testName,
         "FAILED",
         null,
-        `Could not find campaign content in SSR response. Status: ${ssrResponse.status}`,
+        `Could not find campaign content in SSR response. Status: ${ssrResponse.statusCode}`,
       );
     }
   } catch (error) {
@@ -179,10 +179,15 @@ async function testNonExistentCampaign(): Promise<void> {
       `${config.SSR_URL}/campaigns/definitely-does-not-exist-${Date.now()}`,
     );
 
-    if (response.status === 404) {
+    if (response.statusCode === 404) {
       logTest(testName, "PASSED", { status: 404 });
     } else {
-      logTest(testName, "FAILED", null, `Expected 404, got ${response.status}`);
+      logTest(
+        testName,
+        "FAILED",
+        null,
+        `Expected 404, got ${response.statusCode}`,
+      );
     }
   } catch (error) {
     logTest(

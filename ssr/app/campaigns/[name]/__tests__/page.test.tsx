@@ -69,7 +69,9 @@ describe("CampaignPage", () => {
       (notFound as jest.Mock).mockImplementation(() => {}); // Override for this test
 
       const { container } = render(
-        await CampaignPage({ params: { name: "test-campaign" } }),
+        await CampaignPage({
+          params: Promise.resolve({ name: "test-campaign" }),
+        }),
       );
 
       expect(apiClient.getCampaigns).toHaveBeenCalledTimes(1);
@@ -88,7 +90,9 @@ describe("CampaignPage", () => {
       ]);
 
       await expect(async () => {
-        await CampaignPage({ params: { name: "non-existent-campaign" } });
+        await CampaignPage({
+          params: Promise.resolve({ name: "non-existent-campaign" }),
+        });
       }).rejects.toThrow("notFound called");
 
       expect(apiClient.getCampaigns).toHaveBeenCalledTimes(1);
@@ -101,7 +105,9 @@ describe("CampaignPage", () => {
       );
 
       await expect(async () => {
-        await CampaignPage({ params: { name: "test-campaign" } });
+        await CampaignPage({
+          params: Promise.resolve({ name: "test-campaign" }),
+        });
       }).rejects.toThrow("notFound called");
 
       expect(apiClient.getCampaigns).toHaveBeenCalledTimes(1);
@@ -154,7 +160,7 @@ describe("CampaignPage", () => {
       ]);
 
       const metadata = await generateMetadata({
-        params: { name: "test-campaign" },
+        params: Promise.resolve({ name: "test-campaign" }),
       });
 
       expect(metadata).toEqual({
@@ -170,7 +176,7 @@ describe("CampaignPage", () => {
       ]);
 
       const metadata = await generateMetadata({
-        params: { name: "non-existent-campaign" },
+        params: Promise.resolve({ name: "non-existent-campaign" }),
       });
 
       expect(metadata).toEqual({
@@ -185,7 +191,7 @@ describe("CampaignPage", () => {
       );
 
       const metadata = await generateMetadata({
-        params: { name: "test-campaign" },
+        params: Promise.resolve({ name: "test-campaign" }),
       });
 
       expect(metadata).toEqual({
