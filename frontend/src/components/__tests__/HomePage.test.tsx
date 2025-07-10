@@ -73,13 +73,13 @@ describe('HomePage Error Handling', () => {
 
   it('renders successfully with API data', async () => {
     // Use delayed promises to ensure we can test loading state
-    let resolveHomepage: (value: any) => void;
-    let resolveCampaigns: (value: any) => void;
+    let resolveHomepage: (value: HomePageType) => void;
+    let resolveCampaigns: (value: Campaign[]) => void;
 
-    const homepagePromise = new Promise(resolve => {
+    const homepagePromise = new Promise<HomePageType>(resolve => {
       resolveHomepage = resolve;
     });
-    const campaignsPromise = new Promise(resolve => {
+    const campaignsPromise = new Promise<Campaign[]>(resolve => {
       resolveCampaigns = resolve;
     });
 
