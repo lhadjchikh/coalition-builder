@@ -37,7 +37,7 @@ if ! command -v jq &>/dev/null; then
   echo "   Add these to the scripts section:"
   echo '   "test": "node tests/test-ssr-integration.js",'
   echo '   "test:simple": "node tests/test-ssr-integration-simple.js",'
-  echo '   "test:ci": "node tests/test-ssr-integration-simple.js"'
+  echo '   "test:integration": "node tests/test-ssr-integration-simple.js"'
 else
   # Add test scripts using jq if not already present
   if ! grep -q '"test"' package.json; then
@@ -48,8 +48,8 @@ else
     jq '.scripts."test:simple" = "node tests/test-ssr-integration-simple.js"' package.json >package.json.tmp && mv package.json.tmp package.json
   fi
 
-  if ! grep -q '"test:ci"' package.json; then
-    jq '.scripts."test:ci" = "node tests/test-ssr-integration-simple.js"' package.json >package.json.tmp && mv package.json.tmp package.json
+  if ! grep -q '"test:integration"' package.json; then
+    jq '.scripts."test:integration" = "node tests/test-ssr-integration-simple.js"' package.json >package.json.tmp && mv package.json.tmp package.json
   fi
 fi
 
