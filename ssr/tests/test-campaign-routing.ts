@@ -9,12 +9,7 @@
  * 4. Integration between SSR and API
  */
 
-import {
-  makeRequest,
-  waitForService,
-  fetchCompatible as fetch,
-  type FetchResponse,
-} from "./utils";
+import { makeRequest, waitForService, type FetchResponse } from "./utils";
 
 interface TestConfig {
   SSR_URL: string;

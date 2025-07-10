@@ -45,8 +45,8 @@ const SSRNavbar: React.FC<SSRNavbarProps> = ({
           padding: 0,
         }}
       >
-        {navItems.map((item, index) => (
-          <li key={index}>
+        {navItems.map((item) => (
+          <li key={item.href}>
             <a
               href={item.href}
               style={{
