@@ -1,5 +1,5 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react";
+import { render, waitFor, act } from "@testing-library/react";
 import { ThemeProvider } from "../../contexts/ThemeContext";
 import { Theme } from "@shared/utils/theme";
 
@@ -56,12 +56,14 @@ describe("Google Fonts Integration Tests", () => {
   it("should call loadGoogleFonts when theme has fonts", async () => {
     const theme = createTheme(["Roboto", "Open Sans"]);
 
-    render(
-      React.createElement(ThemeProvider, {
-        initialTheme: theme,
-        children: React.createElement(TestComponent),
-      }),
-    );
+    await act(async () => {
+      render(
+        React.createElement(ThemeProvider, {
+          initialTheme: theme,
+          children: React.createElement(TestComponent),
+        }),
+      );
+    });
 
     expect(mockLoadGoogleFonts).toHaveBeenCalledWith(["Roboto", "Open Sans"]);
   });
@@ -69,12 +71,14 @@ describe("Google Fonts Integration Tests", () => {
   it("should not call loadGoogleFonts when fonts array is empty", async () => {
     const theme = createTheme([]);
 
-    render(
-      React.createElement(ThemeProvider, {
-        initialTheme: theme,
-        children: React.createElement(TestComponent),
-      }),
-    );
+    await act(async () => {
+      render(
+        React.createElement(ThemeProvider, {
+          initialTheme: theme,
+          children: React.createElement(TestComponent),
+        }),
+      );
+    });
 
     expect(mockLoadGoogleFonts).not.toHaveBeenCalled();
   });
@@ -87,11 +91,13 @@ describe("Google Fonts Integration Tests", () => {
       json: async () => theme,
     });
 
-    render(
-      React.createElement(ThemeProvider, {
-        children: React.createElement(TestComponent),
-      }),
-    );
+    await act(async () => {
+      render(
+        React.createElement(ThemeProvider, {
+          children: React.createElement(TestComponent),
+        }),
+      );
+    });
 
     await waitFor(() => {
       expect(mockLoadGoogleFonts).toHaveBeenCalledWith([
@@ -104,12 +110,14 @@ describe("Google Fonts Integration Tests", () => {
   it("should set CSS custom properties for fonts", async () => {
     const theme = createTheme(["Inter"]);
 
-    render(
-      React.createElement(ThemeProvider, {
-        initialTheme: theme,
-        children: React.createElement(TestComponent),
-      }),
-    );
+    await act(async () => {
+      render(
+        React.createElement(ThemeProvider, {
+          initialTheme: theme,
+          children: React.createElement(TestComponent),
+        }),
+      );
+    });
 
     const root = document.documentElement;
     expect(root.style.getPropertyValue("--theme-font-heading")).toBe("serif");
@@ -126,11 +134,13 @@ describe("Google Fonts Integration Tests", () => {
   it("should handle API errors gracefully", async () => {
     mockFetch.mockRejectedValueOnce(new Error("API Error"));
 
-    render(
-      React.createElement(ThemeProvider, {
-        children: React.createElement(TestComponent),
-      }),
-    );
+    await act(async () => {
+      render(
+        React.createElement(ThemeProvider, {
+          children: React.createElement(TestComponent),
+        }),
+      );
+    });
 
     // Wait a bit to ensure no calls were made
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -142,12 +152,14 @@ describe("Google Fonts Integration Tests", () => {
     const fonts = ["Playfair Display", "Source Sans Pro", "Noto Sans JP"];
     const theme = createTheme(fonts);
 
-    render(
-      React.createElement(ThemeProvider, {
-        initialTheme: theme,
-        children: React.createElement(TestComponent),
-      }),
-    );
+    await act(async () => {
+      render(
+        React.createElement(ThemeProvider, {
+          initialTheme: theme,
+          children: React.createElement(TestComponent),
+        }),
+      );
+    });
 
     expect(mockLoadGoogleFonts).toHaveBeenCalledWith(fonts);
   });

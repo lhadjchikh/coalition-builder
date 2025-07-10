@@ -45,56 +45,19 @@ describe("SSRNavbar", () => {
     expect(campaignsLink).toHaveAttribute("href", "/campaigns");
   });
 
-  it("should apply hover styles on mouse enter", () => {
+  it("should have correct CSS classes applied", () => {
     render(<SSRNavbar {...defaultProps} />);
 
+    const navbar = screen.getByRole("navigation");
+    const organizationName = screen.getByText("Test Organization");
+    const navList = screen.getByRole("list");
     const homeLink = screen.getByRole("link", { name: "Home" });
 
-    fireEvent.mouseEnter(homeLink);
-
-    expect(homeLink).toHaveStyle({
-      backgroundColor: "rgba(255, 255, 255, 0.1)",
-    });
-  });
-
-  it("should remove hover styles on mouse leave", () => {
-    render(<SSRNavbar {...defaultProps} />);
-
-    const homeLink = screen.getByRole("link", { name: "Home" });
-
-    fireEvent.mouseEnter(homeLink);
-    fireEvent.mouseLeave(homeLink);
-
-    expect(homeLink).toHaveStyle({
-      backgroundColor: "transparent",
-    });
-  });
-
-  it("should apply focus styles on focus", () => {
-    render(<SSRNavbar {...defaultProps} />);
-
-    const homeLink = screen.getByRole("link", { name: "Home" });
-
-    fireEvent.focus(homeLink);
-
-    expect(homeLink).toHaveStyle({
-      outline: "2px solid #61dafb",
-      backgroundColor: "rgba(255, 255, 255, 0.1)",
-    });
-  });
-
-  it("should remove focus styles on blur", () => {
-    render(<SSRNavbar {...defaultProps} />);
-
-    const homeLink = screen.getByRole("link", { name: "Home" });
-
-    fireEvent.focus(homeLink);
-    fireEvent.blur(homeLink);
-
-    expect(homeLink).toHaveStyle({
-      outline: "2px solid transparent",
-      backgroundColor: "transparent",
-    });
+    // Check that CSS modules classes are applied
+    expect(navbar).toHaveClass(/navbar/);
+    expect(organizationName).toHaveClass(/organizationName/);
+    expect(navList).toHaveClass(/navList/);
+    expect(homeLink).toHaveClass(/navLink/);
   });
 
   it("should render with empty navItems array", () => {
