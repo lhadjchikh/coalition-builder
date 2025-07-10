@@ -39,6 +39,7 @@ jobs:
           cp -r ../frontend/src/types ./frontend/src/
           cp -r ../frontend/src/components ./frontend/src/
           cp -r ../frontend/src/services ./frontend/src/
+          cp ../frontend/src/App.css ./frontend/src/
 
       - name: Run TypeScript check
         run: npm run typecheck || npm run tsc || echo "Typecheck not available, skipping"
