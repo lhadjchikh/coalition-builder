@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import json
 import os
 import sys
 from pathlib import Path
@@ -34,11 +35,22 @@ SECRET_KEY = os.getenv(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "t")
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+# Parse ALLOWED_HOSTS from environment variable
+# Support both JSON array format and comma-separated string format
+allowed_hosts_env = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
+try:
+    # Try to parse as JSON array first
+    allowed_hosts_list = json.loads(allowed_hosts_env)
+except (json.JSONDecodeError, ValueError):
+    # Fall back to comma-separated string
+    allowed_hosts_list = [host.strip() for host in allowed_hosts_env.split(",")]
+
+# Use set to eliminate duplicates
+allowed_hosts_set = set(allowed_hosts_list)
 
 # Add testserver for Django tests
-if "test" in sys.argv or "testserver" not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append("testserver")
+if "test" in sys.argv or "testserver" not in allowed_hosts_set:
+    allowed_hosts_set.add("testserver")
 
 # For Elastic Container Service (ECS) deployments, get the internal IP
 # address from the EC2 instance's metadata and add it to ALLOWED_HOSTS.
@@ -47,7 +59,10 @@ if "test" in sys.argv or "testserver" not in ALLOWED_HOSTS:
 if metadata_uri := os.getenv("ECS_CONTAINER_METADATA_URI"):
     container_metadata = requests.get(metadata_uri).json()
     container_ip_address = container_metadata["Networks"][0]["IPv4Addresses"][0]
-    ALLOWED_HOSTS.append(container_ip_address)
+    allowed_hosts_set.add(container_ip_address)
+
+# Convert set to list once at the end
+ALLOWED_HOSTS = list(allowed_hosts_set)
 
 # CSRF Protection Configuration
 # Define trusted origins for CSRF token validation
