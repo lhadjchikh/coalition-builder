@@ -59,7 +59,8 @@ describe("CampaignPage", () => {
     beforeEach(() => {
       jest.clearAllMocks();
       jest.resetAllMocks();
-      (notFound as jest.Mock).mockImplementation(() => {
+      const mockNotFound = notFound as jest.MockedFunction<typeof notFound>;
+      mockNotFound.mockImplementation(() => {
         throw new Error("notFound called");
       });
     });
@@ -68,7 +69,10 @@ describe("CampaignPage", () => {
       (apiClient.getCampaignByName as jest.Mock).mockResolvedValue(
         mockCampaigns[0],
       );
-      (notFound as jest.Mock).mockImplementation(() => {}); // Override for this test
+      const mockNotFound = notFound as jest.MockedFunction<typeof notFound>;
+      mockNotFound.mockImplementation((): never => {
+        throw new Error("notFound should not be called in this test");
+      }); // Override for this test
 
       const { container } = render(
         await CampaignPage({
@@ -136,7 +140,7 @@ describe("CampaignPage", () => {
       jest.clearAllMocks();
       jest.resetAllMocks();
       // Set production environment to test actual business logic
-      process.env.NODE_ENV = "production";
+      process.env = { ...originalEnv, NODE_ENV: "production" };
       delete process.env.SKIP_STATIC_GENERATION;
     });
 
