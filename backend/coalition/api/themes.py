@@ -4,7 +4,7 @@ from ninja.errors import HttpError
 from pydantic import Field
 
 from coalition.api.schemas import ThemeOut
-from coalition.core.models import Theme
+from coalition.content.models import Theme
 
 router = Router(tags=["Themes"])
 

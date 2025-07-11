@@ -148,5 +148,8 @@ class Stakeholder(models.Model):
         """Get longitude from location point"""
         return self.location.x if self.location else None
 
+    class Meta:
+        db_table = "stakeholder"
+
     def __str__(self) -> str:
         return f"{self.organization} – {self.name}"

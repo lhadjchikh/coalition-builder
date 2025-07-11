@@ -102,6 +102,7 @@ class Legislator(models.Model):
             raise ValidationError("State legislators should not have a bioguide_id")
 
     class Meta:
+        db_table = "legislator"
         verbose_name = "Legislator"
         verbose_name_plural = "Legislators"
         ordering = ["state", "chamber", "last_name", "first_name"]

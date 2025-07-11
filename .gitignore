@@ -89,4 +89,4 @@ backend/htmlcov/
 backend/.coverage
 
 # Project Data
-/backend/coalition/fixtures
+/backend/fixtures

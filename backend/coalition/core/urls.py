@@ -21,13 +21,8 @@ from django.contrib import admin
 from django.urls import path
 
 from coalition.api.api import api
-from coalition.core.views import (
-    active_theme_css,
-    health_check,
-    home,
-    robots_txt,
-    theme_css,
-)
+from coalition.content.views import active_theme_css, theme_css
+from coalition.core.views import health_check, home, robots_txt
 
 urlpatterns = [
     path("admin/", admin.site.urls),

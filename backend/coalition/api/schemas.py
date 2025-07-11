@@ -8,23 +8,27 @@ from coalition.stakeholders.validators import AddressValidator
 if TYPE_CHECKING:
     from django.db.models import QuerySet
 
-    from coalition.core.models import ContentBlock, HomePage, Theme
+    from coalition.content.models import ContentBlock, HomePage, Theme
 
 # Import models for ModelSchema
 from coalition.campaigns.models import Bill, PolicyCampaign
-from coalition.core.models import ContentBlock, HomePage, Theme
+from coalition.content.models import ContentBlock, HomePage, Theme
 from coalition.endorsements.models import Endorsement
 from coalition.legislators.models import Legislator
 from coalition.stakeholders.models import Stakeholder
 
 
 class PolicyCampaignOut(ModelSchema):
+    """Response schema for PolicyCampaign model."""
+
     class Meta:
         model = PolicyCampaign
         fields = "__all__"
 
 
 class StakeholderOut(ModelSchema):
+    """Response schema for Stakeholder model with computed geographic fields."""
+
     # Additional computed fields
     latitude: float | None = None
     longitude: float | None = None
@@ -73,6 +77,8 @@ class StakeholderOut(ModelSchema):
 
 
 class EndorsementOut(ModelSchema):
+    """Response schema for Endorsement model with nested data."""
+
     stakeholder: StakeholderOut
     campaign: PolicyCampaignOut
 
@@ -86,18 +92,24 @@ class EndorsementOut(ModelSchema):
 
 
 class BillOut(Schema):
+    """Response schema for Bill model."""
+
     class Meta:
         model = Bill
         fields = "__all__"
 
 
 class LegislatorOut(ModelSchema):
+    """Response schema for Legislator model."""
+
     class Meta:
         model = Legislator
         fields = "__all__"
 
 
 class ContentBlockOut(ModelSchema):
+    """Response schema for ContentBlock model with computed image URL."""
+
     # Add the computed property field
     image_url: str
 
@@ -107,7 +119,7 @@ class ContentBlockOut(ModelSchema):
 
 
 class ThemeOut(ModelSchema):
-    """Response schema for Theme model"""
+    """Response schema for Theme model with computed URL fields."""
 
     # Add computed property fields
     logo_url: str | None = None
@@ -142,6 +154,8 @@ class ThemeOut(ModelSchema):
 
 
 class HomePageOut(ModelSchema):
+    """Response schema for HomePage model with computed fields."""
+
     # Add computed property fields
     hero_background_image_url: str
     content_blocks: list[ContentBlockOut]
@@ -261,6 +275,8 @@ class SpamPreventionMetadata(Schema):
 
 # Input schemas for creating endorsements
 class StakeholderCreateSchema(Schema):
+    """Input schema for creating stakeholder records with validation."""
+
     name: str = Field(max_length=200, description="Stakeholder full name")
     organization: str = Field(max_length=200, description="Organization name")
     role: str = Field(default="", max_length=100, description="Role/title")
@@ -300,6 +316,8 @@ class StakeholderCreateSchema(Schema):
 
 
 class EndorsementCreateSchema(Schema):
+    """Input schema for creating endorsements with spam prevention."""
+
     campaign_id: int
     stakeholder: StakeholderCreateSchema
     statement: str = Field(
@@ -315,5 +333,7 @@ class EndorsementCreateSchema(Schema):
 
 
 class EndorsementVerifySchema(Schema):
+    """Input schema for verifying endorsements via email."""
+
     email: str
     campaign_id: int

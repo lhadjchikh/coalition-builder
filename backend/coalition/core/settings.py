@@ -110,7 +110,7 @@ INSTALLED_APPS = [
     "django_ratelimit",
     "lockdown",
     "storages",
-    "coalition.core.apps.CoreConfig",
+    "coalition.content.apps.ContentConfig",
     "coalition.campaigns.apps.CampaignsConfig",
     "coalition.legislators.apps.LegislatorsConfig",
     "coalition.regions.apps.RegionsConfig",

@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING
 
 from django.http import HttpResponse
 
-from .models import Theme
+from coalition.content.models import Theme
 
 if TYPE_CHECKING:
-    from .models import HomePage
+    from coalition.content.models import HomePage
 
 
 class ThemeService:

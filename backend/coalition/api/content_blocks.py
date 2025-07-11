@@ -2,7 +2,7 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import Router
 
-from coalition.core.models import ContentBlock
+from coalition.content.models import ContentBlock
 
 from .schemas import ContentBlockOut
 
