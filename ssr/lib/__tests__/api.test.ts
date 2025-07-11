@@ -30,16 +30,16 @@ describe("ApiClient", () => {
       },
     ];
 
-    it("should return the first campaign when multiple campaigns match", async () => {
+    it("should return campaign data when campaign is found", async () => {
       (fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => mockCampaigns,
+        json: async (): Promise<Campaign> => mockCampaigns[0],
       });
 
       const result = await apiClient.getCampaignByName("test-campaign");
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:8000/api/campaigns/?name=test-campaign",
+        "http://localhost:8000/api/campaigns/by-name/test-campaign/",
         expect.objectContaining({
           headers: { "Content-Type": "application/json" },
         }),
@@ -50,26 +50,26 @@ describe("ApiClient", () => {
     it("should handle URL encoding for campaign names with special characters", async () => {
       (fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => [mockCampaigns[0]],
+        json: async (): Promise<Campaign[]> => [mockCampaigns[0]],
       });
 
       await apiClient.getCampaignByName("test campaign with spaces");
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:8000/api/campaigns/?name=test%20campaign%20with%20spaces",
+        "http://localhost:8000/api/campaigns/by-name/test%20campaign%20with%20spaces/",
         expect.any(Object),
       );
     });
 
-    it("should throw error when no campaigns are found", async () => {
+    it("should handle 404 errors when campaign is not found", async () => {
       (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: async () => [],
+        ok: false,
+        status: 404,
       });
 
       await expect(
         apiClient.getCampaignByName("non-existent-campaign"),
-      ).rejects.toThrow("No campaign found with name: non-existent-campaign");
+      ).rejects.toThrow("HTTP error! status: 404");
     });
 
     it("should handle HTTP errors from the API", async () => {
@@ -95,11 +95,10 @@ describe("ApiClient", () => {
       });
     });
 
-    it("should return single campaign when array has one item", async () => {
-      const singleCampaign = [mockCampaigns[0]];
+    it("should return campaign data directly from API", async () => {
       (fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => singleCampaign,
+        json: async (): Promise<Campaign> => mockCampaigns[0],
       });
 
       const result = await apiClient.getCampaignByName("test-campaign");
@@ -109,16 +108,16 @@ describe("ApiClient", () => {
 
     it("should handle empty campaign name", async () => {
       (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: async () => [],
+        ok: false,
+        status: 404,
       });
 
       await expect(apiClient.getCampaignByName("")).rejects.toThrow(
-        "No campaign found with name: ",
+        "HTTP error! status: 404",
       );
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:8000/api/campaigns/?name=",
+        "http://localhost:8000/api/campaigns/by-name//",
         expect.any(Object),
       );
     });
