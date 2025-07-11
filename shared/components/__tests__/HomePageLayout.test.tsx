@@ -2,12 +2,12 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import HomePageLayout from "../HomePageLayout";
-import { HomePage, Campaign } from "../utils/homepage-data";
-import { NavItemData } from "../types";
+import type { HomePage, Campaign } from "@frontend/types";
+import type { NavItemData } from "@shared/types";
 
 // Mock process.env
 const mockEnv = {
-  NODE_ENV: "test",
+  NODE_ENV: "test" as const,
 };
 
 const originalEnv = process.env;
@@ -358,7 +358,7 @@ describe("HomePageLayout", () => {
 
   describe("error handling", () => {
     it("should display homepage error in development", () => {
-      process.env.NODE_ENV = "development";
+      process.env = { ...originalEnv, NODE_ENV: "development" };
       render(
         <HomePageLayout
           {...defaultProps}
@@ -371,7 +371,7 @@ describe("HomePageLayout", () => {
     });
 
     it("should not display homepage error in production", () => {
-      process.env.NODE_ENV = "production";
+      process.env = { ...originalEnv, NODE_ENV: "production" };
       render(
         <HomePageLayout
           {...defaultProps}
@@ -397,7 +397,7 @@ describe("HomePageLayout", () => {
     });
 
     it("should display detailed campaigns error in development", () => {
-      process.env.NODE_ENV = "development";
+      process.env = { ...originalEnv, NODE_ENV: "development" };
       render(
         <HomePageLayout
           {...defaultProps}
@@ -410,7 +410,7 @@ describe("HomePageLayout", () => {
     });
 
     it("should not display detailed campaigns error in production", () => {
-      process.env.NODE_ENV = "production";
+      process.env = { ...originalEnv, NODE_ENV: "production" };
       render(
         <HomePageLayout
           {...defaultProps}
