@@ -19,7 +19,7 @@ def create_test_data() -> int:
     try:
         # Import models after Django is initialized
         from coalition.campaigns.models import PolicyCampaign
-        from coalition.core.models import ContentBlock, HomePage
+        from coalition.content.models import ContentBlock, HomePage
         from coalition.endorsements.models import Endorsement
         from coalition.legislators.models import Legislator
         from coalition.stakeholders.models import Stakeholder
