@@ -21,12 +21,12 @@ ln -sf ../shared ./shared
 
 # Verify symlinks were created
 if [ -L "frontend" ] && [ -L "shared" ]; then
-    echo "✅ Symlinks created successfully:"
-    ls -la frontend shared
-    echo ""
-    echo "Local development environment is ready!"
-    echo "You can now run Jest tests and Next.js development server."
+  echo "✅ Symlinks created successfully:"
+  ls -la frontend shared
+  echo ""
+  echo "Local development environment is ready!"
+  echo "You can now run Jest tests and Next.js development server."
 else
-    echo "❌ Failed to create symlinks"
-    exit 1
+  echo "❌ Failed to create symlinks"
+  exit 1
 fi
