@@ -30,10 +30,10 @@ describe("ApiClient", () => {
       },
     ];
 
-    it("should return the first campaign when multiple campaigns match", async () => {
+    it("should return campaign data when campaign is found", async () => {
       (fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async (): Promise<Campaign[]> => mockCampaigns,
+        json: async (): Promise<Campaign> => mockCampaigns[0],
       });
 
       const result = await apiClient.getCampaignByName("test-campaign");
