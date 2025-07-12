@@ -120,8 +120,14 @@ class HomePage(models.Model):
         default=True,
         help_text="Whether this homepage configuration is active",
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When this homepage configuration was created",
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text="When this homepage configuration was last updated",
+    )
 
     class Meta:
         db_table = "homepage"
