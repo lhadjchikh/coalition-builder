@@ -138,6 +138,10 @@ LOGGING = {
             "stream": "ext://sys.stdout",
         },
     },
+    "root": {
+        "handlers": ["console"],
+        "level": "WARNING",
+    },
     "loggers": {
         "django.request": {
             "handlers": ["console"],
