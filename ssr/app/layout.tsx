@@ -1,6 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import StyledComponentsRegistry from "../lib/registry";
+import SSRNavbar from "../lib/components/SSRNavbar";
+import SSRFooter from "../lib/components/SSRFooter";
+import { ssrApiClient } from "../lib/frontend-api-adapter";
+import { NavItemData, DEFAULT_NAV_ITEMS } from "@shared/types";
+import { getFallbackHomepage } from "@shared/utils/homepage-data";
 
 const org = process.env.ORGANIZATION_NAME || "Coalition Builder";
 
@@ -18,11 +23,27 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Fetch homepage data for navbar
+  let organizationName = "";
+  let navItems: NavItemData[] = DEFAULT_NAV_ITEMS;
+
+  try {
+    const homepage = await ssrApiClient.getHomepage();
+    organizationName = homepage.organization_name;
+    if (homepage.nav_items && homepage.nav_items.length > 0) {
+      navItems = homepage.nav_items;
+    }
+  } catch (error) {
+    console.error("Error fetching homepage for layout:", error);
+    const fallbackHomepage = getFallbackHomepage();
+    organizationName = fallbackHomepage.organization_name;
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -31,8 +52,21 @@ export default function RootLayout({
       </head>
       <body>
         <StyledComponentsRegistry>
-          <div data-ssr="true" id="app-root">
-            {children}
+          <div
+            data-ssr="true"
+            id="app-root"
+            style={{
+              minHeight: "100vh",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <SSRNavbar
+              organizationName={organizationName}
+              navItems={navItems}
+            />
+            <main style={{ flex: 1 }}>{children}</main>
+            <SSRFooter organizationName={organizationName} />
           </div>
         </StyledComponentsRegistry>
       </body>
