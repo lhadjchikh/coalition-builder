@@ -37,6 +37,7 @@ const customJestConfig = {
     "<rootDir>/node_modules/",
     "<rootDir>/frontend/", // Ignore copied frontend tests - they're tested in frontend workflow
     "<rootDir>/shared/", // Ignore copied shared tests - they're tested in other workflows
+    "<rootDir>/__tests__/integration/", // Integration tests use separate config
   ],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
   collectCoverageFrom: [
