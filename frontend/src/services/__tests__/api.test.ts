@@ -37,6 +37,8 @@ describe('API Service', () => {
     jest.clearAllMocks();
     // Start with clean environment for each test
     jest.replaceProperty(process, 'env', createCleanEnv());
+    // Reset window to undefined for most tests (simulating SSR context)
+    delete (global as any).window;
   });
 
   afterAll(() => {
@@ -45,18 +47,7 @@ describe('API Service', () => {
   });
 
   describe('getBaseUrl', () => {
-    it('should return NEXT_PUBLIC_API_URL when set', () => {
-      jest.replaceProperty(
-        process,
-        'env',
-        createCleanEnv({
-          NEXT_PUBLIC_API_URL: 'https://next-api.example.com',
-        })
-      );
-      expect(API.getBaseUrl()).toBe('https://next-api.example.com');
-    });
-
-    it('should return REACT_APP_API_URL when NEXT_PUBLIC_API_URL is not set', () => {
+    it('should return REACT_APP_API_URL when set', () => {
       jest.replaceProperty(
         process,
         'env',
@@ -78,8 +69,9 @@ describe('API Service', () => {
       expect(API.getBaseUrl()).toBe('http://localhost:8000');
     });
 
-    it('should return empty string for local development', () => {
-      // Clean environment is already set in beforeEach
+    it('should return empty string for production and development (relative paths)', () => {
+      // Default behavior: no environment variables set
+      // Should return empty string for relative paths
       expect(API.getBaseUrl()).toBe('');
     });
   });
@@ -126,12 +118,12 @@ describe('API Service', () => {
       });
     });
 
-    it('should use correct URL with base URL', async () => {
+    it('should use correct URL with explicit API URL', async () => {
       jest.replaceProperty(
         process,
         'env',
         createCleanEnv({
-          NEXT_PUBLIC_API_URL: 'https://api.example.com',
+          REACT_APP_API_URL: 'https://api.example.com',
         })
       );
 
@@ -309,6 +301,19 @@ describe('API Service', () => {
 
         await expect(API.getCampaignEndorsements(1)).rejects.toThrow('HTTP error! status: 404');
       });
+    });
+
+    it('should use relative URL for production (default behavior)', async () => {
+      // Default behavior: no environment variables set
+      // Should use relative paths in production
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockEndorsements,
+      });
+
+      await API.getCampaignEndorsements(1);
+      expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/?campaign_id=1');
     });
   });
 

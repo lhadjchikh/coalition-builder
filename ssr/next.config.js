@@ -53,16 +53,20 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
 
-  // Environment variables
+  // Environment variables - only pass through if explicitly set
   env: {
-    NEXT_PUBLIC_API_URL:
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
+    // Only include NEXT_PUBLIC_API_URL if explicitly set (for CI/testing)
+    // Production uses relative paths handled by rewrites
+    ...(process.env.NEXT_PUBLIC_API_URL && {
+      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    }),
   },
   serverRuntimeConfig: {
     API_URL: process.env.API_URL || "http://localhost:8000",
   },
 
-  // Rewrites for API calls (optional - for development)
+  // Rewrites for API calls - routes relative paths to backend
+  // This handles both SSR server-side calls and client-side relative paths
   async rewrites() {
     return [
       {
