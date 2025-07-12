@@ -19,12 +19,14 @@ jest.mock("../../../../lib/api", () => ({
 
 jest.mock("../CampaignDetailWrapper", () => {
   return function MockCampaignDetailWrapper({
-    campaignId,
+    campaign,
   }: {
-    campaignId: number;
+    campaign: { id: number; title: string };
   }) {
     return (
-      <div data-testid="campaign-detail-wrapper">Campaign ID: {campaignId}</div>
+      <div data-testid="campaign-detail-wrapper">
+        Campaign ID: {campaign.id}
+      </div>
     );
   };
 });

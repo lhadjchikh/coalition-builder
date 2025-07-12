@@ -52,6 +52,11 @@ allowed_hosts_set = set(allowed_hosts_list)
 if "test" in sys.argv or "testserver" not in allowed_hosts_set:
     allowed_hosts_set.add("testserver")
 
+# Add 'api' hostname for Docker Compose internal communication
+# This allows the SSR container to communicate with the API container locally
+if os.getenv("ENVIRONMENT", "local") in ("local", "docker", "development"):
+    allowed_hosts_set.add("api")
+
 # For Elastic Container Service (ECS) deployments, get the internal IP
 # address from the EC2 instance's metadata and add it to ALLOWED_HOSTS.
 # This prevents health checks from failing due to disallowed host.
@@ -121,6 +126,45 @@ INSTALLED_APPS = [
 # Configure database table names to maintain backward compatibility
 DATABASE_ROUTERS = []
 DEFAULT_APP_CONFIG = None
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+            "stream": "ext://sys.stdout",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "WARNING",
+    },
+    "loggers": {
+        "django.request": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django.security": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "coalition": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
 
 MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",

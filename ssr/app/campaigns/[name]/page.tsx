@@ -14,8 +14,8 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     // Efficiently fetch the specific campaign by name
     const campaign = await apiClient.getCampaignByName(resolvedParams.name);
 
-    // Return the CampaignDetail component with the campaign ID
-    return <CampaignDetailWrapper campaignId={campaign.id} />;
+    // Return the CampaignDetail component with the full campaign data
+    return <CampaignDetailWrapper campaign={campaign} />;
   } catch (error) {
     console.error("Error fetching campaign:", error);
     notFound();

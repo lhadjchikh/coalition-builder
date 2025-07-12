@@ -8,15 +8,25 @@ import './Endorsements.css';
 interface CampaignDetailProps {
   campaignId?: number;
   campaignName?: string;
+  initialCampaign?: Campaign;
 }
 
-const CampaignDetail: React.FC<CampaignDetailProps> = ({ campaignId, campaignName }) => {
-  const [campaign, setCampaign] = useState<Campaign | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+const CampaignDetail: React.FC<CampaignDetailProps> = ({
+  campaignId,
+  campaignName,
+  initialCampaign,
+}) => {
+  const [campaign, setCampaign] = useState<Campaign | null>(initialCampaign || null);
+  const [loading, setLoading] = useState<boolean>(!initialCampaign);
   const [error, setError] = useState<string | null>(null);
   const [refreshEndorsements, setRefreshEndorsements] = useState<number>(0);
 
   useEffect(() => {
+    // Skip fetching if we already have initial campaign data
+    if (initialCampaign) {
+      return;
+    }
+
     const fetchCampaign = async (): Promise<void> => {
       try {
         setLoading(true);
@@ -46,7 +56,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({ campaignId, campaignNam
       setLoading(false);
       setError('Either campaignId or campaignName must be provided');
     }
-  }, [campaignId, campaignName]);
+  }, [campaignId, campaignName, initialCampaign]);
 
   const handleEndorsementSubmitted = () => {
     // Trigger a refresh of the endorsements list

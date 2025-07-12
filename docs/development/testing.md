@@ -151,7 +151,7 @@ npm run test:e2e
 
 ### Setup
 
-The SSR application uses Jest for unit testing and custom scripts for integration testing.
+The SSR application uses Jest for both unit testing and integration testing.
 
 ```bash
 cd ssr
@@ -176,9 +176,12 @@ npm run test:integration
 
 **Integration Tests:**
 
-- Backend API communication
-- SSR + SPA compatibility
-- Health check endpoints
+- Backend API communication and health checks
+- SSR rendering with real and fallback data
+- Campaign page routing and rendering
+- Full stack SSR + API integration within Docker Compose environment
+
+Integration tests run using Jest and assume the backend API and SSR services are available (typically started via Docker Compose in the CI/CD workflow).
 
 ## Terraform Testing (Go)
 
