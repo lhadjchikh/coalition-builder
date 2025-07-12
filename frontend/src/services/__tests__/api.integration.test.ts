@@ -9,11 +9,19 @@ import { withSuppressedErrors } from '../../tests/utils/testUtils';
 
 // Mock fetch globally
 const mockFetch = jest.fn();
-global.fetch = mockFetch;
+const originalFetch = global.fetch;
 
 describe('API Client Production Integration', () => {
   const originalEnv = process.env;
   const originalWindow = global.window;
+
+  beforeAll(() => {
+    global.fetch = mockFetch;
+  });
+
+  afterAll(() => {
+    global.fetch = originalFetch;
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
