@@ -52,10 +52,12 @@ allowed_hosts_set = set(allowed_hosts_list)
 if "test" in sys.argv or "testserver" not in allowed_hosts_set:
     allowed_hosts_set.add("testserver")
 
-# Add 'api' hostname for Docker Compose internal communication
-# This allows the SSR container to communicate with the API container locally
+# Add internal service hostnames for Docker/ECS communication
+# These are used by containers to communicate with each other
 if os.getenv("ENVIRONMENT", "local") in ("local", "docker", "development"):
-    allowed_hosts_set.add("api")
+    internal_hosts = ["api", "nginx", "ssr"]
+    for host in internal_hosts:
+        allowed_hosts_set.add(host)
 
 # For Elastic Container Service (ECS) deployments, get the internal IP
 # address from the EC2 instance's metadata and add it to ALLOWED_HOSTS.
