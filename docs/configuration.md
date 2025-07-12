@@ -23,6 +23,7 @@ DATABASE_URL=postgresql://user:password@host:port/database
 SECRET_KEY=your-secure-secret-key
 DEBUG=False
 ALLOWED_HOSTS=localhost,yourdomain.com
+CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 ```
 
 ### Email
