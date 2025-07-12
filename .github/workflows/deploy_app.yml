@@ -5,7 +5,6 @@ on:
   workflow_run:
     workflows:
       - "Check App"
-      - "Terraform Infrastructure CI/CD"
     types:
       - completed
     branches: [main]
