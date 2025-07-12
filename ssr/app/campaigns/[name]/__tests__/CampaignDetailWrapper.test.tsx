@@ -4,10 +4,17 @@ import CampaignDetailWrapper from "../CampaignDetailWrapper";
 
 // Mock the CampaignDetail component
 jest.mock("@frontend/components/CampaignDetail", () => {
-  return function MockCampaignDetail({ campaignId }: { campaignId?: number }) {
+  return function MockCampaignDetail({
+    campaignId,
+    initialCampaign,
+  }: {
+    campaignId?: number;
+    initialCampaign?: any;
+  }) {
     return (
       <div data-testid="mock-campaign-detail">
-        Campaign Detail Component - ID: {campaignId}
+        Campaign Detail Component - ID: {campaignId} - Initial:{" "}
+        {initialCampaign ? initialCampaign.title : "None"}
       </div>
     );
   };
@@ -18,27 +25,42 @@ jest.mock("@frontend/components/Endorsements.css", () => ({}));
 jest.mock("@frontend/App.css", () => ({}));
 
 describe("CampaignDetailWrapper", () => {
-  it("should render CampaignDetail with correct campaignId", () => {
-    const { getByTestId } = render(<CampaignDetailWrapper campaignId={123} />);
+  const mockCampaign = {
+    id: 123,
+    name: "test-campaign",
+    title: "Test Campaign",
+    summary: "A test campaign",
+    active: true,
+    created_at: "2023-01-01T00:00:00Z",
+  };
+
+  it("should render CampaignDetail with correct campaign data", () => {
+    const { getByTestId } = render(
+      <CampaignDetailWrapper campaign={mockCampaign} />,
+    );
 
     const campaignDetail = getByTestId("mock-campaign-detail");
     expect(campaignDetail).toBeInTheDocument();
     expect(campaignDetail).toHaveTextContent(
-      "Campaign Detail Component - ID: 123",
+      "Campaign Detail Component - ID: 123 - Initial: Test Campaign",
     );
   });
 
-  it("should pass through different campaign IDs correctly", () => {
-    const testCases = [1, 42, 999, 0];
+  it("should pass through different campaigns correctly", () => {
+    const testCampaigns = [
+      { ...mockCampaign, id: 1, title: "Campaign 1" },
+      { ...mockCampaign, id: 42, title: "Campaign 42" },
+      { ...mockCampaign, id: 999, title: "Campaign 999" },
+    ];
 
-    testCases.forEach((id) => {
+    testCampaigns.forEach((campaign) => {
       const { getByTestId, unmount } = render(
-        <CampaignDetailWrapper campaignId={id} />,
+        <CampaignDetailWrapper campaign={campaign} />,
       );
 
       const campaignDetail = getByTestId("mock-campaign-detail");
       expect(campaignDetail).toHaveTextContent(
-        `Campaign Detail Component - ID: ${id}`,
+        `Campaign Detail Component - ID: ${campaign.id} - Initial: ${campaign.title}`,
       );
 
       // Clean up between test cases to avoid multiple elements
