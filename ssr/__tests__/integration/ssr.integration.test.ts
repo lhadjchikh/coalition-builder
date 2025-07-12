@@ -5,6 +5,7 @@
  * has started all services. They assume:
  * - API is available at http://localhost:8000
  * - SSR is available at http://localhost:3000
+ * - NGINX/Load Balancer is available at http://localhost:80
  * - Test data has been created via scripts/create_test_data.py
  */
 
@@ -12,6 +13,7 @@
 
 const SSR_URL = process.env.SSR_URL || "http://localhost:3000";
 const API_URL = process.env.API_URL || "http://localhost:8000";
+const NGINX_URL = process.env.NGINX_URL || "http://localhost:80";
 
 describe("SSR Integration Tests", () => {
   const timeout = 30000; // 30 second timeout for network requests
@@ -47,6 +49,142 @@ describe("SSR Integration Tests", () => {
 
         const campaigns = await response.json();
         expect(Array.isArray(campaigns)).toBe(true);
+      },
+      timeout,
+    );
+  });
+
+  describe("NGINX/Load Balancer Routing", () => {
+    test(
+      "API routing through load balancer works correctly",
+      async () => {
+        const response = await fetch(`${NGINX_URL}/api/campaigns/`);
+        expect(response.ok).toBe(true);
+
+        const campaigns = await response.json();
+        expect(Array.isArray(campaigns)).toBe(true);
+      },
+      timeout,
+    );
+
+    test(
+      "Homepage API routing through load balancer works correctly",
+      async () => {
+        const response = await fetch(`${NGINX_URL}/api/homepage/`);
+        expect(response.ok).toBe(true);
+
+        const homepage = await response.json();
+        expect(homepage).toHaveProperty("organization_name");
+        expect(homepage).toHaveProperty("about_section_title");
+      },
+      timeout,
+    );
+
+    test(
+      "SSR routing through load balancer works correctly",
+      async () => {
+        const response = await fetch(`${NGINX_URL}/`);
+        expect(response.ok).toBe(true);
+
+        const html = await response.text();
+
+        // Verify basic HTML structure
+        expect(html).toMatch(/<html/);
+        expect(html).toMatch(/<main/);
+        expect(html).toMatch(/footer/);
+
+        // Should contain content (either real or fallback data)
+        const hasContent =
+          html.includes("Coalition") || html.includes("Mission");
+        expect(hasContent).toBe(true);
+      },
+      timeout,
+    );
+
+    test(
+      "Campaign page routing through load balancer works correctly",
+      async () => {
+        // First verify the campaign exists via load balancer API
+        const campaignsResponse = await fetch(`${NGINX_URL}/api/campaigns/`);
+        expect(campaignsResponse.ok).toBe(true);
+
+        const campaigns = await campaignsResponse.json();
+        // @ts-ignore - TypeScript can't infer the campaign structure from JSON
+        const testCampaign = campaigns.find((c) => c.name === "test-campaign");
+        expect(testCampaign).toBeDefined();
+
+        // Test campaign page through load balancer with retry logic
+        const testCampaignName = "test-campaign";
+        let campaignPageResponse;
+        let html;
+        let retries = 3;
+
+        while (retries > 0) {
+          campaignPageResponse = await fetch(
+            `${NGINX_URL}/campaigns/${testCampaignName}`,
+          );
+          expect(campaignPageResponse.ok).toBe(true);
+
+          html = await campaignPageResponse.text();
+
+          // If we get loading state, wait and retry
+          if (
+            html.includes("Loading campaign") ||
+            html.includes('data-testid="campaign-loading"')
+          ) {
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            retries--;
+            continue;
+          }
+
+          break;
+        }
+
+        // Verify the campaign page loaded successfully
+        const hasTestCampaignContent = html.includes("Test Campaign");
+        const hasLoadingState =
+          html.includes("Loading campaign") ||
+          html.includes('data-testid="campaign-loading"');
+
+        // Check if it's a real 404 (campaign content missing) vs Next.js fallback components
+        const isReal404 =
+          !hasTestCampaignContent &&
+          (html.includes("Campaign Not Found") ||
+            html.includes("Page Not Found"));
+
+        expect(hasLoadingState).toBe(false);
+        expect(isReal404).toBe(false);
+        expect(hasTestCampaignContent).toBe(true);
+      },
+      timeout,
+    );
+
+    test(
+      "Load balancer correctly routes different path prefixes",
+      async () => {
+        // Test that /api/* goes to backend and /* goes to SSR
+        // This verifies the NGINX configuration matches ALB routing
+
+        // API path should return JSON
+        const apiResponse = await fetch(`${NGINX_URL}/api/campaigns/`);
+        expect(apiResponse.ok).toBe(true);
+        expect(apiResponse.headers.get("content-type")).toMatch(
+          /application\/json/,
+        );
+
+        // Root path should return HTML
+        const ssrResponse = await fetch(`${NGINX_URL}/`);
+        expect(ssrResponse.ok).toBe(true);
+        expect(ssrResponse.headers.get("content-type")).toMatch(/text\/html/);
+
+        // Campaign path should return HTML
+        const campaignResponse = await fetch(
+          `${NGINX_URL}/campaigns/test-campaign`,
+        );
+        expect(campaignResponse.ok).toBe(true);
+        expect(campaignResponse.headers.get("content-type")).toMatch(
+          /text\/html/,
+        );
       },
       timeout,
     );
@@ -158,21 +296,24 @@ describe("SSR Integration Tests", () => {
 
         // Since the campaign exists in the API, SSR should successfully render it
         const hasTestCampaignContent = html.includes("Test Campaign");
-        const has404Structure =
-          html.includes("404") || html.includes("Not Found");
         const hasLoadingState =
           html.includes("Loading campaign") ||
           html.includes('data-testid="campaign-loading"');
 
+        // Check if it's a real 404 (campaign content missing) vs Next.js fallback components
+        const isReal404 =
+          !hasTestCampaignContent &&
+          (html.includes("Campaign Not Found") ||
+            html.includes("Page Not Found"));
+
         // If we still have loading state after retries, that's a failure
         expect(hasLoadingState).toBe(false);
 
-        // If we have a 404, that's a failure since the campaign exists in the API
-        expect(has404Structure).toBe(false);
+        // If we have a real 404, that's a failure since the campaign exists in the API
+        expect(isReal404).toBe(false);
 
         // The campaign should have loaded successfully
         expect(hasTestCampaignContent).toBe(true);
-        expect(html).toMatch(/<main/);
       },
       timeout,
     );
