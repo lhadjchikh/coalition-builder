@@ -181,12 +181,11 @@ _Figure 1: Workflow dependency tree showing how push/PR events trigger orchestra
 #### Application Deployment (`deploy_app.yml`)
 
 - **Triggered by**: "Check App" workflow completion, "Terraform Infrastructure CI/CD" workflow completion, or manual dispatch
-- Intelligent deployment orchestration with deduplication logic
-- Deploys the application to Amazon ECS
+- Deploys the application to Amazon ECS when tests pass
 - Can be manually triggered with an option to skip tests
 - Builds and pushes Docker images to ECR with unique tags (SHA + run number)
 - Updates ECS services with new task definitions
-- **Smart Deduplication**: Prevents multiple deployments using commit SHA analysis and timing
+- Skips deployment when only documentation files are changed
 
 #### Infrastructure Deployment (`deploy_infra.yml`)
 
@@ -207,28 +206,22 @@ _Figure 1: Workflow dependency tree showing how push/PR events trigger orchestra
 - Deploys to GitHub Pages automatically on main branch pushes
 - Combines backend API docs, frontend component docs, and user documentation into a unified site
 
-## Deployment Coordination and Deduplication
+## Deployment Coordination
 
-The deployment workflows include intelligent coordination to prevent multiple simultaneous deployments:
+The deployment workflows coordinate to ensure smooth production updates:
 
 ### Scenarios Handled:
 
-1. **Check App Completion**: When tests pass, application deployment proceeds normally
+1. **Check App Completion**: When tests pass on main branch, application deployment proceeds automatically
 2. **Infrastructure Deployment**: After infrastructure changes, application deployment is automatically triggered to ensure compatibility
-3. **Simultaneous Triggers**: If both Check App and Infrastructure workflows complete around the same time, smart deduplication logic prevents redundant deployments:
-   - **Same Commit**: If both workflows target the same commit SHA, Check App deployment is deferred to Infrastructure
-   - **Infrastructure Ahead**: If Infrastructure workflow contains newer changes that include the Check App changes, Check App deployment is deferred
-   - **Different Code**: If workflows target different commits/code versions, both deployments proceed independently
-   - Infrastructure deployment always triggers application deployment to ensure compatibility
+3. **Documentation-Only Changes**: Deployments are skipped when only documentation files are modified
 
 ### Benefits:
 
-- **Prevents resource conflicts**: No concurrent deployments competing for the same resources
-- **Ensures infrastructure compatibility**: App is always deployed after infrastructure changes
-- **Reduces deployment time**: Eliminates unnecessary duplicate deployments for the same code
-- **Preserves code integrity**: Different code versions are deployed independently
-- **Maintains deployment integrity**: Infrastructure and application stay in sync
-- **Git-aware deduplication**: Uses commit SHA and Git history for accurate duplicate detection
+- **Automated deployment**: Application deploys immediately when tests pass
+- **Infrastructure compatibility**: App deployment follows infrastructure updates
+- **Efficient resource usage**: Skips unnecessary deployments for documentation changes
+- **Reliable process**: Consistent deployment trigger based on test success
 
 ## Manual Triggers
 

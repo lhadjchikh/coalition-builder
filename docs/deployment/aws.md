@@ -264,13 +264,25 @@ The Terraform configuration creates:
 
 ## Continuous Deployment
 
-Every time you push to the main branch, the GitHub Actions workflow will:
+The deployment process is handled by two GitHub Actions workflows:
 
-1. Run the Terraform job to ensure infrastructure is up-to-date
-2. Run tests to validate your application
-3. Build a Docker image and push it to ECR
-4. Deploy the updated image to ECS
-5. Wait for the service to stabilize
+### Check App Workflow
+
+Runs on every push to main:
+
+1. Validates code quality and runs tests
+2. Ensures application builds successfully
+
+### Deploy App Workflow
+
+Automatically triggered when Check App completes successfully:
+
+1. Builds Docker images and pushes to ECR
+2. Updates ECS task definitions with new images
+3. Deploys the updated application to ECS
+4. Waits for service to stabilize
+
+The deployment workflow skips deployment if only documentation files were changed, ensuring efficient resource usage.
 
 ## Customization
 

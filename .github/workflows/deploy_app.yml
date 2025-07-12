@@ -66,61 +66,8 @@ jobs:
                 triggerType = 'failed_workflow';
               } else if (triggerWorkflow === 'Check App') {
                 triggerType = 'check_app';
-                
-                const currentCommitSha = '${{ github.event.workflow_run.head_sha }}';
-                console.log(`Current Check App commit: ${currentCommitSha}`);
-                
-                // Check for recent infrastructure deployments
-                const infrastructureRuns = await github.rest.actions.listWorkflowRunsForRepo({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  workflow_id: 'deploy_infra.yml',
-                  branch: 'main',
-                  per_page: 10 // Check more runs to find matching commits
-                });
-                
-                const recentInfraRun = infrastructureRuns.data.workflow_runs.find(run => 
-                  run.status === 'completed' && 
-                  run.conclusion === 'success' &&
-                  new Date(run.updated_at) > new Date(Date.now() - 30 * 60 * 1000) // Within last 30 minutes
-                );
-                
-                if (recentInfraRun) {
-                  console.log(`Found recent infrastructure run: ${recentInfraRun.head_sha} at ${recentInfraRun.updated_at}`);
-                  
-                  // Check if the infrastructure deployment is for the same commit or contains our changes
-                  if (recentInfraRun.head_sha === currentCommitSha) {
-                    console.log('🔄 Same commit deployed infrastructure - will be handled by infra trigger');
-                    shouldDeploy = false;
-                    triggerType = 'deferred_to_infra_same_commit';
-                  } else {
-                    // Check if the infrastructure run's commit is ahead of or contains our changes
-                    try {
-                      const compareResult = await github.rest.repos.compareCommits({
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        base: currentCommitSha,
-                        head: recentInfraRun.head_sha
-                      });
-                      
-                      if (compareResult.data.status === 'ahead') {
-                        console.log('🏗️ Infrastructure deployment is ahead - contains our changes, will be handled by infra trigger');
-                        shouldDeploy = false;
-                        triggerType = 'deferred_to_infra_ahead';
-                      } else {
-                        console.log('✅ Infrastructure deployment is for different/older code - proceeding with Test App deployment');
-                        shouldDeploy = true;
-                      }
-                    } catch (error) {
-                      console.log(`Could not compare commits: ${error.message}`);
-                      console.log('✅ Proceeding with Test App deployment to be safe');
-                      shouldDeploy = true;
-                    }
-                  }
-                } else {
-                  console.log('✅ No recent infrastructure deployment - proceeding with Test App deployment');
-                  shouldDeploy = true;
-                }
+                console.log('✅ Check App workflow completed - proceeding with app deployment');
+                shouldDeploy = true;
               } else if (triggerWorkflow === 'Terraform Infrastructure CI/CD') {
                 triggerType = 'infrastructure';
                 console.log('🏗️ Infrastructure deployment completed - proceeding with app deployment');
