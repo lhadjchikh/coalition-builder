@@ -2,22 +2,19 @@ import { Campaign, Endorser, Legislator, Endorsement, EndorsementCreate, HomePag
 
 // Determine the API base URL
 const getBaseUrl = (): string => {
-  // Check for Next.js/SSR environment variable first
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL;
-  }
-
-  // In CI/E2E tests with Docker, use the service name from docker-compose
+  // For CI/E2E tests with explicit URLs (e.g., docker-compose services)
   if (process.env.REACT_APP_API_URL) {
     return process.env.REACT_APP_API_URL;
   }
 
-  // If running in the context of CI/CD but no explicit API URL
+  // CI environment with localhost
   if (process.env.CI === 'true') {
     return 'http://localhost:8000';
   }
 
-  // Default for local development
+  // Production and development: use relative paths
+  // Nginx/load balancer handles routing /api/* requests to backend
+  // This works in both local development and ECS production environments
   return '';
 };
 
