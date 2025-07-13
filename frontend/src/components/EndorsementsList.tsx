@@ -6,9 +6,14 @@ import './Endorsements.css';
 interface EndorsementsListProps {
   campaignId?: number;
   refreshTrigger?: number; // Used to refresh the list when new endorsements are added
+  onCountUpdate?: (count: number, recentCount?: number) => void; // Callback to update endorsement count
 }
 
-const EndorsementsList: React.FC<EndorsementsListProps> = ({ campaignId, refreshTrigger }) => {
+const EndorsementsList: React.FC<EndorsementsListProps> = ({
+  campaignId,
+  refreshTrigger,
+  onCountUpdate,
+}) => {
   const [endorsements, setEndorsements] = useState<Endorsement[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +32,17 @@ const EndorsementsList: React.FC<EndorsementsListProps> = ({ campaignId, refresh
         }
 
         setEndorsements(data);
+        // Calculate recent endorsements (last 7 days)
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        const recentCount = data.filter(
+          endorsement => new Date(endorsement.created_at) > oneWeekAgo
+        ).length;
+
+        // Update parent component with endorsement count and recent count
+        if (onCountUpdate) {
+          onCountUpdate(data.length, recentCount);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch endorsements');
       } finally {
@@ -79,6 +95,7 @@ const EndorsementsList: React.FC<EndorsementsListProps> = ({ campaignId, refresh
                   <span className="role">{endorsement.stakeholder.role}, </span>
                 )}
                 <span className="organization">{endorsement.stakeholder.organization}</span>
+                <br />
                 <span className="location">
                   {endorsement.stakeholder.county && <>{endorsement.stakeholder.county}, </>}
                   {endorsement.stakeholder.state}

@@ -2,16 +2,45 @@
 .endorsement-form {
   max-width: 600px;
   margin: 2rem 0;
-  padding: 2rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background-color: #f9f9f9;
+  padding: 2.5rem;
+  border: 3px solid #2196f3;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ffffff, #f8fbff);
+  box-shadow: 0 8px 32px rgba(33, 150, 243, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.endorsement-form::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #4caf50, #2196f3, #9c27b0);
 }
 
 .endorsement-form h3 {
   margin-top: 0;
-  color: #333;
-  font-size: 1.5rem;
+  color: #1976d2;
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.endorsement-form h3::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #4caf50, #2196f3);
+  border-radius: 2px;
 }
 
 .endorsement-statement {
@@ -85,24 +114,53 @@
 }
 
 .submit-button {
-  background-color: #2196f3;
+  background: linear-gradient(135deg, #4caf50, #45a049);
   color: white;
-  padding: 0.75rem 2rem;
+  padding: 1rem 2.5rem;
   border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 600;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.submit-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.submit-button:hover::before {
+  left: 100%;
 }
 
 .submit-button:hover:not(:disabled) {
-  background-color: #1976d2;
+  background: linear-gradient(135deg, #45a049, #3d8b40);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.submit-button:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .submit-button:disabled {
-  background-color: #ccc;
+  background: linear-gradient(135deg, #ccc, #bbb);
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .success-message {
@@ -258,6 +316,248 @@
   font-size: 1.25rem;
   color: #666;
   line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+/* Header CTA Button */
+.header-cta {
+  margin-top: 2rem;
+}
+
+.header-endorse-button {
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+  padding: 1rem 2.5rem;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.header-endorse-button:hover {
+  background: linear-gradient(135deg, #45a049, #3d8b40);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.header-endorse-button:active {
+  transform: translateY(0);
+}
+
+/* Social Proof Styles */
+.social-proof {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
+  border-radius: 12px;
+  border: 2px solid #4caf50;
+  text-align: center;
+}
+
+.endorsement-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.endorsement-count {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #2e7d32;
+  text-shadow: 2px 2px 4px rgba(46, 125, 50, 0.1);
+}
+
+.endorsement-label {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #388e3c;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.social-proof-text {
+  font-size: 1.1rem;
+  color: #2e7d32;
+  font-weight: 500;
+  margin: 0;
+}
+
+.first-endorser-text {
+  margin-top: 1rem;
+  font-size: 1rem;
+  color: #666;
+  font-style: italic;
+}
+
+.early-supporter-text {
+  margin-top: 1rem;
+  font-size: 1rem;
+  color: #666;
+  font-style: italic;
+}
+
+/* Early Supporter Appeal */
+.early-supporter-appeal {
+  margin: 2rem 0;
+  padding: 2.5rem;
+  background: linear-gradient(135deg, #e8f5e8, #f1f8e9);
+  border: 2px solid #4caf50;
+  border-radius: 12px;
+}
+
+.early-supporter-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.early-supporter-icon {
+  font-size: 4rem;
+  color: #4caf50;
+  flex-shrink: 0;
+  line-height: 1;
+  text-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+}
+
+.early-supporter-text {
+  flex: 1;
+  text-align: left;
+}
+
+.early-supporter-text h3 {
+  margin: 0 0 0.75rem 0;
+  color: #2e7d32;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.early-supporter-text p {
+  margin: 0;
+  color: #388e3c;
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* First Endorser Appeal */
+.first-endorser-appeal {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: linear-gradient(135deg, #e3f2fd, #f1f8ff);
+  border: 2px solid #2196f3;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.first-endorser-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.first-endorser-icon {
+  font-size: 2.5rem;
+}
+
+.first-endorser-text h3 {
+  margin: 0 0 0.5rem 0;
+  color: #1976d2;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.first-endorser-text p {
+  margin: 0;
+  color: #1976d2;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+/* Momentum Indicator */
+.momentum-indicator {
+  margin-top: 1rem;
+}
+
+.momentum-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+  transition: all 0.2s ease;
+}
+
+.momentum-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+/* Sticky CTA */
+.sticky-endorsement-cta {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  animation: slideInUp 0.3s ease-out;
+}
+
+.sticky-cta-content {
+  background: linear-gradient(135deg, #2196f3, #1976d2);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 50px;
+  box-shadow: 0 8px 25px rgba(33, 150, 243, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  backdrop-filter: blur(10px);
+}
+
+.sticky-cta-text {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.sticky-cta-button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.sticky-cta-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .campaign-description {
@@ -280,13 +580,170 @@
   grid-template-columns: 2fr 1fr;
 }
 
+/* Mobile Responsive Design */
 @media (max-width: 768px) {
+  .campaign-detail {
+    padding: 1rem;
+  }
+
+  .campaign-header h1 {
+    font-size: 2rem;
+  }
+
+  .campaign-summary {
+    font-size: 1.1rem;
+  }
+
+  .header-endorse-button {
+    font-size: 1rem;
+    padding: 0.75rem 2rem;
+  }
+
+  .endorsement-stats {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .endorsement-count {
+    font-size: 2.5rem;
+  }
+
+  .endorsement-label {
+    font-size: 1rem;
+  }
+
+  .social-proof {
+    margin: 1.5rem 0;
+    padding: 1rem;
+  }
+
   .endorsements-container {
     grid-template-columns: 1fr;
+    gap: 2rem;
   }
 
   .endorsement-form-container {
     order: -1;
+  }
+
+  .endorsement-form {
+    padding: 1.5rem;
+  }
+
+  .endorsement-form h3 {
+    font-size: 1.5rem;
+  }
+
+  .submit-button {
+    font-size: 1rem;
+    padding: 0.75rem 2rem;
+  }
+
+  .sticky-endorsement-cta {
+    bottom: 10px;
+    right: 10px;
+    left: 10px;
+    right: 10px;
+  }
+
+  .sticky-cta-content {
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .sticky-cta-text {
+    font-size: 0.9rem;
+  }
+
+  .sticky-cta-button {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .endorsements-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .early-supporter-appeal,
+  .first-endorser-appeal {
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+  }
+
+  .early-supporter-content,
+  .first-endorser-content {
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .early-supporter-text,
+  .first-endorser-text {
+    text-align: center;
+  }
+
+  .early-supporter-icon,
+  .first-endorser-icon {
+    font-size: 3.5rem;
+  }
+
+  .early-supporter-text h3,
+  .first-endorser-text h3 {
+    font-size: 1.4rem;
+  }
+
+  .early-supporter-text p,
+  .first-endorser-text p {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .campaign-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .header-endorse-button {
+    font-size: 0.9rem;
+    padding: 0.6rem 1.5rem;
+  }
+
+  .endorsement-count {
+    font-size: 2rem;
+  }
+
+  .endorsement-form {
+    padding: 1rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .early-supporter-appeal,
+  .first-endorser-appeal {
+    margin: 1rem 0;
+    padding: 1rem;
+  }
+
+  .early-supporter-icon,
+  .first-endorser-icon {
+    font-size: 3rem;
+  }
+
+  .early-supporter-text h3,
+  .first-endorser-text h3 {
+    font-size: 1.2rem;
+  }
+
+  .early-supporter-text p,
+  .first-endorser-text p {
+    font-size: 1rem;
   }
 }
 

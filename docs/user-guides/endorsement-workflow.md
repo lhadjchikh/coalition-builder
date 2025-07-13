@@ -140,9 +140,9 @@ flowchart TD
 
 **Step 5: Public Display**
 
-- Approved endorsements appear on campaign pages
+- Approved endorsements appear on campaign pages with smart engagement features
 - Stakeholder information is displayed according to privacy settings
-- Endorsements help build campaign credibility
+- Endorsements help build campaign credibility and encourage further participation
 
 ### Email Verification Details
 
