@@ -77,13 +77,15 @@ class Migration(migrations.Migration):
                 (
                     "created_at",
                     models.DateTimeField(
-                        auto_now_add=True, help_text="When this document was created",
+                        auto_now_add=True,
+                        help_text="When this document was created",
                     ),
                 ),
                 (
                     "updated_at",
                     models.DateTimeField(
-                        auto_now=True, help_text="When this document was last updated",
+                        auto_now=True,
+                        help_text="When this document was last updated",
                     ),
                 ),
                 (
@@ -179,7 +181,8 @@ class Migration(migrations.Migration):
         migrations.AddIndex(
             model_name="legaldocument",
             index=models.Index(
-                fields=["effective_date"], name="legal_docum_effecti_708624_idx",
+                fields=["effective_date"],
+                name="legal_docum_effecti_708624_idx",
             ),
         ),
         migrations.AlterUniqueTogether(
@@ -189,7 +192,8 @@ class Migration(migrations.Migration):
         migrations.AddIndex(
             model_name="termsacceptance",
             index=models.Index(
-                fields=["accepted_at"], name="terms_accep_accepte_95a0d2_idx",
+                fields=["accepted_at"],
+                name="terms_accep_accepte_95a0d2_idx",
             ),
         ),
         migrations.AddIndex(

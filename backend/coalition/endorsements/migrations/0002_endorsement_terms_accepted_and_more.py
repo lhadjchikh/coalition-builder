@@ -14,14 +14,17 @@ class Migration(migrations.Migration):
             model_name="endorsement",
             name="terms_accepted",
             field=models.BooleanField(
-                default=False, help_text="Whether the terms of use were accepted",
+                default=False,
+                help_text="Whether the terms of use were accepted",
             ),
         ),
         migrations.AddField(
             model_name="endorsement",
             name="terms_accepted_at",
             field=models.DateTimeField(
-                blank=True, help_text="When the terms were accepted", null=True,
+                blank=True,
+                help_text="When the terms were accepted",
+                null=True,
             ),
         ),
     ]
