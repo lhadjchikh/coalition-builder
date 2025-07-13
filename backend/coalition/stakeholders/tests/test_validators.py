@@ -162,3 +162,17 @@ class TestAddressValidator(TestCase):
         # City and state only
         formatted = AddressValidator.format_address(city="Baltimore", state="MD")
         assert formatted == "Baltimore, MD"
+
+    def test_format_address_edge_cases(self) -> None:
+        """Test address formatting edge cases for better coverage."""
+        # City only
+        formatted = AddressValidator.format_address(city="Baltimore")
+        assert formatted == "Baltimore"
+
+        # State with ZIP only
+        formatted = AddressValidator.format_address(state="MD", zip_code="21201")
+        assert formatted == "MD 21201"
+
+        # State only
+        formatted = AddressValidator.format_address(state="MD")
+        assert formatted == "MD"
