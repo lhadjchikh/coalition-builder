@@ -8,6 +8,7 @@ Organizations use this platform to:
 
 - **Manage Advocacy Campaigns**: Create and track policy initiatives at federal and state levels
 - **Collect Verified Endorsements**: Streamline supporter engagement with built-in verification and moderation
+- **Ensure Legal Compliance**: GDPR-compliant cookie consent and comprehensive legal document management
 - **Customize Their Presence**: Dynamic content management and comprehensive theming system
 - **Target Geographically**: Leverage PostGIS integration for precise district-based organizing
 - **Track Campaign Impact**: Monitor endorsement metrics and stakeholder distribution
@@ -138,6 +139,7 @@ This architecture allows organizations to start simple (Django + React SPA) and 
 Comprehensive guides for managing your coalition platform:
 
 - **[Endorsement Workflow](user-guides/endorsement-workflow.md)** - Collect and manage campaign endorsements
+- **[Legal Compliance](user-guides/legal-compliance.md)** - Configure Terms of Use, Privacy Policy, and GDPR cookie consent
 - **[Content Management](user-guides/content-management.md)** - Complete guide to the Django admin interface
   - **[Campaign Management](user-guides/campaign-management.md)** - Create and manage policy advocacy campaigns
   - **[Stakeholder Management](user-guides/stakeholder-management.md)** - Organize and engage with supporters and partners
