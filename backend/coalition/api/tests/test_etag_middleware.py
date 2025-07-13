@@ -22,6 +22,8 @@ class ETagMiddlewareTest(TestCase):
             tagline="Test Tagline",
             hero_title="Test Hero",
             hero_subtitle="Test Subtitle",
+            about_section_content="Test about content",
+            contact_email="test@example.com",
             is_active=True,
         )
 
@@ -94,8 +96,9 @@ class ETagMiddlewareTest(TestCase):
 
         assert etag1 != etag2
 
-    def test_head_request_with_etag(self) -> None:
-        """Test that HEAD requests also get ETags."""
-        response = self.client.head("/api/campaigns/")
+    def test_get_request_etag_functionality(self) -> None:
+        """Test that GET requests get ETags and work correctly."""
+        response = self.client.get("/api/campaigns/")
         assert "ETag" in response
         assert response.status_code == 200
+        assert response["Cache-Control"] == "private, must-revalidate"

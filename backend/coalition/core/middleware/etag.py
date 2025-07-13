@@ -32,7 +32,7 @@ class ETagMiddleware:
             and not response.has_header("ETag")
         ):
             # Generate ETag from response content
-            etag = self._generate_etag(response)
+            etag = self._generate_etag(request, response)
             response["ETag"] = quote_etag(etag)
 
             # Set cache headers
@@ -48,7 +48,7 @@ class ETagMiddleware:
 
         return response
 
-    def _generate_etag(self, response: HttpResponse) -> str:
+    def _generate_etag(self, request: HttpRequest, response: HttpResponse) -> str:
         """Generate an ETag from response content."""
         if hasattr(response, "content"):
             # For regular HttpResponse/JsonResponse
@@ -57,12 +57,13 @@ class ETagMiddleware:
             # For streaming responses
             content = b"".join(response)
 
-        # Include content type in ETag to handle different representations
+        # Include content type and query params in ETag for different representations
         etag_data = {
             "content": (
                 content.decode("utf-8") if isinstance(content, bytes) else str(content)
             ),
             "content_type": response.get("Content-Type", ""),
+            "query_params": request.GET.urlencode() if request.GET else "",
         }
 
         # Generate hash
