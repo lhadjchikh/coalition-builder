@@ -178,6 +178,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "lockdown.middleware.LockdownMiddleware",
+    "coalition.core.middleware.etag.ETagMiddleware",
 ]
 
 ROOT_URLCONF = "coalition.core.urls"
