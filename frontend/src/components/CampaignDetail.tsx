@@ -12,6 +12,10 @@ interface CampaignDetailProps {
   initialCampaign?: Campaign;
 }
 
+// Configuration constants
+const SOCIAL_PROOF_THRESHOLD = 10;
+const MOMENTUM_DISPLAY_THRESHOLD = 25;
+
 // Style constants for inline styles
 const SECTION_LAYOUT_STYLE: React.CSSProperties = {
   display: 'flex',
@@ -165,7 +169,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         <p className="campaign-summary">{campaign.summary}</p>
 
         {/* Smart Social Proof Section */}
-        {campaign.allow_endorsements && endorsementCount >= 10 && (
+        {campaign.allow_endorsements && endorsementCount >= SOCIAL_PROOF_THRESHOLD && (
           <div className="social-proof">
             <div
               className="social-proof-content"
@@ -186,7 +190,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                 </p>
               </div>
             </div>
-            {recentEndorsements > 0 && endorsementCount >= 25 && (
+            {recentEndorsements > 0 && endorsementCount >= MOMENTUM_DISPLAY_THRESHOLD && (
               <div className="momentum-indicator">
                 <span className="momentum-badge">
                   ✨ {recentEndorsements} new{' '}
@@ -198,19 +202,21 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         )}
 
         {/* Early Supporter Appeal (1-9 endorsements) */}
-        {campaign.allow_endorsements && endorsementCount > 0 && endorsementCount < 10 && (
-          <div className="early-supporter-appeal">
-            <div className="early-supporter-content" style={SECTION_LAYOUT_STYLE}>
-              <div className="early-supporter-icon" style={ICON_CONTAINER_STYLE}>
-                <GrowthIcon stage="seedling" size="48px" color="#4caf50" />
-              </div>
-              <div className="early-supporter-text" style={TEXT_CONTENT_STYLE}>
-                <h3>Join the Early Supporters</h3>
-                <p>Be among the founding voices advocating for this important initiative.</p>
+        {campaign.allow_endorsements &&
+          endorsementCount > 0 &&
+          endorsementCount < SOCIAL_PROOF_THRESHOLD && (
+            <div className="early-supporter-appeal">
+              <div className="early-supporter-content" style={SECTION_LAYOUT_STYLE}>
+                <div className="early-supporter-icon" style={ICON_CONTAINER_STYLE}>
+                  <GrowthIcon stage="seedling" size="48px" color="#4caf50" />
+                </div>
+                <div className="early-supporter-text" style={TEXT_CONTENT_STYLE}>
+                  <h3>Join the Early Supporters</h3>
+                  <p>Be among the founding voices advocating for this important initiative.</p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* First Endorser Appeal (0 endorsements) */}
         {campaign.allow_endorsements && endorsementCount === 0 && (
@@ -233,14 +239,14 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             <button className="header-endorse-button" onClick={scrollToEndorsementForm}>
               {endorsementCount === 0
                 ? 'Be the First to Endorse'
-                : endorsementCount < 10
+                : endorsementCount < SOCIAL_PROOF_THRESHOLD
                   ? 'Join the Early Supporters'
                   : 'Add Your Endorsement'}
             </button>
             {endorsementCount === 0 && (
               <p className="first-endorser-text">Help launch this important initiative.</p>
             )}
-            {endorsementCount > 0 && endorsementCount < 10 && (
+            {endorsementCount > 0 && endorsementCount < SOCIAL_PROOF_THRESHOLD && (
               <p className="early-supporter-text">
                 Join this growing movement in its early stages.
               </p>
