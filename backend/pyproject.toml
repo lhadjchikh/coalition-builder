@@ -99,7 +99,8 @@ omit = [
     "**/tests/*",
     "**/tests.py",
     "**/test_*.py",
-    "**/*_tests.py"
+    "**/*_tests.py",
+    "**/management/commands/*"
 ]
 
 [build-system]

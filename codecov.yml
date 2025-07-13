@@ -48,3 +48,4 @@ ignore:
   - "**/test_*.py"
   - "**/*_tests.py"
   - "**/tests.py"
+  - "**/management/commands/*"
