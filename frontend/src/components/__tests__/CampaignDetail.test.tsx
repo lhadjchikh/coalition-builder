@@ -638,7 +638,7 @@ describe('CampaignDetail', () => {
 
       // Set up scroll conditions
       Object.defineProperty(window, 'scrollY', { value: 300 });
-      const endorsementSection = screen.getByRole('region', { name: 'Campaign Endorsements' });
+      const endorsementSection = screen.getByRole('region', { name: 'Endorsements' });
       const mockGetBoundingClientRect = jest.fn(
         (): DOMRect => ({
           top: window.innerHeight * 0.7,
@@ -744,7 +744,7 @@ describe('CampaignDetail', () => {
         })
       );
 
-      const endorsementSection = screen.getByRole('region', { name: 'Campaign Endorsements' });
+      const endorsementSection = screen.getByRole('region', { name: 'Endorsements' });
       jest
         .spyOn(endorsementSection, 'getBoundingClientRect')
         .mockImplementation(mockGetBoundingClientRect);
@@ -771,7 +771,7 @@ describe('CampaignDetail', () => {
 
       // Set up conditions for sticky CTA to show
       Object.defineProperty(window, 'scrollY', { value: 300 });
-      const endorsementSection = screen.getByRole('region', { name: 'Campaign Endorsements' });
+      const endorsementSection = screen.getByRole('region', { name: 'Endorsements' });
       const mockGetBoundingClientRect = jest.fn(
         (): DOMRect => ({
           top: window.innerHeight * 0.7,
@@ -819,7 +819,7 @@ describe('CampaignDetail', () => {
 
       // Set up scroll conditions and activate form
       Object.defineProperty(window, 'scrollY', { value: 300 });
-      const endorsementSection = screen.getByRole('region', { name: 'Campaign Endorsements' });
+      const endorsementSection = screen.getByRole('region', { name: 'Endorsements' });
       const mockGetBoundingClientRect = jest.fn(
         (): DOMRect => ({
           top: window.innerHeight * 0.7,
@@ -872,7 +872,7 @@ describe('CampaignDetail', () => {
 
       // Set up conditions for sticky CTA to show
       Object.defineProperty(window, 'scrollY', { value: 300 });
-      const endorsementSection = screen.getByRole('region', { name: 'Campaign Endorsements' });
+      const endorsementSection = screen.getByRole('region', { name: 'Endorsements' });
       const mockGetBoundingClientRect = jest.fn(
         (): DOMRect => ({
           top: window.innerHeight * 0.7,
@@ -915,7 +915,7 @@ describe('CampaignDetail', () => {
 
       // Set up scroll conditions
       Object.defineProperty(window, 'scrollY', { value: 300 });
-      const endorsementSection = screen.getByRole('region', { name: 'Campaign Endorsements' });
+      const endorsementSection = screen.getByRole('region', { name: 'Endorsements' });
       const mockGetBoundingClientRect = jest.fn(
         (): DOMRect => ({
           top: window.innerHeight * 0.7,
@@ -962,8 +962,10 @@ describe('CampaignDetail', () => {
         const h1 = screen.getByRole('heading', { level: 1 });
         expect(h1).toHaveTextContent('Test Campaign');
 
-        const h2 = screen.getByRole('heading', { level: 2 });
-        expect(h2).toHaveTextContent('About This Campaign');
+        const h2Elements = screen.getAllByRole('heading', { level: 2 });
+        expect(h2Elements).toHaveLength(2);
+        expect(h2Elements[0]).toHaveTextContent('About This Campaign');
+        expect(h2Elements[1]).toHaveTextContent('Endorsements');
       });
     });
 
