@@ -14,7 +14,7 @@ class URLTest(TestCase):
         """Test API URL pattern resolves."""
         # Test that the API URLs are included
         resolved = resolve("/api/campaigns/")
-        assert resolved.route == "api/"
+        assert resolved.route == "api/campaigns/"
 
     def test_root_url(self) -> None:
         """Test root URL redirects to homepage."""
