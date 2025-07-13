@@ -44,3 +44,7 @@ ignore:
   - "**/*.test.js"
   - "**/*.test.ts"
   - "**/*.test.tsx"
+  - "**/tests/*"
+  - "**/test_*.py"
+  - "**/*_tests.py"
+  - "**/tests.py"
