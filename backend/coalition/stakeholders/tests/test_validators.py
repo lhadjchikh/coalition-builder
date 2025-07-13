@@ -176,3 +176,16 @@ class TestAddressValidator(TestCase):
         # State only
         formatted = AddressValidator.format_address(state="MD")
         assert formatted == "MD"
+
+        # Empty inputs - should handle gracefully
+        formatted = AddressValidator.format_address()
+        assert formatted == ""
+
+        # All empty strings - should handle gracefully
+        formatted = AddressValidator.format_address(
+            street_address="",
+            city="",
+            state="",
+            zip_code="",
+        )
+        assert formatted == ""
