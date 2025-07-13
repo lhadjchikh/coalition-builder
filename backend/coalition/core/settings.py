@@ -123,7 +123,7 @@ INSTALLED_APPS = [
     "coalition.regions.apps.RegionsConfig",
     "coalition.stakeholders",
     "coalition.endorsements",
-    "coalition.legal",
+    "coalition.legal.apps.LegalConfig",
 ]
 
 # Configure database table names to maintain backward compatibility
