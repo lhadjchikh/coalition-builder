@@ -1,5 +1,6 @@
 import hashlib
 from collections.abc import Callable
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
@@ -62,7 +63,21 @@ class ETagMiddleware:
         # Optimize: Use direct byte concatenation instead of JSON serialization
         # This is much faster for large payloads
         content_type = response.get("Content-Type", "").encode("utf-8")
-        query_params = request.GET.urlencode().encode("utf-8") if request.GET else b""
+
+        # Sort query parameters to ensure deterministic ETag generation
+        # This prevents cache misses for semantically identical requests
+        if request.GET:
+            # Create a canonical representation of query parameters
+            # Sort by key, then by value to ensure deterministic ordering
+            sorted_params = []
+            for key in sorted(request.GET.keys()):
+                values = request.GET.getlist(key)
+                for value in sorted(values):
+                    sorted_params.append((key, value))
+            # Use urlencode to properly handle special characters
+            query_params = urlencode(sorted_params).encode("utf-8")
+        else:
+            query_params = b""
 
         # Combine all components for hash generation
         hash_input = content + b"|" + content_type + b"|" + query_params
