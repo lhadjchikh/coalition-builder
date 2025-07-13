@@ -69,11 +69,11 @@ class ETagMiddleware:
         if request.GET:
             # Create a canonical representation of query parameters
             # Sort by key, then by value to ensure deterministic ordering
-            sorted_params = []
-            for key in sorted(request.GET.keys()):
-                values = request.GET.getlist(key)
-                for value in sorted(values):
-                    sorted_params.append((key, value))
+            sorted_params = [
+                (key, value)
+                for key in sorted(request.GET.keys())
+                for value in sorted(request.GET.getlist(key))
+            ]
             # Use urlencode to properly handle special characters
             query_params = urlencode(sorted_params).encode("utf-8")
         else:

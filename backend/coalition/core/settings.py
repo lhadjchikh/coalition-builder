@@ -178,6 +178,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "lockdown.middleware.LockdownMiddleware",
+    # ETagMiddleware placed after security middleware to process final response
+    # but before any response compression that might change content
     "coalition.core.middleware.etag.ETagMiddleware",
 ]
 
