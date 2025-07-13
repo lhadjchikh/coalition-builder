@@ -329,6 +329,7 @@ describe('API Service', () => {
       },
       statement: 'I support this campaign',
       public_display: true,
+      terms_accepted: true,
     };
 
     const mockCreatedEndorsement: Endorsement = {
@@ -596,6 +597,7 @@ describe('API Service', () => {
         },
         statement: 'I support this campaign',
         public_display: true,
+        terms_accepted: true,
       };
 
       await expect(API.createEndorsement(endorsementData)).rejects.toThrow('Creation failed');
