@@ -99,6 +99,17 @@ class Endorsement(models.Model):
         help_text="When this endorsement was reviewed by an admin",
     )
 
+    # Terms acceptance tracking
+    terms_accepted = models.BooleanField(
+        default=False,
+        help_text="Whether the terms of use were accepted",
+    )
+    terms_accepted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the terms were accepted",
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         help_text="When this endorsement was created",
