@@ -21,6 +21,4 @@ services:
       - ./ssr:/app
       - ./frontend/src:/app/frontend/src:ro
       - ./shared:/app/shared:ro
-      - /app/node_modules
-      - /app/.next
-    command: ["npm", "run", "dev"]
+    command: ["npx", "next", "dev"]

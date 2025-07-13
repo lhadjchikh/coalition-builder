@@ -176,4 +176,144 @@ describe('EndorsementsList', () => {
       expect(screen.getByText('Endorsed on January 15, 2024')).toBeInTheDocument();
     });
   });
+
+  describe('onCountUpdate callback functionality', () => {
+    it('calls onCountUpdate with correct total count', async () => {
+      const mockOnCountUpdate = jest.fn();
+      mockAPI.getEndorsements.mockResolvedValue(mockEndorsements);
+
+      render(<EndorsementsList onCountUpdate={mockOnCountUpdate} />);
+
+      await waitFor(() => {
+        expect(mockOnCountUpdate).toHaveBeenCalledWith(2, expect.any(Number));
+      });
+    });
+
+    it('calls onCountUpdate with correct recent count for endorsements within 7 days', async () => {
+      const mockOnCountUpdate = jest.fn();
+      const recentDate = new Date();
+      recentDate.setDate(recentDate.getDate() - 3); // 3 days ago
+
+      const oldDate = new Date();
+      oldDate.setDate(oldDate.getDate() - 10); // 10 days ago
+
+      const endorsementsWithRecentDates = [
+        { ...mockEndorsements[0], created_at: recentDate.toISOString() },
+        { ...mockEndorsements[1], created_at: oldDate.toISOString() },
+      ];
+
+      mockAPI.getEndorsements.mockResolvedValue(endorsementsWithRecentDates);
+
+      render(<EndorsementsList onCountUpdate={mockOnCountUpdate} />);
+
+      await waitFor(() => {
+        expect(mockOnCountUpdate).toHaveBeenCalledWith(2, 1); // 2 total, 1 recent
+      });
+    });
+
+    it('calls onCountUpdate with zero recent count when no recent endorsements', async () => {
+      const mockOnCountUpdate = jest.fn();
+      const oldDate = new Date();
+      oldDate.setDate(oldDate.getDate() - 10); // 10 days ago
+
+      const endorsementsWithOldDates = mockEndorsements.map(endorsement => ({
+        ...endorsement,
+        created_at: oldDate.toISOString(),
+      }));
+
+      mockAPI.getEndorsements.mockResolvedValue(endorsementsWithOldDates);
+
+      render(<EndorsementsList onCountUpdate={mockOnCountUpdate} />);
+
+      await waitFor(() => {
+        expect(mockOnCountUpdate).toHaveBeenCalledWith(2, 0); // 2 total, 0 recent
+      });
+    });
+
+    it('calls onCountUpdate again when refreshTrigger changes', async () => {
+      const mockOnCountUpdate = jest.fn();
+      mockAPI.getEndorsements.mockResolvedValue(mockEndorsements);
+
+      const { rerender } = render(
+        <EndorsementsList onCountUpdate={mockOnCountUpdate} refreshTrigger={0} />
+      );
+
+      await waitFor(() => {
+        expect(mockOnCountUpdate).toHaveBeenCalledTimes(1);
+      });
+
+      // Simulate new endorsement by changing refresh trigger
+      const newEndorsements = [
+        ...mockEndorsements,
+        {
+          id: 3,
+          stakeholder: {
+            id: 3,
+            name: 'New Endorser',
+            organization: 'New Org',
+            email: 'new@test.com',
+            state: 'CA',
+            type: 'individual' as const,
+            created_at: '2024-01-03',
+            updated_at: '2024-01-03',
+          },
+          campaign: mockEndorsements[0].campaign,
+          statement: 'New endorsement',
+          public_display: true,
+          created_at: new Date().toISOString(),
+        },
+      ];
+
+      mockAPI.getEndorsements.mockResolvedValue(newEndorsements);
+
+      rerender(<EndorsementsList onCountUpdate={mockOnCountUpdate} refreshTrigger={1} />);
+
+      await waitFor(() => {
+        expect(mockOnCountUpdate).toHaveBeenCalledTimes(2);
+        expect(mockOnCountUpdate).toHaveBeenLastCalledWith(3, expect.any(Number));
+      });
+    });
+
+    it('does not call onCountUpdate when callback is not provided', async () => {
+      // This test ensures the component doesn't crash when onCountUpdate is undefined
+      mockAPI.getEndorsements.mockResolvedValue(mockEndorsements);
+
+      render(<EndorsementsList />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('endorsements-list')).toBeInTheDocument();
+      });
+
+      // No assertion needed - if we get here without crashing, the test passes
+    });
+
+    it('handles API errors gracefully and does not call onCountUpdate', async () => {
+      const mockOnCountUpdate = jest.fn();
+
+      await withSuppressedErrors(['API Error'], async () => {
+        mockAPI.getEndorsements.mockRejectedValue(new Error('API Error'));
+
+        render(<EndorsementsList onCountUpdate={mockOnCountUpdate} />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId('endorsements-error')).toBeInTheDocument();
+        });
+
+        expect(mockOnCountUpdate).not.toHaveBeenCalled();
+      });
+    });
+
+    it('calls onCountUpdate for campaign-specific endorsements', async () => {
+      const mockOnCountUpdate = jest.fn();
+      mockAPI.getCampaignEndorsements.mockResolvedValue([mockEndorsements[0]]);
+
+      render(<EndorsementsList campaignId={1} onCountUpdate={mockOnCountUpdate} />);
+
+      await waitFor(() => {
+        expect(mockOnCountUpdate).toHaveBeenCalledWith(1, expect.any(Number));
+      });
+
+      expect(mockAPI.getCampaignEndorsements).toHaveBeenCalledWith(1);
+    });
+  });
 });

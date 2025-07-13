@@ -219,6 +219,38 @@ Note: State legislative processes may have additional or different status option
 - Featured endorsements can be highlighted
 - Stakeholder types are clearly indicated
 
+### Campaign Page Endorsement Features
+
+Coalition Builder includes sophisticated endorsement display features designed to maximize engagement and encourage new endorsements:
+
+**Smart Social Proof**:
+
+- Automatically detects when campaigns reach 10 or more endorsements
+- Displays current endorsement count with encouraging language ("Join X others supporting this campaign")
+- Updates in real-time as new endorsements are approved
+- Helps build momentum by highlighting existing support levels
+
+**Early Supporter Appeals**:
+
+- For campaigns with fewer than 10 endorsements, displays special early supporter messaging
+- Encourages participation with "Be among the first to endorse this important campaign"
+- Uses early adopter psychology to avoid potential discouragement from low numbers
+- Maintains authenticity while optimizing for engagement
+
+**Momentum Indicators**:
+
+- Tracks recent endorsement activity within a 7-day rolling window
+- Shows momentum badges when 2 or more recent endorsements are received
+- Creates urgency with dynamic messaging like "X new endorsements this week"
+- Demonstrates active campaign growth to encourage participation
+
+**Dynamic Engagement Elements**:
+
+- Intelligent sticky call-to-action that appears when users scroll past the endorsement section
+- Automatically hides when users interact with the form to avoid confusion
+- Responsive design optimized for both desktop and mobile devices
+- Smooth scrolling to first form field with automatic focus for immediate interaction
+
 ## Campaign Resources and Media
 
 ### Adding Resources
@@ -405,6 +437,8 @@ Coalition Builder is a tool for organizing advocacy efforts. **It is not legal a
 - Check if campaign messaging is compelling
 - Verify endorsement process is working correctly
 - Consider outreach strategy effectiveness
+- Leverage built-in engagement features like social proof and momentum indicators
+- Ensure campaign has reached the 10-endorsement threshold for automatic social proof display
 
 **Content Management Problems**:
 
