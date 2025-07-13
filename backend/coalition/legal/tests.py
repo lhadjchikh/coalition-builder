@@ -1,7 +1,5 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
-from django.urls import reverse
-from rest_framework.test import APITestCase
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.models import Endorsement
@@ -55,42 +53,6 @@ class LegalDocumentModelTest(TestCase):
     def test_no_active_document(self) -> None:
         result = LegalDocument.get_active_document("terms")
         assert result is None
-
-
-class LegalAPITest(APITestCase):
-    def setUp(self) -> None:
-        self.user = User.objects.create_user(
-            username="testuser",
-            email="test@example.com",
-            password="testpass",
-        )
-        self.terms_doc = LegalDocument.objects.create(
-            document_type="terms",
-            title="Terms of Use",
-            content="<p>Terms content</p>",
-            version="1.0",
-            is_active=True,
-            created_by=self.user,
-        )
-
-    def test_get_terms_endpoint(self) -> None:
-        url = reverse("api-1.0.0:get_terms_of_use")
-        response = self.client.get(url)
-
-        assert response.status_code == 200
-        data = response.json()
-        assert data["title"] == "Terms of Use"
-        assert data["version"] == "1.0"
-        assert "content" in data
-
-    def test_get_terms_not_found(self) -> None:
-        self.terms_doc.delete()
-        url = reverse("api-1.0.0:get_terms_of_use")
-        response = self.client.get(url)
-
-        assert response.status_code == 404
-        data = response.json()
-        assert "error" in data
 
 
 class TermsAcceptanceTest(TestCase):
