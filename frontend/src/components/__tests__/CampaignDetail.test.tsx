@@ -10,12 +10,9 @@ import { withSuppressedErrors } from '../../tests/utils/testUtils';
 jest.mock('../../services/api');
 const mockAPI = API as jest.Mocked<typeof API>;
 
-// Get the mock function from EndorsementForm mock
-const { mockScrollToFirstField } = jest.requireMock('../EndorsementForm');
-
 // Mock child components
+const mockScrollToFirstField = jest.fn();
 jest.mock('../EndorsementForm', () => {
-  const mockScrollToFirstField = jest.fn();
   return {
     __esModule: true,
     default: React.forwardRef<
@@ -47,7 +44,6 @@ jest.mock('../EndorsementForm', () => {
         </div>
       );
     }),
-    mockScrollToFirstField,
   };
 });
 
