@@ -18,18 +18,15 @@ jest.mock('../EndorsementForm', () => {
   const mockScrollToFirstField = jest.fn();
   return {
     __esModule: true,
-    default: React.forwardRef<any, any>(function MockEndorsementForm(
+    default: React.forwardRef<
+      any,
       {
-        campaign,
-        onEndorsementSubmitted,
-        onFormInteraction,
-      }: {
         campaign: Campaign;
         onEndorsementSubmitted: () => void;
         onFormInteraction?: (isActive: boolean) => void;
-      },
-      ref
-    ) {
+      }
+    >(function MockEndorsementForm(props, ref) {
+      const { campaign, onEndorsementSubmitted, onFormInteraction } = props;
       React.useImperativeHandle(ref, () => ({
         scrollToFirstField: mockScrollToFirstField,
       }));
@@ -646,14 +643,19 @@ describe('CampaignDetail', () => {
       // Set up scroll conditions
       Object.defineProperty(window, 'scrollY', { value: 300 });
       const endorsementSection = screen.getByRole('region', { name: 'Campaign Endorsements' });
-      const mockGetBoundingClientRect = jest.fn(() => ({
-        top: window.innerHeight * 0.7,
-        bottom: window.innerHeight,
-        left: 0,
-        right: 0,
-        width: 0,
-        height: 0,
-      }));
+      const mockGetBoundingClientRect = jest.fn(
+        (): DOMRect => ({
+          top: window.innerHeight * 0.7,
+          bottom: window.innerHeight,
+          left: 0,
+          right: 0,
+          width: 0,
+          height: 0,
+          x: 0,
+          y: window.innerHeight * 0.7,
+          toJSON: () => ({}),
+        })
+      );
       jest
         .spyOn(endorsementSection, 'getBoundingClientRect')
         .mockImplementation(mockGetBoundingClientRect);
@@ -732,14 +734,19 @@ describe('CampaignDetail', () => {
       Object.defineProperty(window, 'scrollY', { value: 300 });
 
       // Mock endorsement section being in lower viewport
-      const mockGetBoundingClientRect = jest.fn(() => ({
-        top: window.innerHeight * 0.7, // Section is at 70% of viewport
-        bottom: window.innerHeight,
-        left: 0,
-        right: 0,
-        width: 0,
-        height: 0,
-      }));
+      const mockGetBoundingClientRect = jest.fn(
+        (): DOMRect => ({
+          top: window.innerHeight * 0.7, // Section is at 70% of viewport
+          bottom: window.innerHeight,
+          left: 0,
+          right: 0,
+          width: 0,
+          height: 0,
+          x: 0,
+          y: window.innerHeight * 0.7,
+          toJSON: () => ({}),
+        })
+      );
 
       const endorsementSection = screen.getByRole('region', { name: 'Campaign Endorsements' });
       jest
@@ -769,14 +776,19 @@ describe('CampaignDetail', () => {
       // Set up conditions for sticky CTA to show
       Object.defineProperty(window, 'scrollY', { value: 300 });
       const endorsementSection = screen.getByRole('region', { name: 'Campaign Endorsements' });
-      const mockGetBoundingClientRect = jest.fn(() => ({
-        top: window.innerHeight * 0.7,
-        bottom: window.innerHeight,
-        left: 0,
-        right: 0,
-        width: 0,
-        height: 0,
-      }));
+      const mockGetBoundingClientRect = jest.fn(
+        (): DOMRect => ({
+          top: window.innerHeight * 0.7,
+          bottom: window.innerHeight,
+          left: 0,
+          right: 0,
+          width: 0,
+          height: 0,
+          x: 0,
+          y: window.innerHeight * 0.7,
+          toJSON: () => ({}),
+        })
+      );
       jest
         .spyOn(endorsementSection, 'getBoundingClientRect')
         .mockImplementation(mockGetBoundingClientRect);
@@ -812,14 +824,19 @@ describe('CampaignDetail', () => {
       // Set up scroll conditions and activate form
       Object.defineProperty(window, 'scrollY', { value: 300 });
       const endorsementSection = screen.getByRole('region', { name: 'Campaign Endorsements' });
-      const mockGetBoundingClientRect = jest.fn(() => ({
-        top: window.innerHeight * 0.7,
-        bottom: window.innerHeight,
-        left: 0,
-        right: 0,
-        width: 0,
-        height: 0,
-      }));
+      const mockGetBoundingClientRect = jest.fn(
+        (): DOMRect => ({
+          top: window.innerHeight * 0.7,
+          bottom: window.innerHeight,
+          left: 0,
+          right: 0,
+          width: 0,
+          height: 0,
+          x: 0,
+          y: window.innerHeight * 0.7,
+          toJSON: () => ({}),
+        })
+      );
       jest
         .spyOn(endorsementSection, 'getBoundingClientRect')
         .mockImplementation(mockGetBoundingClientRect);
@@ -860,14 +877,19 @@ describe('CampaignDetail', () => {
       // Set up conditions for sticky CTA to show
       Object.defineProperty(window, 'scrollY', { value: 300 });
       const endorsementSection = screen.getByRole('region', { name: 'Campaign Endorsements' });
-      const mockGetBoundingClientRect = jest.fn(() => ({
-        top: window.innerHeight * 0.7,
-        bottom: window.innerHeight,
-        left: 0,
-        right: 0,
-        width: 0,
-        height: 0,
-      }));
+      const mockGetBoundingClientRect = jest.fn(
+        (): DOMRect => ({
+          top: window.innerHeight * 0.7,
+          bottom: window.innerHeight,
+          left: 0,
+          right: 0,
+          width: 0,
+          height: 0,
+          x: 0,
+          y: window.innerHeight * 0.7,
+          toJSON: () => ({}),
+        })
+      );
       jest
         .spyOn(endorsementSection, 'getBoundingClientRect')
         .mockImplementation(mockGetBoundingClientRect);
@@ -898,14 +920,19 @@ describe('CampaignDetail', () => {
       // Set up scroll conditions
       Object.defineProperty(window, 'scrollY', { value: 300 });
       const endorsementSection = screen.getByRole('region', { name: 'Campaign Endorsements' });
-      const mockGetBoundingClientRect = jest.fn(() => ({
-        top: window.innerHeight * 0.7,
-        bottom: window.innerHeight,
-        left: 0,
-        right: 0,
-        width: 0,
-        height: 0,
-      }));
+      const mockGetBoundingClientRect = jest.fn(
+        (): DOMRect => ({
+          top: window.innerHeight * 0.7,
+          bottom: window.innerHeight,
+          left: 0,
+          right: 0,
+          width: 0,
+          height: 0,
+          x: 0,
+          y: window.innerHeight * 0.7,
+          toJSON: () => ({}),
+        })
+      );
       jest
         .spyOn(endorsementSection, 'getBoundingClientRect')
         .mockImplementation(mockGetBoundingClientRect);

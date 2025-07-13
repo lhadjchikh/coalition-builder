@@ -253,7 +253,7 @@ describe('EndorsementsList', () => {
             organization: 'New Org',
             email: 'new@test.com',
             state: 'CA',
-            type: 'individual',
+            type: 'individual' as const,
             created_at: '2024-01-03',
             updated_at: '2024-01-03',
           },
