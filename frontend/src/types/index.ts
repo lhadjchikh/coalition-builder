@@ -1,3 +1,6 @@
+// Import shared types
+import { NavItemData } from '@shared/types';
+
 // Campaign type definition
 export interface Campaign {
   id: number;
@@ -199,6 +202,9 @@ export interface HomePage {
 
   // Content blocks
   content_blocks: ContentBlock[];
+
+  // Navigation items
+  nav_items?: NavItemData[];
 
   // Theme information
   theme?: Theme;

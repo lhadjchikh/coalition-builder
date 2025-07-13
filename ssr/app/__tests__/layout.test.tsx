@@ -1,0 +1,204 @@
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import "@testing-library/jest-dom";
+import RootLayout from "../layout";
+import { ssrApiClient } from "../../lib/frontend-api-adapter";
+import { DEFAULT_NAV_ITEMS } from "@shared/types";
+
+// Mock the dependencies
+jest.mock("../../lib/frontend-api-adapter");
+jest.mock("../../lib/components/SSRNavbar", () => ({
+  __esModule: true,
+  default: ({ organizationName, navItems }: any) => (
+    <nav data-testid="ssr-navbar">
+      <span>{organizationName}</span>
+      <span>{navItems?.length || 0} nav items</span>
+    </nav>
+  ),
+}));
+jest.mock("../../lib/components/SSRFooter", () => ({
+  __esModule: true,
+  default: ({ organizationName }: any) => (
+    <footer data-testid="ssr-footer">
+      <span>
+        © {new Date().getFullYear()} {organizationName}. All rights reserved.
+      </span>
+    </footer>
+  ),
+}));
+jest.mock("../../lib/registry", () => ({
+  __esModule: true,
+  default: ({ children }: any) => <>{children}</>,
+}));
+
+describe("RootLayout", () => {
+  const mockHomepage = {
+    organization_name: "Test Organization",
+    nav_items: [
+      { label: "Home", href: "/" },
+      { label: "About", href: "/about" },
+    ],
+    tagline: "Test tagline",
+    hero_title: "Test Hero",
+    hero_subtitle: "Test subtitle",
+    about_section_title: "About Us",
+    about_section_content: "Test content",
+    show_campaigns_section: true,
+    campaigns_section_title: "Our Campaigns",
+    campaigns_section_subtitle: "Test subtitle",
+    cta_title: "Get Involved",
+    cta_content: "Test CTA",
+    cta_button_text: "Join Us",
+    cta_button_url: "/join",
+    contact_email: "test@example.com",
+    contact_phone: "123-456-7890",
+    theme: {
+      primary_color: "#0000FF",
+      secondary_color: "#FF0000",
+      accent_color: "#00FF00",
+      background_color: "#FFFFFF",
+      text_color: "#000000",
+    },
+    content_blocks: [],
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("renders layout with navbar, content, and footer", async () => {
+    (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
+
+    // RootLayout returns an HTML document structure, so we need to extract the body content
+    const layoutResult = await RootLayout({
+      children: <div data-testid="page-content">Test Page Content</div>,
+    });
+
+    // Extract the actual content from the body element
+    const bodyElement = layoutResult.props.children[1]; // [0] is head, [1] is body
+    const bodyChildren = bodyElement.props.children; // This is the StyledComponentsRegistry
+    const { container } = render(bodyChildren);
+
+    // Check for navbar
+    const navbar = screen.getByTestId("ssr-navbar");
+    expect(navbar).toBeInTheDocument();
+    expect(navbar).toHaveTextContent("Test Organization");
+    expect(navbar).toHaveTextContent("2 nav items");
+
+    // Check for main content
+    const mainContent = screen.getByTestId("page-content");
+    expect(mainContent).toBeInTheDocument();
+    expect(mainContent).toHaveTextContent("Test Page Content");
+
+    // Check for footer
+    const footer = screen.getByTestId("ssr-footer");
+    expect(footer).toBeInTheDocument();
+    expect(footer).toHaveTextContent(
+      `© ${new Date().getFullYear()} Test Organization. All rights reserved.`,
+    );
+
+    // Check layout structure
+    const appRoot = container.querySelector("#app-root");
+    expect(appRoot).toBeInTheDocument();
+    expect(appRoot).toHaveStyle({
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column",
+    });
+
+    // Check main element has flex: 1
+    const main = container.querySelector("main");
+    expect(main).toBeInTheDocument();
+    expect(main).toHaveStyle({ flex: "1" });
+  });
+
+  it("uses fallback data when homepage fetch fails", async () => {
+    (ssrApiClient.getHomepage as jest.Mock).mockRejectedValue(
+      new Error("API Error"),
+    );
+
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+
+    const layoutResult = await RootLayout({
+      children: <div>Test Content</div>,
+    });
+    const bodyElement = layoutResult.props.children[1];
+    const bodyChildren = bodyElement.props.children;
+    render(bodyChildren);
+
+    // Should log the error
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Error fetching homepage for layout:",
+      expect.any(Error),
+    );
+
+    // Should still render with fallback organization name
+    const navbar = screen.getByTestId("ssr-navbar");
+    expect(navbar).toBeInTheDocument();
+    expect(navbar).toHaveTextContent("Coalition Builder");
+    expect(navbar).toHaveTextContent(`${DEFAULT_NAV_ITEMS.length} nav items`);
+
+    const footer = screen.getByTestId("ssr-footer");
+    expect(footer).toBeInTheDocument();
+    expect(footer).toHaveTextContent("Coalition Builder");
+
+    consoleSpy.mockRestore();
+  });
+
+  it("handles empty nav items", async () => {
+    const homepageWithoutNavItems = {
+      ...mockHomepage,
+      nav_items: [],
+    };
+    (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(
+      homepageWithoutNavItems,
+    );
+
+    const layoutResult = await RootLayout({
+      children: <div>Test Content</div>,
+    });
+    const bodyElement = layoutResult.props.children[1];
+    const bodyChildren = bodyElement.props.children;
+    render(bodyChildren);
+
+    const navbar = screen.getByTestId("ssr-navbar");
+    // Empty nav_items should use DEFAULT_NAV_ITEMS
+    expect(navbar).toHaveTextContent(`${DEFAULT_NAV_ITEMS.length} nav items`);
+  });
+
+  it("handles null nav items", async () => {
+    const homepageWithNullNavItems = {
+      ...mockHomepage,
+      nav_items: null,
+    };
+    (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(
+      homepageWithNullNavItems,
+    );
+
+    const layoutResult = await RootLayout({
+      children: <div>Test Content</div>,
+    });
+    const bodyElement = layoutResult.props.children[1];
+    const bodyChildren = bodyElement.props.children;
+    render(bodyChildren);
+
+    // Should use default nav items
+    const navbar = screen.getByTestId("ssr-navbar");
+    expect(navbar).toBeInTheDocument();
+    expect(navbar).toHaveTextContent(`${DEFAULT_NAV_ITEMS.length} nav items`);
+  });
+
+  it("maintains SSR data attribute", async () => {
+    (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
+
+    const layoutResult = await RootLayout({
+      children: <div>Test Content</div>,
+    });
+    const bodyElement = layoutResult.props.children[1];
+    const bodyChildren = bodyElement.props.children;
+    const { container } = render(bodyChildren);
+
+    const appRoot = container.querySelector('[data-ssr="true"]');
+    expect(appRoot).toBeInTheDocument();
+  });
+});

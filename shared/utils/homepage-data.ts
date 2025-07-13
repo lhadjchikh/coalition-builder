@@ -1,4 +1,5 @@
 // Shared homepage data fetching and fallback logic
+import { NavItemData } from "../types";
 
 export interface Campaign {
   id: number;
@@ -36,6 +37,7 @@ export interface HomePage {
   campaigns_section_subtitle: string;
   show_campaigns_section: boolean;
   content_blocks: any[];
+  nav_items?: NavItemData[];
   is_active: boolean;
   created_at: string;
   updated_at: string;
