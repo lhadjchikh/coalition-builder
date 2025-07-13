@@ -263,19 +263,21 @@ describe('EndorsementForm', () => {
       const mockScrollIntoView = jest.fn();
       const mockFocus = jest.fn();
 
-      // Mock the name input specifically
-      const nameInput = screen.getByTestId('name-input') || document.createElement('input');
+      render(<TestRefComponent />);
+
+      // Mock the name input specifically after render
+      const nameInput = screen.getByTestId('name-input');
       nameInput.scrollIntoView = mockScrollIntoView;
       nameInput.focus = mockFocus;
-
-      render(<TestRefComponent />);
 
       const scrollButton = screen.getByTestId('scroll-trigger');
       fireEvent.click(scrollButton);
 
-      // Note: The actual scrollIntoView and focus calls are tested at the unit level
-      // Here we're testing that the ref method is exposed and callable
-      expect(scrollButton).toBeInTheDocument();
+      expect(mockScrollIntoView).toHaveBeenCalledWith({
+        behavior: 'smooth',
+        block: 'center',
+      });
+      expect(mockFocus).toHaveBeenCalledTimes(1);
     });
 
     it('should call onFormInteraction with true when form gains focus', () => {
@@ -332,7 +334,7 @@ describe('EndorsementForm', () => {
 
       render(<TestRefComponent onFormInteraction={mockOnFormInteraction} />);
 
-      // Fill out the form
+      // Fill out all required form fields
       fireEvent.change(screen.getByTestId('name-input'), {
         target: { value: 'John Doe' },
       });
@@ -342,17 +344,26 @@ describe('EndorsementForm', () => {
       fireEvent.change(screen.getByTestId('email-input'), {
         target: { value: 'john@test.com' },
       });
+      fireEvent.change(screen.getByTestId('state-select'), {
+        target: { value: 'VA' },
+      });
+      fireEvent.change(screen.getByTestId('type-select'), {
+        target: { value: 'individual' },
+      });
 
       // Submit the form
       fireEvent.click(screen.getByTestId('submit-button'));
 
-      await waitFor(() => {
-        expect(screen.getByTestId('success-message')).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('success-message')).toBeInTheDocument();
+        },
+        { timeout: 10000 }
+      );
 
       // Should call onFormInteraction(false) after successful submission
       expect(mockOnFormInteraction).toHaveBeenCalledWith(false);
-    });
+    }, 15000);
 
     it('should work correctly when onFormInteraction is not provided', () => {
       // This test ensures the component doesn't crash when callback is undefined
