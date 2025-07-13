@@ -38,7 +38,7 @@ class CacheControlPreservationTest(TestCase):
         response = self.client.get("/api/test/test-custom-cache/")
 
         # Should have ETag
-        assert "ETag" in response
+        assert response.has_header("ETag")
         assert response.status_code == 200
 
         # Custom Cache-Control should be preserved
@@ -49,7 +49,7 @@ class CacheControlPreservationTest(TestCase):
         response = self.client.get("/api/test/test-no-cache/")
 
         # Should have ETag
-        assert "ETag" in response
+        assert response.has_header("ETag")
         assert response.status_code == 200
 
         # No-cache header should be preserved

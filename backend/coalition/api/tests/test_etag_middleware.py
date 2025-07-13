@@ -188,19 +188,16 @@ class ETagMiddlewareTest(TestCase):
         response = JsonResponse({"test": "data"})
         response.status_code = 200
 
-        # Test that custom prefix is recognized
-        api_prefix = getattr(settings, "ETAG_API_PREFIX", "/api/")
+        # Test that custom prefix is recognized and ETag is actually added
+        def get_custom_response(request: HttpRequest) -> JsonResponse:
+            return JsonResponse({"test": "custom prefix data"}, status=200)
 
-        should_process = (
-            request.path.startswith(api_prefix)
-            and request.method in ("GET", "HEAD")
-            and response.status_code == 200
-            and not response.has_header("ETag")
-            and not isinstance(response, StreamingHttpResponse)
-        )
+        middleware = ETagMiddleware(get_custom_response)
+        response = middleware(request)
 
-        assert should_process, "Custom prefix should be processed"
-        assert api_prefix == "/custom-api/"
+        # Verify that ETag is actually set for custom prefix
+        assert response.has_header("ETag")
+        assert getattr(settings, "ETAG_API_PREFIX", "/api/") == "/custom-api/"
 
     @override_settings(ETAG_API_PREFIX="/v1/api/")
     def test_different_custom_prefix(self) -> None:
