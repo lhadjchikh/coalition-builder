@@ -1,8 +1,7 @@
 import hashlib
-import json
 from collections.abc import Callable
 
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
 from django.utils.cache import get_conditional_response
 from django.utils.http import quote_etag
 
@@ -35,7 +34,7 @@ class ETagMiddleware:
             etag = self._generate_etag(request, response)
             response["ETag"] = quote_etag(etag)
 
-            # Set cache headers
+            # Set cache headers only if not already set
             if not response.has_header("Cache-Control"):
                 response["Cache-Control"] = "private, must-revalidate"
 
@@ -50,22 +49,19 @@ class ETagMiddleware:
 
     def _generate_etag(self, request: HttpRequest, response: HttpResponse) -> str:
         """Generate an ETag from response content."""
-        if hasattr(response, "content"):
-            # For regular HttpResponse/JsonResponse
-            content = response.content
-        else:
-            # For streaming responses
-            content = b"".join(response)
+        # Skip streaming responses to avoid breaking streaming semantics
+        if isinstance(response, StreamingHttpResponse):
+            return ""
+        
+        # Get content from response
+        content = response.content if hasattr(response, "content") else b""
 
-        # Include content type and query params in ETag for different representations
-        etag_data = {
-            "content": (
-                content.decode("utf-8") if isinstance(content, bytes) else str(content)
-            ),
-            "content_type": response.get("Content-Type", ""),
-            "query_params": request.GET.urlencode() if request.GET else "",
-        }
-
-        # Generate hash
-        content_str = json.dumps(etag_data, sort_keys=True, default=str)
-        return hashlib.sha256(content_str.encode()).hexdigest()
+        # Optimize: Use direct byte concatenation instead of JSON serialization
+        # This is much faster for large payloads
+        content_type = response.get("Content-Type", "").encode("utf-8")
+        query_params = request.GET.urlencode().encode("utf-8") if request.GET else b""
+        
+        # Combine all components for hash generation
+        hash_input = content + b"|" + content_type + b"|" + query_params
+        
+        return hashlib.sha256(hash_input).hexdigest()
