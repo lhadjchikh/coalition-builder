@@ -1,11 +1,13 @@
 import json
 from collections.abc import Generator
 
+from django.conf import settings
 from django.http import HttpRequest, JsonResponse, StreamingHttpResponse
 from django.test import TestCase, override_settings
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.content.models import HomePage
+from coalition.core.middleware.etag import ETagMiddleware
 
 
 class ETagMiddlewareTest(TestCase):
@@ -32,7 +34,7 @@ class ETagMiddlewareTest(TestCase):
     def test_etag_header_is_added(self) -> None:
         """Test that ETag header is added to API responses."""
         response = self.client.get("/api/campaigns/")
-        assert "ETag" in response
+        assert response.has_header("ETag")
         assert response["ETag"] is not None
         assert response["Cache-Control"] == "private, must-revalidate"
 
@@ -67,20 +69,20 @@ class ETagMiddlewareTest(TestCase):
     def test_etag_not_added_to_non_api_endpoints(self) -> None:
         """Test that ETag is not added to non-API endpoints."""
         response = self.client.get("/")
-        assert "ETag" not in response
+        assert not response.has_header("ETag")
 
     def test_etag_only_for_get_and_head_requests(self) -> None:
         """Test that ETag is only added for GET and HEAD requests."""
         # Test GET request (should have ETag)
         get_response = self.client.get("/api/campaigns/")
-        assert "ETag" in get_response
+        assert get_response.has_header("ETag")
         assert get_response.status_code == 200
 
         # Test HEAD request - Django Ninja may return 405, middleware should handle it
         head_response = self.client.head("/api/campaigns/")
         if head_response.status_code == 200:
             # If HEAD is supported, it should have ETag
-            assert "ETag" in head_response
+            assert head_response.has_header("ETag")
         elif head_response.status_code == 405:
             # If HEAD returns Method Not Allowed, that's expected for Django Ninja
             assert head_response.status_code == 405
@@ -98,7 +100,7 @@ class ETagMiddlewareTest(TestCase):
             ),
             content_type="application/json",
         )
-        assert "ETag" not in post_response
+        assert not post_response.has_header("ETag")
 
     def test_etag_with_query_parameters(self) -> None:
         """Test that query parameters affect ETag generation."""
@@ -115,7 +117,7 @@ class ETagMiddlewareTest(TestCase):
     def test_get_request_etag_functionality(self) -> None:
         """Test that GET requests get ETags and work correctly."""
         response = self.client.get("/api/campaigns/")
-        assert "ETag" in response
+        assert response.has_header("ETag")
         assert response.status_code == 200
         assert response["Cache-Control"] == "private, must-revalidate"
 
@@ -127,52 +129,51 @@ class ETagMiddlewareTest(TestCase):
             yield b"chunk1"
             yield b"chunk2"
 
-        streaming_response = StreamingHttpResponse(
-            stream_generator(),
-            content_type="text/plain",
-        )
-        streaming_response.status_code = 200
+        # Create a get_response function that returns streaming response
+        def get_streaming_response(request: HttpRequest) -> StreamingHttpResponse:
+            return StreamingHttpResponse(
+                stream_generator(),
+                content_type="text/plain",
+                status=200,
+            )
 
-        # Create a mock request
+        # Create middleware instance
+        middleware = ETagMiddleware(get_streaming_response)
+
+        # Create request
         request = HttpRequest()
         request.path = "/api/test-stream/"
         request.method = "GET"
 
-        # The middleware should skip streaming responses entirely
-        # Verify condition excludes StreamingHttpResponse
-        should_process = (
-            request.path.startswith("/api/")
-            and request.method in ("GET", "HEAD")
-            and streaming_response.status_code == 200
-            and not streaming_response.has_header("ETag")
-            and not isinstance(streaming_response, StreamingHttpResponse)
-        )
+        # Process request through middleware
+        response = middleware(request)
 
-        assert not should_process, "Streaming responses should be skipped"
+        # Streaming responses should not get ETag headers
+        assert not response.has_header("ETag")
+        assert isinstance(response, StreamingHttpResponse)
 
     def test_existing_etag_not_overridden(self) -> None:
         """Test that existing ETag headers are not overridden by middleware."""
-        # Test the middleware condition checks for existing ETags
-        # Create a response with an existing ETag
-        response = JsonResponse({"test": "data"})
-        response["ETag"] = '"existing-etag-value"'
-        response.status_code = 200
 
-        # Create a mock request
+        # Create a get_response function that returns response with existing ETag
+        def get_response_with_etag(request: HttpRequest) -> JsonResponse:
+            response = JsonResponse({"test": "data"})
+            response["ETag"] = '"existing-etag-value"'
+            response.status_code = 200
+            return response
+
+        # Create middleware instance
+        middleware = ETagMiddleware(get_response_with_etag)
+
+        # Create request
         request = HttpRequest()
         request.path = "/api/test/"
         request.method = "GET"
 
-        # The middleware should skip responses that already have ETags
-        should_process = (
-            request.path.startswith("/api/")
-            and request.method in ("GET", "HEAD")
-            and response.status_code == 200
-            and not response.has_header("ETag")
-            and not isinstance(response, StreamingHttpResponse)
-        )
+        # Process request through middleware
+        response = middleware(request)
 
-        assert not should_process, "Responses with existing ETags should be skipped"
+        # Existing ETag should not be overridden
         assert response["ETag"] == '"existing-etag-value"'
 
     @override_settings(ETAG_API_PREFIX="/custom-api/")
@@ -188,8 +189,6 @@ class ETagMiddlewareTest(TestCase):
         response.status_code = 200
 
         # Test that custom prefix is recognized
-        from django.conf import settings
-
         api_prefix = getattr(settings, "ETAG_API_PREFIX", "/api/")
 
         should_process = (
@@ -213,8 +212,6 @@ class ETagMiddlewareTest(TestCase):
 
         response = JsonResponse({"test": "data"})
         response.status_code = 200
-
-        from django.conf import settings
 
         api_prefix = getattr(settings, "ETAG_API_PREFIX", "/api/")
 

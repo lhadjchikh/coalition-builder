@@ -1,6 +1,8 @@
+from django.http import HttpRequest, JsonResponse
 from django.test import TestCase, override_settings
 
 from coalition.campaigns.models import PolicyCampaign
+from coalition.core.middleware.etag import ETagMiddleware
 
 
 class ETagConfigurationTest(TestCase):
@@ -18,7 +20,7 @@ class ETagConfigurationTest(TestCase):
     def test_default_api_prefix(self) -> None:
         """Test that default /api/ prefix works."""
         response = self.client.get("/api/campaigns/")
-        assert "ETag" in response
+        assert response.has_header("ETag")
         assert response.status_code == 200
 
     @override_settings(ETAG_API_PREFIX="/custom-api/")
@@ -26,14 +28,26 @@ class ETagConfigurationTest(TestCase):
         """Test that custom API prefix can be configured."""
         # Default /api/ should not get ETags with custom prefix
         response1 = self.client.get("/api/campaigns/")
-        assert "ETag" not in response1
+        assert not response1.has_header("ETag")
 
-        # Note: We can't easily test the custom prefix since our URLs are still /api/
-        # but this tests that the setting is being read correctly
+        # Test custom prefix functionality with middleware directly
+        def get_custom_response(request: HttpRequest) -> JsonResponse:
+            return JsonResponse({"test": "custom prefix data"}, status=200)
+
+        middleware = ETagMiddleware(get_custom_response)
+
+        # Test request with custom prefix
+        request = HttpRequest()
+        request.path = "/custom-api/test/"
+        request.method = "GET"
+        request.GET = {}
+
+        response = middleware(request)
+        assert response.has_header("ETag")
 
     @override_settings(ETAG_API_PREFIX="/v1/api/")
     def test_different_custom_prefix(self) -> None:
         """Test with a different custom prefix."""
         # Default /api/ should not get ETags with different custom prefix
         response = self.client.get("/api/campaigns/")
-        assert "ETag" not in response
+        assert not response.has_header("ETag")
