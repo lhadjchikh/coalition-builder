@@ -50,6 +50,8 @@ class ContentViewsTest(TestCase):
         assert response["Content-Type"] == "text/css"
         # Should return no-cache response for non-existent theme
         assert response["Cache-Control"] == "no-cache"
+        # Should return empty content for non-existent theme
+        assert response.content.decode() == ""
 
     def test_active_theme_css(self) -> None:
         """Test active_theme_css view."""
