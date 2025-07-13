@@ -3,6 +3,7 @@ import "./globals.css";
 import StyledComponentsRegistry from "../lib/registry";
 import SSRNavbar from "../lib/components/SSRNavbar";
 import SSRFooter from "../lib/components/SSRFooter";
+import CookieConsent from "../components/CookieConsent";
 import { ssrApiClient } from "../lib/frontend-api-adapter";
 import { NavItemData, DEFAULT_NAV_ITEMS } from "@shared/types";
 import { getFallbackHomepage } from "@shared/utils/homepage-data";
@@ -68,6 +69,7 @@ export default async function RootLayout({
             <main style={{ flex: 1 }}>{children}</main>
             <SSRFooter organizationName={organizationName} />
           </div>
+          <CookieConsent />
         </StyledComponentsRegistry>
       </body>
     </html>
