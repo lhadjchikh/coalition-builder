@@ -88,6 +88,27 @@ class ApiClient {
     return this.request<ContentBlock>(`/api/content-blocks/${blockId}/`);
   }
 
+  // Legal documents
+  async getTermsOfUse(): Promise<{
+    id: number;
+    title: string;
+    content: string;
+    version: string;
+    effective_date: string;
+  }> {
+    return this.request("/api/legal/terms/");
+  }
+
+  async getPrivacyPolicy(): Promise<{
+    id: number;
+    title: string;
+    content: string;
+    version: string;
+    effective_date: string;
+  }> {
+    return this.request("/api/legal/privacy/");
+  }
+
   // Health check
   async healthCheck(): Promise<{ status: string }> {
     return this.request<{ status: string }>("/api/health/");

@@ -29,6 +29,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
 
     const [statement, setStatement] = useState<string>('');
     const [publicDisplay, setPublicDisplay] = useState<boolean>(true);
+    const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<boolean>(false);
@@ -97,6 +98,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           stakeholder,
           statement,
           public_display: publicDisplay,
+          terms_accepted: termsAccepted,
           form_metadata: {
             form_start_time: formStartTime,
             referrer: document.referrer || '',
@@ -124,6 +126,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
         });
         setStatement('');
         setPublicDisplay(true);
+        setTermsAccepted(false);
         setHoneypotFields({
           website: '',
           url: '',
@@ -408,6 +411,23 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
                 data-testid="public-display-checkbox"
               />
               Display my endorsement publicly
+            </label>
+          </div>
+
+          <div className="form-group">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={termsAccepted}
+                onChange={e => setTermsAccepted(e.target.checked)}
+                required
+                data-testid="terms-checkbox"
+              />
+              I agree to the{' '}
+              <a href="/terms" target="_blank" rel="noopener noreferrer">
+                Terms of Use
+              </a>
+              *
             </label>
           </div>
 
