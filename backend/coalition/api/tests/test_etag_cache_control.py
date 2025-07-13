@@ -36,22 +36,22 @@ class CacheControlPreservationTest(TestCase):
     def test_custom_cache_control_preserved(self) -> None:
         """Test that custom Cache-Control headers are preserved."""
         response = self.client.get("/api/test/test-custom-cache/")
-        
+
         # Should have ETag
         assert "ETag" in response
         assert response.status_code == 200
-        
+
         # Custom Cache-Control should be preserved
         assert response["Cache-Control"] == "public, max-age=3600"
 
     def test_no_cache_header_preserved(self) -> None:
         """Test that no-cache headers are preserved."""
         response = self.client.get("/api/test/test-no-cache/")
-        
+
         # Should have ETag
         assert "ETag" in response
         assert response.status_code == 200
-        
+
         # No-cache header should be preserved
         assert response["Cache-Control"] == "no-cache, no-store, must-revalidate"
 
