@@ -12,6 +12,30 @@ interface CampaignDetailProps {
   initialCampaign?: Campaign;
 }
 
+// Style constants for inline styles
+const SECTION_LAYOUT_STYLE: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '2rem',
+};
+
+const ICON_CONTAINER_STYLE: React.CSSProperties = {
+  width: '4rem',
+  height: '4rem',
+  color: '#4caf50',
+  flexShrink: 0,
+  lineHeight: 1,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+};
+
+const TEXT_CONTENT_STYLE: React.CSSProperties = {
+  flex: 1,
+  textAlign: 'left',
+};
+
 const CampaignDetail: React.FC<CampaignDetailProps> = ({
   campaignId,
   campaignName,
@@ -88,11 +112,15 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   };
 
   useEffect(() => {
+    const SCROLL_THRESHOLD = 200;
+    const VIEWPORT_RATIO = 0.8;
+
     const handleScroll = () => {
       if (endorsementSectionRef.current) {
         const rect = endorsementSectionRef.current.getBoundingClientRect();
         // Show sticky CTA when user has scrolled down and endorsement section is not at the top
-        const shouldShow = window.scrollY > 200 && rect.top < window.innerHeight * 0.8;
+        const shouldShow =
+          window.scrollY > SCROLL_THRESHOLD && rect.top < window.innerHeight * VIEWPORT_RATIO;
         setShowStickyCard(shouldShow);
       }
     };
@@ -143,30 +171,12 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
           <div className="social-proof">
             <div
               className="social-proof-content"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '2rem',
-                marginBottom: '1rem',
-              }}
+              style={{ ...SECTION_LAYOUT_STYLE, marginBottom: '1rem' }}
             >
-              <div
-                className="social-proof-icon"
-                style={{
-                  width: '4rem',
-                  height: '4rem',
-                  color: '#4caf50',
-                  flexShrink: 0,
-                  lineHeight: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+              <div className="social-proof-icon" style={ICON_CONTAINER_STYLE}>
                 <GrowthIcon stage="tree" size="48px" color="#4caf50" />
               </div>
-              <div className="social-proof-text-content" style={{ flex: 1, textAlign: 'left' }}>
+              <div className="social-proof-text-content" style={TEXT_CONTENT_STYLE}>
                 <div className="endorsement-stats">
                   <span className="endorsement-count">{endorsementCount}</span>
                   <span className="endorsement-label">
@@ -192,31 +202,11 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         {/* Early Supporter Appeal (1-9 endorsements) */}
         {campaign.allow_endorsements && endorsementCount > 0 && endorsementCount < 10 && (
           <div className="early-supporter-appeal">
-            <div
-              className="early-supporter-content"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '2rem',
-              }}
-            >
-              <div
-                className="early-supporter-icon"
-                style={{
-                  width: '4rem',
-                  height: '4rem',
-                  color: '#4caf50',
-                  flexShrink: 0,
-                  lineHeight: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+            <div className="early-supporter-content" style={SECTION_LAYOUT_STYLE}>
+              <div className="early-supporter-icon" style={ICON_CONTAINER_STYLE}>
                 <GrowthIcon stage="seedling" size="48px" color="#4caf50" />
               </div>
-              <div className="early-supporter-text" style={{ flex: 1, textAlign: 'left' }}>
+              <div className="early-supporter-text" style={TEXT_CONTENT_STYLE}>
                 <h3>Join the Early Supporters</h3>
                 <p>Be among the founding voices advocating for this important initiative.</p>
               </div>
@@ -227,31 +217,11 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         {/* First Endorser Appeal (0 endorsements) */}
         {campaign.allow_endorsements && endorsementCount === 0 && (
           <div className="first-endorser-appeal">
-            <div
-              className="first-endorser-content"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '2rem',
-              }}
-            >
-              <div
-                className="first-endorser-icon"
-                style={{
-                  width: '4rem',
-                  height: '4rem',
-                  color: '#4caf50',
-                  flexShrink: 0,
-                  lineHeight: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+            <div className="first-endorser-content" style={SECTION_LAYOUT_STYLE}>
+              <div className="first-endorser-icon" style={ICON_CONTAINER_STYLE}>
                 <GrowthIcon stage="seed" size="48px" color="#4caf50" />
               </div>
-              <div className="first-endorser-text" style={{ flex: 1, textAlign: 'left' }}>
+              <div className="first-endorser-text" style={TEXT_CONTENT_STYLE}>
                 <h3>Be the First to Show Support</h3>
                 <p>Help launch this campaign by adding your voice to this important cause.</p>
               </div>
