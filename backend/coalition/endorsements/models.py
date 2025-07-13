@@ -2,6 +2,7 @@ import uuid
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
@@ -165,8 +166,6 @@ class Endorsement(models.Model):
 
     def verify_email(self) -> None:
         """Mark email as verified and auto-approve if configured"""
-        from django.conf import settings
-
         self.email_verified = True
         self.verified_at = timezone.now()
 
