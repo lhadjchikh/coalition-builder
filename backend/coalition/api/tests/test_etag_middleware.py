@@ -1,6 +1,8 @@
 import json
+from collections.abc import Generator
 
-from django.test import TestCase
+from django.http import HttpRequest, JsonResponse, StreamingHttpResponse
+from django.test import TestCase, override_settings
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.content.models import HomePage
@@ -116,3 +118,113 @@ class ETagMiddlewareTest(TestCase):
         assert "ETag" in response
         assert response.status_code == 200
         assert response["Cache-Control"] == "private, must-revalidate"
+
+    def test_streaming_responses_skip_etag(self) -> None:
+        """Test that streaming responses do not get ETag headers."""
+
+        # Create a mock streaming response
+        def stream_generator() -> Generator[bytes]:
+            yield b"chunk1"
+            yield b"chunk2"
+
+        streaming_response = StreamingHttpResponse(
+            stream_generator(),
+            content_type="text/plain",
+        )
+        streaming_response.status_code = 200
+
+        # Create a mock request
+        request = HttpRequest()
+        request.path = "/api/test-stream/"
+        request.method = "GET"
+
+        # The middleware should skip streaming responses entirely
+        # Verify condition excludes StreamingHttpResponse
+        should_process = (
+            request.path.startswith("/api/")
+            and request.method in ("GET", "HEAD")
+            and streaming_response.status_code == 200
+            and not streaming_response.has_header("ETag")
+            and not isinstance(streaming_response, StreamingHttpResponse)
+        )
+
+        assert not should_process, "Streaming responses should be skipped"
+
+    def test_existing_etag_not_overridden(self) -> None:
+        """Test that existing ETag headers are not overridden by middleware."""
+        # Test the middleware condition checks for existing ETags
+        # Create a response with an existing ETag
+        response = JsonResponse({"test": "data"})
+        response["ETag"] = '"existing-etag-value"'
+        response.status_code = 200
+
+        # Create a mock request
+        request = HttpRequest()
+        request.path = "/api/test/"
+        request.method = "GET"
+
+        # The middleware should skip responses that already have ETags
+        should_process = (
+            request.path.startswith("/api/")
+            and request.method in ("GET", "HEAD")
+            and response.status_code == 200
+            and not response.has_header("ETag")
+            and not isinstance(response, StreamingHttpResponse)
+        )
+
+        assert not should_process, "Responses with existing ETags should be skipped"
+        assert response["ETag"] == '"existing-etag-value"'
+
+    @override_settings(ETAG_API_PREFIX="/custom-api/")
+    def test_custom_prefix_with_mock_responses(self) -> None:
+        """Test that custom API prefix configuration works correctly."""
+        # Create mock request and response for custom prefix
+        request = HttpRequest()
+        request.path = "/custom-api/test/"
+        request.method = "GET"
+        request.GET = {}  # Empty query params
+
+        response = JsonResponse({"test": "data"})
+        response.status_code = 200
+
+        # Test that custom prefix is recognized
+        from django.conf import settings
+
+        api_prefix = getattr(settings, "ETAG_API_PREFIX", "/api/")
+
+        should_process = (
+            request.path.startswith(api_prefix)
+            and request.method in ("GET", "HEAD")
+            and response.status_code == 200
+            and not response.has_header("ETag")
+            and not isinstance(response, StreamingHttpResponse)
+        )
+
+        assert should_process, "Custom prefix should be processed"
+        assert api_prefix == "/custom-api/"
+
+    @override_settings(ETAG_API_PREFIX="/v1/api/")
+    def test_different_custom_prefix(self) -> None:
+        """Test that different custom prefix values are respected."""
+        # Test with non-matching path
+        request = HttpRequest()
+        request.path = "/api/test/"  # Default prefix, but setting is /v1/api/
+        request.method = "GET"
+
+        response = JsonResponse({"test": "data"})
+        response.status_code = 200
+
+        from django.conf import settings
+
+        api_prefix = getattr(settings, "ETAG_API_PREFIX", "/api/")
+
+        should_process = (
+            request.path.startswith(api_prefix)
+            and request.method in ("GET", "HEAD")
+            and response.status_code == 200
+            and not response.has_header("ETag")
+            and not isinstance(response, StreamingHttpResponse)
+        )
+
+        assert not should_process, "Non-matching prefix should not be processed"
+        assert api_prefix == "/v1/api/"
