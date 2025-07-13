@@ -32,14 +32,14 @@ export function initializeCookieConsent() {
             description:
               "This website uses essential cookies to ensure its proper operation and tracking cookies to understand how you interact with it. The latter will be set only after consent.",
             acceptAllBtn: "Accept all",
-            acceptNecessaryBtn: "Reject all",
+            acceptNecessaryBtn: "Only necessary",
             showPreferencesBtn: "Manage preferences",
             footer: '<a href="/privacy">Privacy Policy</a>',
           },
           preferencesModal: {
             title: "Consent Preferences Center",
             acceptAllBtn: "Accept all",
-            acceptNecessaryBtn: "Reject all",
+            acceptNecessaryBtn: "Only necessary",
             savePreferencesBtn: "Save preferences",
             closeIconLabel: "Close modal",
             serviceCounterLabel: "Service|Services",
