@@ -14,14 +14,24 @@ Example Terms of Use document that provides comprehensive legal protection for y
 - Liability limitations and indemnification
 - Termination and dispute resolution clauses
 
-**To use this fixture:**
+### `example_legal_privacy_policy.json`
 
-1. Copy the file to your `fixtures/` directory (which is gitignored)
+Example Privacy Policy document that explains how personal information is collected, used, and protected. This includes:
+
+- Information collection practices
+- Data usage and sharing policies
+- Security measures and data retention
+- User rights and contact information
+- State-specific privacy rights (CCPA, GDPR)
+
+**To use these fixtures:**
+
+1. Copy the files to your `fixtures/` directory (which is gitignored)
 2. Customize the content to match your organization's specific needs
 3. Update the effective date and version number
-4. Load it with: `python manage.py loaddata fixtures/your_legal_terms.json`
+4. Load them with: `python manage.py loaddata fixtures/your_legal_terms.json fixtures/your_privacy_policy.json`
 
-**Important:** This is provided as an example only. You should have your legal terms reviewed by a qualified attorney before using them in production.
+**Important:** These are provided as examples only. You should have your legal documents reviewed by a qualified attorney before using them in production.
 
 ## Other Sample Data
 
