@@ -92,8 +92,6 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   const handleEndorsementSubmitted = () => {
     // Trigger a refresh of the endorsements list
     setRefreshEndorsements(prev => prev + 1);
-    // Update count optimistically
-    setEndorsementCount(prev => prev + 1);
   };
 
   const handleEndorsementCountUpdate = (count: number, recentCount?: number) => {
@@ -265,9 +263,12 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
       <section
         className="campaign-endorsements"
         role="region"
-        aria-label="Campaign Endorsements"
+        aria-labelledby="endorsements-heading"
         ref={endorsementSectionRef}
       >
+        <h2 id="endorsements-heading" className="endorsements-heading">
+          Endorsements
+        </h2>
         <div className="endorsements-container">
           <div className="endorsements-display">
             <EndorsementsList
