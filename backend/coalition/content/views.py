@@ -21,13 +21,15 @@ def theme_css(request: HttpRequest, theme_id: int = None) -> HttpResponse:
     if theme_id:
         try:
             theme = Theme.objects.get(id=theme_id)
+            return ThemeService.get_theme_css_response(theme)
         except Theme.DoesNotExist:
-            # Return empty CSS for non-existent themes
-            theme = None
+            # Return empty CSS with no-cache for non-existent themes
+            response = HttpResponse("", content_type="text/css")
+            response["Cache-Control"] = "no-cache"
+            return response
     else:
         theme = Theme.get_active()
-
-    return ThemeService.get_theme_css_response(theme)
+        return ThemeService.get_theme_css_response(theme)
 
 
 def active_theme_css(request: HttpRequest) -> HttpResponse:

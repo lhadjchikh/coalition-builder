@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from ninja import ModelSchema, Schema
@@ -248,8 +249,6 @@ class SpamPreventionMetadata(Schema):
         # Basic format validation (ISO datetime check)
         if v:
             try:
-                from datetime import datetime
-
                 datetime.fromisoformat(v.replace("Z", "+00:00"))
             except (ValueError, TypeError) as err:
                 raise ValueError("Invalid datetime format for form_start_time") from err

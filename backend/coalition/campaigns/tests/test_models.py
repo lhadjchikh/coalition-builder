@@ -1,8 +1,10 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
+from coalition.endorsements.models import Endorsement
 from coalition.legislators.models import Legislator
 from coalition.regions.models import Region
+from coalition.stakeholders.models import Stakeholder
 
 from ..models import Bill, PolicyCampaign
 
@@ -82,9 +84,6 @@ class PolicyCampaignModelTest(TestCase):
 
     def test_campaign_with_endorsements_relationship(self) -> None:
         """Test that campaign can access its endorsements"""
-        from coalition.endorsements.models import Endorsement
-        from coalition.stakeholders.models import Stakeholder
-
         campaign = PolicyCampaign.objects.create(**self.campaign_data)
 
         # Create stakeholder and endorsement
