@@ -1,9 +1,13 @@
 import hashlib
 from collections.abc import Callable
 
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
 from django.utils.cache import get_conditional_response
 from django.utils.http import quote_etag
+
+# Default API prefix - can be overridden in settings
+DEFAULT_API_PREFIX = "/api/"
 
 
 class ETagMiddleware:
@@ -24,11 +28,14 @@ class ETagMiddleware:
         response = self.get_response(request)
 
         # Only process API endpoints and successful GET/HEAD requests
+        # Skip streaming responses entirely
+        api_prefix = getattr(settings, "ETAG_API_PREFIX", DEFAULT_API_PREFIX)
         if (
-            request.path.startswith("/api/")
+            request.path.startswith(api_prefix)
             and request.method in ("GET", "HEAD")
             and response.status_code == 200
             and not response.has_header("ETag")
+            and not isinstance(response, StreamingHttpResponse)
         ):
             # Generate ETag from response content
             etag = self._generate_etag(request, response)
@@ -49,19 +56,15 @@ class ETagMiddleware:
 
     def _generate_etag(self, request: HttpRequest, response: HttpResponse) -> str:
         """Generate an ETag from response content."""
-        # Skip streaming responses to avoid breaking streaming semantics
-        if isinstance(response, StreamingHttpResponse):
-            return ""
-        
-        # Get content from response
+        # Get content from response (streaming responses are already filtered out)
         content = response.content if hasattr(response, "content") else b""
 
         # Optimize: Use direct byte concatenation instead of JSON serialization
         # This is much faster for large payloads
         content_type = response.get("Content-Type", "").encode("utf-8")
         query_params = request.GET.urlencode().encode("utf-8") if request.GET else b""
-        
+
         # Combine all components for hash generation
         hash_input = content + b"|" + content_type + b"|" + query_params
-        
+
         return hashlib.sha256(hash_input).hexdigest()
