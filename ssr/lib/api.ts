@@ -96,7 +96,13 @@ class ApiClient {
     version: string;
     effective_date: string;
   }> {
-    return this.request("/api/legal/terms/");
+    return this.request<{
+      id: number;
+      title: string;
+      content: string;
+      version: string;
+      effective_date: string;
+    }>("/api/legal/terms/");
   }
 
   async getPrivacyPolicy(): Promise<{
@@ -106,7 +112,13 @@ class ApiClient {
     version: string;
     effective_date: string;
   }> {
-    return this.request("/api/legal/privacy/");
+    return this.request<{
+      id: number;
+      title: string;
+      content: string;
+      version: string;
+      effective_date: string;
+    }>("/api/legal/privacy/");
   }
 
   // Health check
