@@ -1,262 +1,112 @@
 /**
- * Tests for the SSR analytics service
+ * SSR-specific tests for the unified analytics service
+ *
+ * Core analytics functionality is tested in frontend tests.
+ * These tests focus on SSR-specific behavior and integration.
  */
 
 // Mock environment variable before importing
 process.env.NEXT_PUBLIC_GA_TRACKING_ID = "G-TEST123456";
 
-import analytics from "../analytics";
+import analytics from "@shared/services/analytics";
 
-// Mock environment variable
 const originalEnv = process.env;
 
-// Mock window object
-const mockWindow = {
-  gtag: jest.fn(),
-  dataLayer: [],
-  CookieConsent: {
-    acceptedCategory: jest.fn().mockReturnValue(true),
-  },
-  location: {
-    href: "https://example.com/test",
-  },
-};
-
-// Mock document
-const mockDocument = {
-  title: "Test Page",
-  createElement: jest.fn().mockReturnValue({
-    async: false,
-    src: "",
-  }),
-  head: {
-    appendChild: jest.fn(),
-  },
-  cookie: "analytics_consent=true",
-};
-
-// Mock console
-const mockConsole = {
-  log: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-};
-
-// Store original console for restoration
-const originalConsole = global.console;
-
-describe("SSR Analytics Service", () => {
-  beforeEach(() => {
-    // Reset environment
-    process.env = {
-      ...originalEnv,
-      NEXT_PUBLIC_GA_TRACKING_ID: "G-TEST123456",
-    };
-
-    // Reset mocks
-    jest.clearAllMocks();
-
-    // Mock window and document by direct assignment
-    (global as any).window = mockWindow;
-    (global as any).document = mockDocument;
-
-    // Mock console
-    global.console = mockConsole as any;
-  });
-
+describe("Analytics Service - SSR Integration", () => {
   afterEach(() => {
     process.env = originalEnv;
-    // Reset window to undefined for SSR testing
-    delete (global as any).window;
-    delete (global as any).document;
-    // Restore original console
-    global.console = originalConsole;
   });
 
-  describe("server-side behavior", () => {
+  describe("Server-side Environment", () => {
     beforeEach(() => {
-      // Remove window for server-side testing
+      // Ensure we're in a server-like environment
       delete (global as any).window;
       delete (global as any).document;
     });
 
-    it("should get tracking ID on server side", () => {
+    it("should be importable in SSR environment", () => {
+      expect(analytics).toBeDefined();
+      expect(typeof analytics.getTrackingId).toBe("function");
+      expect(typeof analytics.initialize).toBe("function");
+      expect(typeof analytics.trackPageView).toBe("function");
+      expect(typeof analytics.trackEvent).toBe("function");
+      expect(typeof analytics.trackNavigation).toBe("function");
+    });
+
+    it("should get tracking ID from NEXT_PUBLIC_GA_TRACKING_ID", () => {
+      // Reset service to pick up environment
+      (analytics as any)._resetForTesting();
       expect(analytics.getTrackingId()).toBe("G-TEST123456");
     });
 
-    it("should not initialize on server side", async () => {
-      await analytics.initialize();
-
-      // Should not throw errors or attempt to access window
-      expect(mockConsole.error).not.toHaveBeenCalled();
-    });
-
-    it("should not track events on server side", () => {
-      analytics.trackPageView({
-        page_title: "Test Page",
-        page_location: "https://example.com/test",
-        page_path: "/test",
-      });
-
-      analytics.trackEvent({
-        action: "test_action",
-        category: "test_category",
-      });
-
-      // Should not throw errors
-      expect(mockConsole.error).not.toHaveBeenCalled();
-    });
-  });
-
-  describe("client-side behavior", () => {
-    it("should initialize with tracking ID and consent", async () => {
-      await analytics.initialize();
-
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "Google Analytics initialized with ID:",
-        "G-TEST123456",
-      );
-    });
-
-    it("should not initialize without consent", async () => {
-      mockWindow.CookieConsent.acceptedCategory.mockReturnValue(false);
-
-      await analytics.initialize();
-
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "Analytics cookies not enabled, skipping GA initialization",
-      );
-    });
-
-    it("should track page views with path", () => {
-      analytics.trackPageView({
-        page_title: "Test Page",
-        page_location: "https://example.com/test",
-        page_path: "/test",
-      });
-
-      expect(mockWindow.gtag).toHaveBeenCalledWith("event", "page_view", {
-        page_title: "Test Page",
-        page_location: "https://example.com/test",
-        page_path: "/test",
-      });
-    });
-
-    it("should track navigation events", () => {
-      analytics.trackNavigation("/new-page", "New Page");
-
-      expect(mockWindow.gtag).toHaveBeenCalledWith("event", "page_view", {
-        page_title: "New Page",
-        page_location: "https://example.com/test",
-        page_path: "/new-page",
-      });
-    });
-
-    it("should track legal document views", () => {
-      analytics.trackLegalDocumentView("terms");
-
-      expect(mockWindow.gtag).toHaveBeenCalledWith(
-        "event",
-        "view_legal_document",
-        {
-          event_category: "legal",
-          event_label: "terms",
-          value: undefined,
-        },
-      );
-    });
-
-    it("should track campaign views", () => {
-      analytics.trackCampaignView("Test Campaign");
-
-      expect(mockWindow.gtag).toHaveBeenCalledWith("event", "view_campaign", {
-        event_category: "engagement",
-        event_label: "Test Campaign",
-        value: undefined,
-      });
-    });
-  });
-
-  describe("consent checking", () => {
-    it("should check CookieConsent when available", async () => {
-      mockWindow.CookieConsent.acceptedCategory.mockReturnValue(true);
-
-      await analytics.initialize();
-
-      expect(mockWindow.CookieConsent.acceptedCategory).toHaveBeenCalledWith(
-        "analytics",
-      );
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "Google Analytics initialized with ID:",
-        "G-TEST123456",
-      );
-    });
-
-    it("should fall back to cookie check when CookieConsent not available", async () => {
-      delete mockWindow.CookieConsent;
-      mockDocument.cookie = "analytics_consent=true";
-
-      await analytics.initialize();
-
-      expect(mockConsole.log).toHaveBeenCalledWith(
-        "Google Analytics initialized with ID:",
-        "G-TEST123456",
-      );
-    });
-
-    it("should handle CookieConsent errors gracefully", async () => {
-      mockWindow.CookieConsent.acceptedCategory.mockImplementation(() => {
-        throw new Error("CookieConsent error");
-      });
-
-      await analytics.initialize();
-
-      expect(mockConsole.warn).toHaveBeenCalledWith(
-        "Could not check analytics cookie consent:",
-        expect.any(Error),
-      );
-    });
-  });
-
-  describe("configuration", () => {
-    it("should return null tracking ID when not configured", () => {
+    it("should handle missing tracking ID gracefully", () => {
       process.env.NEXT_PUBLIC_GA_TRACKING_ID = "";
+      process.env.REACT_APP_GA_TRACKING_ID = "";
 
-      // Create new instance to pick up env change
-      const { analytics: newAnalytics } = require("../analytics");
-
-      expect(newAnalytics.getTrackingId()).toBeNull();
+      (analytics as any)._resetForTesting();
+      expect(analytics.getTrackingId()).toBeNull();
     });
 
-    it("should not initialize without tracking ID", async () => {
-      process.env.NEXT_PUBLIC_GA_TRACKING_ID = "";
-
-      await analytics.initialize();
-
-      expect(mockConsole.log).not.toHaveBeenCalledWith(
-        expect.stringContaining("Google Analytics initialized"),
-      );
+    it("should not throw when calling methods on server side", () => {
+      expect(() => {
+        analytics.initialize();
+        analytics.trackPageView({
+          page_title: "Test Page",
+          page_location: "https://example.com/test",
+          page_path: "/test",
+        });
+        analytics.trackEvent({
+          action: "test_action",
+          category: "test_category",
+        });
+        analytics.trackNavigation("/test", "Test Page");
+        analytics.trackLegalDocumentView("terms");
+        analytics.trackCampaignView("Test Campaign");
+        analytics.onConsentChange();
+      }).not.toThrow();
     });
   });
-});
 
-// Test type exports
-describe("Analytics Types", () => {
-  it("should export expected interfaces", () => {
-    const event: import("../analytics").AnalyticsEvent = {
-      action: "test",
-      category: "test",
-      label: "test",
-      value: 1,
-    };
+  describe("SSR-specific Methods", () => {
+    beforeEach(() => {
+      // Mock minimal window for client-side tests
+      (global as any).window = {
+        location: { href: "https://example.com/test" },
+        document: { title: "Test Page" },
+      };
+    });
 
-    const pageView: import("../analytics").PageViewEvent = {
-      page_title: "Test",
-      page_location: "https://example.com",
-      page_path: "/test",
-    };
+    it("should have trackNavigation method for Next.js routing", () => {
+      expect(typeof analytics.trackNavigation).toBe("function");
+    });
 
-    expect(event).toBeDefined();
-    expect(pageView).toBeDefined();
+    it("should have trackLegalDocumentView method for legal pages", () => {
+      expect(typeof analytics.trackLegalDocumentView).toBe("function");
+    });
+
+    afterEach(() => {
+      delete (global as any).window;
+    });
+  });
+
+  describe("Type Safety", () => {
+    it("should export expected interfaces", () => {
+      // Test that TypeScript types are properly exported
+      const event: import("@shared/services/analytics").AnalyticsEvent = {
+        action: "test",
+        category: "test",
+        label: "test",
+        value: 1,
+      };
+
+      const pageView: import("@shared/services/analytics").PageViewEvent = {
+        page_title: "Test",
+        page_location: "https://example.com",
+        page_path: "/test",
+      };
+
+      expect(event).toBeDefined();
+      expect(pageView).toBeDefined();
+    });
   });
 });

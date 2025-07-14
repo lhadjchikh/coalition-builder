@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import API from '../services/api';
-import analytics from '../services/analytics';
+import analytics from '@shared/services/analytics';
 import { Campaign } from '../types';
 import EndorsementForm, { EndorsementFormRef } from './EndorsementForm';
 import EndorsementsList from './EndorsementsList';

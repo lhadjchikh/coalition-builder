@@ -5,7 +5,7 @@
 // Mock environment variable before importing
 process.env.REACT_APP_GA_TRACKING_ID = 'G-TEST123456';
 
-import analytics from '../analytics';
+import analytics from '@shared/services/analytics';
 
 // Mock the environment variable
 const mockEnv = {

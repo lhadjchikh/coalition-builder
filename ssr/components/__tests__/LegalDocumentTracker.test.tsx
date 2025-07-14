@@ -5,10 +5,10 @@
 import React from "react";
 import { render } from "@testing-library/react";
 import LegalDocumentTracker from "../LegalDocumentTracker";
-import analytics from "../../lib/analytics";
+import analytics from "@shared/services/analytics";
 
 // Mock the analytics module
-jest.mock("../../lib/analytics", () => ({
+jest.mock("@shared/services/analytics", () => ({
   trackLegalDocumentView: jest.fn(),
 }));
 

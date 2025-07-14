@@ -6,7 +6,7 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import { usePathname } from "next/navigation";
 import GoogleAnalytics from "../GoogleAnalytics";
-import analytics from "../../lib/analytics";
+import analytics from "@shared/services/analytics";
 
 // Mock Next.js hooks
 jest.mock("next/navigation", () => ({
@@ -30,7 +30,7 @@ jest.mock("next/script", () => {
 });
 
 // Mock the analytics module
-jest.mock("../../lib/analytics", () => ({
+jest.mock("@shared/services/analytics", () => ({
   getTrackingId: jest.fn(),
   initialize: jest.fn(),
   trackNavigation: jest.fn(),

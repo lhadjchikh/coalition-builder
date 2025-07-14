@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import analytics from '../services/analytics';
+import analytics from '@shared/services/analytics';
 
 /**
  * Google Analytics initialization component.

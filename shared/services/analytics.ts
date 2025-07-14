@@ -1,7 +1,8 @@
 /**
- * Google Analytics service for Next.js SSR application.
+ * Unified Google Analytics service for both frontend and SSR applications.
  *
  * This service:
+ * - Works in both React and Next.js environments
  * - Handles both server-side and client-side analytics
  * - Respects cookie consent preferences
  * - Only tracks when analytics cookies are enabled
@@ -22,16 +23,19 @@ declare global {
 
 export type { AnalyticsEvent, PageViewEvent };
 
-class SSRAnalyticsService {
+class UnifiedAnalyticsService {
   private trackingId: string | null = null;
   private isInitialized = false;
 
   constructor() {
-    this.trackingId = process.env.NEXT_PUBLIC_GA_TRACKING_ID || null;
+    this.trackingId =
+      process.env.REACT_APP_GA_TRACKING_ID ||
+      process.env.NEXT_PUBLIC_GA_TRACKING_ID ||
+      null;
   }
 
   /**
-   * Get the tracking ID for server-side rendering
+   * Get the tracking ID
    */
   getTrackingId(): string | null {
     return this.trackingId;
@@ -65,12 +69,24 @@ class SSRAnalyticsService {
           window.dataLayer.push([command, ...args]);
         } as GtagCommand);
 
+      // Load GA script if not already loaded (for non-SSR environments)
+      // In SSR environments, the GoogleAnalytics component handles script loading
+      if (
+        typeof document !== "undefined" &&
+        !document.querySelector(`script[src*="gtag/js?id=${this.trackingId}"]`)
+      ) {
+        const script = document.createElement("script");
+        script.async = true;
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${this.trackingId}`;
+        document.head.appendChild(script);
+      }
+
       // Configure Google Analytics
       window.gtag("js", new Date());
       window.gtag("config", this.trackingId, {
         anonymize_ip: true, // Privacy compliance
         cookie_flags: "SameSite=Strict;Secure", // Security
-        send_page_view: false, // We'll handle page views manually for Next.js routing
+        send_page_view: false, // Prevent automatic pageview tracking
       });
 
       this.isInitialized = true;
@@ -81,7 +97,7 @@ class SSRAnalyticsService {
   }
 
   /**
-   * Track a page view (client-side only)
+   * Track a page view
    */
   trackPageView(event: PageViewEvent): void {
     if (
@@ -100,7 +116,7 @@ class SSRAnalyticsService {
   }
 
   /**
-   * Track a custom event (client-side only)
+   * Track a custom event
    */
   trackEvent(event: AnalyticsEvent): void {
     if (
@@ -119,13 +135,39 @@ class SSRAnalyticsService {
   }
 
   /**
-   * Track page navigation for Next.js router
+   * Track page navigation for Next.js router (SSR environments)
    */
   trackNavigation(url: string, title?: string): void {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     this.trackPageView({
       page_title: title || document.title,
       page_location: window.location.href,
       page_path: url,
+    });
+  }
+
+  /**
+   * Track endorsement submission
+   */
+  trackEndorsementSubmission(campaignName: string): void {
+    this.trackEvent({
+      action: "submit_endorsement",
+      category: "engagement",
+      label: campaignName,
+    });
+  }
+
+  /**
+   * Track campaign view
+   */
+  trackCampaignView(campaignName: string): void {
+    this.trackEvent({
+      action: "view_campaign",
+      category: "engagement",
+      label: campaignName,
     });
   }
 
@@ -141,13 +183,13 @@ class SSRAnalyticsService {
   }
 
   /**
-   * Track campaign page views
+   * Track form interaction (frontend specific)
    */
-  trackCampaignView(campaignName: string): void {
+  trackFormInteraction(formName: string, action: string): void {
     this.trackEvent({
-      action: "view_campaign",
-      category: "engagement",
-      label: campaignName,
+      action: action,
+      category: "form_interaction",
+      label: formName,
     });
   }
 
@@ -190,11 +232,14 @@ class SSRAnalyticsService {
    * @internal
    */
   _resetForTesting(): void {
-    this.trackingId = process.env.NEXT_PUBLIC_GA_TRACKING_ID || null;
+    this.trackingId =
+      process.env.REACT_APP_GA_TRACKING_ID ||
+      process.env.NEXT_PUBLIC_GA_TRACKING_ID ||
+      null;
     this.isInitialized = false;
   }
 }
 
 // Export singleton instance
-export const analytics = new SSRAnalyticsService();
+export const analytics = new UnifiedAnalyticsService();
 export default analytics;

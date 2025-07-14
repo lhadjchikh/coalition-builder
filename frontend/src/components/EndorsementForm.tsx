@@ -1,6 +1,6 @@
 import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import API from '../services/api';
-import analytics from '../services/analytics';
+import analytics from '@shared/services/analytics';
 import { Campaign, EndorsementCreate, Stakeholder } from '../types';
 import './Endorsements.css';
 

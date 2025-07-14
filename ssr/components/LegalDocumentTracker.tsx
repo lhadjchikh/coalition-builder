@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import analytics from "../lib/analytics";
+import analytics from "@shared/services/analytics";
 
 interface LegalDocumentTrackerProps {
   documentType: "terms" | "privacy";

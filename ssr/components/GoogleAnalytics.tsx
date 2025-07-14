@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Script from "next/script";
-import analytics from "../lib/analytics";
+import analytics from "@shared/services/analytics";
 
 /**
  * Google Analytics component for Next.js SSR application.
