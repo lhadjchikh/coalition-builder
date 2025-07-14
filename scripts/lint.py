@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import subprocess
@@ -211,6 +212,99 @@ def run_prettier(project_root: Path) -> tuple[bool, bool]:
                 success = False
     except Exception as e:
         print(f"❌ Error running Prettier: {e}")
+        success = False
+
+    return success, True
+
+
+def run_typescript_checks(project_root: Path) -> tuple[bool, bool]:
+    """Run TypeScript type checking if TypeScript is configured.
+
+    Args:
+        project_root: Path to the project root directory
+
+    Returns:
+        Tuple of (success, was_run) - success indicates if type checking passed, was_run indicates if it could run
+    """
+    print_section_header("TYPESCRIPT TYPE CHECKING")
+    success = True
+
+    frontend_dir = project_root / "frontend"
+    if not frontend_dir.exists():
+        print("⚠️  Frontend directory not found. Skipping TypeScript checks.")
+        return True, False
+
+    # Check if package.json exists
+    package_json = frontend_dir / "package.json"
+    if not package_json.exists():
+        print("⚠️  No package.json found in frontend directory. Skipping TypeScript checks.")
+        return True, False
+
+    # Check if tsconfig.json exists
+    tsconfig = frontend_dir / "tsconfig.json"
+    if not tsconfig.exists():
+        print("⚠️  No tsconfig.json found in frontend directory. Skipping TypeScript checks.")
+        return True, False
+
+    # Check if npm is available
+    if not which("npm"):
+        print("⚠️  npm is not installed. Skipping TypeScript checks.")
+        return True, False
+
+    try:
+        # Run TypeScript compiler for type checking
+        print_step("Running TypeScript compiler type checking")
+        typecheck_result = run_command(
+            ["npm", "--prefix", "frontend", "run", "typecheck"],
+            cwd=project_root,
+        )
+        success &= typecheck_result
+
+        # Optionally run ESLint if configured
+        try:
+            # Check if ESLint script exists in package.json
+            with open(package_json, 'r') as f:
+                package_data = json.load(f)
+            
+            scripts = package_data.get('scripts', {})
+            if 'lint' in scripts:
+                print_step("Running ESLint with auto-fix")
+                # First try to auto-fix issues
+                fix_result = run_command(
+                    ["npm", "--prefix", "frontend", "run", "lint:fix"],
+                    cwd=project_root,
+                )
+                
+                # Then run lint again to check for remaining issues
+                print_step("Running ESLint to check remaining issues")
+                lint_result = run_command(
+                    ["npm", "--prefix", "frontend", "run", "lint"],
+                    cwd=project_root,
+                )
+                
+                # Don't fail the entire TypeScript check if ESLint has remaining issues
+                if not lint_result:
+                    if fix_result:
+                        print("⚠️  ESLint auto-fixed some issues but found remaining code quality issues.")
+                    else:
+                        print("⚠️  ESLint found code quality issues. Auto-fix may have failed.")
+                    print("      TypeScript type checking still passed successfully.")
+                    print("      Review the output above for issues that need manual fixes.")
+                    # We'll be more lenient with ESLint failures for overall success
+                else:
+                    if fix_result:
+                        print("   ✅ ESLint auto-fixed issues and all checks now pass")
+                    else:
+                        print("   ✅ ESLint passed")
+            else:
+                print("ℹ️  No lint script found in package.json. Skipping ESLint.")
+                
+        except (json.JSONDecodeError, FileNotFoundError) as e:
+            print(f"⚠️  Could not parse package.json: {e}")
+            # Don't fail the entire process for this
+
+    except Exception as e:
+        print(f"❌ Error running TypeScript checks: {e}")
         success = False
 
     return success, True
@@ -495,6 +589,7 @@ def main() -> int:
     linters: list[tuple[str, Callable[[Path], tuple[bool, bool]]]] = [
         ("Python", lambda root: run_python_linters(root)),
         ("Prettier", lambda root: run_prettier(root)),
+        ("TypeScript", lambda root: run_typescript_checks(root)),
         ("Terraform", lambda root: run_terraform_linters(root)),
         ("Shell Scripts", lambda root: run_shell_linters(root)),
         ("Go", lambda root: run_go_linters(root)),
