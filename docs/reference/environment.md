@@ -250,12 +250,27 @@ NEXT_PUBLIC_LOGO_URL="https://yourdomain.com/logo.png"
 | `NEXT_PUBLIC_GA_TRACKING_ID` | Google Analytics tracking ID | -       | No       |
 | `NEXT_PUBLIC_HOTJAR_ID`      | Hotjar site ID               | -       | No       |
 
+**Google Analytics Integration:**
+
+When `NEXT_PUBLIC_GA_TRACKING_ID` is provided, the application automatically:
+
+- Loads Google Analytics scripts client-side in both frontend and SSR applications
+- Respects cookie consent preferences (only tracks when analytics cookies are enabled)
+- Tracks page views, campaign views, endorsement submissions, and form interactions
+- Enables privacy-compliant tracking with IP anonymization and secure cookies
+
 **Example:**
 
 ```bash
-NEXT_PUBLIC_GA_TRACKING_ID=GA_MEASUREMENT_ID
+NEXT_PUBLIC_GA_TRACKING_ID=G-XXXXXXXXXX
 NEXT_PUBLIC_HOTJAR_ID=1234567
 ```
+
+**Notes:**
+
+- Use Google Analytics 4 (GA4) measurement IDs starting with "G-"
+- Analytics only activates when users consent to analytics cookies
+- Leave blank to disable all analytics tracking
 
 ## SSR Environment Variables
 

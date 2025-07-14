@@ -1,5 +1,6 @@
 import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import API from '../services/api';
+import analytics from '@shared/services/analytics';
 import { Campaign, EndorsementCreate, Stakeholder } from '../types';
 import './Endorsements.css';
 
@@ -64,6 +65,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
 
     // Handle form interaction events
     const handleFormFocus = () => {
+      analytics.trackFormInteraction('endorsement_form', 'form_focus');
       if (onFormInteraction) {
         onFormInteraction(true);
       }
@@ -108,6 +110,9 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
 
         await API.createEndorsement(endorsementData);
         setSuccess(true);
+
+        // Track successful endorsement submission
+        analytics.trackEndorsementSubmission(campaign.name || `Campaign ${campaign.id}`);
 
         // Hide sticky CTA since form was submitted successfully
         if (onFormInteraction) {

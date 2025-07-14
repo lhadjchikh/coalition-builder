@@ -17,6 +17,8 @@ services:
       target: deps # Use development build stage
     environment:
       - NODE_ENV=development # Override to development mode
+      # Analytics settings
+      - NEXT_PUBLIC_GA_TRACKING_ID=${NEXT_PUBLIC_GA_TRACKING_ID:-}
     volumes:
       - ./ssr:/app
       - ./frontend/src:/app/frontend/src:ro

@@ -30,6 +30,7 @@ const customJestConfig = {
   testMatch: [
     "<rootDir>/app/**/*.test.{ts,tsx,js,jsx}",
     "<rootDir>/lib/**/*.test.{ts,tsx,js,jsx}",
+    "<rootDir>/components/**/*.test.{ts,tsx,js,jsx}",
     "<rootDir>/__tests__/**/*.test.{ts,tsx,js,jsx}",
   ],
   testPathIgnorePatterns: [
