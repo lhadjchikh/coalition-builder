@@ -12,6 +12,7 @@ from django.test import Client, TestCase
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.models import Endorsement
+from coalition.legal.models import LegalDocument, TermsAcceptance
 from coalition.stakeholders.models import Stakeholder
 
 
@@ -760,3 +761,222 @@ class EndorsementAPIEnhancedTest(TestCase):
 
         response = self.client.get("/api/endorsements/export/json/")
         assert response.status_code == 403
+
+
+class TermsAcceptanceIntegrationTest(TestCase):
+    """Test automatic creation of TermsAcceptance records during endorsement."""
+
+    def setUp(self) -> None:
+        cache.clear()  # Clear rate limiting cache between tests
+        self.client = Client()
+
+        # Create admin user for legal documents
+        self.admin_user = User.objects.create_superuser(
+            username="admin",
+            email="admin@example.com",
+            password="adminpass",
+        )
+
+        # Create test campaign
+        self.campaign = PolicyCampaign.objects.create(
+            name="test-campaign",
+            title="Test Campaign",
+            summary="A test campaign",
+            description="Test description",
+            endorsement_statement="I support this test campaign",
+            allow_endorsements=True,
+            endorsement_form_instructions="Please fill out all fields",
+        )
+
+        # Create active terms document
+        self.terms_doc = LegalDocument.objects.create(
+            document_type="terms",
+            title="Terms of Use",
+            content="<p>Terms content</p>",
+            version="1.0",
+            is_active=True,
+            created_by=self.admin_user,
+        )
+
+    def test_terms_acceptance_created_with_new_endorsement(self) -> None:
+        """Test TermsAcceptance creation when endorsement with terms_accepted=True."""
+        # Verify no TermsAcceptance records exist initially
+        assert TermsAcceptance.objects.count() == 0
+
+        endorsement_data = {
+            "campaign_id": self.campaign.id,
+            "stakeholder": {
+                "name": "John Doe",
+                "organization": "Test Org",
+                "role": "Manager",
+                "email": "john@test.com",
+                "street_address": "123 Test St",
+                "city": "Richmond",
+                "state": "VA",
+                "zip_code": "23220",
+                "type": "business",
+            },
+            "statement": "I support this campaign",
+            "public_display": True,
+            "terms_accepted": True,  # This should trigger TermsAcceptance creation
+            "form_metadata": get_valid_form_metadata(),
+        }
+
+        response = self.client.post(
+            "/api/endorsements/",
+            data=json.dumps(endorsement_data),
+            content_type="application/json",
+            HTTP_USER_AGENT="Test Browser v1.0",
+            REMOTE_ADDR="192.168.1.100",
+        )
+
+        assert (
+            response.status_code == 200
+        )  # API returns 200 for successful endorsement creation
+
+        # Verify endorsement was created
+        endorsements = Endorsement.objects.all()
+        assert len(endorsements) == 1
+        endorsement = endorsements[0]
+        assert endorsement.terms_accepted is True
+
+        # Verify TermsAcceptance record was automatically created
+        terms_acceptances = TermsAcceptance.objects.all()
+        assert len(terms_acceptances) == 1
+
+        acceptance = terms_acceptances[0]
+        assert acceptance.endorsement == endorsement
+        assert acceptance.legal_document == self.terms_doc
+        assert acceptance.ip_address == "192.168.1.100"
+        assert acceptance.user_agent == "Test Browser v1.0"
+        assert acceptance.accepted_at is not None
+
+    def test_no_terms_acceptance_when_terms_not_accepted(self) -> None:
+        """Test that TermsAcceptance is NOT created when terms_accepted=False"""
+        endorsement_data = {
+            "campaign_id": self.campaign.id,
+            "stakeholder": {
+                "name": "Jane Doe",
+                "organization": "Test Org 2",
+                "role": "Director",
+                "email": "jane@test.com",
+                "street_address": "456 Test Ave",
+                "city": "Arlington",
+                "state": "VA",
+                "zip_code": "22201",
+                "type": "nonprofit",
+            },
+            "statement": "I support this campaign",
+            "public_display": True,
+            "terms_accepted": False,  # Should not create TermsAcceptance
+            "form_metadata": get_valid_form_metadata(),
+        }
+
+        response = self.client.post(
+            "/api/endorsements/",
+            data=json.dumps(endorsement_data),
+            content_type="application/json",
+            HTTP_USER_AGENT="Test Browser v1.0",
+            REMOTE_ADDR="192.168.1.100",
+        )
+
+        # Should fail because terms_accepted is required
+        assert response.status_code == 400
+        assert "Terms of use must be accepted" in response.json()["detail"]
+
+        # Verify no endorsement or TermsAcceptance was created
+        assert Endorsement.objects.count() == 0
+        assert TermsAcceptance.objects.count() == 0
+
+    def test_no_terms_acceptance_when_no_active_terms_document(self) -> None:
+        """Test graceful handling when no active terms document exists"""
+        # Deactivate the terms document
+        self.terms_doc.is_active = False
+        self.terms_doc.save()
+
+        endorsement_data = {
+            "campaign_id": self.campaign.id,
+            "stakeholder": {
+                "name": "Bob Smith",
+                "organization": "Test Org 3",
+                "email": "bob@test.com",
+                "street_address": "789 Test Way",
+                "city": "Baltimore",
+                "state": "MD",
+                "zip_code": "21201",
+                "type": "individual",
+            },
+            "statement": "I support this campaign",
+            "public_display": True,
+            "terms_accepted": True,
+            "form_metadata": get_valid_form_metadata(),
+        }
+
+        response = self.client.post(
+            "/api/endorsements/",
+            data=json.dumps(endorsement_data),
+            content_type="application/json",
+            HTTP_USER_AGENT="Test Browser v1.0",
+            REMOTE_ADDR="192.168.1.100",
+        )
+
+        assert response.status_code == 200
+
+        # Verify endorsement was created but no TermsAcceptance (no active terms doc)
+        assert Endorsement.objects.count() == 1
+        assert TermsAcceptance.objects.count() == 0
+
+        endorsement = Endorsement.objects.first()
+        assert endorsement.terms_accepted is True  # Still marked as accepted
+
+    def test_terms_acceptance_with_existing_stakeholder(self) -> None:
+        """Test TermsAcceptance creation when using existing stakeholder"""
+        # Create an existing stakeholder
+        existing_stakeholder = Stakeholder.objects.create(
+            name="Existing User",
+            organization="Existing Org",
+            email="existing@test.com",
+            street_address="456 Existing St",
+            city="Norfolk",
+            state="VA",
+            zip_code="23510",
+            type="business",
+        )
+
+        endorsement_data = {
+            "campaign_id": self.campaign.id,
+            "stakeholder": {
+                "name": "Existing User",  # Exact match for security
+                "organization": "Existing Org",
+                "email": "existing@test.com",
+                "street_address": "456 Existing St",
+                "city": "Norfolk",
+                "state": "VA",
+                "zip_code": "23510",
+                "type": "business",
+            },
+            "statement": "I endorse this campaign",
+            "public_display": True,
+            "terms_accepted": True,
+            "form_metadata": get_valid_form_metadata(),
+        }
+
+        response = self.client.post(
+            "/api/endorsements/",
+            data=json.dumps(endorsement_data),
+            content_type="application/json",
+            HTTP_USER_AGENT="Mozilla/5.0 (Test)",
+            REMOTE_ADDR="10.0.0.1",
+        )
+
+        assert response.status_code == 200
+
+        # Should still only have one stakeholder
+        assert Stakeholder.objects.count() == 1
+
+        # Verify TermsAcceptance was created for the existing stakeholder
+        assert TermsAcceptance.objects.count() == 1
+        acceptance = TermsAcceptance.objects.first()
+        assert acceptance.endorsement.stakeholder == existing_stakeholder
+        assert acceptance.ip_address == "10.0.0.1"
+        assert acceptance.user_agent == "Mozilla/5.0 (Test)"
