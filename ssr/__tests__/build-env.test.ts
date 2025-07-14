@@ -120,7 +120,7 @@ describe("Production Environment Variable Handling", () => {
     it("should simulate build-time environment injection", () => {
       // This simulates the Docker build step where build args are injected
       const buildTimeEnv = {
-        NODE_ENV: "production",
+        NODE_ENV: "production" as const,
         NEXT_PUBLIC_API_URL: "https://coalition.org",
         API_URL: "http://localhost:8000",
       };
@@ -156,7 +156,7 @@ describe("Production Environment Variable Handling", () => {
     it("should simulate complete production environment", () => {
       // Simulate the complete environment that would exist in production ECS container
       const productionEnv = {
-        NODE_ENV: "production",
+        NODE_ENV: "production" as const,
         NEXT_PUBLIC_API_URL: "https://coalition.org",
         API_URL: "http://localhost:8000",
         PORT: "3000",
