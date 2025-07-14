@@ -36,6 +36,10 @@ jest.mock("../../lib/registry", () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
+jest.mock("../../components/CookieConsent", () => ({
+  __esModule: true,
+  default: () => <div data-testid="cookie-consent">Cookie Consent</div>,
+}));
 
 describe("RootLayout", () => {
   const mockHomepage = {
@@ -102,6 +106,10 @@ describe("RootLayout", () => {
     expect(footer).toHaveTextContent(
       `© ${new Date().getFullYear()} Test Organization. All rights reserved.`,
     );
+
+    // Check for cookie consent
+    const cookieConsent = screen.getByTestId("cookie-consent");
+    expect(cookieConsent).toBeInTheDocument();
 
     // Check layout structure
     const appRoot = container.querySelector("#app-root");
