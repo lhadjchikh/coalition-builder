@@ -24,6 +24,7 @@ const mockWindow = {
 // Mock console methods
 const mockConsole = {
   log: jest.fn(),
+  debug: jest.fn(),
   warn: jest.fn(),
   error: jest.fn(),
 };
@@ -82,7 +83,7 @@ describe('Analytics Service', () => {
 
       await analytics.initialize();
 
-      expect(mockConsole.log).not.toHaveBeenCalledWith(
+      expect(mockConsole.debug).not.toHaveBeenCalledWith(
         expect.stringContaining('Google Analytics initialized')
       );
     });
@@ -92,7 +93,7 @@ describe('Analytics Service', () => {
 
       await analytics.initialize();
 
-      expect(mockConsole.log).toHaveBeenCalledWith(
+      expect(mockConsole.debug).toHaveBeenCalledWith(
         'Analytics cookies not enabled, skipping GA initialization'
       );
     });
@@ -100,7 +101,7 @@ describe('Analytics Service', () => {
     it('should initialize with tracking ID and consent', async () => {
       await analytics.initialize();
 
-      expect(mockConsole.log).toHaveBeenCalledWith(
+      expect(mockConsole.debug).toHaveBeenCalledWith(
         'Google Analytics initialized with ID:',
         'G-TEST123456'
       );
@@ -189,7 +190,7 @@ describe('Analytics Service', () => {
       mockWindow.CookieConsent.acceptedCategory.mockReturnValue(false);
       await analytics.initialize();
 
-      expect(mockConsole.log).toHaveBeenCalledWith(
+      expect(mockConsole.debug).toHaveBeenCalledWith(
         'Analytics cookies not enabled, skipping GA initialization'
       );
 
@@ -197,7 +198,7 @@ describe('Analytics Service', () => {
       mockWindow.CookieConsent.acceptedCategory.mockReturnValue(true);
       analytics.onConsentChange();
 
-      expect(mockConsole.log).toHaveBeenCalledWith(
+      expect(mockConsole.debug).toHaveBeenCalledWith(
         'Google Analytics initialized with ID:',
         'G-TEST123456'
       );
