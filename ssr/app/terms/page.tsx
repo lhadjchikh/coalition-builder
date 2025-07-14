@@ -50,6 +50,7 @@ export default async function TermsPage({}: TermsPageProps): Promise<React.React
           </p>
         </header>
         <div className="prose prose-lg max-w-none">
+          {/* Content is sanitized server-side in LegalDocument.save() to prevent XSS */}
           <div dangerouslySetInnerHTML={{ __html: termsData.content }} />
         </div>
       </div>
