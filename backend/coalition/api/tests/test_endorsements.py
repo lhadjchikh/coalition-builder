@@ -134,6 +134,7 @@ class EndorsementAPITest(TestCase):
             },
             "statement": "As a local farmer, I strongly support this campaign",
             "public_display": True,
+            "terms_accepted": True,
             "form_metadata": get_valid_form_metadata(),
         }
 
@@ -178,6 +179,7 @@ class EndorsementAPITest(TestCase):
             },
             "statement": "Updated endorsement statement",
             "public_display": False,
+            "terms_accepted": True,
             "form_metadata": get_valid_form_metadata(),
         }
 
@@ -218,6 +220,7 @@ class EndorsementAPITest(TestCase):
                 "zip_code": "23220",
                 "type": "other",
             },
+            "terms_accepted": True,
             "form_metadata": get_valid_form_metadata(),
         }
 
@@ -245,6 +248,7 @@ class EndorsementAPITest(TestCase):
                 "zip_code": "23220",
                 "type": "other",
             },
+            "terms_accepted": True,
             "form_metadata": get_valid_form_metadata(),
         }
 
@@ -274,6 +278,7 @@ class EndorsementAPITest(TestCase):
             },
             "statement": "Updated statement for existing endorsement",
             "public_display": False,
+            "terms_accepted": True,
             "form_metadata": get_valid_form_metadata(),
         }
 
@@ -354,6 +359,7 @@ class EndorsementAPITest(TestCase):
             },
             "statement": "Test statement",
             "public_display": True,
+            "terms_accepted": True,
             "form_metadata": get_valid_form_metadata(),
         }
 
