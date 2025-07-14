@@ -104,6 +104,10 @@ class Stakeholder(models.Model):
         choices=STAKEHOLDER_TYPE_CHOICES,
         help_text="Category of stakeholder (business, nonprofit, individual, etc.)",
     )
+    email_updates = models.BooleanField(
+        default=False,
+        help_text="Whether stakeholder opted in to receive policy email updates",
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         help_text="Timestamp when stakeholder record was first created",

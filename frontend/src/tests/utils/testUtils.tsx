@@ -10,6 +10,7 @@ import {
   HomePage,
   ContentBlock,
   Theme,
+  Stakeholder,
 } from '../../types';
 
 // Utility function to wait for all async operations to complete
@@ -88,7 +89,10 @@ export const createMockEndorser = (overrides: Partial<Endorser> = {}): Endorser 
   name: 'John Doe',
   organization: 'Test Organization',
   email: 'john@example.com',
+  street_address: '123 Main St',
+  city: 'Los Angeles',
   state: 'CA',
+  zip_code: '90001',
   type: 'individual',
   role: 'Citizen',
   created_at: '2023-01-01T00:00:00Z',
@@ -109,7 +113,7 @@ export const createMockLegislator = (overrides: Partial<Legislator> = {}): Legis
 
 export const createMockEndorsement = (overrides: Partial<Endorsement> = {}): Endorsement => ({
   id: 1,
-  stakeholder: createMockEndorser(),
+  stakeholder: createMockEndorser() as Stakeholder,
   campaign: createMockCampaign(),
   statement: 'I support this campaign',
   public_display: true,

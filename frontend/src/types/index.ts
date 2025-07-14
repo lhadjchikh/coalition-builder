@@ -58,9 +58,12 @@ export interface Stakeholder {
   organization: string;
   role?: string;
   email: string;
+  street_address: string;
+  city: string;
   state: string;
-  county?: string;
+  zip_code: string;
   type: 'farmer' | 'waterman' | 'business' | 'nonprofit' | 'individual' | 'government' | 'other';
+  email_updates?: boolean;
   created_at?: string;
   updated_at?: string;
 }

@@ -38,9 +38,16 @@ describe('EndorsementForm', () => {
     expect(screen.getByTestId('name-input')).toBeInTheDocument();
     expect(screen.getByTestId('organization-input')).toBeInTheDocument();
     expect(screen.getByTestId('email-input')).toBeInTheDocument();
+    expect(screen.getByTestId('street-address-input')).toBeInTheDocument();
+    expect(screen.getByTestId('city-input')).toBeInTheDocument();
     expect(screen.getByTestId('state-select')).toBeInTheDocument();
+    expect(screen.getByTestId('zip-code-input')).toBeInTheDocument();
     expect(screen.getByTestId('type-select')).toBeInTheDocument();
+    expect(screen.getByTestId('email-updates-checkbox')).toBeInTheDocument();
     expect(screen.getByTestId('submit-button')).toBeInTheDocument();
+
+    // Check for the address info message
+    expect(screen.getByText(/We collect your address information solely/)).toBeInTheDocument();
   });
 
   it('does not render form when endorsements are not allowed', () => {
@@ -66,9 +73,12 @@ describe('EndorsementForm', () => {
         organization: 'Test Org',
         role: 'Manager',
         email: 'john@test.com',
+        street_address: '123 Main St',
+        city: 'Baltimore',
         state: 'MD',
-        county: 'Test County',
+        zip_code: '21201',
         type: 'business' as const,
+        email_updates: true,
         created_at: '2024-01-01',
         updated_at: '2024-01-01',
       },
@@ -90,12 +100,19 @@ describe('EndorsementForm', () => {
     fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Test Org' } });
     fireEvent.change(screen.getByTestId('role-input'), { target: { value: 'Manager' } });
     fireEvent.change(screen.getByTestId('email-input'), { target: { value: 'john@test.com' } });
+    fireEvent.change(screen.getByTestId('street-address-input'), {
+      target: { value: '123 Main St' },
+    });
+    fireEvent.change(screen.getByTestId('city-input'), { target: { value: 'Baltimore' } });
     fireEvent.change(screen.getByTestId('state-select'), { target: { value: 'MD' } });
-    fireEvent.change(screen.getByTestId('county-input'), { target: { value: 'Test County' } });
+    fireEvent.change(screen.getByTestId('zip-code-input'), { target: { value: '21201' } });
     fireEvent.change(screen.getByTestId('type-select'), { target: { value: 'business' } });
     fireEvent.change(screen.getByTestId('statement-textarea'), {
       target: { value: 'Great campaign!' },
     });
+
+    // Check email updates checkbox
+    fireEvent.click(screen.getByTestId('email-updates-checkbox'));
 
     // Accept terms (required)
     fireEvent.click(screen.getByTestId('terms-checkbox'));
@@ -111,9 +128,12 @@ describe('EndorsementForm', () => {
           organization: 'Test Org',
           role: 'Manager',
           email: 'john@test.com',
+          street_address: '123 Main St',
+          city: 'Baltimore',
           state: 'MD',
-          county: 'Test County',
+          zip_code: '21201',
           type: 'business',
+          email_updates: true,
         },
         statement: 'Great campaign!',
         public_display: true,
@@ -144,7 +164,12 @@ describe('EndorsementForm', () => {
       fireEvent.change(screen.getByTestId('name-input'), { target: { value: 'John Doe' } });
       fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Test Org' } });
       fireEvent.change(screen.getByTestId('email-input'), { target: { value: 'john@test.com' } });
+      fireEvent.change(screen.getByTestId('street-address-input'), {
+        target: { value: '123 Main St' },
+      });
+      fireEvent.change(screen.getByTestId('city-input'), { target: { value: 'Baltimore' } });
       fireEvent.change(screen.getByTestId('state-select'), { target: { value: 'MD' } });
+      fireEvent.change(screen.getByTestId('zip-code-input'), { target: { value: '21201' } });
 
       // Accept terms (required)
       fireEvent.click(screen.getByTestId('terms-checkbox'));
@@ -165,12 +190,18 @@ describe('EndorsementForm', () => {
     const nameInput = screen.getByTestId('name-input');
     const organizationInput = screen.getByTestId('organization-input');
     const emailInput = screen.getByTestId('email-input');
+    const streetAddressInput = screen.getByTestId('street-address-input');
+    const cityInput = screen.getByTestId('city-input');
     const stateSelect = screen.getByTestId('state-select');
+    const zipCodeInput = screen.getByTestId('zip-code-input');
 
     expect(nameInput).toBeRequired();
     expect(organizationInput).toBeRequired();
     expect(emailInput).toBeRequired();
+    expect(streetAddressInput).toBeRequired();
+    expect(cityInput).toBeRequired();
     expect(stateSelect).toBeRequired();
+    expect(zipCodeInput).toBeRequired();
   });
 
   it('prevents submission when honeypot fields are filled (bot detection)', async () => {
@@ -186,7 +217,12 @@ describe('EndorsementForm', () => {
       fireEvent.change(screen.getByTestId('name-input'), { target: { value: 'Bot User' } });
       fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Bot Org' } });
       fireEvent.change(screen.getByTestId('email-input'), { target: { value: 'bot@spam.com' } });
+      fireEvent.change(screen.getByTestId('street-address-input'), {
+        target: { value: '123 Bot St' },
+      });
+      fireEvent.change(screen.getByTestId('city-input'), { target: { value: 'Bot City' } });
       fireEvent.change(screen.getByTestId('state-select'), { target: { value: 'CA' } });
+      fireEvent.change(screen.getByTestId('zip-code-input'), { target: { value: '90001' } });
 
       // Fill honeypot fields (this simulates bot behavior)
       const websiteField = screen.getByLabelText(/website.*leave blank/i);
@@ -354,8 +390,17 @@ describe('EndorsementForm', () => {
       fireEvent.change(screen.getByTestId('email-input'), {
         target: { value: 'john@test.com' },
       });
+      fireEvent.change(screen.getByTestId('street-address-input'), {
+        target: { value: '123 Main St' },
+      });
+      fireEvent.change(screen.getByTestId('city-input'), {
+        target: { value: 'Richmond' },
+      });
       fireEvent.change(screen.getByTestId('state-select'), {
         target: { value: 'VA' },
+      });
+      fireEvent.change(screen.getByTestId('zip-code-input'), {
+        target: { value: '23219' },
       });
       fireEvent.change(screen.getByTestId('type-select'), {
         target: { value: 'individual' },

@@ -292,6 +292,10 @@ class StakeholderCreateSchema(Schema):
     county: str = Field(default="", max_length=100, description="County name")
 
     type: str = Field(max_length=50, description="Stakeholder type")
+    email_updates: bool = Field(
+        default=False,
+        description="Opt-in for policy email updates",
+    )
 
     @validator("state")
     def validate_state(cls, v: str) -> str:  # noqa: N805
