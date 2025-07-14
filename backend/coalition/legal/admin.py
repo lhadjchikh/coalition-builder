@@ -107,3 +107,10 @@ class TermsAcceptanceAdmin(admin.ModelAdmin):
         obj: TermsAcceptance | None = None,  # noqa: ARG002
     ) -> bool:
         return False
+
+    def has_delete_permission(  # noqa: ARG002
+        self,
+        request: HttpRequest,  # noqa: ARG002
+        obj: TermsAcceptance | None = None,  # noqa: ARG002
+    ) -> bool:
+        return False
