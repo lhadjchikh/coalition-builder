@@ -1,6 +1,7 @@
 """Tests for core application views."""
 
 import json
+import sys
 from unittest.mock import Mock, mock_open, patch
 
 from django.test import TestCase
@@ -284,39 +285,27 @@ class CoreViewsTest(TestCase):
     @patch("coalition.core.views.connection")
     def test_health_check_database_error(self, mock_connection: Mock) -> None:
         """Test health check with database error."""
+        # Mock cursor and connection properly
         mock_cursor = Mock()
         mock_cursor.execute.side_effect = Exception("Database connection failed")
-        mock_context_manager = Mock()
-        mock_context_manager.__enter__.return_value = mock_cursor
-        mock_context_manager.__exit__.return_value = None
-        mock_connection.cursor.return_value = mock_context_manager
+        mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
 
         request = self.factory.get("/health/")
 
-        # Mock psutil to avoid import issues in test
-        with patch("builtins.__import__") as mock_import:
+        # Mock psutil in sys.modules
+        mock_psutil = Mock()
+        mock_process = Mock()
+        mock_memory_info = Mock()
+        mock_memory_info.rss = 100 * 1024 * 1024  # 100MB
+        mock_memory_info.vms = 200 * 1024 * 1024  # 200MB
+        mock_process.memory_info.return_value = mock_memory_info
+        mock_psutil.Process.return_value = mock_process
 
-            def import_side_effect(
-                name: str,
-                *args: object,
-                **kwargs: object,
-            ) -> object:
-                if name == "psutil":
-                    mock_psutil = Mock()
-                    mock_process = Mock()
-                    mock_memory_info = Mock()
-                    mock_memory_info.rss = 100 * 1024 * 1024  # 100MB
-                    mock_memory_info.vms = 200 * 1024 * 1024  # 200MB
-                    mock_process.memory_info.return_value = mock_memory_info
-                    mock_psutil.Process.return_value = mock_process
-                    return mock_psutil
-                return __import__(name, *args, **kwargs)
-
-            mock_import.side_effect = import_side_effect
+        with patch.dict(sys.modules, {"psutil": mock_psutil}):
             response = health_check(request)
 
         assert response.status_code == 503
-        data = response.json()
+        data = json.loads(response.content)
         assert data["status"] == "unhealthy"
         assert data["database"]["status"] == "unhealthy"
 
@@ -324,52 +313,42 @@ class CoreViewsTest(TestCase):
         """Test health check when psutil is not installed."""
         request = self.factory.get("/health/")
 
-        # Mock builtins.__import__ to raise ImportError for psutil
-        with patch("builtins.__import__") as mock_import:
+        # Temporarily remove psutil from sys.modules if it exists
+        original_psutil = sys.modules.pop("psutil", None)
 
-            def import_side_effect(
-                name: str,
-                *args: object,
-                **kwargs: object,
-            ) -> object:
-                if name == "psutil":
-                    raise ImportError("No module named 'psutil'")
-                return __import__(name, *args, **kwargs)
+        # Patch builtins.__import__ to raise ImportError for psutil
+        def import_side_effect(name: str, *args: object, **kwargs: object) -> object:
+            if name == "psutil":
+                raise ImportError("No module named 'psutil'")
+            return __import__(name, *args, **kwargs)
 
-            mock_import.side_effect = import_side_effect
-            response = health_check(request)
+        try:
+            with patch("builtins.__import__", side_effect=import_side_effect):
+                response = health_check(request)
+        finally:
+            # Restore psutil if it was there originally
+            if original_psutil is not None:
+                sys.modules["psutil"] = original_psutil
 
         assert response.status_code == 200
-        data = response.json()
+        data = json.loads(response.content)
         assert data["memory"]["status"] == "psutil not installed"
 
     def test_health_check_psutil_error(self) -> None:
         """Test health check with psutil error."""
         request = self.factory.get("/health/")
 
-        # Mock builtins.__import__ to return a psutil that raises an error
-        with patch("builtins.__import__") as mock_import:
+        # Mock psutil in sys.modules to return a psutil that raises an error
+        mock_psutil = Mock()
+        mock_process = Mock()
+        mock_process.memory_info.side_effect = Exception("Memory access failed")
+        mock_psutil.Process.return_value = mock_process
 
-            def import_side_effect(
-                name: str,
-                *args: object,
-                **kwargs: object,
-            ) -> object:
-                if name == "psutil":
-                    mock_psutil = Mock()
-                    mock_process = Mock()
-                    mock_process.memory_info.side_effect = Exception(
-                        "Memory access failed",
-                    )
-                    mock_psutil.Process.return_value = mock_process
-                    return mock_psutil
-                return __import__(name, *args, **kwargs)
-
-            mock_import.side_effect = import_side_effect
+        with patch.dict(sys.modules, {"psutil": mock_psutil}):
             response = health_check(request)
 
         assert response.status_code == 200
-        data = response.json()
+        data = json.loads(response.content)
         assert "error" in data["memory"]
 
     def test_health_check_head_method(self) -> None:

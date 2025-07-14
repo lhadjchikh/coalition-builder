@@ -264,9 +264,9 @@ def health_check(request: HttpRequest) -> JsonResponse:
         logger.error("Health check database connection failed: %s", e)
 
     # Get memory info
-    import psutil
-
     try:
+        import psutil
+
         process = psutil.Process(os.getpid())
         memory_info = process.memory_info()
         memory = {
