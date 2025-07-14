@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Script from "next/script";
 import analytics from "../lib/analytics";
@@ -15,7 +15,7 @@ import analytics from "../lib/analytics";
  * - Respects cookie consent preferences
  * - Only renders script tags when tracking ID is available
  */
-export default function GoogleAnalytics() {
+export default function GoogleAnalytics(): React.JSX.Element | null {
   const pathname = usePathname();
   const trackingId = analytics.getTrackingId();
 

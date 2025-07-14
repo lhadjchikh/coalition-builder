@@ -199,15 +199,3 @@ describe('Analytics Service', () => {
     });
   });
 });
-
-// Add analytics service method to get tracking ID for testing
-declare module '../analytics' {
-  interface AnalyticsService {
-    getTrackingId(): string | null;
-  }
-}
-
-// Extend the analytics service for testing
-(analytics as any).getTrackingId = function () {
-  return this.trackingId;
-};

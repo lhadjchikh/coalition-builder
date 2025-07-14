@@ -9,28 +9,18 @@
  * - Integrates with the existing cookie consent system
  */
 
+import type {
+  AnalyticsEvent,
+  PageViewEvent,
+  GtagCommand,
+  AnalyticsWindow,
+} from "@shared/types/analytics";
+
 declare global {
-  interface Window {
-    gtag: (...args: any[]) => void;
-    dataLayer: any[];
-    CookieConsent?: {
-      acceptedCategory: (category: string) => boolean;
-    };
-  }
+  interface Window extends AnalyticsWindow {}
 }
 
-export interface AnalyticsEvent {
-  action: string;
-  category: string;
-  label?: string;
-  value?: number;
-}
-
-export interface PageViewEvent {
-  page_title: string;
-  page_location: string;
-  page_path: string;
-}
+export type { AnalyticsEvent, PageViewEvent };
 
 class SSRAnalyticsService {
   private trackingId: string | null = null;
@@ -71,9 +61,9 @@ class SSRAnalyticsService {
       window.dataLayer = window.dataLayer || [];
       window.gtag =
         window.gtag ||
-        function gtag(...args: any[]) {
-          window.dataLayer.push(args);
-        };
+        (function gtag(command: string, ...args: unknown[]) {
+          window.dataLayer.push([command, ...args]);
+        } as GtagCommand);
 
       // Configure Google Analytics
       window.gtag("js", new Date());

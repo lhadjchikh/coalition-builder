@@ -10,7 +10,7 @@ import analytics from '../services/analytics';
  * - Listens for consent changes to re-initialize if needed
  * - Renders nothing (invisible component)
  */
-const GoogleAnalytics: React.FC = () => {
+const GoogleAnalytics: React.FC = (): null => {
   useEffect(() => {
     // Initialize analytics on component mount
     analytics.initialize();

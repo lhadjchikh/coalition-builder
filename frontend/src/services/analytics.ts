@@ -8,24 +8,18 @@
  * - Handles GA initialization and configuration
  */
 
+import type {
+  AnalyticsEvent,
+  PageViewEvent,
+  GtagCommand,
+  AnalyticsWindow,
+} from '@shared/types/analytics';
+
 declare global {
-  interface Window {
-    gtag: (...args: any[]) => void;
-    dataLayer: any[];
-  }
+  interface Window extends AnalyticsWindow {}
 }
 
-export interface AnalyticsEvent {
-  action: string;
-  category: string;
-  label?: string;
-  value?: number;
-}
-
-export interface PageViewEvent {
-  page_title: string;
-  page_location: string;
-}
+export type { AnalyticsEvent, PageViewEvent };
 
 class AnalyticsService {
   private trackingId: string | null = null;
@@ -34,6 +28,13 @@ class AnalyticsService {
   constructor() {
     this.trackingId =
       process.env.REACT_APP_GA_TRACKING_ID || process.env.NEXT_PUBLIC_GA_TRACKING_ID || null;
+  }
+
+  /**
+   * Get the tracking ID (for testing purposes)
+   */
+  getTrackingId(): string | null {
+    return this.trackingId;
   }
 
   /**
@@ -59,9 +60,11 @@ class AnalyticsService {
 
       // Initialize dataLayer and gtag
       window.dataLayer = window.dataLayer || [];
-      window.gtag = function gtag(...args: any[]) {
-        window.dataLayer.push(args);
-      };
+      window.gtag =
+        window.gtag ||
+        (function gtag(command: string, ...args: unknown[]) {
+          window.dataLayer.push([command, ...args]);
+        } as GtagCommand);
 
       // Configure Google Analytics
       window.gtag('js', new Date());

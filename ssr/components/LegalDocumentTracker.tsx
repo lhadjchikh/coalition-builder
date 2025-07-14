@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import analytics from "../lib/analytics";
 
 interface LegalDocumentTrackerProps {
@@ -15,7 +15,7 @@ interface LegalDocumentTrackerProps {
 export default function LegalDocumentTracker({
   documentType,
   title,
-}: LegalDocumentTrackerProps) {
+}: LegalDocumentTrackerProps): null {
   useEffect(() => {
     // Track legal document view
     analytics.trackLegalDocumentView(documentType);
