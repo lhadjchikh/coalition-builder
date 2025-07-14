@@ -71,6 +71,7 @@ class AnalyticsService {
       window.gtag('config', this.trackingId, {
         anonymize_ip: true, // Privacy compliance
         cookie_flags: 'SameSite=Strict;Secure', // Security
+        send_page_view: false, // Prevent automatic pageview tracking
       });
 
       this.isInitialized = true;
@@ -91,6 +92,7 @@ class AnalyticsService {
     window.gtag('event', 'page_view', {
       page_title: event.page_title,
       page_location: event.page_location,
+      page_path: event.page_path,
     });
   }
 

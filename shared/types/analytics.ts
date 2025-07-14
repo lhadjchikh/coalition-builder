@@ -37,5 +37,5 @@ export interface AnalyticsEvent {
 export interface PageViewEvent {
   page_title: string;
   page_location: string;
-  page_path?: string;
+  page_path: string;
 }

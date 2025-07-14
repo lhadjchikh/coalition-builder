@@ -113,11 +113,13 @@ describe('Analytics Service', () => {
       analytics.trackPageView({
         page_title: 'Test Page',
         page_location: 'https://example.com/test',
+        page_path: '/test',
       });
 
       expect(mockWindow.gtag).toHaveBeenCalledWith('event', 'page_view', {
         page_title: 'Test Page',
         page_location: 'https://example.com/test',
+        page_path: '/test',
       });
     });
 
