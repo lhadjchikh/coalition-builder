@@ -1,4 +1,5 @@
 import React from "react";
+import { notFound } from "next/navigation";
 import { apiClient } from "../../lib/api";
 
 interface PrivacyPageProps {}
@@ -30,16 +31,7 @@ export default async function PrivacyPage({}: PrivacyPageProps): Promise<React.R
   }
 
   if (!privacyData) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-yellow-700">No privacy policy document found.</p>
-          </div>
-        </div>
-      </div>
-    );
+    notFound();
   }
 
   return (
