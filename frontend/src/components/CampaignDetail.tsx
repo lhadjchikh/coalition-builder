@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import API from '../services/api';
+import analytics from '../services/analytics';
 import { Campaign } from '../types';
 import EndorsementForm, { EndorsementFormRef } from './EndorsementForm';
 import EndorsementsList from './EndorsementsList';
@@ -59,6 +60,8 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   useEffect(() => {
     // Skip fetching if we already have initial campaign data
     if (initialCampaign) {
+      // Track campaign view for initial campaign
+      analytics.trackCampaignView(initialCampaign.name || `Campaign ${initialCampaign.id}`);
       return;
     }
 
@@ -77,6 +80,9 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         }
 
         setCampaign(data);
+
+        // Track campaign view
+        analytics.trackCampaignView(data.name || `Campaign ${data.id}`);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch campaign');
       } finally {

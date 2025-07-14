@@ -79,6 +79,8 @@ services:
       - SITE_PASSWORD_ENABLED=${SITE_PASSWORD_ENABLED:-false}
       - SITE_USERNAME=${SITE_USERNAME:-admin}
       - SITE_PASSWORD=${SITE_PASSWORD:-changeme}
+      # Analytics settings
+      - NEXT_PUBLIC_GA_TRACKING_ID=${NEXT_PUBLIC_GA_TRACKING_ID:-}
     ports:
       - "3000:3000"
     healthcheck:

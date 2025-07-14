@@ -5,6 +5,7 @@ import CampaignDetail from './components/CampaignDetail';
 import HomePage from './components/HomePage';
 import StyledHomePage from './components/StyledHomePage';
 import Navbar from './components/Navbar';
+import GoogleAnalytics from './components/GoogleAnalytics';
 import { Campaign } from './types';
 
 const App: React.FC = () => {
@@ -27,6 +28,7 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
+      <GoogleAnalytics />
       <Navbar
         currentView={currentView}
         onNavigate={setCurrentView}

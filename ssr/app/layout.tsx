@@ -4,6 +4,7 @@ import StyledComponentsRegistry from "../lib/registry";
 import SSRNavbar from "../lib/components/SSRNavbar";
 import SSRFooter from "../lib/components/SSRFooter";
 import CookieConsent from "../components/CookieConsent";
+import GoogleAnalytics from "../components/GoogleAnalytics";
 import { ssrApiClient } from "../lib/frontend-api-adapter";
 import { NavItemData, DEFAULT_NAV_ITEMS } from "@shared/types";
 import { getFallbackHomepage } from "@shared/utils/homepage-data";
@@ -70,6 +71,7 @@ export default async function RootLayout({
             <SSRFooter organizationName={organizationName} />
           </div>
           <CookieConsent />
+          <GoogleAnalytics />
         </StyledComponentsRegistry>
       </body>
     </html>
