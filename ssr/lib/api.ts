@@ -6,6 +6,14 @@ import type {
   ContentBlock,
 } from "@frontend/types";
 
+interface LegalDocumentResponse {
+  id: number;
+  title: string;
+  content: string;
+  version: string;
+  effective_date: string;
+}
+
 const API_URL =
   process.env.API_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
@@ -89,36 +97,12 @@ class ApiClient {
   }
 
   // Legal documents
-  async getTermsOfUse(): Promise<{
-    id: number;
-    title: string;
-    content: string;
-    version: string;
-    effective_date: string;
-  }> {
-    return this.request<{
-      id: number;
-      title: string;
-      content: string;
-      version: string;
-      effective_date: string;
-    }>("/api/legal/terms/");
+  async getTermsOfUse(): Promise<LegalDocumentResponse> {
+    return this.request<LegalDocumentResponse>("/api/legal/terms/");
   }
 
-  async getPrivacyPolicy(): Promise<{
-    id: number;
-    title: string;
-    content: string;
-    version: string;
-    effective_date: string;
-  }> {
-    return this.request<{
-      id: number;
-      title: string;
-      content: string;
-      version: string;
-      effective_date: string;
-    }>("/api/legal/privacy/");
+  async getPrivacyPolicy(): Promise<LegalDocumentResponse> {
+    return this.request<LegalDocumentResponse>("/api/legal/privacy/");
   }
 
   // Health check
