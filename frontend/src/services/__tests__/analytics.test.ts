@@ -2,6 +2,9 @@
  * Tests for the analytics service
  */
 
+// Mock environment variable before importing
+process.env.REACT_APP_GA_TRACKING_ID = 'G-TEST123456';
+
 import analytics from '../analytics';
 
 // Mock the environment variable
@@ -25,6 +28,9 @@ const mockConsole = {
   error: jest.fn(),
 };
 
+// Store original console for restoration
+const originalConsole = global.console;
+
 describe('Analytics Service', () => {
   beforeEach(() => {
     // Reset mocks
@@ -33,19 +39,10 @@ describe('Analytics Service', () => {
     // Set up environment
     process.env = { ...process.env, ...mockEnv };
 
-    // Mock window
-    Object.defineProperty(window, 'gtag', {
-      value: mockWindow.gtag,
-      writable: true,
-    });
-    Object.defineProperty(window, 'dataLayer', {
-      value: mockWindow.dataLayer,
-      writable: true,
-    });
-    Object.defineProperty(window, 'CookieConsent', {
-      value: mockWindow.CookieConsent,
-      writable: true,
-    });
+    // Mock window properties
+    (window as any).gtag = mockWindow.gtag;
+    (window as any).dataLayer = mockWindow.dataLayer;
+    (window as any).CookieConsent = mockWindow.CookieConsent;
 
     // Mock console
     global.console = mockConsole as any;
@@ -199,5 +196,10 @@ describe('Analytics Service', () => {
         'G-TEST123456'
       );
     });
+  });
+
+  afterEach(() => {
+    // Restore original console
+    global.console = originalConsole;
   });
 });
