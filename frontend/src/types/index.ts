@@ -12,6 +12,7 @@ export interface Campaign {
   allow_endorsements?: boolean;
   endorsement_form_instructions?: string;
   active: boolean;
+  image?: string;
   created_at: string;
 }
 

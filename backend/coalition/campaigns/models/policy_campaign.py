@@ -61,6 +61,12 @@ class PolicyCampaign(models.Model):
         default=True,
         help_text="Whether campaign is active and accepting endorsements",
     )
+    image = models.ImageField(
+        upload_to="campaign_images/",
+        blank=True,
+        null=True,
+        help_text="Hero image for the campaign displayed on detail page and cards",
+    )
 
     class Meta:
         db_table = "campaign"

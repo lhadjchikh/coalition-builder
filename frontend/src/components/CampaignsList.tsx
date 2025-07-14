@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import API from '../services/api';
 import { Campaign } from '../types';
-import './Endorsements.css';
+import './Campaign.css';
 
 interface CampaignsListProps {
   onCampaignSelect?: (campaign: Campaign) => void;
@@ -53,31 +53,42 @@ const CampaignsList: React.FC<CampaignsListProps> = ({ onCampaignSelect }) => {
               className="campaign-card"
               data-testid={`campaigns-list-campaign-${campaign.id}`}
             >
-              <h3>{campaign.title}</h3>
-              <p className="campaign-summary">{campaign.summary}</p>
-
-              {campaign.description && (
-                <p className="campaign-description">
-                  {campaign.description.length > 100
-                    ? `${campaign.description.substring(0, 100)}...`
-                    : campaign.description}
-                </p>
+              {campaign.image && (
+                <div className="campaign-card-image">
+                  <img
+                    src={campaign.image}
+                    alt={`Image for ${campaign.title}`}
+                    className="campaign-card-img"
+                  />
+                </div>
               )}
+              <div className="campaign-card-content">
+                <h3>{campaign.title}</h3>
+                <p className="campaign-summary">{campaign.summary}</p>
 
-              <div className="campaign-meta">
-                {campaign.allow_endorsements && (
-                  <span className="endorsements-allowed">✓ Accepting endorsements</span>
+                {campaign.description && (
+                  <p className="campaign-description">
+                    {campaign.description.length > 100
+                      ? `${campaign.description.substring(0, 100)}...`
+                      : campaign.description}
+                  </p>
                 )}
-              </div>
 
-              <div className="campaign-actions">
-                <button
-                  className="view-campaign-btn"
-                  onClick={() => onCampaignSelect?.(campaign)}
-                  data-testid={`view-campaign-${campaign.id}`}
-                >
-                  View Campaign
-                </button>
+                <div className="campaign-meta">
+                  {campaign.allow_endorsements && (
+                    <span className="endorsements-allowed">✓ Accepting endorsements</span>
+                  )}
+                </div>
+
+                <div className="campaign-actions">
+                  <button
+                    className="view-campaign-btn"
+                    onClick={() => onCampaignSelect?.(campaign)}
+                    data-testid={`view-campaign-${campaign.id}`}
+                  >
+                    View Campaign
+                  </button>
+                </div>
               </div>
             </div>
           ))}
