@@ -204,6 +204,34 @@ describe('EndorsementForm', () => {
     expect(zipCodeInput).toBeRequired();
   });
 
+  it('validates ZIP code format', () => {
+    render(<EndorsementForm campaign={mockCampaign} />);
+
+    const zipCodeInput = screen.getByTestId('zip-code-input');
+
+    // Check that the pattern attribute is set correctly
+    expect(zipCodeInput).toHaveAttribute('pattern', '[0-9]{5}(-[0-9]{4})?');
+    expect(zipCodeInput).toHaveAttribute(
+      'title',
+      'Please enter a valid ZIP code (e.g., 12345 or 12345-6789)'
+    );
+
+    // Test that the input accepts valid ZIP codes
+    fireEvent.change(zipCodeInput, { target: { value: '12345' } });
+    expect(zipCodeInput).toHaveValue('12345');
+
+    fireEvent.change(zipCodeInput, { target: { value: '12345-6789' } });
+    expect(zipCodeInput).toHaveValue('12345-6789');
+
+    // Test that the input accepts invalid format (HTML5 validation will handle this)
+    fireEvent.change(zipCodeInput, { target: { value: 'invalid' } });
+    expect(zipCodeInput).toHaveValue('invalid');
+
+    // The actual validation happens at form submission by the browser
+    // We can test that the pattern is present for browser validation
+    expect((zipCodeInput as HTMLInputElement).validity.patternMismatch).toBe(true);
+  });
+
   it('prevents submission when honeypot fields are filled (bot detection)', async () => {
     await withSuppressedErrors(['spam detection'], async () => {
       // Mock API to simulate honeypot detection rejection

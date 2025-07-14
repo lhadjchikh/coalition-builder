@@ -364,9 +364,9 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           </div>
 
           <div className="form-group">
-            <label htmlFor="street_address">Street Address *</label>
+            <label htmlFor="street-address">Street Address *</label>
             <input
-              id="street_address"
+              id="street-address"
               type="text"
               value={stakeholder.street_address}
               onChange={e => handleStakeholderChange('street_address', e.target.value)}
@@ -406,9 +406,9 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           </div>
 
           <div className="form-group">
-            <label htmlFor="zip_code">ZIP Code *</label>
+            <label htmlFor="zip-code">ZIP Code *</label>
             <input
-              id="zip_code"
+              id="zip-code"
               type="text"
               value={stakeholder.zip_code}
               onChange={e => handleStakeholderChange('zip_code', e.target.value)}
