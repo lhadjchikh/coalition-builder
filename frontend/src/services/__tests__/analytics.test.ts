@@ -36,8 +36,14 @@ describe('Analytics Service', () => {
     // Reset mocks
     jest.clearAllMocks();
 
+    // Reset mock return values
+    mockWindow.CookieConsent.acceptedCategory.mockReturnValue(true);
+
     // Set up environment
     process.env = { ...process.env, ...mockEnv };
+
+    // Reset the analytics service to pick up new environment
+    (analytics as any)._resetForTesting();
 
     // Mock window properties
     (window as any).gtag = mockWindow.gtag;

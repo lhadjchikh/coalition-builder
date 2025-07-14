@@ -184,6 +184,15 @@ class SSRAnalyticsService {
       this.initialize();
     }
   }
+
+  /**
+   * Reset service state for testing
+   * @internal
+   */
+  _resetForTesting(): void {
+    this.trackingId = process.env.NEXT_PUBLIC_GA_TRACKING_ID || null;
+    this.isInitialized = false;
+  }
 }
 
 // Export singleton instance
