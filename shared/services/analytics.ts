@@ -56,7 +56,9 @@ class UnifiedAnalyticsService {
 
     // Check if analytics cookies are enabled
     if (!this.isAnalyticsEnabled()) {
-      console.log("Analytics cookies not enabled, skipping GA initialization");
+      console.debug(
+        "Analytics cookies not enabled, skipping GA initialization",
+      );
       return;
     }
 
@@ -90,7 +92,7 @@ class UnifiedAnalyticsService {
       });
 
       this.isInitialized = true;
-      console.log("Google Analytics initialized with ID:", this.trackingId);
+      console.debug("Google Analytics initialized with ID:", this.trackingId);
     } catch (error) {
       console.error("Failed to initialize Google Analytics:", error);
     }
@@ -206,7 +208,9 @@ class UnifiedAnalyticsService {
       try {
         return window.CookieConsent.acceptedCategory("analytics");
       } catch (error) {
-        console.warn("Could not check analytics cookie consent:", error);
+        if (process.env.NODE_ENV === "development") {
+          console.warn("Could not check analytics cookie consent:", error);
+        }
       }
     }
 
