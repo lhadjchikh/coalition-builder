@@ -421,13 +421,14 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
                 checked={termsAccepted}
                 onChange={e => setTermsAccepted(e.target.checked)}
                 required
+                aria-required="true"
                 data-testid="terms-checkbox"
               />
               I agree to the{' '}
               <a href="/terms" target="_blank" rel="noopener noreferrer">
                 Terms of Use
               </a>
-              *
+              <span aria-hidden="true">*</span>
             </label>
           </div>
 
