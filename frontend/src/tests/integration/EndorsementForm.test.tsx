@@ -97,6 +97,9 @@ describe('EndorsementForm', () => {
       target: { value: 'Great campaign!' },
     });
 
+    // Accept terms (required)
+    fireEvent.click(screen.getByTestId('terms-checkbox'));
+
     // Submit the form
     fireEvent.click(screen.getByTestId('submit-button'));
 
@@ -114,6 +117,7 @@ describe('EndorsementForm', () => {
         },
         statement: 'Great campaign!',
         public_display: true,
+        terms_accepted: true,
         form_metadata: expect.objectContaining({
           form_start_time: expect.any(String),
           website: '',
@@ -141,6 +145,9 @@ describe('EndorsementForm', () => {
       fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Test Org' } });
       fireEvent.change(screen.getByTestId('email-input'), { target: { value: 'john@test.com' } });
       fireEvent.change(screen.getByTestId('state-select'), { target: { value: 'MD' } });
+
+      // Accept terms (required)
+      fireEvent.click(screen.getByTestId('terms-checkbox'));
 
       // Submit the form
       fireEvent.click(screen.getByTestId('submit-button'));
@@ -186,6 +193,9 @@ describe('EndorsementForm', () => {
       const urlField = screen.getByLabelText(/url.*leave blank/i);
       fireEvent.change(websiteField, { target: { value: 'http://spam.com' } });
       fireEvent.change(urlField, { target: { value: 'http://malicious.com' } });
+
+      // Accept terms (required)
+      fireEvent.click(screen.getByTestId('terms-checkbox'));
 
       // Submit the form
       fireEvent.click(screen.getByTestId('submit-button'));
@@ -350,6 +360,9 @@ describe('EndorsementForm', () => {
       fireEvent.change(screen.getByTestId('type-select'), {
         target: { value: 'individual' },
       });
+
+      // Accept terms (required)
+      fireEvent.click(screen.getByTestId('terms-checkbox'));
 
       // Submit the form
       fireEvent.click(screen.getByTestId('submit-button'));
