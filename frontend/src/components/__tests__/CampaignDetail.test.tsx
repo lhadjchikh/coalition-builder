@@ -20,7 +20,7 @@ jest.mock('../EndorsementForm', () => {
       {
         campaign: Campaign;
         onEndorsementSubmitted: () => void;
-        onFormInteraction?: (isActive: boolean) => void;
+        onFormInteraction?: (_isActive: boolean) => void;
       }
     >(function MockEndorsementForm(props, ref) {
       const { campaign, onEndorsementSubmitted, onFormInteraction } = props;
@@ -55,7 +55,7 @@ jest.mock('../EndorsementsList', () => {
   }: {
     campaignId: number;
     refreshTrigger: number;
-    onCountUpdate?: (count: number, recentCount?: number) => void;
+    onCountUpdate?: (_count: number, _recentCount?: number) => void;
   }) {
     // Simulate different endorsement counts based on campaign ID for testing
     React.useEffect(() => {
@@ -400,7 +400,7 @@ describe('CampaignDetail', () => {
   describe('loading state management', () => {
     it('should reset loading state properly on successful fetch', async () => {
       // Create a promise that we can control
-      let resolvePromise: (value: Campaign) => void;
+      let resolvePromise: (_value: Campaign) => void;
       const controlledPromise = new Promise<Campaign>(resolve => {
         resolvePromise = resolve;
       });
@@ -426,7 +426,7 @@ describe('CampaignDetail', () => {
 
     it('should reset loading state properly on error', async () => {
       // Create a promise that we can control
-      let rejectPromise: (error: Error) => void;
+      let rejectPromise: (_error: Error) => void;
       const controlledPromise = new Promise<Campaign>((_, reject) => {
         rejectPromise = reject;
       });

@@ -80,6 +80,26 @@
   border-left: 4px solid #4caf50;
 }
 
+.address-info-message {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background-color: #e3f2fd;
+  border-radius: 8px;
+  border-left: 4px solid #2196f3;
+}
+
+.address-info-message p {
+  margin: 0;
+  color: #1565c0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.address-info-message strong {
+  color: #0d47a1;
+  font-weight: 600;
+}
+
 .form-group {
   margin-bottom: 1rem;
 }

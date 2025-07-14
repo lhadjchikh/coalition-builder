@@ -23,9 +23,12 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
       organization: '',
       role: '',
       email: '',
+      street_address: '',
+      city: '',
       state: '',
-      county: '',
+      zip_code: '',
       type: 'individual',
+      email_updates: false,
     });
 
     const [statement, setStatement] = useState<string>('');
@@ -125,9 +128,12 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           organization: '',
           role: '',
           email: '',
+          street_address: '',
+          city: '',
           state: '',
-          county: '',
+          zip_code: '',
           type: 'individual',
+          email_updates: false,
         });
         setStatement('');
         setPublicDisplay(true);
@@ -349,6 +355,38 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
             />
           </div>
 
+          <div className="address-info-message">
+            <p>
+              <strong>Why we need your address:</strong> We collect your address information solely
+              to identify your legislative districts (Congressional, State Senate, and State House).
+              This helps your representatives understand constituent support.
+            </p>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="street-address">Street Address *</label>
+            <input
+              id="street-address"
+              type="text"
+              value={stakeholder.street_address}
+              onChange={e => handleStakeholderChange('street_address', e.target.value)}
+              required
+              data-testid="street-address-input"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="city">City *</label>
+            <input
+              id="city"
+              type="text"
+              value={stakeholder.city}
+              onChange={e => handleStakeholderChange('city', e.target.value)}
+              required
+              data-testid="city-input"
+            />
+          </div>
+
           <div className="form-group">
             <label htmlFor="state">State *</label>
             <select
@@ -368,13 +406,16 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           </div>
 
           <div className="form-group">
-            <label htmlFor="county">County</label>
+            <label htmlFor="zip-code">ZIP Code *</label>
             <input
-              id="county"
+              id="zip-code"
               type="text"
-              value={stakeholder.county}
-              onChange={e => handleStakeholderChange('county', e.target.value)}
-              data-testid="county-input"
+              value={stakeholder.zip_code}
+              onChange={e => handleStakeholderChange('zip_code', e.target.value)}
+              required
+              pattern="[0-9]{5}(-[0-9]{4})?"
+              title="Please enter a valid ZIP code (e.g., 12345 or 12345-6789)"
+              data-testid="zip-code-input"
             />
           </div>
 
@@ -405,6 +446,20 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
               placeholder="Share why you support this campaign (optional)"
               data-testid="statement-textarea"
             />
+          </div>
+
+          <div className="form-group">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={stakeholder.email_updates || false}
+                onChange={e =>
+                  setStakeholder(prev => ({ ...prev, email_updates: e.target.checked }))
+                }
+                data-testid="email-updates-checkbox"
+              />
+              I would like to receive email updates about future policy endorsement opportunities
+            </label>
           </div>
 
           <div className="form-group">

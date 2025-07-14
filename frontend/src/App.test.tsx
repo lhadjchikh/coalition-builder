@@ -6,7 +6,7 @@ jest.mock('./components/CampaignsList', () => {
   return function MockCampaignsList({
     onCampaignSelect,
   }: {
-    onCampaignSelect?: (campaign: any) => void;
+    onCampaignSelect?: (_campaign: any) => void;
   }) {
     return (
       <div data-testid="campaigns-list">

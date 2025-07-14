@@ -12,6 +12,7 @@ export interface Campaign {
   allow_endorsements?: boolean;
   endorsement_form_instructions?: string;
   active: boolean;
+  image?: string;
   created_at: string;
 }
 
@@ -58,9 +59,12 @@ export interface Stakeholder {
   organization: string;
   role?: string;
   email: string;
+  street_address: string;
+  city: string;
   state: string;
-  county?: string;
+  zip_code: string;
   type: 'farmer' | 'waterman' | 'business' | 'nonprofit' | 'individual' | 'government' | 'other';
+  email_updates?: boolean;
   created_at?: string;
   updated_at?: string;
 }

@@ -52,7 +52,10 @@ describe('API Client Production Integration', () => {
             name: 'John Doe',
             organization: 'Test Org',
             email: 'john@example.com',
+            street_address: '123 Main St',
+            city: 'Los Angeles',
             state: 'CA',
+            zip_code: '90001',
             type: 'individual',
           },
           campaign: {

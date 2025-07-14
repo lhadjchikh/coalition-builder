@@ -88,6 +88,24 @@ describe('Navbar', () => {
       const campaignsLink = screen.getByText('All Campaigns');
       expect(campaignsLink).toHaveClass('active');
     });
+
+    it('calls onNavigate when brand/logo is clicked', () => {
+      const mockOnNavigate = jest.fn();
+      render(
+        <Navbar currentView="detail" onNavigate={mockOnNavigate} organizationName="Test Org" />
+      );
+
+      fireEvent.click(screen.getByText('Test Org'));
+      expect(mockOnNavigate).toHaveBeenCalledWith('list');
+    });
+
+    it('renders brand as clickable button with proper accessibility', () => {
+      render(<Navbar organizationName="Test Organization" />);
+      const brandButton = screen.getByText('Test Organization');
+
+      expect(brandButton.tagName).toBe('BUTTON');
+      expect(brandButton).toHaveAttribute('title', 'Go to homepage');
+    });
   });
 
   describe('Mobile Menu', () => {
@@ -158,6 +176,22 @@ describe('Navbar', () => {
       // Menu should be closed
       expect(screen.getByText('☰')).toBeInTheDocument();
       expect(mockOnClick).toHaveBeenCalledTimes(1);
+    });
+
+    it('closes mobile menu when brand is clicked', () => {
+      const mockOnNavigate = jest.fn();
+      render(<Navbar onNavigate={mockOnNavigate} organizationName="Test Org" />);
+
+      // Open menu
+      fireEvent.click(screen.getByText('☰'));
+      expect(screen.getByText('✕')).toBeInTheDocument();
+
+      // Click brand
+      fireEvent.click(screen.getByText('Test Org'));
+
+      // Menu should be closed
+      expect(screen.getByText('☰')).toBeInTheDocument();
+      expect(mockOnNavigate).toHaveBeenCalledWith('list');
     });
   });
 

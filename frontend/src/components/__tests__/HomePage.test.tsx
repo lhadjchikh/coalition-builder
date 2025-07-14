@@ -74,8 +74,8 @@ describe('HomePage Error Handling', () => {
 
   it('renders successfully with API data', async () => {
     // Use delayed promises to ensure we can test loading state
-    let resolveHomepage: (value: HomePageType) => void;
-    let resolveCampaigns: (value: Campaign[]) => void;
+    let resolveHomepage: (_value: HomePageType) => void;
+    let resolveCampaigns: (_value: Campaign[]) => void;
 
     const homepagePromise = new Promise<HomePageType>(resolve => {
       resolveHomepage = resolve;
@@ -319,8 +319,6 @@ describe('HomePage Error Handling', () => {
   it('calls APIs in parallel for better performance', async () => {
     mockAPI.getHomepage.mockResolvedValue(mockHomepage);
     mockAPI.getCampaigns.mockResolvedValue(mockCampaigns);
-
-    const startTime = Date.now();
 
     await act(async () => {
       render(<HomePage />);

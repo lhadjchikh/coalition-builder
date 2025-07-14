@@ -97,8 +97,7 @@ const EndorsementsList: React.FC<EndorsementsListProps> = ({
                 <span className="organization">{endorsement.stakeholder.organization}</span>
                 <br />
                 <span className="location">
-                  {endorsement.stakeholder.county && <>{endorsement.stakeholder.county}, </>}
-                  {endorsement.stakeholder.state}
+                  {endorsement.stakeholder.city}, {endorsement.stakeholder.state}
                 </span>
               </div>
               <div className="stakeholder-type">

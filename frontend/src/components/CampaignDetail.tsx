@@ -5,6 +5,7 @@ import { Campaign } from '../types';
 import EndorsementForm, { EndorsementFormRef } from './EndorsementForm';
 import EndorsementsList from './EndorsementsList';
 import GrowthIcon from './GrowthIcon';
+import './Campaign.css';
 import './Endorsements.css';
 
 interface CampaignDetailProps {
@@ -156,6 +157,23 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
 
   return (
     <div className="campaign-detail" data-testid="campaign-detail">
+      {/* Hero Image Section */}
+      {campaign.image && (
+        <div className="campaign-hero">
+          <img
+            src={campaign.image}
+            alt={`Hero image for ${campaign.title}`}
+            className="campaign-hero-image"
+          />
+          <div className="campaign-hero-overlay">
+            <div className="campaign-hero-content">
+              <h1 className="campaign-hero-title">{campaign.title}</h1>
+              <p className="campaign-hero-summary">{campaign.summary}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Sticky Endorsement CTA */}
       {campaign.allow_endorsements && showStickyCard && !isFormActive && (
         <div className="sticky-endorsement-cta">
@@ -173,8 +191,13 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
       )}
 
       <header className="campaign-header">
-        <h1>{campaign.title}</h1>
-        <p className="campaign-summary">{campaign.summary}</p>
+        {/* Only show title and summary in header if there's no hero image */}
+        {!campaign.image && (
+          <>
+            <h1>{campaign.title}</h1>
+            <p className="campaign-summary">{campaign.summary}</p>
+          </>
+        )}
 
         {/* Smart Social Proof Section */}
         {campaign.allow_endorsements && endorsementCount >= SOCIAL_PROOF_THRESHOLD && (

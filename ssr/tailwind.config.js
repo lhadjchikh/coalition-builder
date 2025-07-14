@@ -21,4 +21,5 @@ module.exports = {
     // Include shared frontend components
     "./frontend/src/**/*.{js,jsx,ts,tsx}",
   ],
+  plugins: [...sharedConfig.plugins, require("@tailwindcss/typography")],
 };

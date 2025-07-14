@@ -2,8 +2,10 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "proxy": "http://localhost:8000",
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.16",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
@@ -17,8 +19,8 @@
     "webfontloader": "^1.6.28"
   },
   "scripts": {
-    "dev": "webpack serve --mode development",
-    "build": "webpack --mode production",
+    "dev": "webpack serve --mode development --config webpack.config.cjs",
+    "build": "webpack --mode production --config webpack.config.cjs",
     "preview": "serve -s build",
     "test": "jest",
     "test:ci": "jest --verbose --coverage",
@@ -58,6 +60,8 @@
     "@types/react-dom": "^19.1.5",
     "@types/styled-components": "^5.1.34",
     "@types/webfontloader": "^1.6.38",
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
     "autoprefixer": "^10.4.20",
     "css-loader": "^7.1.2",
     "eslint-config-prettier": "^9.1.0",

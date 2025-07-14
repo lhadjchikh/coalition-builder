@@ -20,8 +20,10 @@ describe('EndorsementsList', () => {
         organization: 'Test Organization',
         role: 'Manager',
         email: 'john@test.com',
+        street_address: '123 Main St',
+        city: 'Baltimore',
         state: 'MD',
-        county: 'Test County',
+        zip_code: '21201',
         type: 'business',
         created_at: '2024-01-01',
         updated_at: '2024-01-01',
@@ -46,8 +48,10 @@ describe('EndorsementsList', () => {
         organization: 'Green Farms Coalition',
         role: 'Director',
         email: 'jane@greenfarms.org',
+        street_address: '456 Oak Ave',
+        city: 'Arlington',
         state: 'VA',
-        county: 'Fairfax County',
+        zip_code: '22201',
         type: 'nonprofit',
         created_at: '2024-01-02',
         updated_at: '2024-01-02',
@@ -163,7 +167,7 @@ describe('EndorsementsList', () => {
     });
     expect(screen.getByText('Manager,')).toBeInTheDocument();
     expect(screen.getByText('Test Organization')).toBeInTheDocument();
-    expect(screen.getByText('Test County, MD')).toBeInTheDocument();
+    expect(screen.getByText('Baltimore, MD')).toBeInTheDocument();
     expect(screen.getByText('Business')).toBeInTheDocument();
   });
 
@@ -252,7 +256,10 @@ describe('EndorsementsList', () => {
             name: 'New Endorser',
             organization: 'New Org',
             email: 'new@test.com',
+            street_address: '789 Pine St',
+            city: 'Los Angeles',
             state: 'CA',
+            zip_code: '90001',
             type: 'individual' as const,
             created_at: '2024-01-03',
             updated_at: '2024-01-03',
