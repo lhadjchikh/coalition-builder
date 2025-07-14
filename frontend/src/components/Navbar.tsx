@@ -16,11 +16,26 @@ const NavbarContainer = styled.nav`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
-const Brand = styled.div`
+const Brand = styled.button`
+  background: none;
+  border: none;
   color: white;
   font-size: 1.5rem;
   font-weight: bold;
   text-decoration: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  &:focus {
+    outline: 2px solid #2196f3;
+    outline-offset: 2px;
+  }
 `;
 
 const NavMenu = styled.ul<{ $isOpen: boolean }>`
@@ -129,6 +144,13 @@ const Navbar: React.FC<LayoutNavbarProps> = ({
     setIsMenuOpen(false);
   };
 
+  const handleBrandClick = () => {
+    if (onNavigate) {
+      onNavigate('list');
+    }
+    setIsMenuOpen(false);
+  };
+
   // Default frontend app navigation
   const defaultNavItems: NavItemData[] = [
     {
@@ -142,7 +164,9 @@ const Navbar: React.FC<LayoutNavbarProps> = ({
 
   return (
     <NavbarContainer>
-      <Brand>{organizationName}</Brand>
+      <Brand onClick={handleBrandClick} title="Go to homepage">
+        {organizationName}
+      </Brand>
 
       <MobileMenuToggle onClick={toggleMenu}>{isMenuOpen ? '✕' : '☰'}</MobileMenuToggle>
 
