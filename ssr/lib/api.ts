@@ -12,6 +12,7 @@ interface LegalDocumentResponse {
   content: string;
   version: string;
   effective_date: string;
+  document_type: string;
 }
 
 const API_URL =
