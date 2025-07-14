@@ -2,6 +2,9 @@
  * Tests for the SSR analytics service
  */
 
+// Mock environment variable before importing
+process.env.NEXT_PUBLIC_GA_TRACKING_ID = "G-TEST123456";
+
 import analytics from "../analytics";
 
 // Mock environment variable
@@ -39,6 +42,9 @@ const mockConsole = {
   error: jest.fn(),
 };
 
+// Store original console for restoration
+const originalConsole = global.console;
+
 describe("SSR Analytics Service", () => {
   beforeEach(() => {
     // Reset environment
@@ -50,17 +56,9 @@ describe("SSR Analytics Service", () => {
     // Reset mocks
     jest.clearAllMocks();
 
-    // Mock window
-    Object.defineProperty(global, "window", {
-      value: mockWindow,
-      writable: true,
-    });
-
-    // Mock document
-    Object.defineProperty(global, "document", {
-      value: mockDocument,
-      writable: true,
-    });
+    // Mock window and document by direct assignment
+    (global as any).window = mockWindow;
+    (global as any).document = mockDocument;
 
     // Mock console
     global.console = mockConsole as any;
@@ -71,6 +69,8 @@ describe("SSR Analytics Service", () => {
     // Reset window to undefined for SSR testing
     delete (global as any).window;
     delete (global as any).document;
+    // Restore original console
+    global.console = originalConsole;
   });
 
   describe("server-side behavior", () => {
