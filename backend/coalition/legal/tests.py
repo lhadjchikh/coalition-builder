@@ -106,6 +106,43 @@ class TermsAcceptanceTest(TestCase):
         assert acceptance.ip_address == "192.168.1.1"
         assert acceptance.accepted_at is not None
 
+    def test_user_agent_truncation(self) -> None:
+        """Test that user_agent strings longer than 1000 characters are truncated."""
+        long_user_agent = "A" * 1500  # Create a 1500 character string
+
+        acceptance = TermsAcceptance.objects.create(
+            endorsement=self.endorsement,
+            legal_document=self.legal_doc,
+            ip_address="192.168.1.1",
+            user_agent=long_user_agent,
+        )
+
+        # Refresh from database to ensure save() method was called
+        acceptance.refresh_from_db()
+
+        # Should be truncated to exactly 1000 characters
+        assert len(acceptance.user_agent) == 1000
+        assert acceptance.user_agent == "A" * 1000
+
+    def test_normal_user_agent_not_truncated(self) -> None:
+        """Test that normal length user_agent strings are not modified."""
+        normal_user_agent = (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        )
+
+        acceptance = TermsAcceptance.objects.create(
+            endorsement=self.endorsement,
+            legal_document=self.legal_doc,
+            ip_address="192.168.1.1",
+            user_agent=normal_user_agent,
+        )
+
+        acceptance.refresh_from_db()
+
+        # Should remain unchanged
+        assert acceptance.user_agent == normal_user_agent
+        assert len(acceptance.user_agent) == len(normal_user_agent)
+
 
 class TermsAcceptanceAdminTest(TestCase):
     def setUp(self) -> None:

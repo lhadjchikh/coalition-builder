@@ -148,9 +148,10 @@ class TermsAcceptance(models.Model):
         help_text="IP address from which terms were accepted",
     )
 
-    user_agent = models.TextField(
+    user_agent = models.CharField(
+        max_length=1000,
         blank=True,
-        help_text="Browser user agent string at time of acceptance",
+        help_text="Browser user agent string (truncated if over 1000 chars)",
     )
 
     acceptance_token = models.UUIDField(
@@ -166,6 +167,12 @@ class TermsAcceptance(models.Model):
             models.Index(fields=["accepted_at"]),
             models.Index(fields=["endorsement", "legal_document"]),
         ]
+
+    def save(self, *args: "Any", **kwargs: "Any") -> None:
+        """Truncate user_agent if it exceeds maximum length."""
+        if self.user_agent and len(self.user_agent) > 1000:
+            self.user_agent = self.user_agent[:1000]
+        super().save(*args, **kwargs)
 
     def __str__(self) -> str:
         return (
