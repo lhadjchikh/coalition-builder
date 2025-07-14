@@ -2,6 +2,7 @@ import uuid
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
@@ -99,6 +100,17 @@ class Endorsement(models.Model):
         help_text="When this endorsement was reviewed by an admin",
     )
 
+    # Terms acceptance tracking
+    terms_accepted = models.BooleanField(
+        default=False,
+        help_text="Whether the terms of use were accepted",
+    )
+    terms_accepted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the terms were accepted",
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         help_text="When this endorsement was created",
@@ -154,8 +166,6 @@ class Endorsement(models.Model):
 
     def verify_email(self) -> None:
         """Mark email as verified and auto-approve if configured"""
-        from django.conf import settings
-
         self.email_verified = True
         self.verified_at = timezone.now()
 

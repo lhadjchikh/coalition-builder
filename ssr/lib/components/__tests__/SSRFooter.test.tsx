@@ -57,4 +57,32 @@ describe("SSRFooter", () => {
     const copyright = container.querySelector("p.copyright");
     expect(copyright).toBeInTheDocument();
   });
+
+  it("renders legal links with correct navigation", () => {
+    render(<SSRFooter />);
+
+    // Check for navigation with aria-label
+    const navigation = screen.getByRole("navigation", { name: "Legal links" });
+    expect(navigation).toBeInTheDocument();
+
+    // Check for Terms of Use link
+    const termsLink = screen.getByRole("link", { name: "Terms of Use" });
+    expect(termsLink).toBeInTheDocument();
+    expect(termsLink).toHaveAttribute("href", "/terms");
+
+    // Check for Privacy Policy link
+    const privacyLink = screen.getByRole("link", { name: "Privacy Policy" });
+    expect(privacyLink).toBeInTheDocument();
+    expect(privacyLink).toHaveAttribute("href", "/privacy");
+  });
+
+  it("applies correct CSS classes to legal links", () => {
+    const { container } = render(<SSRFooter />);
+
+    const legalLinksNav = container.querySelector("nav.legalLinks");
+    expect(legalLinksNav).toBeInTheDocument();
+
+    const legalLinks = container.querySelectorAll("a.legalLink");
+    expect(legalLinks).toHaveLength(2);
+  });
 });

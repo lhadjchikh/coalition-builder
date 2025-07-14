@@ -100,6 +100,7 @@ class AdminCSRFProtectionTest(TestCase):
                     "type": "individual",
                 },
                 "statement": "Test statement",
+                "terms_accepted": True,
                 "form_metadata": {
                     "form_start_time": "2024-01-01T00:00:00Z",
                     "website": "",

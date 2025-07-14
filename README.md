@@ -74,6 +74,7 @@ flowchart TD
 - **Campaign Management** - Create and track policy advocacy campaigns at federal and state levels
 - **Multi-Level Bill Tracking** - Support for both federal and state legislative bills
 - **Stakeholder Management** - Organize supporters and endorsers with detailed profiles
+- **Legal Compliance** - GDPR-compliant cookie consent and comprehensive legal document management
 - **Content Management** - Easy-to-use Django admin interface
 - **API Integration** - RESTful API for custom integrations
 - **SEO Optimized** - Server-side rendering with Next.js
@@ -81,6 +82,7 @@ flowchart TD
 
 ### Endorsement System
 
+- **📋 Terms of Use Acceptance** - Required legal agreement with audit trail tracking
 - **🔐 Email Verification** - Secure token-based email verification for all endorsements
 - **🛡️ Spam Prevention** - Multi-layer protection including rate limiting and content analysis
 - **👨‍💼 Admin Review** - Comprehensive moderation workflow with bulk actions

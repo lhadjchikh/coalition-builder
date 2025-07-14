@@ -164,6 +164,7 @@ class FormMetadataSecurityTests(TestCase):
                 "type": "business",
             },
             "statement": "This initiative aligns with our company values and goals.",
+            "terms_accepted": True,
             "form_metadata": {
                 "form_start_time": (timezone.now() - timedelta(minutes=2)).isoformat(),
                 "website": "",
@@ -250,6 +251,7 @@ class FormMetadataSecurityTests(TestCase):
             "statement": (
                 "I strongly support this important initiative for our community."
             ),
+            "terms_accepted": True,
             "form_metadata": {
                 "form_start_time": (timezone.now() - timedelta(minutes=2)).isoformat(),
                 "website": "",

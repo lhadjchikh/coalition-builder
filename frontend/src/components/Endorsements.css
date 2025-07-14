@@ -827,3 +827,21 @@
 .view-campaign-btn:hover {
   background-color: #1976d2;
 }
+
+/* Terms of Use Link Focus Styles */
+.checkbox-label a {
+  color: #2196f3;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.checkbox-label a:hover {
+  color: #1976d2;
+}
+
+.checkbox-label a:focus {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
+  border-radius: 2px;
+  background-color: rgba(33, 150, 243, 0.1);
+}

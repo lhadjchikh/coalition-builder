@@ -7,6 +7,7 @@ This guide explains how the endorsement system works in Coalition Builder, cover
 Coalition Builder's endorsement system allows stakeholders to publicly support your policy campaigns through a streamlined process that includes:
 
 - **Public endorsement forms** for each campaign
+- **Terms of Use acceptance** with audit trail tracking
 - **Email verification** to prevent spam and ensure authenticity
 - **Administrative moderation** to review and approve endorsements
 - **Public display** of approved endorsements

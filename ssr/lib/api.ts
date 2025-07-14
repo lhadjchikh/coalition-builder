@@ -6,6 +6,15 @@ import type {
   ContentBlock,
 } from "@frontend/types";
 
+interface LegalDocumentResponse {
+  id: number;
+  title: string;
+  content: string;
+  version: string;
+  effective_date: string;
+  document_type: string;
+}
+
 const API_URL =
   process.env.API_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
@@ -86,6 +95,15 @@ class ApiClient {
 
   async getContentBlock(blockId: number): Promise<ContentBlock> {
     return this.request<ContentBlock>(`/api/content-blocks/${blockId}/`);
+  }
+
+  // Legal documents
+  async getTermsOfUse(): Promise<LegalDocumentResponse> {
+    return this.request<LegalDocumentResponse>("/api/legal/terms/");
+  }
+
+  async getPrivacyPolicy(): Promise<LegalDocumentResponse> {
+    return this.request<LegalDocumentResponse>("/api/legal/privacy/");
   }
 
   // Health check

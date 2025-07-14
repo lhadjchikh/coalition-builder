@@ -43,6 +43,7 @@ nav:
       - Campaign Management: user-guides/campaign-management.md
       - Stakeholder Management: user-guides/stakeholder-management.md
       - Endorsement Workflow: user-guides/endorsement-workflow.md
+      - Legal Compliance: user-guides/legal-compliance.md
       - Content Management: user-guides/content-management.md
   - Deployment: deployment.md
   - Architecture:

@@ -325,6 +325,9 @@ class EndorsementCreateSchema(Schema):
         description="Optional endorsement statement",
     )
     public_display: bool = True
+    terms_accepted: bool = Field(
+        description="Whether the user has accepted the terms of use",
+    )
     # Structured spam prevention fields with validation
     form_metadata: SpamPreventionMetadata = Field(
         description="Spam prevention metadata with validation",

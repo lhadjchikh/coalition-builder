@@ -8,6 +8,7 @@ from . import (
     content_blocks,
     endorsements,
     homepage,
+    legal,
     legislators,
     stakeholders,
     themes,
@@ -24,6 +25,7 @@ api.add_router("/legislators/", legislators.router)
 api.add_router("/homepage/", homepage.router)
 api.add_router("/content-blocks/", content_blocks.router)
 api.add_router("/themes/", themes.router)
+api.add_router("/legal/", legal.router)
 
 
 @api.get("/health/", tags=["Health"])

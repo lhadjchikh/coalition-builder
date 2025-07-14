@@ -14,6 +14,7 @@ from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.email_service import EndorsementEmailService
 from coalition.endorsements.models import Endorsement
 from coalition.endorsements.spam_prevention import SpamPreventionService, get_client_ip
+from coalition.legal.models import LegalDocument, TermsAcceptance
 from coalition.stakeholders.models import Stakeholder
 from coalition.stakeholders.services import GeocodingService
 
@@ -255,11 +256,25 @@ def _create_endorsement_with_emails(
     stakeholder_data: dict,
     statement: str,
     public_display: bool,
+    terms_accepted: bool,
     ip_address: str,
+    request: HttpRequest,
 ) -> Endorsement:
     """
     Create endorsement and handle email notifications.
     """
+    # Validate terms acceptance
+    if not terms_accepted:
+        raise HttpError(400, "Terms of use must be accepted to submit an endorsement")
+
+    # Get active terms document
+    active_terms = LegalDocument.get_active_document("terms")
+    if not active_terms:
+        # Still allow endorsement creation if no terms are configured yet
+        logger.warning(
+            "No active Terms of Use document found during endorsement creation",
+        )
+
     # Get or create stakeholder with security validation
     stakeholder = _get_or_create_stakeholder(stakeholder_data, ip_address)
 
@@ -271,6 +286,8 @@ def _create_endorsement_with_emails(
             "statement": statement,
             "public_display": public_display,
             "status": "pending",  # Start as pending verification
+            "terms_accepted": terms_accepted,
+            "terms_accepted_at": timezone.now() if terms_accepted else None,
         },
     )
 
@@ -281,6 +298,15 @@ def _create_endorsement_with_emails(
             statement,
             public_display,
             ip_address,
+        )
+
+    # Create terms acceptance record for new endorsements with active terms
+    if created and active_terms and terms_accepted:
+        TermsAcceptance.objects.create(
+            endorsement=endorsement,
+            legal_document=active_terms,
+            ip_address=ip_address,
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
         )
 
     # Send verification email
@@ -345,7 +371,9 @@ def create_endorsement(
                 stakeholder_data,
                 data.statement,
                 data.public_display,
+                data.terms_accepted,
                 ip_address,
+                request,
             )
 
     except IntegrityError as e:

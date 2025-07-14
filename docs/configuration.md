@@ -44,6 +44,18 @@ ORG_TAGLINE="Your mission statement"
 CONTACT_EMAIL="contact@yourdomain.com"
 ```
 
+### Legal Compliance
+
+Configure cookie consent and legal document management:
+
+```bash
+# Cookie consent is handled client-side with vanilla-cookieconsent
+# No additional environment variables required
+
+# Legal document contact information (update in fixtures/admin)
+# See docs/user-guides/legal-compliance.md for setup instructions
+```
+
 ### Theme System
 
 The theme system allows for visual customization through the admin interface. Optional fallback values:

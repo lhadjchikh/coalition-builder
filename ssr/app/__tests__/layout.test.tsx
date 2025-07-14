@@ -3,13 +3,19 @@ import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import RootLayout from "../layout";
 import { ssrApiClient } from "../../lib/frontend-api-adapter";
-import { DEFAULT_NAV_ITEMS } from "@shared/types";
+import { DEFAULT_NAV_ITEMS, NavItemData } from "@shared/types";
 
 // Mock the dependencies
 jest.mock("../../lib/frontend-api-adapter");
 jest.mock("../../lib/components/SSRNavbar", () => ({
   __esModule: true,
-  default: ({ organizationName, navItems }: any) => (
+  default: ({
+    organizationName,
+    navItems,
+  }: {
+    organizationName: string;
+    navItems: NavItemData[];
+  }) => (
     <nav data-testid="ssr-navbar">
       <span>{organizationName}</span>
       <span>{navItems?.length || 0} nav items</span>
@@ -18,7 +24,7 @@ jest.mock("../../lib/components/SSRNavbar", () => ({
 }));
 jest.mock("../../lib/components/SSRFooter", () => ({
   __esModule: true,
-  default: ({ organizationName }: any) => (
+  default: ({ organizationName }: { organizationName: string }) => (
     <footer data-testid="ssr-footer">
       <span>
         © {new Date().getFullYear()} {organizationName}. All rights reserved.
@@ -28,7 +34,11 @@ jest.mock("../../lib/components/SSRFooter", () => ({
 }));
 jest.mock("../../lib/registry", () => ({
   __esModule: true,
-  default: ({ children }: any) => <>{children}</>,
+  default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+jest.mock("../../components/CookieConsent", () => ({
+  __esModule: true,
+  default: () => <div data-testid="cookie-consent">Cookie Consent</div>,
 }));
 
 describe("RootLayout", () => {
@@ -59,7 +69,7 @@ describe("RootLayout", () => {
       background_color: "#FFFFFF",
       text_color: "#000000",
     },
-    content_blocks: [],
+    content_blocks: [] as any[],
   };
 
   beforeEach(() => {
@@ -96,6 +106,10 @@ describe("RootLayout", () => {
     expect(footer).toHaveTextContent(
       `© ${new Date().getFullYear()} Test Organization. All rights reserved.`,
     );
+
+    // Check for cookie consent
+    const cookieConsent = screen.getByTestId("cookie-consent");
+    expect(cookieConsent).toBeInTheDocument();
 
     // Check layout structure
     const appRoot = container.querySelector("#app-root");
@@ -148,7 +162,7 @@ describe("RootLayout", () => {
   it("handles empty nav items", async () => {
     const homepageWithoutNavItems = {
       ...mockHomepage,
-      nav_items: [],
+      nav_items: [] as NavItemData[],
     };
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(
       homepageWithoutNavItems,
@@ -169,7 +183,7 @@ describe("RootLayout", () => {
   it("handles null nav items", async () => {
     const homepageWithNullNavItems = {
       ...mockHomepage,
-      nav_items: null,
+      nav_items: null as NavItemData[] | null,
     };
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(
       homepageWithNullNavItems,
