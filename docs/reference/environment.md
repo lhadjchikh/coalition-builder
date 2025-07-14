@@ -254,7 +254,7 @@ NEXT_PUBLIC_LOGO_URL="https://yourdomain.com/logo.png"
 
 When `NEXT_PUBLIC_GA_TRACKING_ID` is provided, the application automatically:
 
-- Loads Google Analytics scripts on both frontend and SSR applications
+- Loads Google Analytics scripts client-side in both frontend and SSR applications
 - Respects cookie consent preferences (only tracks when analytics cookies are enabled)
 - Tracks page views, campaign views, endorsement submissions, and form interactions
 - Enables privacy-compliant tracking with IP anonymization and secure cookies

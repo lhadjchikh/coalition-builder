@@ -5,7 +5,6 @@ import analytics from "../lib/analytics";
 
 interface LegalDocumentTrackerProps {
   documentType: "terms" | "privacy";
-  title: string;
 }
 
 /**
@@ -14,7 +13,6 @@ interface LegalDocumentTrackerProps {
  */
 export default function LegalDocumentTracker({
   documentType,
-  title,
 }: LegalDocumentTrackerProps): null {
   useEffect(() => {
     // Track legal document view
