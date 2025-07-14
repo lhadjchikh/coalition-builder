@@ -22,7 +22,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({ onCampaignSelect }) => {
           setCampaigns(data);
           setLoading(false);
         }
-      } catch (err) {
+      } catch {
         if (isMounted) {
           setError('Failed to fetch campaigns');
           setLoading(false);

@@ -21,11 +21,6 @@ const App: React.FC = () => {
     showCampaignDetail(campaign.id);
   };
 
-  const showCampaignsList = () => {
-    setCurrentView('list');
-    setSelectedCampaignId(undefined);
-  };
-
   return (
     <div className="App">
       <GoogleAnalytics />

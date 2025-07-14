@@ -2,7 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { ThemeProvider as StyledThemeProvider, createGlobalStyle } from 'styled-components';
 import { lighten, darken } from 'polished';
 import { useTheme } from './ThemeContext';
-import { createStyledTheme, StyledTheme } from '../styles/theme';
+import { createStyledTheme } from '../styles/theme';
 
 interface EnhancedThemeProviderProps {
   children: React.ReactNode;

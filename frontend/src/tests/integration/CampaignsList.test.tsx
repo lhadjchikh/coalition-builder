@@ -35,7 +35,7 @@ describe('CampaignsList Integration', () => {
     ];
 
     // Use delayed promise to ensure we can test loading state
-    let resolveCampaigns: (value: Campaign[]) => void;
+    let resolveCampaigns: (_value: Campaign[]) => void;
     const campaignsPromise = new Promise<Campaign[]>(resolve => {
       resolveCampaigns = resolve;
     });
@@ -75,7 +75,7 @@ describe('CampaignsList Integration', () => {
 
   test('handles API error states', async () => {
     // Use delayed promise to ensure we can test loading state
-    let rejectCampaigns: (reason: Error) => void;
+    let rejectCampaigns: (_reason: Error) => void;
     const campaignsPromise = new Promise<Campaign[]>((_, reject) => {
       rejectCampaigns = reject;
     });
@@ -114,7 +114,7 @@ describe('CampaignsList Integration', () => {
 
   test('handles empty response from API', async () => {
     // Use delayed promise to ensure we can test loading state
-    let resolveCampaigns: (value: Campaign[]) => void;
+    let resolveCampaigns: (_value: Campaign[]) => void;
     const campaignsPromise = new Promise<Campaign[]>(resolve => {
       resolveCampaigns = resolve;
     });
@@ -161,7 +161,7 @@ describe('CampaignsList Integration', () => {
     ];
 
     // Use delayed promise
-    let resolveCampaigns: (value: Campaign[]) => void;
+    let resolveCampaigns: (_value: Campaign[]) => void;
     const campaignsPromise = new Promise<Campaign[]>(resolve => {
       resolveCampaigns = resolve;
     });
@@ -218,7 +218,7 @@ describe('CampaignsList Integration', () => {
     ];
 
     // Use delayed promise
-    let resolveCampaigns: (value: Campaign[]) => void;
+    let resolveCampaigns: (_value: Campaign[]) => void;
     const campaignsPromise = new Promise<Campaign[]>(resolve => {
       resolveCampaigns = resolve;
     });

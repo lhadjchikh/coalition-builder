@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import API from '../services/api';
 import { Campaign, HomePage as HomePageType } from '../types';
-import { Theme } from '@shared/utils/theme';
 import HeroSection from './HeroSection';
 import ContentBlock from './ContentBlock';
 import SocialLinks from './SocialLinks';
-import CampaignsList from './CampaignsList';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { ThemeStyles } from './ThemeStyles';
 
