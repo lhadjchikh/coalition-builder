@@ -70,7 +70,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         setLoading(true);
         setError(null);
 
-        let data: Campaign;
+        let data: Campaign | null;
         if (campaignId) {
           data = await API.getCampaignById(campaignId);
         } else if (campaignName) {
@@ -81,8 +81,10 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
 
         setCampaign(data);
 
-        // Track campaign view
-        analytics.trackCampaignView(data.name || `Campaign ${data.id}`);
+        // Track campaign view only if data exists
+        if (data) {
+          analytics.trackCampaignView(data.name || `Campaign ${data.id}`);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch campaign');
       } finally {
