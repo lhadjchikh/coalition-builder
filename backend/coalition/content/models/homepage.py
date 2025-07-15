@@ -2,6 +2,7 @@
 
 from typing import TYPE_CHECKING
 
+from ckeditor.fields import RichTextField
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -64,7 +65,7 @@ class HomePage(models.Model):
         default="About Our Mission",
         help_text="Title for the about/mission section",
     )
-    about_section_content = models.TextField(
+    about_section_content = RichTextField(
         help_text="Main content describing the organization's mission and goals",
     )
 
@@ -74,8 +75,9 @@ class HomePage(models.Model):
         default="Get Involved",
         help_text="Title for the call-to-action section",
     )
-    cta_content = models.TextField(
+    cta_content = RichTextField(
         blank=True,
+        config_name="minimal",
         help_text="Description for how people can get involved",
     )
     cta_button_text = models.CharField(

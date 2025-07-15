@@ -18,7 +18,7 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 
 from coalition.api.api import api
 from coalition.content.views import active_theme_css, theme_css
@@ -31,6 +31,7 @@ urlpatterns = [
     path("robots.txt", robots_txt, name="robots_txt"),
     path("theme.css", active_theme_css, name="active_theme_css"),
     path("theme/<int:theme_id>.css", theme_css, name="theme_css"),
+    path("ckeditor/", include("ckeditor_uploader.urls")),
     path("", home, name="home"),
 ]
 
