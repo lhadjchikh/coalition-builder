@@ -15,7 +15,7 @@ def list_content_blocks(
     page_type: str = None,
 ) -> list[ContentBlock]:
     """List all visible content blocks, optionally filtered by page type"""
-    queryset = ContentBlock.objects.filter(is_visible=True)
+    queryset = ContentBlock.objects.filter(is_visible=True).select_related("image")
 
     # Filter by page_type if provided
     if page_type is not None:
