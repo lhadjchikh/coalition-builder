@@ -12,19 +12,19 @@ class ContentBlockAdmin(admin.ModelAdmin):
     list_display = (
         "title",
         "block_type",
-        "homepage",
+        "page_type",
         "order",
         "is_visible",
         "has_image",
         "created_at",
     )
-    list_filter = ("block_type", "is_visible", "homepage", "created_at")
+    list_filter = ("block_type", "page_type", "is_visible", "created_at")
     search_fields = ("title", "content")
     readonly_fields = ("created_at", "updated_at")
     list_editable = ("order", "is_visible")
 
     fieldsets = (
-        (None, {"fields": ("title", "block_type", "homepage", "order", "is_visible")}),
+        (None, {"fields": ("title", "block_type", "page_type", "order", "is_visible")}),
         ("Content", {"fields": ("content",)}),
         (
             "Image",

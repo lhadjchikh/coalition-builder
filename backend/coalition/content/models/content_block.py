@@ -13,8 +13,8 @@ if TYPE_CHECKING:
 
 class ContentBlock(models.Model):
     """
-    Flexible content blocks that can be added to the homepage.
-    Allows for more dynamic content sections beyond the fixed structure.
+    Flexible content blocks that can be added to any page.
+    Allows for dynamic content sections beyond the fixed structure.
     """
 
     BLOCK_TYPES = [
@@ -26,11 +26,18 @@ class ContentBlock(models.Model):
         ("custom_html", "Custom HTML Block"),
     ]
 
-    homepage = models.ForeignKey(
-        "content.HomePage",
-        on_delete=models.CASCADE,
-        related_name="content_blocks",
-        help_text="The homepage this content block belongs to",
+    PAGE_TYPES = [
+        ("homepage", "Homepage"),
+        ("about", "About Page"),
+        ("campaigns", "Campaigns Page"),
+        ("contact", "Contact Page"),
+    ]
+
+    page_type = models.CharField(
+        max_length=20,
+        choices=PAGE_TYPES,
+        default="homepage",
+        help_text="Which page this content block appears on",
     )
 
     title = models.CharField(
@@ -99,7 +106,10 @@ class ContentBlock(models.Model):
         verbose_name_plural = "Content Blocks"
 
     def __str__(self) -> str:
-        return f"Block: {self.title or self.block_type} (Order: {self.order})"
+        page_type = self.get_page_type_display()
+        return (
+            f"Block: {self.title or self.block_type} ({page_type}, Order: {self.order})"
+        )
 
     @property
     def image_url(self) -> str:
@@ -112,6 +122,26 @@ class ContentBlock(models.Model):
     def image_alt_text(self) -> str:
         """Return the alt text of the image, or empty string if no image."""
         return self.image.alt_text if self.image else ""
+
+    @property
+    def image_title(self) -> str:
+        """Return the title of the image, or empty string if no image."""
+        return self.image.title if self.image else ""
+
+    @property
+    def image_author(self) -> str:
+        """Return the author of the image, or empty string if no image."""
+        return self.image.author if self.image else ""
+
+    @property
+    def image_license(self) -> str:
+        """Return the license of the image, or empty string if no image."""
+        return self.image.license if self.image else ""
+
+    @property
+    def image_source_url(self) -> str:
+        """Return the source URL of the image, or empty string if no image."""
+        return self.image.source_url if self.image else ""
 
     def save(self, *args: "Any", **kwargs: "Any") -> None:
         """Sanitize content based on block type before saving."""

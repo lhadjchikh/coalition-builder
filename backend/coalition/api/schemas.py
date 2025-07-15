@@ -7,7 +7,6 @@ from pydantic import Field, validator
 from coalition.stakeholders.validators import AddressValidator
 
 if TYPE_CHECKING:
-    from django.db.models import QuerySet
 
     from coalition.content.models import ContentBlock, HomePage, Theme
 
@@ -109,10 +108,15 @@ class LegislatorOut(ModelSchema):
 
 
 class ContentBlockOut(ModelSchema):
-    """Response schema for ContentBlock model with computed image URL."""
+    """Response schema for ContentBlock model with computed image properties."""
 
-    # Add the computed property field
+    # Add the computed property fields
     image_url: str
+    image_alt_text: str
+    image_title: str
+    image_author: str
+    image_license: str
+    image_source_url: str
 
     class Meta:
         model = ContentBlock
@@ -159,17 +163,11 @@ class HomePageOut(ModelSchema):
 
     # Add computed property fields
     hero_background_image_url: str
-    content_blocks: list[ContentBlockOut]
     theme: ThemeOut | None = None
 
     class Meta:
         model = HomePage
         fields = "__all__"
-
-    @staticmethod
-    def resolve_content_blocks(obj: "HomePage") -> "QuerySet[ContentBlock]":
-        """Only return visible content blocks, ordered by order field"""
-        return obj.content_blocks.filter(is_visible=True).order_by("order")
 
     @staticmethod
     def resolve_hero_background_image_url(obj: "HomePage") -> str:
