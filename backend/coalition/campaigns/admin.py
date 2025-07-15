@@ -56,7 +56,7 @@ class PolicyCampaignAdmin(admin.ModelAdmin):
     fieldsets = (
         (
             "Campaign Information",
-            {"fields": ("name", "title", "summary", "description", "active")},
+            {"fields": ("name", "title", "summary", "description", "image", "active")},
         ),
         (
             "Endorsements",

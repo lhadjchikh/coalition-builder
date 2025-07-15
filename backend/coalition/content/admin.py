@@ -17,18 +17,60 @@ class ThemeAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {"fields": ("name", "description", "is_active")}),
         (
-            "Colors",
+            "Primary Colors",
             {
                 "fields": (
                     "primary_color",
                     "secondary_color",
                     "accent_color",
-                    "background_color",
-                    "text_color",
                 ),
             },
         ),
-        ("Typography", {"fields": ("google_fonts",)}),
+        (
+            "Background Colors",
+            {
+                "fields": (
+                    "background_color",
+                    "section_background_color",
+                    "card_background_color",
+                ),
+            },
+        ),
+        (
+            "Text Colors",
+            {
+                "fields": (
+                    "heading_color",
+                    "body_text_color",
+                    "muted_text_color",
+                    "link_color",
+                    "link_hover_color",
+                ),
+            },
+        ),
+        (
+            "Typography",
+            {
+                "fields": (
+                    "heading_font_family",
+                    "body_font_family",
+                    "google_fonts",
+                    "font_size_base",
+                    "font_size_small",
+                    "font_size_large",
+                ),
+            },
+        ),
+        (
+            "Brand Assets",
+            {
+                "fields": (
+                    "logo",
+                    "logo_alt_text",
+                    "favicon",
+                ),
+            },
+        ),
         ("Custom Styling", {"fields": ("custom_css",), "classes": ("collapse",)}),
         (
             "Metadata",
@@ -63,8 +105,41 @@ class HomePageAdmin(admin.ModelAdmin):
             {"fields": ("about_section_title", "about_section_content")},
         ),
         (
+            "Call to Action",
+            {
+                "fields": (
+                    "cta_title",
+                    "cta_content",
+                    "cta_button_text",
+                    "cta_button_url",
+                ),
+            },
+        ),
+        (
+            "Campaigns Section",
+            {
+                "fields": (
+                    "campaigns_section_title",
+                    "campaigns_section_subtitle",
+                    "show_campaigns_section",
+                ),
+            },
+        ),
+        (
             "Contact",
             {"fields": ("contact_email", "contact_phone")},
+        ),
+        (
+            "Social Media",
+            {
+                "fields": (
+                    "facebook_url",
+                    "twitter_url",
+                    "instagram_url",
+                    "linkedin_url",
+                ),
+                "classes": ("collapse",),
+            },
         ),
         (
             "Metadata",
@@ -97,6 +172,7 @@ class ContentBlockAdmin(admin.ModelAdmin):
             "Image",
             {
                 "fields": (
+                    "image",
                     "image_alt_text",
                     "image_title",
                     "image_author",
