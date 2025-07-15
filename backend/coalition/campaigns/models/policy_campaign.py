@@ -61,10 +61,12 @@ class PolicyCampaign(models.Model):
         default=True,
         help_text="Whether campaign is active and accepting endorsements",
     )
-    image = models.ImageField(
-        upload_to="campaign_images/",
-        blank=True,
+    image = models.ForeignKey(
+        "content.Image",
+        on_delete=models.SET_NULL,
         null=True,
+        blank=True,
+        related_name="campaign_images",
         help_text="Hero image for the campaign displayed on detail page and cards",
     )
 

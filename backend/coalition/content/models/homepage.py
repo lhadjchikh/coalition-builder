@@ -49,10 +49,12 @@ class HomePage(models.Model):
         blank=True,
         help_text="Optional subtitle or description under the hero title",
     )
-    hero_background_image = models.ImageField(
-        upload_to="backgrounds/",
-        blank=True,
+    hero_background_image = models.ForeignKey(
+        "content.Image",
+        on_delete=models.SET_NULL,
         null=True,
+        blank=True,
+        related_name="homepage_hero_images",
         help_text="Hero background image (optional)",
     )
 
@@ -140,8 +142,12 @@ class HomePage(models.Model):
     @property
     def hero_background_image_url(self) -> str:
         """Return the URL of the hero background image, or empty string if no image."""
-        if self.hero_background_image and hasattr(self.hero_background_image, "url"):
-            return self.hero_background_image.url
+        if (
+            self.hero_background_image
+            and self.hero_background_image.image
+            and hasattr(self.hero_background_image.image, "url")
+        ):
+            return self.hero_background_image.image.url
         return ""
 
     def clean(self) -> None:

@@ -49,36 +49,13 @@ class ContentBlock(models.Model):
         help_text="Main content for this block (text, HTML, etc.)",
     )
 
-    image = models.ImageField(
-        upload_to="content_blocks/",
-        blank=True,
+    image = models.ForeignKey(
+        "content.Image",
+        on_delete=models.SET_NULL,
         null=True,
+        blank=True,
+        related_name="content_block_images",
         help_text="Image for image or text+image blocks",
-    )
-
-    image_alt_text = models.CharField(
-        max_length=200,
-        blank=True,
-        help_text="Alt text for the image (accessibility)",
-    )
-    image_title = models.CharField(
-        max_length=200,
-        blank=True,
-        help_text="Title of the image for attribution",
-    )
-    image_author = models.CharField(
-        max_length=200,
-        blank=True,
-        help_text="Author/photographer of the image",
-    )
-    image_license = models.CharField(
-        max_length=100,
-        blank=True,
-        help_text="License of the image (e.g., 'CC BY 2.0', 'All rights reserved')",
-    )
-    image_source_url = models.URLField(
-        blank=True,
-        help_text="Source URL where the image was obtained",
     )
 
     # Layout options
@@ -126,9 +103,14 @@ class ContentBlock(models.Model):
     @property
     def image_url(self) -> str:
         """Return the URL of the uploaded image, or empty string if no image."""
-        if self.image and hasattr(self.image, "url"):
-            return self.image.url
+        if self.image and self.image.image and hasattr(self.image.image, "url"):
+            return self.image.image.url
         return ""
+
+    @property
+    def image_alt_text(self) -> str:
+        """Return the alt text of the image, or empty string if no image."""
+        return self.image.alt_text if self.image else ""
 
     def save(self, *args: "Any", **kwargs: "Any") -> None:
         """Sanitize content based on block type before saving."""

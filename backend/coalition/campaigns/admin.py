@@ -38,6 +38,7 @@ class PolicyCampaignAdmin(admin.ModelAdmin):
         "title",
         "allow_endorsements",
         "active",
+        "has_image",
         "created_at",
         "endorsement_count",
         "bill_count",
@@ -89,6 +90,13 @@ class PolicyCampaignAdmin(admin.ModelAdmin):
         return obj.bills.count()
 
     bill_count.short_description = "Bills"
+
+    def has_image(self, obj: PolicyCampaign) -> bool:
+        """Display whether campaign has an image"""
+        return bool(obj.image)
+
+    has_image.boolean = True
+    has_image.short_description = "Has Image"
 
     def get_queryset(self, request: "HttpRequest") -> "QuerySet[PolicyCampaign]":
         """Order by most recently created first"""
