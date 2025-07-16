@@ -24,11 +24,11 @@ jobs:
             ssr/package-lock.json
 
       - name: Install frontend dependencies
-        run: npm ci --no-optional || npm ci --legacy-peer-deps --no-optional
+        run: npm ci || npm ci --legacy-peer-deps
         working-directory: frontend
 
       - name: Install SSR dependencies
-        run: npm ci --no-optional || npm ci --legacy-peer-deps --no-optional
+        run: npm ci || npm ci --legacy-peer-deps
         working-directory: ssr
 
       - name: Run frontend TypeScript check (includes shared files)

@@ -128,11 +128,11 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: frontend
-        run: npm ci --no-optional
+        run: npm ci
 
       - name: Install SSR test dependencies
         working-directory: ssr
-        run: npm ci --no-optional
+        run: npm ci
 
       - name: Check if tests are necessary
         id: check_tests
