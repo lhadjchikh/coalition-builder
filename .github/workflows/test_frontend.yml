@@ -33,7 +33,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
-        run: npm ci || npm ci --legacy-peer-deps
+        run: npm ci --no-optional || npm ci --legacy-peer-deps --no-optional
 
       - name: Check if tests are necessary
         id: check_tests
