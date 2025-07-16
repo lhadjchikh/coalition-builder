@@ -29,7 +29,7 @@ class FrontendApiClient extends BaseApiClient {
   }
 
   protected async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
+    const url = `${this.baseURL}${encodeURIComponent(endpoint)}`;
 
     try {
       const response = await fetch(url, {
@@ -48,7 +48,7 @@ class FrontendApiClient extends BaseApiClient {
 
       return await response.json();
     } catch (error) {
-      console.error(`API request failed for ${url}:`, error);
+      console.error(`API request failed for %s`, url, error);
       throw error;
     }
   }
