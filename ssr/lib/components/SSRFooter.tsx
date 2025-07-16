@@ -1,16 +1,16 @@
 import React from "react";
 import Link from "next/link";
 import styles from "./SSRFooter.module.css";
+import { HomePage } from "@shared/types";
 
 interface SSRFooterProps {
-  organizationName?: string;
-  year?: number;
+  homepage?: HomePage;
 }
 
-const SSRFooter: React.FC<SSRFooterProps> = ({
-  organizationName = "Coalition Builder",
-  year = new Date().getFullYear(),
-}) => {
+const SSRFooter: React.FC<SSRFooterProps> = ({ homepage }) => {
+  const organizationName = homepage?.organization_name || "Coalition Builder";
+  const year = new Date().getFullYear();
+
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>

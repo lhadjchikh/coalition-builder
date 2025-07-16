@@ -1,18 +1,31 @@
-import React from 'react';
-import { ContentBlock as ContentBlockType } from '../types';
+import React from "react";
+
+// Generic content block interface that works with both frontend and SSR
+interface ContentBlock {
+  id: string | number;
+  title?: string;
+  content: string;
+  block_type: string;
+  image_url?: string;
+  image_alt_text?: string;
+  css_classes?: string;
+  background_color?: string;
+  is_visible?: boolean;
+  order?: number;
+}
 
 interface ContentBlockProps {
-  block: ContentBlockType;
+  block: ContentBlock;
 }
 
 const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
-  if (!block.is_visible) {
+  if (block.is_visible === false) {
     return null;
   }
 
   const getBlockClasses = () => {
-    const baseClasses = 'w-full';
-    const customClasses = block.css_classes ? ` ${block.css_classes}` : '';
+    const baseClasses = "w-full";
+    const customClasses = block.css_classes ? ` ${block.css_classes}` : "";
     return baseClasses + customClasses;
   };
 
@@ -26,11 +39,13 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
 
   const renderContent = () => {
     switch (block.block_type) {
-      case 'text':
+      case "text":
         return (
           <div className="prose max-w-none">
             {block.title && (
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">{block.title}</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                {block.title}
+              </h3>
             )}
             <div
               className="text-gray-700 leading-relaxed"
@@ -39,16 +54,18 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
           </div>
         );
 
-      case 'image':
+      case "image":
         return (
           <div className="text-center">
             {block.title && (
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">{block.title}</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                {block.title}
+              </h3>
             )}
             {block.image_url && (
               <img
                 src={block.image_url}
-                alt={block.image_alt_text || block.title || 'Content image'}
+                alt={block.image_alt_text || block.title || "Content image"}
                 className="mx-auto rounded-lg shadow-md max-w-full h-auto"
               />
             )}
@@ -61,12 +78,14 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
           </div>
         );
 
-      case 'text_image':
+      case "text_image":
         return (
           <div className="flex flex-col lg:flex-row gap-8 items-center">
             <div className="flex-1">
               {block.title && (
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">{block.title}</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                  {block.title}
+                </h3>
               )}
               <div
                 className="prose text-gray-700 leading-relaxed"
@@ -77,7 +96,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
               <div className="flex-1">
                 <img
                   src={block.image_url}
-                  alt={block.image_alt_text || block.title || 'Content image'}
+                  alt={block.image_alt_text || block.title || "Content image"}
                   className="rounded-lg shadow-md w-full h-auto"
                 />
               </div>
@@ -85,19 +104,25 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
           </div>
         );
 
-      case 'quote':
+      case "quote":
         return (
           <div className="text-center">
-            <blockquote className="text-xl italic text-gray-800 mb-4">"{block.content}"</blockquote>
-            {block.title && <cite className="text-gray-600 font-medium">— {block.title}</cite>}
+            <blockquote className="text-xl italic text-gray-800 mb-4">
+              "{block.content}"
+            </blockquote>
+            {block.title && (
+              <cite className="text-gray-600 font-medium">— {block.title}</cite>
+            )}
           </div>
         );
 
-      case 'stats':
+      case "stats":
         return (
           <div className="text-center">
             {block.title && (
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">{block.title}</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                {block.title}
+              </h3>
             )}
             <div
               className="grid grid-cols-1 md:grid-cols-3 gap-8"
@@ -106,11 +131,13 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
           </div>
         );
 
-      case 'custom_html':
+      case "custom_html":
         return (
           <div>
             {block.title && (
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">{block.title}</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                {block.title}
+              </h3>
             )}
             <div dangerouslySetInnerHTML={{ __html: block.content }} />
           </div>
@@ -120,7 +147,9 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
         return (
           <div className="prose max-w-none">
             {block.title && (
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">{block.title}</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                {block.title}
+              </h3>
             )}
             <div
               className="text-gray-700 leading-relaxed"
@@ -133,7 +162,9 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
 
   return (
     <div className={getBlockClasses()} style={getBlockStyle()}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{renderContent()}</div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {renderContent()}
+      </div>
     </div>
   );
 };

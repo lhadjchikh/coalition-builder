@@ -3,7 +3,7 @@ import "./globals.css";
 import StyledComponentsRegistry from "../lib/registry";
 import SSRNavbar from "../lib/components/SSRNavbar";
 import SSRFooter from "../lib/components/SSRFooter";
-import CookieConsent from "../components/CookieConsent";
+import CookieConsent from "@shared/components/CookieConsent";
 import GoogleAnalytics from "../components/GoogleAnalytics";
 import { ssrApiClient } from "../lib/frontend-api-adapter";
 import { NavItemData, DEFAULT_NAV_ITEMS } from "@shared/types";
@@ -30,20 +30,19 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Fetch homepage data for navbar
+  // Fetch homepage data for navbar and footer
   let organizationName = "";
   let navItems: NavItemData[] = DEFAULT_NAV_ITEMS;
+  let homepage = null;
 
   try {
-    const homepage = await ssrApiClient.getHomepage();
+    homepage = await ssrApiClient.getHomepage();
     organizationName = homepage.organization_name;
-    if (homepage.nav_items && homepage.nav_items.length > 0) {
-      navItems = homepage.nav_items;
-    }
   } catch (error) {
     console.error("Error fetching homepage for layout:", error);
     const fallbackHomepage = getFallbackHomepage();
     organizationName = fallbackHomepage.organization_name;
+    homepage = fallbackHomepage;
   }
 
   return (
@@ -68,7 +67,7 @@ export default async function RootLayout({
               navItems={navItems}
             />
             <main style={{ flex: 1 }}>{children}</main>
-            <SSRFooter organizationName={organizationName} />
+            <SSRFooter homepage={homepage} />
           </div>
           <CookieConsent />
           <GoogleAnalytics />

@@ -22,6 +22,6 @@
       "@utils/*": ["src/utils/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "../shared", "../shared/types"],
   "exclude": ["node_modules", "dist", "build"]
 }

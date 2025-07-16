@@ -83,7 +83,9 @@ describe('API Client Production Integration', () => {
 
       expect(endorsements).toEqual(mockEndorsements);
       // Verify the URL uses relative paths, not absolute URLs
-      expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/?campaign_id=1');
+      expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/?campaign_id=1', {
+        headers: { 'Content-Type': 'application/json' },
+      });
     });
 
     it('should handle network errors gracefully in production', async () => {
@@ -94,7 +96,9 @@ describe('API Client Production Integration', () => {
         await expect(API.getCampaignEndorsements(1)).rejects.toThrow('Failed to fetch');
 
         // Verify it attempted to use relative paths
-        expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/?campaign_id=1');
+        expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/?campaign_id=1', {
+          headers: { 'Content-Type': 'application/json' },
+        });
       });
     });
 
@@ -127,19 +131,23 @@ describe('API Client Production Integration', () => {
       const campaigns = await API.getCampaigns();
 
       expect(campaigns).toEqual(mockCampaigns);
-      expect(mockFetch).toHaveBeenCalledWith('https://api.coalition.org/api/campaigns/');
+      expect(mockFetch).toHaveBeenCalledWith('/api/campaigns/', {
+        headers: { 'Content-Type': 'application/json' },
+      });
     });
 
     it('should handle CORS errors appropriately in production', async () => {
-      await withSuppressedErrors(['HTTP error! status: 403'], async () => {
+      await withSuppressedErrors(['Forbidden'], async () => {
         // Simulate CORS error using relative paths
         mockFetch.mockResolvedValueOnce({
           ok: false,
           status: 403,
           statusText: 'Forbidden',
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ detail: 'Forbidden' }),
         });
 
-        await expect(API.getCampaignEndorsements(1)).rejects.toThrow('HTTP error! status: 403');
+        await expect(API.getCampaignEndorsements(1)).rejects.toThrow('Forbidden');
       });
     });
   });
@@ -166,7 +174,9 @@ describe('API Client Production Integration', () => {
       await API.getCampaigns();
 
       // Should always use relative URLs when no environment variables are set
-      expect(mockFetch).toHaveBeenCalledWith('/api/campaigns/');
+      expect(mockFetch).toHaveBeenCalledWith('/api/campaigns/', {
+        headers: { 'Content-Type': 'application/json' },
+      });
     });
   });
 
@@ -192,7 +202,9 @@ describe('API Client Production Integration', () => {
       await API.getCampaignEndorsements(1);
 
       // Should still use relative paths, not absolute URLs
-      expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/?campaign_id=1');
+      expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/?campaign_id=1', {
+        headers: { 'Content-Type': 'application/json' },
+      });
     });
 
     it('should work consistently across different deployment contexts', async () => {
@@ -205,7 +217,9 @@ describe('API Client Production Integration', () => {
 
       await API.getCampaignEndorsements(1);
 
-      expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/?campaign_id=1');
+      expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/?campaign_id=1', {
+        headers: { 'Content-Type': 'application/json' },
+      });
     });
   });
 });

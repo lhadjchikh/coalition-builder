@@ -3,21 +3,19 @@ import { ssrApiClient } from "../lib/frontend-api-adapter";
 import type {
   Campaign,
   HomePage as HomePageType,
-  ContentBlock as ContentBlockType,
-} from "@frontend/types";
+  ContentBlock,
+} from "@shared/types";
 import type { Metadata } from "next";
-import {
-  fetchHomepage,
-  fetchCampaigns,
-  getFallbackHomepage,
-} from "@shared/utils/homepage-data";
+import { getFallbackHomepage } from "@shared/utils/homepage-data";
 import { generateCSSVariables } from "@shared/utils/theme";
-import HomePageLayout from "@shared/components/HomePageLayout";
+import { DEFAULT_NAV_ITEMS } from "@shared/types";
+import HomePageComponent from "@shared/components/HomePage";
 
 // Import shared components
-import HeroSection from "@frontend/components/HeroSection";
-import ContentBlock from "@frontend/components/ContentBlock";
-import SocialLinks from "@frontend/components/SocialLinks";
+import HeroSection from "@shared/components/HeroSection";
+import ContentBlockComponent from "@shared/components/ContentBlock";
+import SocialLinks from "@shared/components/SocialLinks";
+import SSRNavbar from "../lib/components/SSRNavbar";
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
@@ -45,14 +43,17 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HomePage() {
   let campaigns: Campaign[] = [];
   let homepage: HomePageType | null = null;
+  let contentBlocks: ContentBlock[] = [];
   let homepageError: string | null = null;
   let campaignsError: string | null = null;
 
-  // Fetch homepage and campaigns in parallel for better performance (server-side)
-  const [homepageResult, campaignsResult] = await Promise.allSettled([
-    ssrApiClient.getHomepage(),
-    ssrApiClient.getCampaigns(),
-  ]);
+  // Fetch homepage, campaigns, and content blocks in parallel for better performance (server-side)
+  const [homepageResult, campaignsResult, contentBlocksResult] =
+    await Promise.allSettled([
+      ssrApiClient.getHomepage(),
+      ssrApiClient.getCampaigns(),
+      ssrApiClient.getContentBlocks("homepage"),
+    ]);
 
   // Handle homepage result
   if (homepageResult.status === "fulfilled") {
@@ -76,6 +77,16 @@ export default async function HomePage() {
     console.error("Error fetching campaigns:", campaignsResult.reason);
   }
 
+  // Handle content blocks result
+  if (contentBlocksResult.status === "fulfilled") {
+    contentBlocks = contentBlocksResult.value;
+  } else {
+    console.error(
+      "Error fetching homepage content blocks:",
+      contentBlocksResult.reason,
+    );
+  }
+
   const currentHomepage = homepage || getFallbackHomepage();
 
   return (
@@ -87,14 +98,17 @@ export default async function HomePage() {
         }}
       />
 
-      <HomePageLayout
+      <HomePageComponent
         homepage={currentHomepage}
         campaigns={campaigns}
         homepageError={homepageError}
         campaignsError={campaignsError}
         HeroComponent={HeroSection}
-        ContentBlockComponent={ContentBlock}
+        ContentBlockComponent={ContentBlockComponent}
         SocialLinksComponent={SocialLinks}
+        NavbarComponent={SSRNavbar}
+        navItems={DEFAULT_NAV_ITEMS}
+        contentBlocks={contentBlocks}
       />
     </>
   );

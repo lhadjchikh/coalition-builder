@@ -21,13 +21,33 @@ module.exports = (env, argv) => {
       extensions: ['.tsx', '.ts', '.jsx', '.js'],
       alias: {
         '@shared': path.resolve(__dirname, '../shared'),
+        // Ensure React dependencies are resolved from frontend's node_modules
+        'react': path.resolve(__dirname, 'node_modules/react'),
+        'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+        'react/jsx-runtime': path.resolve(__dirname, 'node_modules/react/jsx-runtime'),
       },
+      // Look for modules in frontend's node_modules first
+      modules: [
+        path.resolve(__dirname, 'node_modules'),
+        'node_modules'
+      ],
     },
     module: {
       rules: [
         {
           test: /\.(ts|tsx)$/,
-          use: 'ts-loader',
+          use: {
+            loader: 'ts-loader',
+            options: {
+              configFile: path.resolve(__dirname, 'tsconfig.json'),
+              compilerOptions: {
+                typeRoots: [
+                  path.resolve(__dirname, 'node_modules/@types'),
+                  path.resolve(__dirname, '../shared/node_modules/@types'),
+                ],
+              },
+            },
+          },
           exclude: /node_modules/,
         },
         {

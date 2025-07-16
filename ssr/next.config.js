@@ -23,6 +23,11 @@ const nextConfig = {
       ...config.resolve.alias,
       "@frontend": path.resolve(__dirname, "./frontend/src"),
       "@shared": sharedPath,
+      // Ensure vanilla-cookieconsent resolves from SSR's node_modules
+      "vanilla-cookieconsent": path.resolve(
+        __dirname,
+        "node_modules/vanilla-cookieconsent",
+      ),
     };
 
     // Exclude styled components and related files from compilation to avoid build errors

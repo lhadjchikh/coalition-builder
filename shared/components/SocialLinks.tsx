@@ -1,14 +1,25 @@
-import React from 'react';
-import { HomePage } from '../types';
+import React from "react";
 
-interface SocialLinksProps {
-  homepage: HomePage;
+// Generic homepage interface for social links
+interface Homepage {
+  facebook_url?: string;
+  twitter_url?: string;
+  instagram_url?: string;
+  linkedin_url?: string;
 }
 
-const SocialLinks: React.FC<SocialLinksProps> = ({ homepage }) => {
+interface SocialLinksProps {
+  homepage: Homepage;
+  className?: string;
+}
+
+const SocialLinks: React.FC<SocialLinksProps> = ({
+  homepage,
+  className = "",
+}: SocialLinksProps) => {
   const socialLinks = [
     {
-      name: 'Facebook',
+      name: "Facebook",
       url: homepage.facebook_url,
       icon: (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -17,7 +28,7 @@ const SocialLinks: React.FC<SocialLinksProps> = ({ homepage }) => {
       ),
     },
     {
-      name: 'Twitter',
+      name: "Twitter",
       url: homepage.twitter_url,
       icon: (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -26,7 +37,7 @@ const SocialLinks: React.FC<SocialLinksProps> = ({ homepage }) => {
       ),
     },
     {
-      name: 'Instagram',
+      name: "Instagram",
       url: homepage.instagram_url,
       icon: (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -35,7 +46,7 @@ const SocialLinks: React.FC<SocialLinksProps> = ({ homepage }) => {
       ),
     },
     {
-      name: 'LinkedIn',
+      name: "LinkedIn",
       url: homepage.linkedin_url,
       icon: (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -45,21 +56,23 @@ const SocialLinks: React.FC<SocialLinksProps> = ({ homepage }) => {
     },
   ];
 
-  const availableLinks = socialLinks.filter(link => link.url && link.url.trim() !== '');
+  const availableLinks = socialLinks.filter(
+    (link) => link.url && link.url.trim() !== "",
+  );
 
   if (availableLinks.length === 0) {
     return null;
   }
 
   return (
-    <div className="flex justify-center space-x-6">
-      {availableLinks.map(link => (
+    <div className={className || "flex justify-center space-x-6"}>
+      {availableLinks.map((link) => (
         <a
           key={link.name}
           href={link.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-white/60 hover:text-white transition-colors duration-200"
+          className="text-gray-400 hover:text-gray-300 transition-colors duration-200"
           aria-label={`Follow us on ${link.name}`}
         >
           {link.icon}

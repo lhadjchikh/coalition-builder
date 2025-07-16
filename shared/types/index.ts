@@ -2,6 +2,10 @@
  * Shared types used across components
  */
 
+// Re-export all API types
+export * from "./api";
+
+// Navigation types
 export type NavItemData = {
   label: string;
   onClick?: () => void;
@@ -13,7 +17,8 @@ export type NavItemData = {
  * Default navigation items for SSR
  */
 export const DEFAULT_NAV_ITEMS: Pick<NavItemData, "label" | "href">[] = [
-  { label: "About", href: "#about-section" },
-  { label: "Campaigns", href: "#campaigns-section" },
-  { label: "Contact", href: "#footer" },
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
+  { label: "Campaigns", href: "/campaigns" },
+  { label: "Contact", href: "/contact" },
 ];

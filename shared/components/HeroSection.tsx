@@ -1,25 +1,27 @@
-import React from 'react';
-import { HomePage } from '../types';
+import React from "react";
+import type { HomePage } from "../types/api";
 
 interface HeroSectionProps {
   homepage: HomePage;
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
-  const heroStyle: React.CSSProperties = homepage.hero_background_image
+  const heroStyle: React.CSSProperties = homepage.hero_background_image_url
     ? {
-        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${homepage.hero_background_image})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${homepage.hero_background_image_url})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
       }
     : {};
 
-  const textColorClass = homepage.hero_background_image ? 'text-white' : 'text-theme-heading';
+  const textColorClass = homepage.hero_background_image_url
+    ? "text-white"
+    : "text-theme-heading";
 
   return (
     <div
-      className={`relative py-24 sm:py-32 ${homepage.hero_background_image ? 'text-white' : 'bg-theme-bg-section'}`}
+      className={`relative py-24 sm:py-32 ${homepage.hero_background_image_url ? "text-white" : "bg-theme-bg-section"}`}
       style={heroStyle}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -43,9 +45,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
               <a
                 href={homepage.cta_button_url}
                 className={`inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md transition-colors duration-200 ${
-                  homepage.hero_background_image
-                    ? 'text-theme-heading bg-white hover:bg-theme-bg-section'
-                    : 'text-white bg-theme-primary hover:bg-theme-primary/90'
+                  homepage.hero_background_image_url
+                    ? "text-theme-heading bg-white hover:bg-theme-bg-section"
+                    : "text-white bg-theme-primary hover:bg-theme-primary/90"
                 }`}
               >
                 {homepage.cta_button_text}

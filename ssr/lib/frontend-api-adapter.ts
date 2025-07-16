@@ -1,31 +1,33 @@
-// Adapter to use the frontend API client in SSR context
-// This allows us to reuse the same API logic while adapting it for server-side rendering
+// SSR API client using shared base client
+// This ensures consistency with frontend API while adding SSR-specific features
 
-import { Campaign, HomePage } from "@frontend/types";
+import { BaseApiClient } from "@shared/services/api-client";
 
-// SSR-compatible API client that mimics the frontend API
-class SSRApiClient {
-  private baseURL: string;
-
+// SSR-compatible API client that extends the shared base client
+class SSRApiClient extends BaseApiClient {
   constructor() {
-    this.baseURL =
+    const baseURL =
       process.env.API_URL ||
       process.env.NEXT_PUBLIC_API_URL ||
       "http://localhost:8000";
+
+    super({ baseURL });
   }
 
-  private async request<T>(endpoint: string): Promise<T> {
+  protected async request<T>(
+    endpoint: string,
+    options?: RequestInit,
+  ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
 
     try {
       const response = await fetch(url, {
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: this.defaultHeaders,
         // Add cache settings for SSR
         next: {
           revalidate: 300, // Revalidate every 5 minutes
         },
+        ...options,
       });
 
       if (!response.ok) {
@@ -37,14 +39,6 @@ class SSRApiClient {
       console.error(`API request failed for ${url}:`, error);
       throw error;
     }
-  }
-
-  async getCampaigns(): Promise<Campaign[]> {
-    return this.request<Campaign[]>("/api/campaigns/");
-  }
-
-  async getHomepage(): Promise<HomePage> {
-    return this.request<HomePage>("/api/homepage/");
   }
 }
 

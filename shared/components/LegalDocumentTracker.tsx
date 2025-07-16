@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import analytics from "@shared/services/analytics";
+import analytics from "../services/analytics";
 
 interface LegalDocumentTrackerProps {
   documentType: "terms" | "privacy";
@@ -9,7 +9,7 @@ interface LegalDocumentTrackerProps {
 
 /**
  * Client-side component to track legal document views.
- * This is separate from the SSR page to handle analytics tracking.
+ * This component renders nothing but tracks analytics when mounted.
  */
 export default function LegalDocumentTracker({
   documentType,

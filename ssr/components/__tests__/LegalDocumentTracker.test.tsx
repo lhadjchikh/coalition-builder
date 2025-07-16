@@ -4,7 +4,7 @@
 
 import React from "react";
 import { render } from "@testing-library/react";
-import LegalDocumentTracker from "../LegalDocumentTracker";
+import LegalDocumentTracker from "@shared/components/LegalDocumentTracker";
 import analytics from "@shared/services/analytics";
 
 // Mock the analytics module

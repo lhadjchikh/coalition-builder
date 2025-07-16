@@ -15,8 +15,22 @@ describe("SSRFooter", () => {
     expect(copyright).toBeInTheDocument();
   });
 
-  it("renders with custom organization name", () => {
-    render(<SSRFooter organizationName="Test Organization" />);
+  it("renders with custom homepage", () => {
+    const homepage = {
+      id: 1,
+      organization_name: "Test Organization",
+      tagline: "Test tagline",
+      hero_title: "Test title",
+      cta_title: "Join us",
+      cta_button_text: "Get started",
+      campaigns_section_title: "Campaigns",
+      show_campaigns_section: true,
+      is_active: true,
+      created_at: "2023-01-01T00:00:00Z",
+      updated_at: "2023-01-01T00:00:00Z",
+    };
+
+    render(<SSRFooter homepage={homepage} />);
 
     const copyright = screen.getByText(
       /© \d{4} Test Organization\. All rights reserved\./,
@@ -24,20 +38,14 @@ describe("SSRFooter", () => {
     expect(copyright).toBeInTheDocument();
   });
 
-  it("renders with custom year", () => {
-    render(<SSRFooter year={2025} />);
+  it("renders current year by default", () => {
+    render(<SSRFooter />);
 
+    const currentYear = new Date().getFullYear();
     const copyright = screen.getByText(
-      /© 2025 Coalition Builder\. All rights reserved\./,
-    );
-    expect(copyright).toBeInTheDocument();
-  });
-
-  it("renders with both custom organization name and year", () => {
-    render(<SSRFooter organizationName="Custom Org" year={2030} />);
-
-    const copyright = screen.getByText(
-      "© 2030 Custom Org. All rights reserved.",
+      new RegExp(
+        `© ${currentYear} Coalition Builder\\. All rights reserved\\.`,
+      ),
     );
     expect(copyright).toBeInTheDocument();
   });

@@ -16,6 +16,21 @@ const customJestConfig = {
     "^@frontend/(.*)$": "<rootDir>/frontend/src/$1",
     "^@shared/(.*)$": "<rootDir>/shared/$1",
 
+    // Explicitly map React modules to SSR's node_modules
+    "^react$": "<rootDir>/node_modules/react",
+    "^react-dom$": "<rootDir>/node_modules/react-dom",
+    "^react/jsx-runtime$": "<rootDir>/node_modules/react/jsx-runtime",
+
+    // Map vanilla-cookieconsent to SSR's node_modules
+    "^vanilla-cookieconsent$": "<rootDir>/node_modules/vanilla-cookieconsent",
+    "^vanilla-cookieconsent/dist/cookieconsent.css$":
+      "<rootDir>/__mocks__/styleMock.js",
+
+    // Map testing libraries to SSR's node_modules
+    "^@testing-library/react$": "<rootDir>/node_modules/@testing-library/react",
+    "^@testing-library/jest-dom$":
+      "<rootDir>/node_modules/@testing-library/jest-dom",
+
     // Handle CSS imports (with CSS modules)
     "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy",
 

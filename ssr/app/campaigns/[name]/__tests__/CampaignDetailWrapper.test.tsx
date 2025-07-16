@@ -3,7 +3,7 @@ import { render } from "@testing-library/react";
 import CampaignDetailWrapper from "../CampaignDetailWrapper";
 
 // Mock the CampaignDetail component
-jest.mock("@frontend/components/CampaignDetail", () => {
+jest.mock("@shared/components/CampaignDetail", () => {
   return function MockCampaignDetail({
     campaignId,
     initialCampaign,
