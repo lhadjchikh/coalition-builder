@@ -501,7 +501,3 @@ if CLOUDFRONT_DOMAIN:
 else:
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
 MEDIA_ROOT = "/media/"
-
-# Use IAM role for authentication (ECS task role handles this)
-AWS_S3_ACCESS_KEY_ID = None
-AWS_S3_SECRET_ACCESS_KEY = None
