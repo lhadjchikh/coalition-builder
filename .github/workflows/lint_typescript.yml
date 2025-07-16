@@ -11,10 +11,6 @@ jobs:
     name: TypeScript Check
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: frontend
-
     steps:
       - uses: actions/checkout@v4
 
@@ -23,10 +19,22 @@ jobs:
         with:
           node-version: "22.x"
           cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: |
+            frontend/package-lock.json
+            ssr/package-lock.json
 
-      - name: Install dependencies
+      - name: Install frontend dependencies
         run: npm ci || npm ci --legacy-peer-deps
+        working-directory: frontend
 
-      - name: Run TypeScript type check
+      - name: Install SSR dependencies
+        run: npm ci || npm ci --legacy-peer-deps
+        working-directory: ssr
+
+      - name: Run frontend TypeScript check (includes shared files)
         run: npm run typecheck
+        working-directory: frontend
+
+      - name: Run SSR TypeScript check (includes shared files)
+        run: npm run typecheck
+        working-directory: ssr
