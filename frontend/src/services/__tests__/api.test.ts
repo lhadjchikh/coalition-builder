@@ -1,4 +1,4 @@
-import API from '../api';
+import API, { getBaseUrl } from '../api';
 import {
   Campaign,
   Endorser,
@@ -71,7 +71,7 @@ describe('API Service', () => {
           REACT_APP_API_URL: 'https://react-api.example.com',
         })
       );
-      expect((API as any).getBaseUrl()).toBe('https://react-api.example.com');
+      expect(getBaseUrl()).toBe('https://react-api.example.com');
     });
 
     it('should return localhost:8000 when in CI environment', () => {
@@ -82,13 +82,13 @@ describe('API Service', () => {
           CI: 'true',
         })
       );
-      expect((API as any).getBaseUrl()).toBe('http://localhost:8000');
+      expect(getBaseUrl()).toBe('http://localhost:8000');
     });
 
     it('should return empty string for production and development (relative paths)', () => {
       // Default behavior: no environment variables set
       // Should return empty string for relative paths
-      expect((API as any).getBaseUrl()).toBe('');
+      expect(getBaseUrl()).toBe('');
     });
   });
 
@@ -142,7 +142,7 @@ describe('API Service', () => {
       );
 
       // Test the base URL logic directly since the client is already instantiated
-      expect((API as any).getBaseUrl()).toBe('https://api.example.com');
+      expect(getBaseUrl()).toBe('https://api.example.com');
 
       mockFetch.mockResolvedValueOnce(createMockResponse(mockCampaigns));
 
@@ -581,7 +581,11 @@ describe('API Service', () => {
       mockFetch.mockRejectedValueOnce(error);
 
       await expect(API.getCampaigns()).rejects.toThrow('Network error');
-      expect(consoleSpy).toHaveBeenCalledWith('API request failed for /api/campaigns/:', error);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'API request failed for %s:',
+        '/api/campaigns/',
+        error
+      );
     });
 
     it('should log errors when endorsement creation fails', async () => {
@@ -606,7 +610,11 @@ describe('API Service', () => {
       };
 
       await expect(API.createEndorsement(endorsementData)).rejects.toThrow('Creation failed');
-      expect(consoleSpy).toHaveBeenCalledWith('API request failed for /api/endorsements/:', error);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'API request failed for %s:',
+        '/api/endorsements/',
+        error
+      );
     });
   });
 });

@@ -55,10 +55,10 @@ class FrontendApiClient extends BaseApiClient {
       throw error;
     }
   }
-
-  // Export getBaseUrl for testing
-  getBaseUrl = getBaseUrl;
 }
+
+// Export for testing
+export { getBaseUrl };
 
 export const frontendApiClient = new FrontendApiClient();
 export default frontendApiClient;
