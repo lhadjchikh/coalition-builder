@@ -20,8 +20,6 @@ const LinkWrapper: React.FC<{
     {children}
   </Link>
 );
-
-const LinkWrapperComponent = LinkWrapper as any;
 import { DEFAULT_NAV_ITEMS } from '@shared/types';
 import API from '../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -104,14 +102,14 @@ const Home: React.FC = () => {
         NavbarComponent={(props: any) => (
           <Navbar
             {...props}
-            LinkComponent={LinkWrapperComponent as any}
+            LinkComponent={LinkWrapper}
             useLocation={useLocation}
           />
         )}
         navItems={DEFAULT_NAV_ITEMS}
         contentBlocks={contentBlocks}
       />
-      <Footer orgInfo={homepage} LinkComponent={LinkWrapperComponent as any} />
+      <Footer orgInfo={homepage} LinkComponent={LinkWrapper} />
     </div>
   );
 };
