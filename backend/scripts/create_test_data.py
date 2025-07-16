@@ -72,22 +72,15 @@ def create_test_data() -> int:
 
         # Create a test homepage if none exists
         if not HomePage.objects.exists():
-            homepage = HomePage.objects.create(
+            HomePage.objects.create(
                 organization_name="Test Coalition",
                 tagline="Building test partnerships",
                 hero_title="Welcome to Test Coalition",
                 hero_subtitle="Testing our coalition-building platform",
-                about_section_title="About Our Test Mission",
-                about_section_content=(
-                    "We are dedicated to testing and improving our coalition-building "
-                    "platform to help organizations create meaningful policy change."
-                ),
                 cta_title="Join Our Test",
                 cta_content="Help us test and improve this platform",
                 cta_button_text="Get Started",
                 cta_button_url="https://example.com/campaigns/",
-                contact_email="test@coalition.org",
-                contact_phone="(555) 123-4567",
                 campaigns_section_title="Test Campaigns",
                 campaigns_section_subtitle="Our current testing initiatives",
                 show_campaigns_section=True,
@@ -97,7 +90,7 @@ def create_test_data() -> int:
 
             # Create test content blocks
             ContentBlock.objects.create(
-                homepage=homepage,
+                page_type="homepage",
                 title="Why Testing Matters",
                 block_type="text",
                 content=(
@@ -110,7 +103,7 @@ def create_test_data() -> int:
             )
 
             ContentBlock.objects.create(
-                homepage=homepage,
+                page_type="homepage",
                 title="Our Test Impact",
                 block_type="stats",
                 content=(

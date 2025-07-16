@@ -28,10 +28,6 @@ class HomePageAdmin(admin.ModelAdmin):
             {"fields": ("hero_title", "hero_subtitle", "hero_background_image")},
         ),
         (
-            "About Section",
-            {"fields": ("about_section_title", "about_section_content")},
-        ),
-        (
             "Call to Action",
             {
                 "fields": (
@@ -51,10 +47,6 @@ class HomePageAdmin(admin.ModelAdmin):
                     "show_campaigns_section",
                 ),
             },
-        ),
-        (
-            "Contact",
-            {"fields": ("contact_email", "contact_phone")},
         ),
         (
             "Social Media",
