@@ -2,8 +2,8 @@
 
 from typing import TYPE_CHECKING
 
-from ckeditor.fields import RichTextField
 from django.db import models
+from tinymce.models import HTMLField
 
 from coalition.content.html_sanitizer import HTMLSanitizer
 
@@ -53,7 +53,7 @@ class ContentBlock(models.Model):
         help_text="Type of content block",
     )
 
-    content = RichTextField(
+    content = HTMLField(
         help_text="Main content for this block (text, HTML, etc.)",
     )
 

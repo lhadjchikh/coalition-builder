@@ -31,7 +31,7 @@ urlpatterns = [
     path("robots.txt", robots_txt, name="robots_txt"),
     path("theme.css", active_theme_css, name="active_theme_css"),
     path("theme/<int:theme_id>.css", theme_css, name="theme_css"),
-    path("ckeditor/", include("ckeditor_uploader.urls")),
+    path("tinymce/", include("tinymce.urls")),
     path("", home, name="home"),
 ]
 
