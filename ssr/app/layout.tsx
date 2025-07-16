@@ -32,17 +32,11 @@ export default async function RootLayout({
 }) {
   // Fetch homepage data for navbar and footer
   let organizationName = "";
-  let navItems: NavItemData[] = DEFAULT_NAV_ITEMS;
   let homepage = null;
 
   try {
     homepage = await ssrApiClient.getHomepage();
     organizationName = homepage.organization_name;
-
-    // Use custom nav items if provided, otherwise use defaults
-    if (homepage.nav_items && homepage.nav_items.length > 0) {
-      navItems = homepage.nav_items;
-    }
   } catch (error) {
     console.error("Error fetching homepage for layout:", error);
     const fallbackHomepage = getFallbackHomepage();
@@ -69,7 +63,7 @@ export default async function RootLayout({
           >
             <SSRNavbar
               organizationName={organizationName}
-              navItems={navItems}
+              navItems={DEFAULT_NAV_ITEMS}
             />
             <main style={{ flex: 1 }}>{children}</main>
             <SSRFooter orgInfo={homepage} />

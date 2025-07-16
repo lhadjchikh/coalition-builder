@@ -3,7 +3,6 @@
  * This ensures consistency between client and server-side code
  */
 
-import { NavItemData } from "./index";
 
 // Campaign type definition
 export interface Campaign {
@@ -220,9 +219,6 @@ export interface HomePage {
 
   // Theme information
   theme?: Theme;
-
-  // Navigation customization
-  nav_items?: NavItemData[];
 
   // Meta information
   is_active: boolean;
