@@ -10,8 +10,6 @@ import { generateCSSVariables } from "@shared/utils/theme";
 import { getFallbackHomepage } from "@shared/utils/homepage-data";
 import CampaignsPage from "@shared/components/CampaignsPage";
 import ContentBlock from "@shared/components/ContentBlock";
-import SSRNavbar from "../../lib/components/SSRNavbar";
-import SSRFooter from "../../lib/components/SSRFooter";
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
@@ -80,14 +78,6 @@ export default async function CampaignsPageSSR() {
         campaignsError={campaignsError}
         contentError={contentError}
         ContentBlockComponent={ContentBlock}
-        NavbarComponent={SSRNavbar}
-        FooterComponent={SSRFooter}
-        navItems={[
-          { label: "Home", href: "/" },
-          { label: "About", href: "/about" },
-          { label: "Campaigns", href: "/campaigns" },
-          { label: "Contact", href: "/contact" },
-        ]}
       />
     </>
   );

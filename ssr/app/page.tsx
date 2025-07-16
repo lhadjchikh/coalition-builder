@@ -8,14 +8,12 @@ import type {
 import type { Metadata } from "next";
 import { getFallbackHomepage } from "@shared/utils/homepage-data";
 import { generateCSSVariables } from "@shared/utils/theme";
-import { DEFAULT_NAV_ITEMS } from "@shared/types";
 import HomePageComponent from "@shared/components/HomePage";
 
 // Import shared components
 import HeroSection from "@shared/components/HeroSection";
 import ContentBlockComponent from "@shared/components/ContentBlock";
 import SocialLinks from "@shared/components/SocialLinks";
-import SSRNavbar from "../lib/components/SSRNavbar";
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
@@ -108,8 +106,6 @@ export default async function HomePage() {
         HeroComponent={HeroSection}
         ContentBlockComponent={ContentBlockComponent}
         SocialLinksComponent={SocialLinks}
-        NavbarComponent={SSRNavbar}
-        navItems={DEFAULT_NAV_ITEMS}
         contentBlocks={contentBlocks}
       />
     </>

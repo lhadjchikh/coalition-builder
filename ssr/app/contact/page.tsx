@@ -7,8 +7,6 @@ import { getFallbackHomepage } from "@shared/utils/homepage-data";
 import ContactPage from "@shared/components/ContactPage";
 import ContentBlock from "@shared/components/ContentBlock";
 import SocialLinks from "@shared/components/SocialLinks";
-import SSRNavbar from "../../lib/components/SSRNavbar";
-import SSRFooter from "../../lib/components/SSRFooter";
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
@@ -65,14 +63,6 @@ export default async function ContactPageSSR() {
         error={error}
         ContentBlockComponent={ContentBlock}
         SocialLinksComponent={SocialLinks}
-        NavbarComponent={SSRNavbar}
-        FooterComponent={SSRFooter}
-        navItems={[
-          { label: "Home", href: "/" },
-          { label: "About", href: "/about" },
-          { label: "Campaigns", href: "/campaigns" },
-          { label: "Contact", href: "/contact" },
-        ]}
       />
     </>
   );
