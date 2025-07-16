@@ -68,7 +68,10 @@ export async function fetchHomepage(): Promise<HomePage> {
 
 export async function fetchCampaigns(): Promise<Campaign[]> {
   const apiUrl = getApiUrl();
-  const response = await fetch(`${apiUrl}/api/campaigns/`);
+  const response = await fetch(`${apiUrl}/api/campaigns/`, {
+    // Add cache control for Next.js SSR
+    next: { revalidate: 300 }, // 5 minutes
+  } as any);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch campaigns: ${response.status}`);
