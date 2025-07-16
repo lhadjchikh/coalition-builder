@@ -1,7 +1,7 @@
 import React from "react";
 
-// Generic homepage interface for social links
-interface Homepage {
+// Interface for social links data
+interface SocialLinksData {
   facebook_url?: string;
   twitter_url?: string;
   instagram_url?: string;
@@ -9,7 +9,7 @@ interface Homepage {
 }
 
 interface SocialLinksProps {
-  homepage: Homepage;
+  homepage: SocialLinksData;
   className?: string;
 }
 
