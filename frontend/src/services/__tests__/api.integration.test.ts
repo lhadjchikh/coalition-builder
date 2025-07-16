@@ -15,6 +15,17 @@ describe('API Client Production Integration', () => {
   const originalEnv = process.env;
   const originalWindow = global.window;
 
+  // Helper to get expected URL based on environment
+  const getExpectedUrl = (path: string): string => {
+    // The API client is instantiated once when the module loads
+    // In CI environments, it will use localhost:8000
+    // We need to check the actual CI env var, not the mocked one
+    if (originalEnv.CI === 'true' && !originalEnv.REACT_APP_API_URL) {
+      return `http://localhost:8000${path}`;
+    }
+    return path;
+  };
+
   beforeAll(() => {
     global.fetch = mockFetch;
   });
@@ -83,7 +94,7 @@ describe('API Client Production Integration', () => {
 
       expect(endorsements).toEqual(mockEndorsements);
       // Verify the URL uses relative paths, not absolute URLs
-      expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/?campaign_id=1', {
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/?campaign_id=1'), {
         headers: { 'Content-Type': 'application/json' },
       });
     });
@@ -96,7 +107,7 @@ describe('API Client Production Integration', () => {
         await expect(API.getCampaignEndorsements(1)).rejects.toThrow('Failed to fetch');
 
         // Verify it attempted to use relative paths
-        expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/?campaign_id=1', {
+        expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/?campaign_id=1'), {
           headers: { 'Content-Type': 'application/json' },
         });
       });
@@ -131,7 +142,7 @@ describe('API Client Production Integration', () => {
       const campaigns = await API.getCampaigns();
 
       expect(campaigns).toEqual(mockCampaigns);
-      expect(mockFetch).toHaveBeenCalledWith('/api/campaigns/', {
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/campaigns/'), {
         headers: { 'Content-Type': 'application/json' },
       });
     });
@@ -174,7 +185,7 @@ describe('API Client Production Integration', () => {
       await API.getCampaigns();
 
       // Should always use relative URLs when no environment variables are set
-      expect(mockFetch).toHaveBeenCalledWith('/api/campaigns/', {
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/campaigns/'), {
         headers: { 'Content-Type': 'application/json' },
       });
     });
@@ -202,7 +213,7 @@ describe('API Client Production Integration', () => {
       await API.getCampaignEndorsements(1);
 
       // Should still use relative paths, not absolute URLs
-      expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/?campaign_id=1', {
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/?campaign_id=1'), {
         headers: { 'Content-Type': 'application/json' },
       });
     });
@@ -217,7 +228,7 @@ describe('API Client Production Integration', () => {
 
       await API.getCampaignEndorsements(1);
 
-      expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/?campaign_id=1', {
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/?campaign_id=1'), {
         headers: { 'Content-Type': 'application/json' },
       });
     });

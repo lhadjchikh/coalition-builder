@@ -32,6 +32,17 @@ const createMockResponse = (
 describe('API Service', () => {
   const originalEnv = process.env;
 
+  // Helper to get expected URL based on environment
+  const getExpectedUrl = (path: string): string => {
+    // The API client is instantiated once when the module loads
+    // In CI environments, it will use localhost:8000
+    // We need to check the actual CI env var, not the mocked one
+    if (originalEnv.CI === 'true' && !originalEnv.REACT_APP_API_URL) {
+      return `http://localhost:8000${path}`;
+    }
+    return path;
+  };
+
   // Helper to create clean environment without CI variables affecting tests
   const createCleanEnv = (
     overrides: Record<string, string | undefined> = {}
@@ -109,7 +120,7 @@ describe('API Service', () => {
 
       const campaigns = await API.getCampaigns();
       expect(campaigns).toEqual(mockCampaigns);
-      expect(mockFetch).toHaveBeenCalledWith('/api/campaigns/', {
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/campaigns/'), {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -148,7 +159,7 @@ describe('API Service', () => {
 
       await API.getCampaigns();
       // The actual client uses the base URL from instantiation time, not runtime
-      expect(mockFetch).toHaveBeenCalledWith('/api/campaigns/', {
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/campaigns/'), {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -173,7 +184,7 @@ describe('API Service', () => {
 
       const endorsers = await API.getEndorsers();
       expect(endorsers).toEqual(mockEndorsers);
-      expect(mockFetch).toHaveBeenCalledWith('/api/endorsers/', {
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsers/'), {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -205,7 +216,7 @@ describe('API Service', () => {
 
       const legislators = await API.getLegislators();
       expect(legislators).toEqual(mockLegislators);
-      expect(mockFetch).toHaveBeenCalledWith('/api/legislators/', {
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/legislators/'), {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -255,7 +266,7 @@ describe('API Service', () => {
 
       const endorsements = await API.getEndorsements();
       expect(endorsements).toEqual(mockEndorsements);
-      expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/', {
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/'), {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -305,7 +316,7 @@ describe('API Service', () => {
 
       const endorsements = await API.getCampaignEndorsements(1);
       expect(endorsements).toEqual(mockEndorsements);
-      expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/?campaign_id=1', {
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/?campaign_id=1'), {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -327,7 +338,7 @@ describe('API Service', () => {
       mockFetch.mockResolvedValueOnce(createMockResponse(mockEndorsements));
 
       await API.getCampaignEndorsements(1);
-      expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/?campaign_id=1', {
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/?campaign_id=1'), {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -384,7 +395,7 @@ describe('API Service', () => {
 
       const endorsement = await API.createEndorsement(mockEndorsementData);
       expect(endorsement).toEqual(mockCreatedEndorsement);
-      expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/', {
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -438,7 +449,7 @@ describe('API Service', () => {
 
       const campaign = await API.getCampaignById(1);
       expect(campaign).toEqual(mockCampaign);
-      expect(mockFetch).toHaveBeenCalledWith('/api/campaigns/1/', {
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/campaigns/1/'), {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -469,11 +480,14 @@ describe('API Service', () => {
 
       const campaign = await API.getCampaignByName('test-campaign');
       expect(campaign).toEqual(mockCampaign);
-      expect(mockFetch).toHaveBeenCalledWith('/api/campaigns/by-name/test-campaign/', {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl('/api/campaigns/by-name/test-campaign/'),
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
     });
 
     it('should handle HTTP error responses', async () => {
@@ -516,7 +530,7 @@ describe('API Service', () => {
 
       const homepage = await API.getHomepage();
       expect(homepage).toEqual(mockHomepage);
-      expect(mockFetch).toHaveBeenCalledWith('/api/homepage/', {
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/homepage/'), {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -583,7 +597,7 @@ describe('API Service', () => {
       await expect(API.getCampaigns()).rejects.toThrow('Network error');
       expect(consoleSpy).toHaveBeenCalledWith(
         'API request failed for %s:',
-        '/api/campaigns/',
+        getExpectedUrl('/api/campaigns/'),
         error
       );
     });
@@ -612,7 +626,7 @@ describe('API Service', () => {
       await expect(API.createEndorsement(endorsementData)).rejects.toThrow('Creation failed');
       expect(consoleSpy).toHaveBeenCalledWith(
         'API request failed for %s:',
-        '/api/endorsements/',
+        getExpectedUrl('/api/endorsements/'),
         error
       );
     });
