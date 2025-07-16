@@ -15,7 +15,6 @@ import HomePageComponent from "@shared/components/HomePage";
 import HeroSection from "@shared/components/HeroSection";
 import ContentBlockComponent from "@shared/components/ContentBlock";
 import SocialLinks from "@shared/components/SocialLinks";
-import SSRNavbar from "../lib/components/SSRNavbar";
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
@@ -108,7 +107,6 @@ export default async function HomePage() {
         HeroComponent={HeroSection}
         ContentBlockComponent={ContentBlockComponent}
         SocialLinksComponent={SocialLinks}
-        NavbarComponent={SSRNavbar}
         navItems={DEFAULT_NAV_ITEMS}
         contentBlocks={contentBlocks}
       />
