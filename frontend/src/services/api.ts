@@ -51,7 +51,7 @@ class FrontendApiClient extends BaseApiClient {
 
       return await response.json();
     } catch (error) {
-      console.error(`API request failed for ${url}:`, error);
+      console.error('API request failed for %s:', url, error);
       throw error;
     }
   }
