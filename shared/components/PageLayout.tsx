@@ -53,7 +53,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
         {/* Error Display */}
         {error && (
           <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-8">
-            <p>Unable to load content at this time.</p>
+            <p>Unable to load {title ? title.toLowerCase() : "content"} at this time.</p>
             {process.env.NODE_ENV === "development" && (
               <p className="text-sm mt-1">{error}</p>
             )}
