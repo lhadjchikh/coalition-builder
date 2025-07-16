@@ -46,7 +46,7 @@ export default async function ContactPageSSR() {
   }
 
   try {
-    contentBlocks = await ssrApiClient.getContentBlocks("contact");
+    contentBlocks = await ssrApiClient.getContentBlocksByPageType("contact");
   } catch (err) {
     console.error("Error fetching contact content blocks:", err);
     error = err instanceof Error ? err.message : "Failed to fetch content";

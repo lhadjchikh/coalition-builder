@@ -21,7 +21,7 @@ const Contact: React.FC = () => {
       try {
         const [homepageData, contentBlocksData] = await Promise.all([
           API.getHomepage(),
-          API.getContentBlocks('contact'),
+          API.getContentBlocksByPageType('contact'),
         ]);
         setHomepage(homepageData);
         setContentBlocks(contentBlocksData);

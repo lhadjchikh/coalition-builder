@@ -54,7 +54,7 @@ export default async function HomePage() {
     await Promise.allSettled([
       ssrApiClient.getHomepage(),
       ssrApiClient.getCampaigns(),
-      ssrApiClient.getContentBlocks("homepage"),
+      ssrApiClient.getContentBlocksByPageType("homepage"),
     ]);
 
   // Handle homepage result

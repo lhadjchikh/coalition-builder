@@ -59,7 +59,7 @@ export default async function CampaignsPageSSR() {
   }
 
   try {
-    contentBlocks = await ssrApiClient.getContentBlocks("campaigns");
+    contentBlocks = await ssrApiClient.getContentBlocksByPageType("campaigns");
   } catch (err) {
     console.error("Error fetching campaigns content blocks:", err);
     contentError =

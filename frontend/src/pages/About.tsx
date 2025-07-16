@@ -20,7 +20,7 @@ const About: React.FC = () => {
       try {
         const [homepageData, contentBlocksData] = await Promise.all([
           API.getHomepage(),
-          API.getContentBlocks('about'),
+          API.getContentBlocksByPageType('about'),
         ]);
         setHomepage(homepageData);
         setContentBlocks(contentBlocksData);

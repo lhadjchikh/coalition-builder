@@ -45,7 +45,7 @@ export default async function AboutPageSSR() {
   }
 
   try {
-    contentBlocks = await ssrApiClient.getContentBlocks("about");
+    contentBlocks = await ssrApiClient.getContentBlocksByPageType("about");
   } catch (err) {
     console.error("Error fetching about content blocks:", err);
     error = err instanceof Error ? err.message : "Failed to fetch content";

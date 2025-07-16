@@ -39,7 +39,7 @@ const Home: React.FC = () => {
         const [homepageData, campaignsData, contentBlocksData] = await Promise.all([
           API.getHomepage(),
           API.getCampaigns(),
-          API.getContentBlocks('homepage'),
+          API.getContentBlocksByPageType('homepage'),
         ]);
         setHomepage(homepageData);
         setCampaigns(campaignsData);
@@ -100,11 +100,7 @@ const Home: React.FC = () => {
         ContentBlockComponent={ContentBlockComponent}
         SocialLinksComponent={SocialLinks}
         NavbarComponent={(props: any) => (
-          <Navbar
-            {...props}
-            LinkComponent={LinkWrapper}
-            useLocation={useLocation}
-          />
+          <Navbar {...props} LinkComponent={LinkWrapper} useLocation={useLocation} />
         )}
         navItems={DEFAULT_NAV_ITEMS}
         contentBlocks={contentBlocks}

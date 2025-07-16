@@ -96,16 +96,22 @@ export abstract class BaseApiClient {
     return this.request<HomePage>(`/api/homepage/${id}/`);
   }
 
-  async getContentBlocks(pageType?: string | number): Promise<ContentBlock[]> {
-    let endpoint = "/api/content-blocks/";
-    if (pageType !== undefined) {
-      if (typeof pageType === "string") {
-        endpoint = `/api/content-blocks/?page_type=${pageType}`;
-      } else {
-        endpoint = `/api/content-blocks/?homepage_id=${pageType}`;
-      }
-    }
-    return this.request<ContentBlock[]>(endpoint);
+  async getContentBlocks(): Promise<ContentBlock[]> {
+    return this.request<ContentBlock[]>("/api/content-blocks/");
+  }
+
+  async getContentBlocksByPageType(pageType: string): Promise<ContentBlock[]> {
+    return this.request<ContentBlock[]>(
+      `/api/content-blocks/?page_type=${pageType}`,
+    );
+  }
+
+  async getContentBlocksByHomepageId(
+    homepageId: number,
+  ): Promise<ContentBlock[]> {
+    return this.request<ContentBlock[]>(
+      `/api/content-blocks/?homepage_id=${homepageId}`,
+    );
   }
 
   async getContentBlock(blockId: number): Promise<ContentBlock> {

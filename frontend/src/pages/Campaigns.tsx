@@ -25,7 +25,7 @@ const Campaigns: React.FC = () => {
         const [homepageData, campaignsData, contentBlocksData] = await Promise.all([
           API.getHomepage(),
           API.getCampaigns(),
-          API.getContentBlocks('campaigns'),
+          API.getContentBlocksByPageType('campaigns'),
         ]);
         setHomepage(homepageData);
         setCampaigns(campaignsData);
