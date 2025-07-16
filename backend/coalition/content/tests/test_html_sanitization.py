@@ -109,17 +109,10 @@ class HTMLSanitizationTest(TestCase):
 
     def test_content_block_sanitization(self) -> None:
         """Test ContentBlock HTML sanitization."""
-        homepage = HomePage.objects.create(
-            organization_name="Test Org",
-            tagline="Test tagline",
-            hero_title="Test",
-            about_section_content="Test",
-            contact_email="test@example.com",
-        )
 
         # Test custom HTML block
         html_block = ContentBlock.objects.create(
-            homepage=homepage,
+            page_type="homepage",
             block_type="custom_html",
             content="<div><script>bad()</script><h2>Title</h2><p>Content</p></div>",
             title="<script>evil</script>Test Block",
@@ -176,9 +169,7 @@ class HTMLSanitizationTest(TestCase):
             tagline="Test tagline",
             hero_title="Hero",
             hero_subtitle="<script>alert('xss')</script>Subtitle",
-            about_section_content='<p>About us</p><iframe src="evil.com"></iframe>',
             cta_content='<a href="javascript:void(0)">Click</a>',
-            contact_email="test@example.com",
         )
 
         # Plain text fields should be escaped
@@ -186,8 +177,6 @@ class HTMLSanitizationTest(TestCase):
         assert "<script>" not in homepage.hero_subtitle
 
         # HTML fields should be sanitized
-        assert "<p>About us</p>" in homepage.about_section_content
-        assert "<iframe>" not in homepage.about_section_content
         assert "javascript:" not in homepage.cta_content
 
     def test_html_sanitizer_direct_null_input_handling(self) -> None:

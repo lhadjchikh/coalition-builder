@@ -26,8 +26,6 @@ class ETagMiddlewareTest(TestCase):
             tagline="Test Tagline",
             hero_title="Test Hero",
             hero_subtitle="Test Subtitle",
-            about_section_content="Test about content",
-            contact_email="test@example.com",
             is_active=True,
         )
 
@@ -109,7 +107,7 @@ class ETagMiddlewareTest(TestCase):
         etag1 = response1["ETag"]
 
         # Request with query params should have different ETag
-        response2 = self.client.get("/api/content-blocks/?homepage_id=1")
+        response2 = self.client.get("/api/content-blocks/?page_type=homepage")
         etag2 = response2["ETag"]
 
         assert etag1 != etag2

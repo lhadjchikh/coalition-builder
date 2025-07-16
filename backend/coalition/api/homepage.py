@@ -16,16 +16,10 @@ def create_default_homepage() -> HomePage:
         tagline="Building strong advocacy partnerships",
         hero_title="Welcome to Coalition Builder",
         hero_subtitle="Empowering advocates to build strong policy coalitions",
-        about_section_title="About Our Mission",
-        about_section_content=(
-            "We believe in the power of collective action to drive "
-            "meaningful policy change."
-        ),
         cta_title="Get Involved",
         cta_content="Join our coalition and help make a difference.",
         cta_button_text="Learn More",
         cta_button_url="",
-        contact_email="info@example.org",
         campaigns_section_title="Policy Campaigns",
         show_campaigns_section=True,
         is_active=True,

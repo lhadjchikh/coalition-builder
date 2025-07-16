@@ -3,7 +3,7 @@ from unittest.mock import patch
 from django.test import TestCase
 from django.test.client import Client
 
-from coalition.content.models import ContentBlock, HomePage
+from coalition.content.models import ContentBlock, HomePage, Image
 
 
 class HomepageAPITest(TestCase):
@@ -61,16 +61,10 @@ class HomepageAPITest(TestCase):
             tagline="Building test coalitions",
             hero_title="Welcome to Test Organization",
             hero_subtitle="Making a difference in testing",
-            about_section_title="About Our Test Mission",
-            about_section_content=(
-                "We are dedicated to thorough testing of our platform."
-            ),
             cta_title="Join Our Test",
             cta_content="Help us test this platform",
             cta_button_text="Get Started",
             cta_button_url="https://example.com/join",
-            contact_email="test@organization.org",
-            contact_phone="(555) 123-4567",
             facebook_url="https://facebook.com/testorg",
             twitter_url="https://twitter.com/testorg",
             instagram_url="https://instagram.com/testorg",
@@ -83,7 +77,7 @@ class HomepageAPITest(TestCase):
 
         # Create test content blocks
         self.content_block1 = ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Test Block 1",
             block_type="text",
             content="This is the first test content block.",
@@ -91,19 +85,26 @@ class HomepageAPITest(TestCase):
             is_visible=True,
         )
 
+        # Create test image for content block
+        self.test_image = Image.objects.create(
+            title="Test Content Image",
+            alt_text="Test image",
+            image_type="content",
+        )
+
         self.content_block2 = ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Test Block 2",
             block_type="image",
             content="This is the second test content block.",
-            image_alt_text="Test image",
+            image=self.test_image,
             order=2,
             is_visible=True,
         )
 
         # Create hidden content block
         self.hidden_block = ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Hidden Block",
             block_type="text",
             content="This block should not appear in API response.",
@@ -124,13 +125,6 @@ class HomepageAPITest(TestCase):
         assert data["hero_title"] == "Welcome to Test Organization"
         assert data["hero_subtitle"] == "Making a difference in testing"
         assert data["hero_background_image_url"] == self.hero_bg_url
-        assert data["about_section_title"] == "About Our Test Mission"
-        assert (
-            data["about_section_content"]
-            == "We are dedicated to thorough testing of our platform."
-        )
-        assert data["contact_email"] == "test@organization.org"
-        assert data["contact_phone"] == "(555) 123-4567"
         assert data["is_active"]
 
         # Check social media URLs
@@ -149,33 +143,6 @@ class HomepageAPITest(TestCase):
         assert data["campaigns_section_title"] == "Test Campaigns"
         assert data["campaigns_section_subtitle"] == "Our current testing initiatives"
         assert data["show_campaigns_section"]
-
-        # Check content blocks
-        assert "content_blocks" in data
-        content_blocks = data["content_blocks"]
-        assert len(content_blocks) == 2  # Only visible blocks
-
-        # Check first content block
-        block1 = content_blocks[0]
-        assert block1["title"] == "Test Block 1"
-        assert block1["block_type"] == "text"
-        assert block1["content"] == "This is the first test content block."
-        assert block1["order"] == 1
-        assert block1["is_visible"]
-
-        # Check second content block
-        block2 = content_blocks[1]
-        assert block2["title"] == "Test Block 2"
-        assert block2["block_type"] == "image"
-        assert block2["content"] == "This is the second test content block."
-        assert block2["image_url"] == self.content_block_img_url
-        assert block2["image_alt_text"] == "Test image"
-        assert block2["order"] == 2
-        assert block2["is_visible"]
-
-        # Verify hidden block is not included
-        block_titles = [block["title"] for block in content_blocks]
-        assert "Hidden Block" not in block_titles
 
     def test_get_homepage_no_active_homepage(self) -> None:
         """Test homepage retrieval when no active homepage exists"""
@@ -210,7 +177,6 @@ class HomepageAPITest(TestCase):
             data["hero_subtitle"]
             == "Empowering advocates to build strong policy coalitions"
         )
-        assert data["about_section_title"] == "About Our Mission"
         assert data["is_active"] is True
 
         # Verify a new homepage was actually created in the database
@@ -225,8 +191,6 @@ class HomepageAPITest(TestCase):
                     organization_name="Second Organization",
                     tagline="Second tagline",
                     hero_title="Second Hero Title",
-                    about_section_content="Second about content",
-                    contact_email="second@organization.org",
                     is_active=True,
                 ),
             ],
@@ -244,7 +208,7 @@ class HomepageAPITest(TestCase):
         """Test that content blocks are returned in correct order"""
         # Create additional blocks with different orders
         ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Block Order 0",
             content="First block",
             order=0,
@@ -252,7 +216,7 @@ class HomepageAPITest(TestCase):
         )
 
         ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Block Order 5",
             content="Last block",
             order=5,
@@ -262,8 +226,9 @@ class HomepageAPITest(TestCase):
         response = self.client.get("/api/homepage/")
         assert response.status_code == 200
 
-        data = response.json()
-        content_blocks = data["content_blocks"]
+        blocks_response = self.client.get("/api/content-blocks/?page_type=homepage")
+        assert blocks_response.status_code == 200
+        content_blocks = blocks_response.json()
 
         # Should be ordered by order field
         expected_order = [0, 1, 2, 5]
@@ -274,7 +239,7 @@ class HomepageAPITest(TestCase):
         """Test content blocks with empty optional fields"""
         # Create block with minimal data
         ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             content="Minimal block content",
             order=10,
             is_visible=True,
@@ -283,8 +248,9 @@ class HomepageAPITest(TestCase):
         response = self.client.get("/api/homepage/")
         assert response.status_code == 200
 
-        data = response.json()
-        content_blocks = data["content_blocks"]
+        blocks_response = self.client.get("/api/content-blocks/?page_type=homepage")
+        assert blocks_response.status_code == 200
+        content_blocks = blocks_response.json()
 
         # Find the minimal block
         minimal_block = None
@@ -316,14 +282,10 @@ class HomepageAPITest(TestCase):
             "hero_title",
             "hero_subtitle",
             "hero_background_image_url",
-            "about_section_title",
-            "about_section_content",
             "cta_title",
             "cta_content",
             "cta_button_text",
             "cta_button_url",
-            "contact_email",
-            "contact_phone",
             "facebook_url",
             "twitter_url",
             "instagram_url",
@@ -331,7 +293,6 @@ class HomepageAPITest(TestCase):
             "campaigns_section_title",
             "campaigns_section_subtitle",
             "show_campaigns_section",
-            "content_blocks",
             "is_active",
             "created_at",
             "updated_at",
@@ -339,27 +300,6 @@ class HomepageAPITest(TestCase):
 
         for field in required_fields:
             assert field in data, f"Missing field: {field}"
-
-        # Check content block structure
-        if data["content_blocks"]:
-            content_block = data["content_blocks"][0]
-            content_block_fields = [
-                "id",
-                "title",
-                "block_type",
-                "content",
-                "image_url",
-                "image_alt_text",
-                "css_classes",
-                "background_color",
-                "order",
-                "is_visible",
-                "created_at",
-                "updated_at",
-            ]
-
-            for field in content_block_fields:
-                assert field in content_block, f"Missing content block field: {field}"
 
     def test_get_homepage_by_id_success(self) -> None:
         """Test successful homepage retrieval by ID"""
@@ -374,11 +314,6 @@ class HomepageAPITest(TestCase):
         assert data["tagline"] == "Building test coalitions"
         assert data["is_active"]
 
-        # Specific homepage by ID should include content blocks
-        assert "content_blocks" in data
-        content_blocks = data["content_blocks"]
-        assert len(content_blocks) == 2  # Only visible blocks
-
     def test_get_homepage_by_id_not_found(self) -> None:
         """Test homepage retrieval by non-existent ID"""
         non_existent_id = 99999
@@ -392,7 +327,7 @@ class HomepageAPITest(TestCase):
     def test_get_content_blocks_for_homepage(self) -> None:
         """Test retrieval of content blocks for a specific homepage"""
         response = self.client.get(
-            f"/api/content-blocks/?homepage_id={self.homepage.id}",
+            "/api/content-blocks/?page_type=homepage",
         )
 
         assert response.status_code == 200
@@ -418,32 +353,18 @@ class HomepageAPITest(TestCase):
         block_titles = [block["title"] for block in data]
         assert "Hidden Block" not in block_titles
 
-    def test_get_content_blocks_for_nonexistent_homepage(self) -> None:
-        """Test content blocks retrieval for non-existent homepage"""
-        non_existent_id = 99999
-        response = self.client.get(
-            f"/api/content-blocks/?homepage_id={non_existent_id}",
-        )
+    def test_get_content_blocks_for_nonexistent_page_type(self) -> None:
+        """Test content blocks retrieval for non-existent page type"""
+        response = self.client.get("/api/content-blocks/?page_type=nonexistent")
 
         assert response.status_code == 200
         data = response.json()
-        assert data == []  # Empty list for non-existent homepage
+        assert data == []  # Empty list for non-existent page type
 
     def test_get_content_blocks_empty_list(self) -> None:
-        """Test content blocks retrieval for homepage with no visible blocks"""
-        # Create a homepage with no content blocks
-        empty_homepage = HomePage.objects.create(
-            organization_name="Empty Organization",
-            tagline="No content",
-            hero_title="Empty Hero",
-            about_section_content="Empty content",
-            contact_email="empty@test.org",
-            is_active=False,  # Don't interfere with existing active homepage
-        )
-
-        response = self.client.get(
-            f"/api/content-blocks/?homepage_id={empty_homepage.id}",
-        )
+        """Test content blocks retrieval for page type with no blocks"""
+        # Test a page type that has no content blocks created
+        response = self.client.get("/api/content-blocks/?page_type=contact")
 
         assert response.status_code == 200
         data = response.json()
@@ -453,7 +374,7 @@ class HomepageAPITest(TestCase):
         """Test that content blocks are properly ordered and filtered by visibility"""
         # Create additional blocks with different orders and visibility
         ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Block Order 0",
             content="First block",
             order=0,
@@ -461,7 +382,7 @@ class HomepageAPITest(TestCase):
         )
 
         ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Block Order 5",
             content="Last block",
             order=5,
@@ -469,7 +390,7 @@ class HomepageAPITest(TestCase):
         )
 
         ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Invisible Block",
             content="This should not appear",
             order=1.5,  # Between existing blocks
@@ -477,7 +398,7 @@ class HomepageAPITest(TestCase):
         )
 
         response = self.client.get(
-            f"/api/content-blocks/?homepage_id={self.homepage.id}",
+            "/api/content-blocks/?page_type=homepage",
         )
 
         assert response.status_code == 200
@@ -578,19 +499,21 @@ class HomepageAPITest(TestCase):
             homepage_data["organization_name"]
             == homepage_by_id_data["organization_name"]
         )
-        assert len(homepage_data["content_blocks"]) == len(
-            homepage_by_id_data["content_blocks"],
+        # Both homepage endpoints should return the same structure
+        assert (
+            homepage_data["organization_name"]
+            == homepage_by_id_data["organization_name"]
         )
 
         # Test content blocks list endpoint
         blocks_response = self.client.get(
-            f"/api/content-blocks/?homepage_id={self.homepage.id}",
+            "/api/content-blocks/?page_type=homepage",
         )
         assert blocks_response.status_code == 200
         blocks_data = blocks_response.json()
 
-        # Content blocks from homepage should match content blocks list
-        assert len(homepage_data["content_blocks"]) == len(blocks_data)
+        # Both endpoints should return the same number of visible content blocks
+        assert len(blocks_data) == 2  # Only visible blocks from setup
 
         # Test individual content block endpoint
         if blocks_data:

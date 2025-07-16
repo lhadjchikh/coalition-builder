@@ -253,7 +253,7 @@ class ContentBlockAPITest(TestCase):
         """Test that content blocks are returned in correct order"""
         # Create additional blocks with different orders
         ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="First Block",
             content="Should be first",
             order=0,
@@ -261,16 +261,14 @@ class ContentBlockAPITest(TestCase):
         )
 
         ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Last Block",
             content="Should be last",
             order=10,
             is_visible=True,
         )
 
-        response = self.client.get(
-            f"/api/content-blocks/?homepage_id={self.homepage.id}",
-        )
+        response = self.client.get("/api/content-blocks/?page_type=homepage")
 
         assert response.status_code == 200
         data = response.json()
@@ -284,7 +282,7 @@ class ContentBlockAPITest(TestCase):
         """Test that only visible content blocks are returned"""
         # Create mix of visible and hidden blocks
         ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Visible Block 1",
             content="Should appear",
             order=5,
@@ -292,7 +290,7 @@ class ContentBlockAPITest(TestCase):
         )
 
         ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Hidden Block 1",
             content="Should not appear",
             order=6,
@@ -300,16 +298,14 @@ class ContentBlockAPITest(TestCase):
         )
 
         ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Visible Block 2",
             content="Should appear",
             order=7,
             is_visible=True,
         )
 
-        response = self.client.get(
-            f"/api/content-blocks/?homepage_id={self.homepage.id}",
-        )
+        response = self.client.get("/api/content-blocks/?page_type=homepage")
 
         assert response.status_code == 200
         data = response.json()
@@ -355,7 +351,7 @@ class ContentBlockAPITest(TestCase):
         """Test different content block types"""
         # Create blocks of different types
         quote_block = ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Quote Block",
             block_type="quote",
             content="This is an inspiring quote.",
@@ -364,7 +360,7 @@ class ContentBlockAPITest(TestCase):
         )
 
         stats_block = ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Stats Block",
             block_type="stats",
             content="50% improvement in efficiency",
@@ -373,7 +369,7 @@ class ContentBlockAPITest(TestCase):
         )
 
         custom_html_block = ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Custom HTML Block",
             block_type="custom_html",
             content="<div class='custom'>Custom HTML content</div>",
@@ -391,16 +387,22 @@ class ContentBlockAPITest(TestCase):
 
     def test_content_block_image_attribution_combinations(self) -> None:
         """Test various combinations of image attribution fields"""
+        # Create an image with partial attribution
+        partial_image = Image.objects.create(
+            title="Mountain View",
+            alt_text="Partial image",
+            author="Anonymous",
+            # No license or source URL
+            image_type="content",
+        )
+
         # Block with only title and author
         partial_block = ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Partial Attribution",
             block_type="image",
             content="Image with partial attribution",
-            image_alt_text="Partial image",
-            image_title="Mountain View",
-            image_author="Anonymous",
-            # No license or source URL
+            image=partial_image,
             order=30,
             is_visible=True,
         )
@@ -415,44 +417,48 @@ class ContentBlockAPITest(TestCase):
         assert data["image_license"] == ""
         assert data["image_source_url"] == ""
 
-    def test_content_blocks_across_multiple_homepages(self) -> None:
-        """Test content blocks when multiple homepages exist"""
-        # Create second homepage with its own content blocks
-        homepage2 = HomePage.objects.create(
-            organization_name="Second Org",
-            tagline="Second tagline",
-            hero_title="Second Hero",
-            about_section_content="Second about",
-            contact_email="second@test.com",
-            is_active=False,
-        )
-
+    def test_content_blocks_across_different_page_types(self) -> None:
+        """Test content blocks for different page types"""
+        # Create content blocks for different page types
         ContentBlock.objects.create(
-            homepage=homepage2,
-            title="Second Homepage Block",
-            content="Content for second homepage",
+            page_type="about",
+            title="About Page Block",
+            content="Content for about page",
             order=1,
             is_visible=True,
         )
 
-        # Test filtering by specific homepage
-        response1 = self.client.get(
-            f"/api/content-blocks/?homepage_id={self.homepage.id}",
+        ContentBlock.objects.create(
+            page_type="campaigns",
+            title="Campaigns Page Block",
+            content="Content for campaigns page",
+            order=1,
+            is_visible=True,
         )
-        response2 = self.client.get(f"/api/content-blocks/?homepage_id={homepage2.id}")
 
-        assert response1.status_code == 200
-        assert response2.status_code == 200
+        # Test filtering by specific page type
+        response_homepage = self.client.get("/api/content-blocks/?page_type=homepage")
+        response_about = self.client.get("/api/content-blocks/?page_type=about")
+        response_campaigns = self.client.get("/api/content-blocks/?page_type=campaigns")
 
-        data1 = response1.json()
-        data2 = response2.json()
+        assert response_homepage.status_code == 200
+        assert response_about.status_code == 200
+        assert response_campaigns.status_code == 200
 
-        # First homepage should have original blocks
-        assert len(data1) == 3
-        homepage1_titles = [block["title"] for block in data1]
-        assert "Text Block" in homepage1_titles
-        assert "Second Homepage Block" not in homepage1_titles
+        data_homepage = response_homepage.json()
+        data_about = response_about.json()
+        data_campaigns = response_campaigns.json()
 
-        # Second homepage should have only its block
-        assert len(data2) == 1
-        assert data2[0]["title"] == "Second Homepage Block"
+        # Each page type should only return its own blocks
+        assert len(data_homepage) >= 3  # At least the blocks from setUp
+        assert len(data_about) == 1  # Only the about block we just created
+        assert len(data_campaigns) == 1  # Only the campaigns block we just created
+
+        # Verify the content is correct
+        about_block = data_about[0]
+        campaigns_block = data_campaigns[0]
+
+        assert about_block["title"] == "About Page Block"
+        assert about_block["page_type"] == "about"
+        assert campaigns_block["title"] == "Campaigns Page Block"
+        assert campaigns_block["page_type"] == "campaigns"

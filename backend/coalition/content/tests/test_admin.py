@@ -149,13 +149,10 @@ class HomePageAdminTest(TestCase):
             hero_title="Test Hero Title",
             hero_subtitle="Test hero subtitle",
             hero_background_image=self.image,
-            about_section_title="About Us",
-            about_section_content="Test about content",
             cta_title="Get Involved",
             cta_content="Test CTA content",
             cta_button_text="Learn More",
             cta_button_url="https://example.com",
-            contact_email="test@example.com",
             is_active=True,
         )
 
@@ -170,8 +167,6 @@ class HomePageAdminTest(TestCase):
             organization_name="New Organization",
             tagline="New tagline",
             hero_title="New Hero Title",
-            about_section_content="New about content",
-            contact_email="new@example.com",
             is_active=False,  # Set to False to avoid conflict
         )
 
@@ -196,8 +191,6 @@ class HomePageAdminTest(TestCase):
             organization_name="No Image Organization",
             tagline="No image tagline",
             hero_title="No Image Hero Title",
-            about_section_content="No image about content",
-            contact_email="noimage@example.com",
             is_active=False,  # Set to False to avoid conflict
         )
         result = self.admin.has_hero_image(homepage_no_image)
@@ -214,8 +207,6 @@ class HomePageAdminTest(TestCase):
             "organization_name",
             "tagline",
             "hero_title",
-            "about_section_content",
-            "contact_email",
         ]
         for field in required_fields:
             assert field in all_fieldset_fields
@@ -238,8 +229,6 @@ class ContentBlockAdminTest(TestCase):
             organization_name="Test Organization",
             tagline="Test tagline",
             hero_title="Test Hero Title",
-            about_section_content="Test about content",
-            contact_email="test@example.com",
         )
 
         self.image = Image.objects.create(
@@ -250,7 +239,7 @@ class ContentBlockAdminTest(TestCase):
         )
 
         self.content_block = ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Test Content Block",
             block_type="text_image",
             content="Test content",
@@ -266,7 +255,7 @@ class ContentBlockAdminTest(TestCase):
 
         # Test creating a new content block
         new_content_block = ContentBlock(
-            homepage=self.homepage,
+            page_type="homepage",
             title="New Content Block",
             block_type="text",
             content="New content",
@@ -291,7 +280,7 @@ class ContentBlockAdminTest(TestCase):
 
         # Content block without image
         content_block_no_image = ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="No Image Block",
             block_type="text",
             content="No image content",
@@ -307,7 +296,7 @@ class ContentBlockAdminTest(TestCase):
             all_fieldset_fields.extend(fieldset[1]["fields"])
 
         # Required fields that should be in admin
-        required_fields = ["homepage", "block_type", "content", "order"]
+        required_fields = ["page_type", "block_type", "content", "order"]
         for field in required_fields:
             assert field in all_fieldset_fields
 
