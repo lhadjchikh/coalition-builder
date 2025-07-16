@@ -49,12 +49,13 @@ const CampaignsPage: React.FC<CampaignsPageProps> = ({
       navItems={navItems}
     >
       {/* Content Blocks First */}
-      <ContentBlocksList
-        contentBlocks={contentBlocks}
-        pageType="campaigns"
-        ContentBlockComponent={ContentBlockComponent}
-        emptyMessage="No campaigns page content is currently available."
-      />
+      {contentBlocks.length > 0 && (
+        <ContentBlocksList
+          contentBlocks={contentBlocks}
+          pageType="campaigns"
+          ContentBlockComponent={ContentBlockComponent}
+        />
+      )}
 
       {/* Campaigns Section */}
       <section className="mt-12">

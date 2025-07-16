@@ -49,12 +49,13 @@ const ContactPage: React.FC<ContactPageProps> = ({
       navItems={navItems}
     >
       {/* Content Blocks First */}
-      <ContentBlocksList
-        contentBlocks={contentBlocks}
-        pageType="contact"
-        ContentBlockComponent={ContentBlockComponent}
-        emptyMessage="No contact information is currently available."
-      />
+      {contentBlocks.length > 0 && (
+        <ContentBlocksList
+          contentBlocks={contentBlocks}
+          pageType="contact"
+          ContentBlockComponent={ContentBlockComponent}
+        />
+      )}
 
       {/* Built-in Contact Information Section */}
       <section className="mt-12 bg-gray-50 rounded-lg p-8">

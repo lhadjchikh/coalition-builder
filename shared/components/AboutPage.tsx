@@ -42,12 +42,13 @@ const AboutPage: React.FC<AboutPageProps> = ({
       FooterComponent={FooterComponent}
       navItems={navItems}
     >
-      <ContentBlocksList
-        contentBlocks={contentBlocks}
-        pageType="about"
-        ContentBlockComponent={ContentBlockComponent}
-        emptyMessage="No about content is currently available."
-      />
+      {contentBlocks.length > 0 && (
+        <ContentBlocksList
+          contentBlocks={contentBlocks}
+          pageType="about"
+          ContentBlockComponent={ContentBlockComponent}
+        />
+      )}
     </PageLayout>
   );
 };

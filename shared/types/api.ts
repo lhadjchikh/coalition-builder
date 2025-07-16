@@ -3,7 +3,6 @@
  * This ensures consistency between client and server-side code
  */
 
-
 // Campaign type definition
 export interface Campaign {
   id: number;
