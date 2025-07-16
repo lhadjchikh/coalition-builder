@@ -58,12 +58,6 @@ const CampaignsPage: React.FC<CampaignsPageProps> = ({
 
       {/* Campaigns Section */}
       <section className="mt-12">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-            Current Campaigns
-          </h2>
-        </div>
-
         {campaignsError && !campaigns.length ? (
           <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-8">
             <p>Unable to load campaigns at this time.</p>
