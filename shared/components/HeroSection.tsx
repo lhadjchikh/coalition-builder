@@ -21,7 +21,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
 
   return (
     <div
-      className={`relative py-24 sm:py-32 ${homepage.hero_background_image_url ? "text-white" : "bg-theme-bg-section"}`}
+      className={`relative py-24 sm:py-32 ${homepage.hero_background_image_url ? textColorClass : "bg-theme-bg-section"}`}
       style={heroStyle}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
