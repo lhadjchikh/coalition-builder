@@ -152,7 +152,7 @@ class LegalDocumentTest(TestCase):
         assert "<p>Safe content</p>" in doc.content
 
     def test_richtext_field_functionality(self) -> None:
-        """Test that RichTextField works correctly"""
+        """Test that HTMLField works correctly"""
         rich_content = (
             "<h1>Legal Document</h1>"
             "<h2>Section 1</h2>"

@@ -117,8 +117,7 @@ INSTALLED_APPS = [
     "django_ratelimit",
     "lockdown",
     "storages",
-    "ckeditor",
-    "ckeditor_uploader",
+    "tinymce",
     "coalition.content.apps.ContentConfig",
     "coalition.campaigns.apps.CampaignsConfig",
     "coalition.legislators.apps.LegislatorsConfig",
@@ -282,9 +281,6 @@ STATIC_URL = f"https://{CLOUDFRONT_DOMAIN}/static/" if CLOUDFRONT_DOMAIN else "/
 
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-# WhiteNoise configuration for better static file serving
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
 # Static files directories - where Django will look for static files during development
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
@@ -386,60 +382,68 @@ else:
         },
     }
 
-# CKEditor Configuration
-CKEDITOR_UPLOAD_PATH = "uploads/"
-CKEDITOR_RESTRICT_BY_USER = True
-CKEDITOR_BROWSE_SHOW_DIRS = True
-CKEDITOR_ALLOW_NONIMAGE_FILES = False
+# TinyMCE Configuration
+TINYMCE_DEFAULT_CONFIG = {
+    "theme": "silver",
+    "height": 300,
+    "menubar": False,
+    "plugins": [
+        "advlist",
+        "autolink",
+        "lists",
+        "link",
+        "image",
+        "charmap",
+        "preview",
+        "anchor",
+        "searchreplace",
+        "visualblocks",
+        "code",
+        "fullscreen",
+        "insertdatetime",
+        "media",
+        "table",
+        "help",
+        "wordcount",
+        "codesample",
+    ],
+    "toolbar": (
+        "undo redo | blocks | bold italic underline strikethrough | "
+        "alignleft aligncenter alignright alignjustify | "
+        "bullist numlist outdent indent | link image media | "
+        "removeformat | code | help"
+    ),
+    "block_formats": (
+        "Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; "
+        "Heading 4=h4; Heading 5=h5; Heading 6=h6; "
+        "Preformatted=pre; Blockquote=blockquote"
+    ),
+    "image_advtab": True,
+    "image_caption": True,
+    "relative_urls": False,
+    "remove_script_host": True,
+    "convert_urls": True,
+    "cleanup_on_startup": True,
+    "custom_undo_redo_levels": 20,
+    "entity_encoding": "raw",
+    "content_style": """
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    """,
+}
 
-# CKEditor toolbar and plugin configuration
-CKEDITOR_CONFIGS = {
-    "default": {
-        "toolbar": "Custom",
-        "toolbar_Custom": [
-            ["Bold", "Italic", "Underline", "Strike"],
-            ["NumberedList", "BulletedList", "-", "Outdent", "Indent"],
-            ["JustifyLeft", "JustifyCenter", "JustifyRight", "JustifyBlock"],
-            ["Link", "Unlink"],
-            ["RemoveFormat", "Source"],
-            ["Undo", "Redo"],
-            ["Format", "Styles"],
-        ],
-        "height": 300,
-        "width": "100%",
-        "filebrowserWindowWidth": 940,
-        "filebrowserWindowHeight": 725,
-        "removePlugins": "stylesheetparser",
-        "allowedContent": True,
-        "extraAllowedContent": "iframe[*]",
-        "format_tags": "p;h1;h2;h3;h4;h5;h6;pre;address;div",
-        "stylesSet": [
-            {"name": "Lead paragraph", "element": "p", "attributes": {"class": "lead"}},
-            {
-                "name": "Button",
-                "element": "a",
-                "attributes": {"class": "btn btn-primary"},
-            },
-            {
-                "name": "Alert",
-                "element": "div",
-                "attributes": {"class": "alert alert-info"},
-            },
-        ],
-    },
-    "minimal": {
-        "toolbar": "Custom",
-        "toolbar_Custom": [
-            ["Bold", "Italic"],
-            ["NumberedList", "BulletedList"],
-            ["Link", "Unlink"],
-            ["RemoveFormat"],
-        ],
-        "height": 150,
-        "width": "100%",
-        "removePlugins": "stylesheetparser",
-        "allowedContent": True,
-    },
+# TinyMCE minimal configuration for simple fields
+TINYMCE_MINIMAL_CONFIG = {
+    "theme": "silver",
+    "height": 200,
+    "menubar": False,
+    "plugins": ["link", "lists", "autolink"],
+    "toolbar": "bold italic | bullist numlist | link | removeformat",
+    "statusbar": False,
 }
 
 # Site Password Protection (django-lockdown)
@@ -461,12 +465,24 @@ LOCKDOWN_SESSION_LOCKDOWN = True
 
 
 # File Storage Configuration (django-storages with S3)
-DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+STORAGES = {
+    "default": {
+        "BACKEND": "coalition.core.storage.MediaStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # AWS S3 Configuration
 AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "")
 AWS_S3_REGION_NAME = os.getenv("AWS_REGION", "us-east-1")
-AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+
+# Use CloudFront domain for generating URLs when available
+if CLOUDFRONT_DOMAIN:
+    AWS_S3_CUSTOM_DOMAIN = CLOUDFRONT_DOMAIN
+else:
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 
 # S3 File Settings
 AWS_S3_OBJECT_PARAMETERS = {
@@ -477,9 +493,9 @@ AWS_DEFAULT_ACL = "public-read"  # Make uploaded files publicly readable
 AWS_S3_VERIFY_SSL = True
 
 # Media files configuration
-MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+# Use CloudFront CDN when available for better performance and security
+if CLOUDFRONT_DOMAIN:
+    MEDIA_URL = f"https://{CLOUDFRONT_DOMAIN}/media/"
+else:
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
 MEDIA_ROOT = "/media/"
-
-# Use IAM role for authentication (ECS task role handles this)
-AWS_S3_ACCESS_KEY_ID = None
-AWS_S3_SECRET_ACCESS_KEY = None

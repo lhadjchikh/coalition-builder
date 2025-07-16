@@ -3,9 +3,9 @@
 import uuid
 from typing import TYPE_CHECKING
 
-from ckeditor.fields import RichTextField
 from django.db import models
 from django.utils import timezone
+from tinymce.models import HTMLField
 
 from coalition.content.html_sanitizer import HTMLSanitizer
 
@@ -39,7 +39,7 @@ class LegalDocument(models.Model):
         help_text="Title of the document",
     )
 
-    content = RichTextField(
+    content = HTMLField(
         help_text="Full content of the legal document (HTML allowed)",
     )
 

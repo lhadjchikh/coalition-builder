@@ -2,9 +2,9 @@
 
 from typing import TYPE_CHECKING
 
-from ckeditor.fields import RichTextField
 from django.core.exceptions import ValidationError
 from django.db import models
+from tinymce.models import HTMLField
 
 from coalition.content.html_sanitizer import HTMLSanitizer
 
@@ -65,9 +65,8 @@ class HomePage(models.Model):
         default="Get Involved",
         help_text="Title for the call-to-action section",
     )
-    cta_content = RichTextField(
+    cta_content = HTMLField(
         blank=True,
-        config_name="minimal",
         help_text="Description for how people can get involved",
     )
     cta_button_text = models.CharField(
