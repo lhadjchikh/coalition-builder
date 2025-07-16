@@ -281,9 +281,6 @@ STATIC_URL = f"https://{CLOUDFRONT_DOMAIN}/static/" if CLOUDFRONT_DOMAIN else "/
 
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-# WhiteNoise configuration for better static file serving
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
 # Static files directories - where Django will look for static files during development
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
@@ -468,12 +465,24 @@ LOCKDOWN_SESSION_LOCKDOWN = True
 
 
 # File Storage Configuration (django-storages with S3)
-DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+STORAGES = {
+    "default": {
+        "BACKEND": "coalition.core.storage.MediaStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # AWS S3 Configuration
 AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "")
 AWS_S3_REGION_NAME = os.getenv("AWS_REGION", "us-east-1")
-AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+
+# Use CloudFront domain for generating URLs when available
+if CLOUDFRONT_DOMAIN:
+    AWS_S3_CUSTOM_DOMAIN = CLOUDFRONT_DOMAIN
+else:
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 
 # S3 File Settings
 AWS_S3_OBJECT_PARAMETERS = {
@@ -482,9 +491,15 @@ AWS_S3_OBJECT_PARAMETERS = {
 AWS_S3_FILE_OVERWRITE = False  # Don't overwrite files with same name
 AWS_DEFAULT_ACL = "public-read"  # Make uploaded files publicly readable
 AWS_S3_VERIFY_SSL = True
+AWS_S3_ADDRESSING_STYLE = "virtual"  # Use virtual-hosted-style URLs
+AWS_S3_SIGNATURE_VERSION = "s3v4"  # Use signature version 4 (required for some regions)
 
 # Media files configuration
-MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+# Use CloudFront CDN when available for better performance and security
+if CLOUDFRONT_DOMAIN:
+    MEDIA_URL = f"https://{CLOUDFRONT_DOMAIN}/media/"
+else:
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
 MEDIA_ROOT = "/media/"
 
 # Use IAM role for authentication (ECS task role handles this)
