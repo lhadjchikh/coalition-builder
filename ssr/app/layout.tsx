@@ -38,6 +38,11 @@ export default async function RootLayout({
   try {
     homepage = await ssrApiClient.getHomepage();
     organizationName = homepage.organization_name;
+    
+    // Use custom nav items if provided, otherwise use defaults
+    if (homepage.nav_items && homepage.nav_items.length > 0) {
+      navItems = homepage.nav_items;
+    }
   } catch (error) {
     console.error("Error fetching homepage for layout:", error);
     const fallbackHomepage = getFallbackHomepage();
