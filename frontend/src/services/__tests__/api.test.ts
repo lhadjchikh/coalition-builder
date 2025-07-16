@@ -1,4 +1,4 @@
-import API from '../api';
+import API, { getBaseUrl } from '../api';
 import {
   Campaign,
   Endorser,
@@ -13,8 +13,35 @@ import { withSuppressedErrors } from '../../tests/utils/testUtils';
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
+// Helper to create mock response with headers
+const createMockResponse = (
+  body: any,
+  options: { ok?: boolean; status?: number; contentType?: string } = {}
+) => {
+  const { ok = true, status = 200, contentType = 'application/json' } = options;
+  return {
+    ok,
+    status,
+    headers: {
+      get: (name: string) => (name === 'content-type' ? contentType : null),
+    },
+    json: async () => body,
+  };
+};
+
 describe('API Service', () => {
   const originalEnv = process.env;
+
+  // Helper to get expected URL based on environment
+  const getExpectedUrl = (path: string): string => {
+    // The API client is instantiated once when the module loads
+    // In CI environments, it will use localhost:8000
+    // We need to check the actual CI env var, not the mocked one
+    if (originalEnv.CI === 'true' && !originalEnv.REACT_APP_API_URL) {
+      return `http://localhost:8000${path}`;
+    }
+    return path;
+  };
 
   // Helper to create clean environment without CI variables affecting tests
   const createCleanEnv = (
@@ -55,7 +82,7 @@ describe('API Service', () => {
           REACT_APP_API_URL: 'https://react-api.example.com',
         })
       );
-      expect(API.getBaseUrl()).toBe('https://react-api.example.com');
+      expect(getBaseUrl()).toBe('https://react-api.example.com');
     });
 
     it('should return localhost:8000 when in CI environment', () => {
@@ -66,13 +93,13 @@ describe('API Service', () => {
           CI: 'true',
         })
       );
-      expect(API.getBaseUrl()).toBe('http://localhost:8000');
+      expect(getBaseUrl()).toBe('http://localhost:8000');
     });
 
     it('should return empty string for production and development (relative paths)', () => {
       // Default behavior: no environment variables set
       // Should return empty string for relative paths
-      expect(API.getBaseUrl()).toBe('');
+      expect(getBaseUrl()).toBe('');
     });
   });
 
@@ -89,22 +116,20 @@ describe('API Service', () => {
     ];
 
     it('should fetch campaigns successfully', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockCampaigns,
-      });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockCampaigns));
 
       const campaigns = await API.getCampaigns();
       expect(campaigns).toEqual(mockCampaigns);
-      expect(mockFetch).toHaveBeenCalledWith('/api/campaigns/');
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/campaigns/'), {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
     });
 
     it('should handle HTTP error responses', async () => {
       await withSuppressedErrors(['HTTP error! status: 404'], async () => {
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          status: 404,
-        });
+        mockFetch.mockResolvedValueOnce(createMockResponse({}, { ok: false, status: 404 }));
 
         await expect(API.getCampaigns()).rejects.toThrow('HTTP error! status: 404');
       });
@@ -127,13 +152,18 @@ describe('API Service', () => {
         })
       );
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockCampaigns,
-      });
+      // Test the base URL logic directly since the client is already instantiated
+      expect(getBaseUrl()).toBe('https://api.example.com');
+
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockCampaigns));
 
       await API.getCampaigns();
-      expect(mockFetch).toHaveBeenCalledWith('https://api.example.com/api/campaigns/');
+      // The actual client uses the base URL from instantiation time, not runtime
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/campaigns/'), {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
     });
   });
 
@@ -150,22 +180,20 @@ describe('API Service', () => {
     ];
 
     it('should fetch endorsers successfully', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockEndorsers,
-      });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockEndorsers));
 
       const endorsers = await API.getEndorsers();
       expect(endorsers).toEqual(mockEndorsers);
-      expect(mockFetch).toHaveBeenCalledWith('/api/endorsers/');
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsers/'), {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
     });
 
     it('should handle HTTP error responses', async () => {
       await withSuppressedErrors(['HTTP error! status: 500'], async () => {
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          status: 500,
-        });
+        mockFetch.mockResolvedValueOnce(createMockResponse({}, { ok: false, status: 500 }));
 
         await expect(API.getEndorsers()).rejects.toThrow('HTTP error! status: 500');
       });
@@ -184,22 +212,20 @@ describe('API Service', () => {
     ];
 
     it('should fetch legislators successfully', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockLegislators,
-      });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockLegislators));
 
       const legislators = await API.getLegislators();
       expect(legislators).toEqual(mockLegislators);
-      expect(mockFetch).toHaveBeenCalledWith('/api/legislators/');
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/legislators/'), {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
     });
 
     it('should handle HTTP error responses', async () => {
       await withSuppressedErrors(['HTTP error! status: 403'], async () => {
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          status: 403,
-        });
+        mockFetch.mockResolvedValueOnce(createMockResponse({}, { ok: false, status: 403 }));
 
         await expect(API.getLegislators()).rejects.toThrow('HTTP error! status: 403');
       });
@@ -236,22 +262,20 @@ describe('API Service', () => {
     ];
 
     it('should fetch endorsements successfully', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockEndorsements,
-      });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockEndorsements));
 
       const endorsements = await API.getEndorsements();
       expect(endorsements).toEqual(mockEndorsements);
-      expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/');
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/'), {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
     });
 
     it('should handle HTTP error responses', async () => {
       await withSuppressedErrors(['HTTP error! status: 401'], async () => {
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          status: 401,
-        });
+        mockFetch.mockResolvedValueOnce(createMockResponse({}, { ok: false, status: 401 }));
 
         await expect(API.getEndorsements()).rejects.toThrow('HTTP error! status: 401');
       });
@@ -288,22 +312,20 @@ describe('API Service', () => {
     ];
 
     it('should fetch campaign endorsements successfully', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockEndorsements,
-      });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockEndorsements));
 
       const endorsements = await API.getCampaignEndorsements(1);
       expect(endorsements).toEqual(mockEndorsements);
-      expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/?campaign_id=1');
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/?campaign_id=1'), {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
     });
 
     it('should handle HTTP error responses', async () => {
       await withSuppressedErrors(['HTTP error! status: 404'], async () => {
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          status: 404,
-        });
+        mockFetch.mockResolvedValueOnce(createMockResponse({}, { ok: false, status: 404 }));
 
         await expect(API.getCampaignEndorsements(1)).rejects.toThrow('HTTP error! status: 404');
       });
@@ -313,13 +335,14 @@ describe('API Service', () => {
       // Default behavior: no environment variables set
       // Should use relative paths in production
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockEndorsements,
-      });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockEndorsements));
 
       await API.getCampaignEndorsements(1);
-      expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/?campaign_id=1');
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/?campaign_id=1'), {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
     });
   });
 
@@ -368,14 +391,11 @@ describe('API Service', () => {
     };
 
     it('should create endorsement successfully', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockCreatedEndorsement,
-      });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockCreatedEndorsement));
 
       const endorsement = await API.createEndorsement(mockEndorsementData);
       expect(endorsement).toEqual(mockCreatedEndorsement);
-      expect(mockFetch).toHaveBeenCalledWith('/api/endorsements/', {
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -387,11 +407,7 @@ describe('API Service', () => {
     it('should handle HTTP error responses with error details', async () => {
       await withSuppressedErrors(['Invalid endorsement data'], async () => {
         const errorData = { detail: 'Invalid endorsement data' };
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          status: 400,
-          json: async () => errorData,
-        });
+        mockFetch.mockResolvedValueOnce(createMockResponse(errorData, { ok: false, status: 400 }));
 
         await expect(API.createEndorsement(mockEndorsementData)).rejects.toThrow(
           'Invalid endorsement data'
@@ -401,11 +417,7 @@ describe('API Service', () => {
 
     it('should handle HTTP error responses without error details', async () => {
       await withSuppressedErrors(['HTTP error! status: 500'], async () => {
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          status: 500,
-          json: async () => ({}),
-        });
+        mockFetch.mockResolvedValueOnce(createMockResponse({}, { ok: false, status: 500 }));
 
         await expect(API.createEndorsement(mockEndorsementData)).rejects.toThrow(
           'HTTP error! status: 500'
@@ -433,22 +445,20 @@ describe('API Service', () => {
     };
 
     it('should fetch campaign by ID successfully', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockCampaign,
-      });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockCampaign));
 
       const campaign = await API.getCampaignById(1);
       expect(campaign).toEqual(mockCampaign);
-      expect(mockFetch).toHaveBeenCalledWith('/api/campaigns/1/');
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/campaigns/1/'), {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
     });
 
     it('should handle HTTP error responses', async () => {
       await withSuppressedErrors(['HTTP error! status: 404'], async () => {
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          status: 404,
-        });
+        mockFetch.mockResolvedValueOnce(createMockResponse({}, { ok: false, status: 404 }));
 
         await expect(API.getCampaignById(1)).rejects.toThrow('HTTP error! status: 404');
       });
@@ -466,22 +476,23 @@ describe('API Service', () => {
     };
 
     it('should fetch campaign by name successfully', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockCampaign,
-      });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockCampaign));
 
       const campaign = await API.getCampaignByName('test-campaign');
       expect(campaign).toEqual(mockCampaign);
-      expect(mockFetch).toHaveBeenCalledWith('/api/campaigns/by-name/test-campaign/');
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl('/api/campaigns/by-name/test-campaign/'),
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
     });
 
     it('should handle HTTP error responses', async () => {
       await withSuppressedErrors(['HTTP error! status: 404'], async () => {
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          status: 404,
-        });
+        mockFetch.mockResolvedValueOnce(createMockResponse({}, { ok: false, status: 404 }));
 
         await expect(API.getCampaignByName('nonexistent')).rejects.toThrow(
           'HTTP error! status: 404'
@@ -497,45 +508,38 @@ describe('API Service', () => {
       tagline: 'Test tagline',
       hero_title: 'Hero Title',
       hero_subtitle: 'Hero Subtitle',
-      hero_background_image: 'hero.jpg',
-      about_section_title: 'About',
-      about_section_content: 'About content',
+      hero_background_image_url: 'hero.jpg',
       cta_title: 'CTA Title',
       cta_content: 'CTA content',
       cta_button_text: 'Click me',
       cta_button_url: 'https://example.com',
-      contact_email: 'contact@example.com',
-      contact_phone: '555-1234',
+      campaigns_section_title: 'Our Campaigns',
+      show_campaigns_section: true,
       facebook_url: 'https://facebook.com/test',
       twitter_url: 'https://twitter.com/test',
       instagram_url: 'https://instagram.com/test',
       linkedin_url: 'https://linkedin.com/test',
-      campaigns_section_title: 'Campaigns',
       campaigns_section_subtitle: 'Our campaigns',
-      show_campaigns_section: true,
-      content_blocks: [],
       is_active: true,
       created_at: '2023-01-01T00:00:00Z',
       updated_at: '2023-01-01T00:00:00Z',
     };
 
     it('should fetch homepage successfully', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockHomepage,
-      });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockHomepage));
 
       const homepage = await API.getHomepage();
       expect(homepage).toEqual(mockHomepage);
-      expect(mockFetch).toHaveBeenCalledWith('/api/homepage/');
+      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/homepage/'), {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
     });
 
     it('should handle HTTP error responses', async () => {
       await withSuppressedErrors(['HTTP error! status: 500'], async () => {
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          status: 500,
-        });
+        mockFetch.mockResolvedValueOnce(createMockResponse({}, { ok: false, status: 500 }));
 
         await expect(API.getHomepage()).rejects.toThrow('HTTP error! status: 500');
       });
@@ -547,6 +551,9 @@ describe('API Service', () => {
       await withSuppressedErrors(['Invalid JSON'], async () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
+          headers: {
+            get: (name: string) => (name === 'content-type' ? 'application/json' : null),
+          },
           json: async () => {
             throw new Error('Invalid JSON');
           },
@@ -565,10 +572,7 @@ describe('API Service', () => {
     });
 
     it('should handle empty responses', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => null,
-      });
+      mockFetch.mockResolvedValueOnce(createMockResponse(null));
 
       const campaigns = await API.getCampaigns();
       expect(campaigns).toBeNull();
@@ -591,7 +595,11 @@ describe('API Service', () => {
       mockFetch.mockRejectedValueOnce(error);
 
       await expect(API.getCampaigns()).rejects.toThrow('Network error');
-      expect(consoleSpy).toHaveBeenCalledWith('Error fetching campaigns:', error);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'API request failed for %s:',
+        getExpectedUrl('/api/campaigns/'),
+        error
+      );
     });
 
     it('should log errors when endorsement creation fails', async () => {
@@ -616,7 +624,11 @@ describe('API Service', () => {
       };
 
       await expect(API.createEndorsement(endorsementData)).rejects.toThrow('Creation failed');
-      expect(consoleSpy).toHaveBeenCalledWith('Error creating endorsement:', error);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'API request failed for %s:',
+        getExpectedUrl('/api/endorsements/'),
+        error
+      );
     });
   });
 });

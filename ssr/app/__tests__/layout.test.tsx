@@ -2,11 +2,11 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import RootLayout from "../layout";
-import { ssrApiClient } from "../../lib/frontend-api-adapter";
+import { ssrApiClient } from "../../lib/api";
 import { DEFAULT_NAV_ITEMS, NavItemData } from "@shared/types";
 
 // Mock the dependencies
-jest.mock("../../lib/frontend-api-adapter");
+jest.mock("../../lib/api");
 jest.mock("../../lib/components/SSRNavbar", () => ({
   __esModule: true,
   default: ({
@@ -24,52 +24,48 @@ jest.mock("../../lib/components/SSRNavbar", () => ({
 }));
 jest.mock("../../lib/components/SSRFooter", () => ({
   __esModule: true,
-  default: ({ organizationName }: { organizationName: string }) => (
-    <footer data-testid="ssr-footer">
-      <span>
-        © {new Date().getFullYear()} {organizationName}. All rights reserved.
-      </span>
-    </footer>
-  ),
+  default: ({ orgInfo }: { orgInfo?: { organization_name: string } }) => {
+    const organizationName = orgInfo?.organization_name || "Coalition Builder";
+    return (
+      <footer data-testid="ssr-footer">
+        <span>
+          © {new Date().getFullYear()} {organizationName}. All rights reserved.
+        </span>
+      </footer>
+    );
+  },
 }));
 jest.mock("../../lib/registry", () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-jest.mock("../../components/CookieConsent", () => ({
+jest.mock("@shared/components/CookieConsent", () => ({
   __esModule: true,
   default: () => <div data-testid="cookie-consent">Cookie Consent</div>,
 }));
 
 describe("RootLayout", () => {
   const mockHomepage = {
+    id: 1,
     organization_name: "Test Organization",
-    nav_items: [
-      { label: "Home", href: "/" },
-      { label: "About", href: "/about" },
-    ],
     tagline: "Test tagline",
     hero_title: "Test Hero",
     hero_subtitle: "Test subtitle",
-    about_section_title: "About Us",
-    about_section_content: "Test content",
-    show_campaigns_section: true,
-    campaigns_section_title: "Our Campaigns",
-    campaigns_section_subtitle: "Test subtitle",
+    hero_background_image_url: "",
     cta_title: "Get Involved",
     cta_content: "Test CTA",
     cta_button_text: "Join Us",
     cta_button_url: "/join",
-    contact_email: "test@example.com",
-    contact_phone: "123-456-7890",
-    theme: {
-      primary_color: "#0000FF",
-      secondary_color: "#FF0000",
-      accent_color: "#00FF00",
-      background_color: "#FFFFFF",
-      text_color: "#000000",
-    },
-    content_blocks: [] as any[],
+    facebook_url: "",
+    twitter_url: "",
+    instagram_url: "",
+    linkedin_url: "",
+    campaigns_section_title: "Our Campaigns",
+    campaigns_section_subtitle: "Test subtitle",
+    show_campaigns_section: true,
+    is_active: true,
+    created_at: "2023-01-01T00:00:00Z",
+    updated_at: "2023-01-01T00:00:00Z",
   };
 
   beforeEach(() => {
@@ -93,7 +89,7 @@ describe("RootLayout", () => {
     const navbar = screen.getByTestId("ssr-navbar");
     expect(navbar).toBeInTheDocument();
     expect(navbar).toHaveTextContent("Test Organization");
-    expect(navbar).toHaveTextContent("2 nav items");
+    expect(navbar).toHaveTextContent("4 nav items");
 
     // Check for main content
     const mainContent = screen.getByTestId("page-content");

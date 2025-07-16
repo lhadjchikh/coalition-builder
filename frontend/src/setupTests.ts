@@ -4,6 +4,13 @@
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 
+// Polyfill TextEncoder/TextDecoder for react-router-dom in test environment
+if (typeof global !== 'undefined') {
+  const { TextEncoder, TextDecoder } = require('util');
+  global.TextEncoder = global.TextEncoder || TextEncoder;
+  global.TextDecoder = global.TextDecoder || TextDecoder;
+}
+
 // Mock fetch globally
 global.fetch = jest.fn() as jest.Mock;
 

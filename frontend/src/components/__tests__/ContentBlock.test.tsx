@@ -1,13 +1,14 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import ContentBlock from '../ContentBlock';
+import ContentBlock from '@shared/components/ContentBlock';
 import { ContentBlock as ContentBlockType } from '../../types';
 
 const baseContentBlock: ContentBlockType = {
   id: 1,
   title: 'Test Block',
   block_type: 'text',
+  page_type: 'homepage',
   content: '<p>Test content</p>',
   image_url: '',
   image_alt_text: '',

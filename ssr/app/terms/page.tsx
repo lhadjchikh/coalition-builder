@@ -1,7 +1,7 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import { apiClient } from "../../lib/api";
-import LegalDocumentTracker from "../../components/LegalDocumentTracker";
+import LegalDocumentTracker from "@shared/components/LegalDocumentTracker";
 
 interface TermsPageProps {}
 

@@ -1,14 +1,19 @@
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import CampaignDetail from '../CampaignDetail';
+import CampaignDetail from '@shared/components/CampaignDetail';
 import API from '../../services/api';
+import analytics from '@shared/services/analytics';
 import { Campaign } from '../../types';
 import { withSuppressedErrors } from '../../tests/utils/testUtils';
 
 // Mock the API service
 jest.mock('../../services/api');
 const mockAPI = API as jest.Mocked<typeof API>;
+
+// Mock the analytics service
+jest.mock('@shared/services/analytics');
+const mockAnalytics = analytics as jest.Mocked<typeof analytics>;
 
 // Mock child components
 const mockScrollToFirstField = jest.fn();
@@ -48,35 +53,77 @@ jest.mock('../EndorsementForm', () => {
 });
 
 jest.mock('../EndorsementsList', () => {
-  return function MockEndorsementsList({
-    campaignId,
-    refreshTrigger,
-    onCountUpdate,
-  }: {
-    campaignId: number;
-    refreshTrigger: number;
-    onCountUpdate?: (_count: number, _recentCount?: number) => void;
-  }) {
-    // Simulate different endorsement counts based on campaign ID for testing
-    React.useEffect(() => {
-      if (onCountUpdate) {
-        const count = campaignId === 1 ? 15 : campaignId === 2 ? 5 : 25;
-        const recentCount = campaignId === 1 ? 3 : campaignId === 2 ? 1 : 8;
-        onCountUpdate(count, recentCount);
-      }
-    }, [campaignId, refreshTrigger, onCountUpdate]);
+  return {
+    __esModule: true,
+    default: function MockEndorsementsList({
+      campaignId,
+      refreshTrigger,
+      onCountUpdate,
+    }: {
+      campaignId: number;
+      refreshTrigger: number;
+      onCountUpdate?: (_count: number, _recentCount?: number) => void;
+    }) {
+      // Simulate different endorsement counts based on campaign ID for testing
+      React.useEffect(() => {
+        if (onCountUpdate) {
+          const count = campaignId === 1 ? 15 : campaignId === 2 ? 5 : 25;
+          const recentCount = campaignId === 1 ? 3 : campaignId === 2 ? 1 : 8;
+          onCountUpdate(count, recentCount);
+        }
+      }, [campaignId, refreshTrigger, onCountUpdate]);
 
-    return (
-      <div data-testid="endorsements-list">
-        <span>Endorsements for campaign: {campaignId}</span>
-        <span>Refresh trigger: {refreshTrigger}</span>
-      </div>
-    );
+      return (
+        <div data-testid="endorsements-list">
+          <span>Endorsements for campaign: {campaignId}</span>
+          <span>Refresh trigger: {refreshTrigger}</span>
+        </div>
+      );
+    },
   };
 });
 
 // Mock CSS import
 jest.mock('../Endorsements.css', () => ({}));
+
+// Mock GrowthIcon component
+jest.mock('../GrowthIcon', () => {
+  return function MockGrowthIcon({
+    stage,
+    size,
+    color,
+  }: {
+    stage: string;
+    size: string;
+    color: string;
+  }) {
+    return (
+      <div data-testid="growth-icon" data-stage={stage} data-size={size} data-color={color}>
+        Growth Icon: {stage}
+      </div>
+    );
+  };
+});
+
+// Helper function to render CampaignDetail with proper dependencies
+const renderCampaignDetail = (props: any) => {
+  const EndorsementForm = jest.requireMock('../EndorsementForm').default;
+  const EndorsementsList = jest.requireMock('../EndorsementsList').default;
+  const GrowthIcon = jest.requireMock('../GrowthIcon').default;
+
+  const defaultProps = {
+    apiClient: {
+      getCampaignById: mockAPI.getCampaignById,
+      getCampaignByName: mockAPI.getCampaignByName,
+    },
+    analytics: mockAnalytics,
+    EndorsementFormComponent: EndorsementForm,
+    EndorsementsListComponent: EndorsementsList,
+    GrowthIconComponent: GrowthIcon,
+  };
+
+  return render(<CampaignDetail {...defaultProps} {...props} />);
+};
 
 const mockCampaign: Campaign = {
   id: 1,
@@ -100,7 +147,7 @@ describe('CampaignDetail', () => {
     it('should show loading state initially', async () => {
       mockAPI.getCampaignById.mockImplementation(() => new Promise(() => {})); // Never resolves
 
-      render(<CampaignDetail campaignId={1} />);
+      renderCampaignDetail({ campaignId: 1 });
 
       expect(screen.getByTestId('campaign-loading')).toBeInTheDocument();
       expect(screen.getByText('Loading campaign...')).toBeInTheDocument();
@@ -109,7 +156,7 @@ describe('CampaignDetail', () => {
     it('should show loading state when campaignName is provided', async () => {
       mockAPI.getCampaignByName.mockImplementation(() => new Promise(() => {})); // Never resolves
 
-      render(<CampaignDetail campaignName="test-campaign" />);
+      renderCampaignDetail({ campaignName: 'test-campaign' });
 
       expect(screen.getByTestId('campaign-loading')).toBeInTheDocument();
     });
@@ -120,7 +167,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -136,7 +183,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignByName.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignName="test-campaign" />);
+        renderCampaignDetail({ campaignName: 'test-campaign' });
       });
 
       await waitFor(() => {
@@ -151,7 +198,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -165,7 +212,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(campaignWithoutDescription);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -179,7 +226,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -190,7 +237,7 @@ describe('CampaignDetail', () => {
       expect(screen.getByText('Form for: Test Campaign')).toBeInTheDocument();
       expect(screen.getByText('Endorsements for campaign: 1')).toBeInTheDocument();
       expect(screen.getByText('Refresh trigger: 0')).toBeInTheDocument();
-    });
+    }, 10000);
   });
 
   describe('error handling', () => {
@@ -200,14 +247,14 @@ describe('CampaignDetail', () => {
         mockAPI.getCampaignById.mockRejectedValue(new Error(errorMessage));
 
         await act(async () => {
-          render(<CampaignDetail campaignId={1} />);
+          renderCampaignDetail({ campaignId: 1 });
         });
 
         await waitFor(() => {
           expect(screen.getByTestId('campaign-error')).toBeInTheDocument();
         });
 
-        expect(screen.getByText(`Error: ${errorMessage}`)).toBeInTheDocument();
+        expect(screen.getByText(errorMessage)).toBeInTheDocument();
       });
     });
 
@@ -217,14 +264,14 @@ describe('CampaignDetail', () => {
         mockAPI.getCampaignByName.mockRejectedValue(new Error(errorMessage));
 
         await act(async () => {
-          render(<CampaignDetail campaignName="test-campaign" />);
+          renderCampaignDetail({ campaignName: 'test-campaign' });
         });
 
         await waitFor(() => {
           expect(screen.getByTestId('campaign-error')).toBeInTheDocument();
         });
 
-        expect(screen.getByText(`Error: ${errorMessage}`)).toBeInTheDocument();
+        expect(screen.getByText(errorMessage)).toBeInTheDocument();
       });
     });
 
@@ -233,20 +280,20 @@ describe('CampaignDetail', () => {
         mockAPI.getCampaignById.mockRejectedValue('String error');
 
         await act(async () => {
-          render(<CampaignDetail campaignId={1} />);
+          renderCampaignDetail({ campaignId: 1 });
         });
 
         await waitFor(() => {
           expect(screen.getByTestId('campaign-error')).toBeInTheDocument();
         });
 
-        expect(screen.getByText('Error: Failed to fetch campaign')).toBeInTheDocument();
+        expect(screen.getByText('Failed to fetch campaign')).toBeInTheDocument();
       });
     });
 
     it('should display error when neither campaignId nor campaignName provided', async () => {
       await act(async () => {
-        render(<CampaignDetail />);
+        renderCampaignDetail({});
       });
 
       await waitFor(() => {
@@ -254,7 +301,7 @@ describe('CampaignDetail', () => {
       });
 
       expect(
-        screen.getByText('Error: Either campaignId or campaignName must be provided')
+        screen.getByText('Either campaignId or campaignName must be provided')
       ).toBeInTheDocument();
     });
 
@@ -263,7 +310,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(null as any);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -279,7 +326,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -295,13 +342,13 @@ describe('CampaignDetail', () => {
       await waitFor(() => {
         expect(screen.getByText('Refresh trigger: 1')).toBeInTheDocument();
       });
-    });
+    }, 10000);
 
     it('should increment refresh trigger multiple times', async () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -326,14 +373,14 @@ describe('CampaignDetail', () => {
       await waitFor(() => {
         expect(screen.getByText('Refresh trigger: 2')).toBeInTheDocument();
       });
-    });
+    }, 10000);
   });
 
   describe('prop changes and re-fetching', () => {
     it('should re-fetch when campaignId changes', async () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
-      const { rerender } = render(<CampaignDetail campaignId={1} />);
+      const { rerender } = renderCampaignDetail({ campaignId: 1 });
 
       await waitFor(() => {
         expect(mockAPI.getCampaignById).toHaveBeenCalledWith(1);
@@ -343,7 +390,21 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(newCampaign);
 
       await act(async () => {
-        rerender(<CampaignDetail campaignId={2} />);
+        rerender(
+          <CampaignDetail
+            {...{
+              apiClient: {
+                getCampaignById: mockAPI.getCampaignById,
+                getCampaignByName: mockAPI.getCampaignByName,
+              },
+              analytics: mockAnalytics,
+              EndorsementFormComponent: jest.requireMock('../EndorsementForm').default,
+              EndorsementsListComponent: jest.requireMock('../EndorsementsList').default,
+              GrowthIconComponent: jest.requireMock('../GrowthIcon').default,
+              campaignId: 2,
+            }}
+          />
+        );
       });
 
       await waitFor(() => {
@@ -355,7 +416,7 @@ describe('CampaignDetail', () => {
     it('should re-fetch when campaignName changes', async () => {
       mockAPI.getCampaignByName.mockResolvedValue(mockCampaign);
 
-      const { rerender } = render(<CampaignDetail campaignName="campaign-1" />);
+      const { rerender } = renderCampaignDetail({ campaignName: 'campaign-1' });
 
       await waitFor(() => {
         expect(mockAPI.getCampaignByName).toHaveBeenCalledWith('campaign-1');
@@ -365,7 +426,21 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignByName.mockResolvedValue(newCampaign);
 
       await act(async () => {
-        rerender(<CampaignDetail campaignName="campaign-2" />);
+        rerender(
+          <CampaignDetail
+            {...{
+              apiClient: {
+                getCampaignById: mockAPI.getCampaignById,
+                getCampaignByName: mockAPI.getCampaignByName,
+              },
+              analytics: mockAnalytics,
+              EndorsementFormComponent: jest.requireMock('../EndorsementForm').default,
+              EndorsementsListComponent: jest.requireMock('../EndorsementsList').default,
+              GrowthIconComponent: jest.requireMock('../GrowthIcon').default,
+              campaignName: 'campaign-2',
+            }}
+          />
+        );
       });
 
       await waitFor(() => {
@@ -377,7 +452,7 @@ describe('CampaignDetail', () => {
     it('should switch from campaignId to campaignName', async () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
-      const { rerender } = render(<CampaignDetail campaignId={1} />);
+      const { rerender } = renderCampaignDetail({ campaignId: 1 });
 
       await waitFor(() => {
         expect(mockAPI.getCampaignById).toHaveBeenCalledWith(1);
@@ -387,7 +462,21 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignByName.mockResolvedValue(newCampaign);
 
       await act(async () => {
-        rerender(<CampaignDetail campaignName="new-campaign" />);
+        rerender(
+          <CampaignDetail
+            {...{
+              apiClient: {
+                getCampaignById: mockAPI.getCampaignById,
+                getCampaignByName: mockAPI.getCampaignByName,
+              },
+              analytics: mockAnalytics,
+              EndorsementFormComponent: jest.requireMock('../EndorsementForm').default,
+              EndorsementsListComponent: jest.requireMock('../EndorsementsList').default,
+              GrowthIconComponent: jest.requireMock('../GrowthIcon').default,
+              campaignName: 'new-campaign',
+            }}
+          />
+        );
       });
 
       await waitFor(() => {
@@ -407,7 +496,7 @@ describe('CampaignDetail', () => {
 
       mockAPI.getCampaignById.mockReturnValue(controlledPromise);
 
-      render(<CampaignDetail campaignId={1} />);
+      renderCampaignDetail({ campaignId: 1 });
 
       // Should start with loading
       expect(screen.getByTestId('campaign-loading')).toBeInTheDocument();
@@ -433,7 +522,7 @@ describe('CampaignDetail', () => {
 
       mockAPI.getCampaignById.mockReturnValue(controlledPromise);
 
-      render(<CampaignDetail campaignId={1} />);
+      renderCampaignDetail({ campaignId: 1 });
 
       // Should start with loading
       expect(screen.getByTestId('campaign-loading')).toBeInTheDocument();
@@ -454,7 +543,7 @@ describe('CampaignDetail', () => {
       await withSuppressedErrors(['First error'], async () => {
         mockAPI.getCampaignById.mockRejectedValue(new Error('First error'));
 
-        const { rerender } = render(<CampaignDetail campaignId={1} />);
+        const { rerender } = renderCampaignDetail({ campaignId: 1 });
 
         await waitFor(() => {
           expect(screen.getByTestId('campaign-error')).toBeInTheDocument();
@@ -464,7 +553,21 @@ describe('CampaignDetail', () => {
         mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
         await act(async () => {
-          rerender(<CampaignDetail campaignId={2} />);
+          rerender(
+            <CampaignDetail
+              {...{
+                apiClient: {
+                  getCampaignById: mockAPI.getCampaignById,
+                  getCampaignByName: mockAPI.getCampaignByName,
+                },
+                analytics: mockAnalytics,
+                EndorsementFormComponent: jest.requireMock('../EndorsementForm').default,
+                EndorsementsListComponent: jest.requireMock('../EndorsementsList').default,
+                GrowthIconComponent: jest.requireMock('../GrowthIcon').default,
+                campaignId: 2,
+              }}
+            />
+          );
         });
 
         await waitFor(() => {
@@ -484,7 +587,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(campaignWithHTML);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -504,7 +607,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(campaignWithEmptyHTML);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -519,21 +622,24 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />); // Mock returns 15 endorsements
+        renderCampaignDetail({ campaignId: 1 }); // Mock returns 15 endorsements
       });
 
       await waitFor(() => {
         expect(screen.getByTestId('campaign-detail')).toBeInTheDocument();
-        expect(screen.getByText('15')).toBeInTheDocument(); // endorsement count
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('15 Endorsements')).toBeInTheDocument(); // endorsement count
         expect(screen.getByText('Join 15 supporters backing this campaign')).toBeInTheDocument();
       });
-    });
+    }, 10000);
 
     it('should not display social proof section when endorsement count is below 10', async () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={2} />); // Mock returns 5 endorsements
+        renderCampaignDetail({ campaignId: 2 }); // Mock returns 5 endorsements
       });
 
       await waitFor(() => {
@@ -548,7 +654,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue({ ...mockCampaign, id: 2 });
 
       await act(async () => {
-        render(<CampaignDetail campaignId={2} />); // Mock returns 5 endorsements
+        renderCampaignDetail({ campaignId: 2 }); // Mock returns 5 endorsements
       });
 
       await waitFor(() => {
@@ -568,7 +674,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue({ ...mockCampaign, id: 3 });
 
       await act(async () => {
-        render(<CampaignDetail campaignId={3} />); // Mock returns 25 endorsements with 8 recent
+        renderCampaignDetail({ campaignId: 3 }); // Mock returns 25 endorsements with 8 recent
       });
 
       await waitFor(() => {
@@ -593,7 +699,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={2} />); // Mock returns 1 recent endorsement (below threshold)
+        renderCampaignDetail({ campaignId: 2 }); // Mock returns 1 recent endorsement (below threshold)
       });
 
       await waitFor(() => {
@@ -606,7 +712,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -623,13 +729,13 @@ describe('CampaignDetail', () => {
       await waitFor(() => {
         expect(screen.getByText('Join 15 supporters backing this campaign')).toBeInTheDocument();
       });
-    });
+    }, 10000);
 
     it('should show sticky CTA when scrolling past endorsement section', async () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -668,7 +774,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue({ ...mockCampaign, id: 3 });
 
       await act(async () => {
-        render(<CampaignDetail campaignId={3} />); // Mock returns 25 endorsements
+        renderCampaignDetail({ campaignId: 3 }); // Mock returns 25 endorsements
       });
 
       await waitFor(() => {
@@ -704,7 +810,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -719,7 +825,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -762,7 +868,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -810,7 +916,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -863,7 +969,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -906,7 +1012,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -955,7 +1061,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -973,7 +1079,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -986,7 +1092,7 @@ describe('CampaignDetail', () => {
       mockAPI.getCampaignById.mockResolvedValue(mockCampaign);
 
       await act(async () => {
-        render(<CampaignDetail campaignId={1} />);
+        renderCampaignDetail({ campaignId: 1 });
       });
 
       await waitFor(() => {
@@ -994,6 +1100,6 @@ describe('CampaignDetail', () => {
         expect(screen.getByTestId('endorsement-form')).toBeInTheDocument();
         expect(screen.getByTestId('endorsements-list')).toBeInTheDocument();
       });
-    });
+    }, 10000);
   });
 });

@@ -4,7 +4,7 @@
 import React from "react";
 import { render } from "@testing-library/react";
 import { JSDOM } from "jsdom";
-import CookieConsent from "../components/CookieConsent";
+import CookieConsent from "@shared/components/CookieConsent";
 
 // Mock the vanilla-cookieconsent module
 jest.mock("vanilla-cookieconsent", () => ({

@@ -1,26 +1,27 @@
 import React from "react";
-import { Campaign, HomePage } from "../utils/homepage-data";
-import { NavItemData } from "../types";
+import type { Campaign, HomePage, ContentBlock } from "../types/api";
+import type { NavItemData } from "../types";
 
 interface NavbarProps {
   organizationName?: string;
   navItems?: NavItemData[];
 }
 
-interface HomePageLayoutProps {
+interface HomePageProps {
   homepage: HomePage;
   campaigns: Campaign[];
   homepageError?: string | null;
   campaignsError?: string | null;
   onCampaignSelect?: (campaign: Campaign) => void;
   HeroComponent?: React.ComponentType<{ homepage: HomePage }>;
-  ContentBlockComponent?: React.ComponentType<{ block: any }>;
-  SocialLinksComponent?: React.ComponentType<{ homepage: HomePage }>;
+  ContentBlockComponent?: React.ComponentType<{ block: ContentBlock }>;
+  SocialLinksComponent?: React.ComponentType<{ orgInfo: HomePage }>;
   NavbarComponent?: React.ComponentType<NavbarProps>;
   navItems?: NavItemData[];
+  contentBlocks?: ContentBlock[];
 }
 
-const HomePageLayout: React.FC<HomePageLayoutProps> = ({
+const HomePage: React.FC<HomePageProps> = ({
   homepage,
   campaigns,
   homepageError,
@@ -31,6 +32,7 @@ const HomePageLayout: React.FC<HomePageLayoutProps> = ({
   SocialLinksComponent,
   NavbarComponent,
   navItems,
+  contentBlocks = [],
 }) => {
   return (
     <div className="min-h-screen bg-white">
@@ -83,39 +85,17 @@ const HomePageLayout: React.FC<HomePageLayoutProps> = ({
           </section>
         )}
 
-        {/* About Section */}
-        {homepage.about_section_content && (
-          <section id="about-section" className="py-16 bg-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center">
-                <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-                  {homepage.about_section_title}
-                </h2>
-                <div className="mt-6 text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: homepage.about_section_content,
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
         {/* Dynamic Content Blocks */}
-        {homepage.content_blocks &&
-          homepage.content_blocks.length > 0 &&
-          ContentBlockComponent && (
-            <>
-              {homepage.content_blocks
-                .filter((block) => block.is_visible)
-                .sort((a, b) => a.order - b.order)
-                .map((block) => (
-                  <ContentBlockComponent key={block.id} block={block} />
-                ))}
-            </>
-          )}
+        {contentBlocks && contentBlocks.length > 0 && ContentBlockComponent && (
+          <>
+            {contentBlocks
+              .filter((block) => block.is_visible)
+              .sort((a, b) => a.order - b.order)
+              .map((block) => (
+                <ContentBlockComponent key={block.id} block={block} />
+              ))}
+          </>
+        )}
 
         {/* Campaigns Section */}
         {homepage.show_campaigns_section && (
@@ -213,32 +193,9 @@ const HomePageLayout: React.FC<HomePageLayoutProps> = ({
             </h3>
             <p className="text-gray-300 mb-6">{homepage.tagline}</p>
 
-            {/* Contact Information */}
-            <div className="mb-6">
-              <p className="text-gray-300">
-                <a
-                  href={`mailto:${homepage.contact_email}`}
-                  className="hover:text-white transition-colors"
-                >
-                  {homepage.contact_email}
-                </a>
-                {homepage.contact_phone && (
-                  <>
-                    {" • "}
-                    <a
-                      href={`tel:${homepage.contact_phone}`}
-                      className="hover:text-white transition-colors"
-                    >
-                      {homepage.contact_phone}
-                    </a>
-                  </>
-                )}
-              </p>
-            </div>
-
             {/* Social Links */}
             {SocialLinksComponent && (
-              <SocialLinksComponent homepage={homepage} />
+              <SocialLinksComponent orgInfo={homepage} />
             )}
           </div>
         </div>
@@ -247,4 +204,4 @@ const HomePageLayout: React.FC<HomePageLayoutProps> = ({
   );
 };
 
-export default HomePageLayout;
+export default HomePage;

@@ -198,17 +198,18 @@ async function runTests(): Promise<void> {
 
   // Wait for services
   console.log("Waiting for SSR service...");
-  const ssrReady = await waitForService(config.SSR_URL, config.TIMEOUT);
+  const ssrReady = await waitForService(config.SSR_URL, {
+    timeout: config.TIMEOUT,
+  });
   if (!ssrReady) {
     console.error("❌ SSR service did not become ready");
     process.exit(1);
   }
 
   console.log("Waiting for API service...");
-  const apiReady = await waitForService(
-    `${config.API_URL}/api/health/`,
-    config.TIMEOUT,
-  );
+  const apiReady = await waitForService(`${config.API_URL}/api/health/`, {
+    timeout: config.TIMEOUT,
+  });
   if (!apiReady) {
     console.error("❌ API service did not become ready");
     process.exit(1);

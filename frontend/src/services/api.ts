@@ -1,6 +1,14 @@
-import { Campaign, Endorser, Legislator, Endorsement, EndorsementCreate, HomePage } from '../types';
+/**
+ * Frontend API client that extends the shared base client
+ * Handles frontend-specific URL resolution and error handling
+ */
 
-// Determine the API base URL
+import { BaseApiClient } from '@shared/services/api-client';
+
+// Re-export ContentBlock type from shared types
+export type { ContentBlock } from '@shared/types';
+
+// Determine the API base URL for frontend
 const getBaseUrl = (): string => {
   // For CI/E2E tests with explicit URLs (e.g., docker-compose services)
   if (process.env.REACT_APP_API_URL) {
@@ -18,138 +26,39 @@ const getBaseUrl = (): string => {
   return '';
 };
 
-const API = {
-  // Export getBaseUrl for testing
-  getBaseUrl,
+class FrontendApiClient extends BaseApiClient {
+  constructor() {
+    super({ baseURL: getBaseUrl() });
+  }
 
-  // Campaigns
-  getCampaigns: async (): Promise<Campaign[]> => {
-    try {
-      const response = await fetch(`${getBaseUrl()}/api/campaigns/`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return (await response.json()) as Campaign[];
-    } catch (error) {
-      console.error('Error fetching campaigns:', error);
-      throw error;
-    }
-  },
+  protected async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    const url = `${this.baseURL}${endpoint}`;
 
-  // Endorsers
-  getEndorsers: async (): Promise<Endorser[]> => {
     try {
-      const response = await fetch(`${getBaseUrl()}/api/endorsers/`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return (await response.json()) as Endorser[];
-    } catch (error) {
-      console.error('Error fetching endorsers:', error);
-      throw error;
-    }
-  },
-
-  // Legislators
-  getLegislators: async (): Promise<Legislator[]> => {
-    try {
-      const response = await fetch(`${getBaseUrl()}/api/legislators/`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return (await response.json()) as Legislator[];
-    } catch (error) {
-      console.error('Error fetching legislators:', error);
-      throw error;
-    }
-  },
-
-  // Endorsements
-  getEndorsements: async (): Promise<Endorsement[]> => {
-    try {
-      const response = await fetch(`${getBaseUrl()}/api/endorsements/`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return (await response.json()) as Endorsement[];
-    } catch (error) {
-      console.error('Error fetching endorsements:', error);
-      throw error;
-    }
-  },
-
-  getCampaignEndorsements: async (campaignId: number): Promise<Endorsement[]> => {
-    try {
-      const response = await fetch(`${getBaseUrl()}/api/endorsements/?campaign_id=${campaignId}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return (await response.json()) as Endorsement[];
-    } catch (error) {
-      console.error('Error fetching campaign endorsements:', error);
-      throw error;
-    }
-  },
-
-  createEndorsement: async (endorsementData: EndorsementCreate): Promise<Endorsement> => {
-    try {
-      const response = await fetch(`${getBaseUrl()}/api/endorsements/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(endorsementData),
+      const response = await fetch(url, {
+        headers: this.defaultHeaders,
+        ...options,
       });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
-      }
-      return (await response.json()) as Endorsement;
-    } catch (error) {
-      console.error('Error creating endorsement:', error);
-      throw error;
-    }
-  },
 
-  getCampaignById: async (campaignId: number): Promise<Campaign> => {
-    try {
-      const response = await fetch(`${getBaseUrl()}/api/campaigns/${campaignId}/`);
       if (!response.ok) {
+        // Handle specific error response format for frontend
+        if (response.headers.get('content-type')?.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      return (await response.json()) as Campaign;
+
+      return await response.json();
     } catch (error) {
-      console.error('Error fetching campaign:', error);
+      console.error('API request failed for %s:', url, error);
       throw error;
     }
-  },
+  }
+}
 
-  getCampaignByName: async (name: string): Promise<Campaign> => {
-    try {
-      const response = await fetch(`${getBaseUrl()}/api/campaigns/by-name/${name}/`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return (await response.json()) as Campaign;
-    } catch (error) {
-      console.error('Error fetching campaign by name:', error);
-      throw error;
-    }
-  },
+// Export for testing
+export { getBaseUrl };
 
-  // Homepage
-  getHomepage: async (): Promise<HomePage> => {
-    try {
-      const response = await fetch(`${getBaseUrl()}/api/homepage/`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return (await response.json()) as HomePage;
-    } catch (error) {
-      console.error('Error fetching homepage:', error);
-      throw error;
-    }
-  },
-};
-
-export default API;
+export const frontendApiClient = new FrontendApiClient();
+export default frontendApiClient;
