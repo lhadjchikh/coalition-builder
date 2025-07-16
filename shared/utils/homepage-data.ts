@@ -54,7 +54,10 @@ export function getApiUrl(): string {
 // Shared API functions
 export async function fetchHomepage(): Promise<HomePage> {
   const apiUrl = getApiUrl();
-  const response = await fetch(`${apiUrl}/api/homepage/`);
+  const response = await fetch(`${apiUrl}/api/homepage/`, {
+    // Add cache control for Next.js SSR
+    next: { revalidate: 300 }, // 5 minutes
+  } as any);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch homepage: ${response.status}`);
