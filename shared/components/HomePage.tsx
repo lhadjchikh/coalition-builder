@@ -15,7 +15,7 @@ interface HomePageProps {
   onCampaignSelect?: (campaign: Campaign) => void;
   HeroComponent?: React.ComponentType<{ homepage: HomePage }>;
   ContentBlockComponent?: React.ComponentType<{ block: ContentBlock }>;
-  SocialLinksComponent?: React.ComponentType<{ homepage: HomePage }>;
+  SocialLinksComponent?: React.ComponentType<{ orgInfo: HomePage }>;
   NavbarComponent?: React.ComponentType<NavbarProps>;
   navItems?: NavItemData[];
   contentBlocks?: ContentBlock[];
@@ -195,7 +195,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
             {/* Social Links */}
             {SocialLinksComponent && (
-              <SocialLinksComponent homepage={homepage} />
+              <SocialLinksComponent orgInfo={homepage} />
             )}
           </div>
         </div>

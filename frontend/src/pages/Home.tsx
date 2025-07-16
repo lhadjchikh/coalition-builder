@@ -111,7 +111,7 @@ const Home: React.FC = () => {
         navItems={DEFAULT_NAV_ITEMS}
         contentBlocks={contentBlocks}
       />
-      <Footer homepage={homepage} LinkComponent={LinkWrapperComponent as any} />
+      <Footer orgInfo={homepage} LinkComponent={LinkWrapperComponent as any} />
     </div>
   );
 };

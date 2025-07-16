@@ -15,8 +15,8 @@ describe("SSRFooter", () => {
     expect(copyright).toBeInTheDocument();
   });
 
-  it("renders with custom homepage", () => {
-    const homepage = {
+  it("renders with custom organization info", () => {
+    const orgInfo = {
       id: 1,
       organization_name: "Test Organization",
       tagline: "Test tagline",
@@ -30,7 +30,7 @@ describe("SSRFooter", () => {
       updated_at: "2023-01-01T00:00:00Z",
     };
 
-    render(<SSRFooter homepage={homepage} />);
+    render(<SSRFooter orgInfo={orgInfo} />);
 
     const copyright = screen.getByText(
       /© \d{4} Test Organization\. All rights reserved\./,

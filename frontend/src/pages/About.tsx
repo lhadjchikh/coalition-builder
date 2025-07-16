@@ -60,7 +60,7 @@ const About: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       <AboutPage
-        homepage={homepage}
+        orgInfo={homepage}
         contentBlocks={contentBlocks}
         error={error}
         ContentBlockComponent={ContentBlockComponent}

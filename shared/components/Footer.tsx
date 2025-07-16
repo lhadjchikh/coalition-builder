@@ -3,7 +3,7 @@ import SocialLinks from "./SocialLinks";
 import { HomePage } from "../types";
 
 interface FooterProps {
-  homepage?: HomePage;
+  orgInfo?: HomePage;
   showSocialLinks?: boolean;
   showLegalLinks?: boolean;
   className?: string;
@@ -16,7 +16,7 @@ interface FooterProps {
 }
 
 const Footer: React.FC<FooterProps> = ({
-  homepage,
+  orgInfo,
   showSocialLinks = true,
   showLegalLinks = true,
   className,
@@ -26,7 +26,7 @@ const Footer: React.FC<FooterProps> = ({
     </a>
   ),
 }) => {
-  if (!homepage) {
+  if (!orgInfo) {
     return null;
   }
 
@@ -37,18 +37,18 @@ const Footer: React.FC<FooterProps> = ({
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h3 className="text-lg font-semibold text-white mb-4">
-            {homepage.organization_name}
+            {orgInfo.organization_name}
           </h3>
 
-          {homepage.tagline && (
-            <p className="text-gray-300 mb-6">{homepage.tagline}</p>
+          {orgInfo.tagline && (
+            <p className="text-gray-300 mb-6">{orgInfo.tagline}</p>
           )}
 
           {/* Social Links */}
           {showSocialLinks && (
             <div className="mb-6">
               <SocialLinks
-                homepage={homepage}
+                orgInfo={orgInfo}
                 className="flex justify-center space-x-6"
               />
             </div>
@@ -77,8 +77,7 @@ const Footer: React.FC<FooterProps> = ({
           {/* Copyright */}
           <div className="pt-8 border-t border-gray-800">
             <p className="text-gray-400 text-sm">
-              © {currentYear} {homepage.organization_name}. All rights
-              reserved.
+              © {currentYear} {orgInfo.organization_name}. All rights reserved.
             </p>
           </div>
         </div>

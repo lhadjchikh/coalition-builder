@@ -38,7 +38,7 @@ export default async function RootLayout({
   try {
     homepage = await ssrApiClient.getHomepage();
     organizationName = homepage.organization_name;
-    
+
     // Use custom nav items if provided, otherwise use defaults
     if (homepage.nav_items && homepage.nav_items.length > 0) {
       navItems = homepage.nav_items;
@@ -72,7 +72,7 @@ export default async function RootLayout({
               navItems={navItems}
             />
             <main style={{ flex: 1 }}>{children}</main>
-            <SSRFooter homepage={homepage} />
+            <SSRFooter orgInfo={homepage} />
           </div>
           <CookieConsent />
           <GoogleAnalytics />

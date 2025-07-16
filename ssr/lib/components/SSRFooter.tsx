@@ -4,11 +4,11 @@ import styles from "./SSRFooter.module.css";
 import { HomePage } from "@shared/types";
 
 interface SSRFooterProps {
-  homepage?: HomePage;
+  orgInfo?: HomePage;
 }
 
-const SSRFooter: React.FC<SSRFooterProps> = ({ homepage }) => {
-  const organizationName = homepage?.organization_name || "Coalition Builder";
+const SSRFooter: React.FC<SSRFooterProps> = ({ orgInfo }) => {
+  const organizationName = orgInfo?.organization_name || "Coalition Builder";
   const year = new Date().getFullYear();
 
   return (

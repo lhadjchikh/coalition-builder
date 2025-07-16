@@ -10,7 +10,7 @@ interface NavbarProps {
 }
 
 interface FooterProps {
-  homepage?: HomePage;
+  orgInfo?: HomePage;
 }
 
 interface CampaignsPageProps {
@@ -40,7 +40,7 @@ const CampaignsPage: React.FC<CampaignsPageProps> = ({
 }) => {
   return (
     <PageLayout
-      homepage={homepage}
+      orgInfo={homepage}
       title={homepage.campaigns_section_title || "Policy Campaigns"}
       subtitle={homepage.campaigns_section_subtitle}
       error={contentError}

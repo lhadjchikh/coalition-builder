@@ -61,7 +61,7 @@ const Contact: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       <ContactPage
-        homepage={homepage}
+        orgInfo={homepage}
         contentBlocks={contentBlocks}
         error={error}
         ContentBlockComponent={ContentBlockComponent}

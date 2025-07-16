@@ -127,7 +127,7 @@ const CampaignDetail: React.FC = () => {
         EndorsementsListComponent={EndorsementsList}
         GrowthIconComponent={GrowthIcon}
       />
-      {homepage && <Footer homepage={homepage} LinkComponent={LinkWrapperComponent as any} />}
+      {homepage && <Footer orgInfo={homepage} LinkComponent={LinkWrapperComponent as any} />}
     </div>
   );
 };

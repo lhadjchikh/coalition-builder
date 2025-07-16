@@ -1,5 +1,5 @@
 import React from "react";
-import { ssrApiClient } from "../../lib/frontend-api-adapter";
+import { ssrApiClient } from "../../lib/api";
 import type { Metadata } from "next";
 import type { HomePage, ContentBlock as ContentBlockType } from "@shared/types";
 import { generateCSSVariables } from "@shared/utils/theme";
@@ -59,7 +59,7 @@ export default async function AboutPageSSR() {
         }}
       />
       <AboutPage
-        homepage={homepage}
+        orgInfo={homepage}
         contentBlocks={contentBlocks}
         error={error}
         ContentBlockComponent={ContentBlock}

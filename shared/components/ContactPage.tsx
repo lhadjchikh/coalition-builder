@@ -10,15 +10,15 @@ interface NavbarProps {
 }
 
 interface FooterProps {
-  homepage?: HomePage;
+  orgInfo?: HomePage;
 }
 
 interface SocialLinksProps {
-  homepage: HomePage;
+  orgInfo: HomePage;
 }
 
 interface ContactPageProps {
-  homepage: HomePage;
+  orgInfo: HomePage;
   contentBlocks: ContentBlock[];
   error?: string | null;
   ContentBlockComponent: React.ComponentType<{ block: ContentBlock }>;
@@ -29,7 +29,7 @@ interface ContactPageProps {
 }
 
 const ContactPage: React.FC<ContactPageProps> = ({
-  homepage,
+  orgInfo,
   contentBlocks,
   error,
   ContentBlockComponent,
@@ -40,9 +40,9 @@ const ContactPage: React.FC<ContactPageProps> = ({
 }) => {
   return (
     <PageLayout
-      homepage={homepage}
+      orgInfo={orgInfo}
       title="Contact Us"
-      subtitle={`Get in touch with ${homepage.organization_name}`}
+      subtitle={`Get in touch with ${orgInfo.organization_name}`}
       error={error}
       NavbarComponent={NavbarComponent}
       FooterComponent={FooterComponent}
@@ -67,15 +67,15 @@ const ContactPage: React.FC<ContactPageProps> = ({
             {/* Organization Info */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {homepage.organization_name}
+                {orgInfo.organization_name}
               </h3>
-              <p className="text-gray-600 mb-4">{homepage.tagline}</p>
+              <p className="text-gray-600 mb-4">{orgInfo.tagline}</p>
             </div>
 
             {/* Social Links */}
             {SocialLinksComponent && (
               <div className="py-4">
-                <SocialLinksComponent homepage={homepage} />
+                <SocialLinksComponent orgInfo={orgInfo} />
               </div>
             )}
 

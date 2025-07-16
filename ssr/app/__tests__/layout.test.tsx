@@ -24,8 +24,8 @@ jest.mock("../../lib/components/SSRNavbar", () => ({
 }));
 jest.mock("../../lib/components/SSRFooter", () => ({
   __esModule: true,
-  default: ({ homepage }: { homepage?: { organization_name: string } }) => {
-    const organizationName = homepage?.organization_name || "Coalition Builder";
+  default: ({ orgInfo }: { orgInfo?: { organization_name: string } }) => {
+    const organizationName = orgInfo?.organization_name || "Coalition Builder";
     return (
       <footer data-testid="ssr-footer">
         <span>

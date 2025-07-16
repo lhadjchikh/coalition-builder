@@ -10,11 +10,11 @@ interface NavbarProps {
 }
 
 interface FooterProps {
-  homepage?: HomePage;
+  orgInfo?: HomePage;
 }
 
 interface AboutPageProps {
-  homepage: HomePage;
+  orgInfo: HomePage;
   contentBlocks: ContentBlock[];
   error?: string | null;
   ContentBlockComponent: React.ComponentType<{ block: ContentBlock }>;
@@ -24,7 +24,7 @@ interface AboutPageProps {
 }
 
 const AboutPage: React.FC<AboutPageProps> = ({
-  homepage,
+  orgInfo,
   contentBlocks,
   error,
   ContentBlockComponent,
@@ -34,9 +34,9 @@ const AboutPage: React.FC<AboutPageProps> = ({
 }) => {
   return (
     <PageLayout
-      homepage={homepage}
-      title={`About ${homepage.organization_name}`}
-      subtitle={homepage.tagline}
+      orgInfo={orgInfo}
+      title={`About ${orgInfo.organization_name}`}
+      subtitle={orgInfo.tagline}
       error={error}
       NavbarComponent={NavbarComponent}
       FooterComponent={FooterComponent}
