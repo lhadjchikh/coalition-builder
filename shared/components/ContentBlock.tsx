@@ -1,7 +1,7 @@
 import React from "react";
 
 // Generic content block interface that works with both frontend and SSR
-interface ContentBlock {
+interface ContentBlockData {
   id: string | number;
   title?: string;
   content: string;
@@ -15,7 +15,7 @@ interface ContentBlock {
 }
 
 interface ContentBlockProps {
-  block: ContentBlock;
+  block: ContentBlockData;
 }
 
 const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
