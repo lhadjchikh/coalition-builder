@@ -17,6 +17,7 @@
     "jsx": "react-jsx",
     "downlevelIteration": true,
     "baseUrl": ".",
+    "rootDirs": ["src", "../shared"],
     "paths": {
       "@shared/*": ["../shared/*"],
       "@utils/*": ["src/utils/*"]
