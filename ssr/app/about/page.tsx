@@ -61,12 +61,6 @@ export default async function AboutPageSSR() {
         contentBlocks={contentBlocks}
         error={error}
         ContentBlockComponent={ContentBlock}
-        navItems={[
-          { label: "Home", href: "/" },
-          { label: "About", href: "/about" },
-          { label: "Campaigns", href: "/campaigns" },
-          { label: "Contact", href: "/contact" },
-        ]}
       />
     </>
   );

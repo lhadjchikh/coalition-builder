@@ -8,7 +8,6 @@ import type {
 import type { Metadata } from "next";
 import { getFallbackHomepage } from "@shared/utils/homepage-data";
 import { generateCSSVariables } from "@shared/utils/theme";
-import { DEFAULT_NAV_ITEMS } from "@shared/types";
 import HomePageComponent from "@shared/components/HomePage";
 
 // Import shared components
@@ -107,7 +106,6 @@ export default async function HomePage() {
         HeroComponent={HeroSection}
         ContentBlockComponent={ContentBlockComponent}
         SocialLinksComponent={SocialLinks}
-        navItems={DEFAULT_NAV_ITEMS}
         contentBlocks={contentBlocks}
       />
     </>
