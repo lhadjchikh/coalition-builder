@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Navbar from '@shared/components/Navbar';
 import { DEFAULT_NAV_ITEMS } from '@shared/types';
@@ -153,7 +153,7 @@ describe('Navbar', () => {
       expect(mobileMenuItems.length).toBe(2); // One for desktop, one for mobile
     });
 
-    it('closes mobile menu when navigation item is clicked', () => {
+    it('closes mobile menu when navigation item is clicked', async () => {
       const navItems = [{ label: 'Home', href: '/' }];
 
       render(<Navbar navItems={navItems} />);
@@ -162,15 +162,17 @@ describe('Navbar', () => {
       // Open menu
       fireEvent.click(toggleButton);
 
-      // Click navigation item
+      // Click navigation item (mobile version)
       const mobileNavItems = screen.getAllByText('Home');
-      fireEvent.click(mobileNavItems[0]);
+      fireEvent.click(mobileNavItems[1]); // Click the mobile version
 
       // Menu should be closed (items should not be visible in mobile view)
-      expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
+      await waitFor(() => {
+        expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
+      });
     });
 
-    it('closes mobile menu when custom nav item with onClick is clicked', () => {
+    it('closes mobile menu when custom nav item with onClick is clicked', async () => {
       const onClickMock = jest.fn();
       const navItems = [{ label: 'Contact', onClick: onClickMock }];
 
@@ -180,12 +182,14 @@ describe('Navbar', () => {
       // Open menu
       fireEvent.click(toggleButton);
 
-      // Click custom nav item
+      // Click custom nav item (mobile version)
       const mobileNavItems = screen.getAllByText('Contact');
-      fireEvent.click(mobileNavItems[0]);
+      fireEvent.click(mobileNavItems[1]); // Click the mobile version
 
       // Menu should be closed
-      expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
+      await waitFor(() => {
+        expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
+      });
       expect(onClickMock).toHaveBeenCalledTimes(1);
     });
 

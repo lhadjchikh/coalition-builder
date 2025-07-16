@@ -107,7 +107,7 @@ const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={toggleMenu}
               className="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white"
-              aria-expanded="false"
+              aria-expanded={isMenuOpen}
               aria-label="Toggle navigation menu"
             >
               <span className="sr-only">Open main menu</span>
