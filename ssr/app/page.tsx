@@ -48,6 +48,8 @@ export default async function HomePage() {
   let campaignsError: string | null = null;
 
   // Fetch homepage, campaigns, and content blocks in parallel for better performance (server-side)
+  // Note: Homepage is also fetched in layout.tsx for nav/footer. Next.js App Router
+  // automatically deduplicates identical requests within the same render cycle.
   const [homepageResult, campaignsResult, contentBlocksResult] =
     await Promise.allSettled([
       ssrApiClient.getHomepage(),
