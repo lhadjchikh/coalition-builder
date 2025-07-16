@@ -491,8 +491,6 @@ AWS_S3_OBJECT_PARAMETERS = {
 AWS_S3_FILE_OVERWRITE = False  # Don't overwrite files with same name
 AWS_DEFAULT_ACL = "public-read"  # Make uploaded files publicly readable
 AWS_S3_VERIFY_SSL = True
-AWS_S3_ADDRESSING_STYLE = "virtual"  # Use virtual-hosted-style URLs
-AWS_S3_SIGNATURE_VERSION = "s3v4"  # Use signature version 4 (required for some regions)
 
 # Media files configuration
 # Use CloudFront CDN when available for better performance and security
