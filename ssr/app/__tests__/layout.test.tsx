@@ -2,11 +2,11 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import RootLayout from "../layout";
-import { ssrApiClient } from "../../lib/frontend-api-adapter";
+import { ssrApiClient } from "../../lib/api";
 import { DEFAULT_NAV_ITEMS, NavItemData } from "@shared/types";
 
 // Mock the dependencies
-jest.mock("../../lib/frontend-api-adapter");
+jest.mock("../../lib/api");
 jest.mock("../../lib/components/SSRNavbar", () => ({
   __esModule: true,
   default: ({

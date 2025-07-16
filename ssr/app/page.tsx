@@ -1,5 +1,5 @@
 import React from "react";
-import { ssrApiClient } from "../lib/frontend-api-adapter";
+import { ssrApiClient } from "../lib/api";
 import type {
   Campaign,
   HomePage as HomePageType,

@@ -5,7 +5,7 @@ import SSRNavbar from "../lib/components/SSRNavbar";
 import SSRFooter from "../lib/components/SSRFooter";
 import CookieConsent from "@shared/components/CookieConsent";
 import GoogleAnalytics from "../components/GoogleAnalytics";
-import { ssrApiClient } from "../lib/frontend-api-adapter";
+import { ssrApiClient } from "../lib/api";
 import { NavItemData, DEFAULT_NAV_ITEMS } from "@shared/types";
 import { getFallbackHomepage } from "@shared/utils/homepage-data";
 
