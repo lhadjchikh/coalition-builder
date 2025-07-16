@@ -3,6 +3,7 @@
 import uuid
 from typing import TYPE_CHECKING
 
+from ckeditor.fields import RichTextField
 from django.db import models
 from django.utils import timezone
 
@@ -38,7 +39,7 @@ class LegalDocument(models.Model):
         help_text="Title of the document",
     )
 
-    content = models.TextField(
+    content = RichTextField(
         help_text="Full content of the legal document (HTML allowed)",
     )
 

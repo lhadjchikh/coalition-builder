@@ -12,14 +12,14 @@ router = Router()
 @router.get("/", response=list[ContentBlockOut])
 def list_content_blocks(
     request: HttpRequest,
-    homepage_id: int = None,
+    page_type: str = None,
 ) -> list[ContentBlock]:
-    """List all visible content blocks, optionally filtered by homepage"""
-    queryset = ContentBlock.objects.filter(is_visible=True).select_related("homepage")
+    """List all visible content blocks, optionally filtered by page type"""
+    queryset = ContentBlock.objects.filter(is_visible=True).select_related("image")
 
-    # Filter by homepage if homepage_id is provided
-    if homepage_id is not None:
-        queryset = queryset.filter(homepage_id=homepage_id)
+    # Filter by page_type if provided
+    if page_type is not None:
+        queryset = queryset.filter(page_type=page_type)
 
     return queryset.order_by("order").all()
 

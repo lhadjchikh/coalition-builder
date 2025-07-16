@@ -48,22 +48,18 @@
     }
   },
   {
-    "model": "core.homepage",
+    "model": "content.homepage",
     "pk": 1,
     "fields": {
       "organization_name": "Coalition Builder",
       "tagline": "Building strong advocacy partnerships",
       "hero_title": "Empowering Advocates to Drive Policy Change",
       "hero_subtitle": "Join our coalition of stakeholders, organizations, and advocates working together to create meaningful policy impact.",
-      "hero_background_image": "",
-      "about_section_title": "About Our Mission",
-      "about_section_content": "We believe in the power of collective action to drive meaningful policy change. Our platform connects advocates, stakeholders, and organizations to build effective coalitions for important causes. Together, we amplify voices, share resources, and coordinate efforts to influence policy decisions that matter most to our communities.",
+      "hero_background_image": null,
       "cta_title": "Get Involved",
       "cta_content": "Join our coalition and help make a difference in policy advocacy. Together, we can create lasting change.",
       "cta_button_text": "Learn More",
       "cta_button_url": "/about",
-      "contact_email": "info@coalitionbuilder.org",
-      "contact_phone": "(555) 123-4567",
       "facebook_url": "",
       "twitter_url": "",
       "instagram_url": "",
@@ -77,15 +73,14 @@
     }
   },
   {
-    "model": "core.contentblock",
+    "model": "content.contentblock",
     "pk": 1,
     "fields": {
-      "homepage": 1,
+      "page_type": "homepage",
       "title": "Why Coalition Building Matters",
       "block_type": "text",
       "content": "<p>Effective policy change requires more than individual voices—it requires coordinated action from diverse stakeholders. Our platform facilitates collaboration between organizations, advocates, and community leaders to create powerful coalitions that can influence policy decisions.</p><p>When stakeholders unite around common goals, they can amplify their impact, share resources, and present a unified front to policymakers.</p>",
-      "image_url": "",
-      "image_alt_text": "",
+      "image": null,
       "css_classes": "bg-gray-50",
       "background_color": "",
       "order": 1,
@@ -95,15 +90,14 @@
     }
   },
   {
-    "model": "core.contentblock",
+    "model": "content.contentblock",
     "pk": 2,
     "fields": {
-      "homepage": 1,
+      "page_type": "homepage",
       "title": "Our Impact",
       "block_type": "stats",
       "content": "<div class=\"text-center\"><div class=\"text-4xl font-bold text-blue-600 mb-2\">150+</div><div class=\"text-gray-600\">Organizations</div></div><div class=\"text-center\"><div class=\"text-4xl font-bold text-blue-600 mb-2\">25</div><div class=\"text-gray-600\">Active Campaigns</div></div><div class=\"text-center\"><div class=\"text-4xl font-bold text-blue-600 mb-2\">500+</div><div class=\"text-gray-600\">Stakeholder Endorsements</div></div>",
-      "image_url": "",
-      "image_alt_text": "",
+      "image": null,
       "css_classes": "",
       "background_color": "",
       "order": 2,

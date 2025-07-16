@@ -11,7 +11,7 @@ The Coalition Builder application uses Django models to represent the core entit
 - **Legislators**: Elected officials who represent districts
 - **Endorsements**: The relationship between stakeholders and campaigns
 - **Regions**: Geographic boundaries for organizing stakeholders and legislators
-- **Content**: Website content management (themes, homepage, content blocks)
+- **Content**: Website content management (themes, homepage, content blocks, images)
 
 ## Model Diagrams
 
@@ -26,7 +26,7 @@ This diagram shows only the Coalition Builder project models, excluding Django b
 - **Endorsements**: Relationships between stakeholders and campaigns
 - **Legislators**: Elected officials with district assignments
 - **Regions**: Geographic boundaries (States, Counties, Districts)
-- **Content Management**: Themes, homepage configuration, and content blocks
+- **Content Management**: Themes, homepage configuration, content blocks, and centralized image management
 
 ## Key Relationships
 
@@ -50,6 +50,8 @@ This diagram shows only the Coalition Builder project models, excluding Django b
 
 - HomePage contains ContentBlocks for flexible page layout
 - Theme defines the visual styling across the application
+- Image model provides centralized image management with attribution and metadata
+- ContentBlocks and other models reference Images through foreign keys
 - Both support customization without code changes
 
 ## Model Details
@@ -90,12 +92,12 @@ These diagrams are generated automatically using Django Extensions:
 
 ```bash
 # Generate coalition project models only
-poetry run python manage.py graph_models campaigns legislators stakeholders endorsements regions core \
+poetry run python manage.py graph_models campaigns legislators stakeholders endorsements regions content core \
   --output docs/architecture/models.png \
   --layout dot --theme django2018 --verbose-names --color-code-deletions --pydot
 
 # Generate DOT file for programmatic access
-poetry run python manage.py graph_models campaigns legislators stakeholders endorsements regions core \
+poetry run python manage.py graph_models campaigns legislators stakeholders endorsements regions content core \
   --output docs/architecture/models.dot \
   --dot --theme django2018 --verbose-names --color-code-deletions
 ```

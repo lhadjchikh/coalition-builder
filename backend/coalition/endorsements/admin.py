@@ -44,6 +44,8 @@ class EndorsementAdmin(admin.ModelAdmin):
         "verification_token",
         "verification_sent_at",
         "verified_at",
+        "terms_accepted",
+        "terms_accepted_at",
         "created_at",
         "updated_at",
         "verification_link",
@@ -82,6 +84,16 @@ class EndorsementAdmin(admin.ModelAdmin):
                     "reviewed_by",
                     "reviewed_at",
                 ),
+            },
+        ),
+        (
+            "Terms Acceptance",
+            {
+                "fields": (
+                    "terms_accepted",
+                    "terms_accepted_at",
+                ),
+                "classes": ("collapse",),
             },
         ),
         (

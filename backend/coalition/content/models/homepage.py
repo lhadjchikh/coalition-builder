@@ -2,6 +2,7 @@
 
 from typing import TYPE_CHECKING
 
+from ckeditor.fields import RichTextField
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -49,21 +50,13 @@ class HomePage(models.Model):
         blank=True,
         help_text="Optional subtitle or description under the hero title",
     )
-    hero_background_image = models.ImageField(
-        upload_to="backgrounds/",
-        blank=True,
+    hero_background_image = models.ForeignKey(
+        "content.Image",
+        on_delete=models.SET_NULL,
         null=True,
+        blank=True,
+        related_name="homepage_hero_images",
         help_text="Hero background image (optional)",
-    )
-
-    # Main content sections
-    about_section_title = models.CharField(
-        max_length=200,
-        default="About Our Mission",
-        help_text="Title for the about/mission section",
-    )
-    about_section_content = models.TextField(
-        help_text="Main content describing the organization's mission and goals",
     )
 
     # Call to action
@@ -72,8 +65,9 @@ class HomePage(models.Model):
         default="Get Involved",
         help_text="Title for the call-to-action section",
     )
-    cta_content = models.TextField(
+    cta_content = RichTextField(
         blank=True,
+        config_name="minimal",
         help_text="Description for how people can get involved",
     )
     cta_button_text = models.CharField(
@@ -84,14 +78,6 @@ class HomePage(models.Model):
     cta_button_url = models.URLField(
         blank=True,
         help_text="URL for the call-to-action button",
-    )
-
-    # Contact information
-    contact_email = models.EmailField(help_text="Primary contact email address")
-    contact_phone = models.CharField(
-        max_length=20,
-        blank=True,
-        help_text="Contact phone number (optional)",
     )
 
     # Social media
@@ -140,8 +126,12 @@ class HomePage(models.Model):
     @property
     def hero_background_image_url(self) -> str:
         """Return the URL of the hero background image, or empty string if no image."""
-        if self.hero_background_image and hasattr(self.hero_background_image, "url"):
-            return self.hero_background_image.url
+        if (
+            self.hero_background_image
+            and self.hero_background_image.image
+            and hasattr(self.hero_background_image.image, "url")
+        ):
+            return self.hero_background_image.image.url
         return ""
 
     def clean(self) -> None:
@@ -160,11 +150,6 @@ class HomePage(models.Model):
     def save(self, *args: "Any", **kwargs: "Any") -> None:
         """Sanitize HTML fields before saving."""
         # Sanitize HTML content fields
-        if self.about_section_content:
-            self.about_section_content = HTMLSanitizer.sanitize(
-                self.about_section_content,
-            )
-
         if self.cta_content:
             self.cta_content = HTMLSanitizer.sanitize(self.cta_content)
 

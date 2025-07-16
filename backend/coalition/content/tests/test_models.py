@@ -11,9 +11,6 @@ class HomePageModelTest(TestCase):
             "tagline": "Test tagline for organization",
             "hero_title": "Welcome to Test Organization",
             "hero_subtitle": "Making a difference in our community",
-            "about_section_title": "About Our Mission",
-            "about_section_content": "We are dedicated to creating positive change.",
-            "contact_email": "contact@testorg.org",
             "cta_title": "Join Us",
             "cta_content": "Get involved with our mission",
             "cta_button_text": "Learn More",
@@ -25,7 +22,7 @@ class HomePageModelTest(TestCase):
         assert homepage.organization_name == "Test Organization"
         assert homepage.tagline == "Test tagline for organization"
         assert homepage.hero_title == "Welcome to Test Organization"
-        assert homepage.contact_email == "contact@testorg.org"
+        assert homepage.hero_subtitle == "Making a difference in our community"
         assert homepage.is_active
         assert homepage.created_at is not None
         assert homepage.updated_at is not None
@@ -42,12 +39,9 @@ class HomePageModelTest(TestCase):
             "organization_name": "Minimal Org",
             "tagline": "Minimal tagline",
             "hero_title": "Minimal Hero",
-            "about_section_content": "Minimal content",
-            "contact_email": "minimal@test.org",
         }
         homepage = HomePage.objects.create(**minimal_data)
 
-        assert homepage.about_section_title == "About Our Mission"
         assert homepage.cta_title == "Get Involved"
         assert homepage.cta_button_text == "Learn More"
         assert homepage.campaigns_section_title == "Policy Campaigns"
@@ -63,7 +57,6 @@ class HomePageModelTest(TestCase):
         # Create second homepage - should also be active initially
         data2 = self.homepage_data.copy()
         data2["organization_name"] = "Second Organization"
-        data2["contact_email"] = "contact2@testorg.org"
 
         # This should raise a ValidationError due to clean() method
         with self.assertRaises(ValidationError):
@@ -88,7 +81,6 @@ class HomePageModelTest(TestCase):
         # Create second homepage bypassing validation using bulk_create
         data2 = self.homepage_data.copy()
         data2["organization_name"] = "Second Organization"
-        data2["contact_email"] = "contact2@testorg.org"
 
         HomePage.objects.bulk_create([HomePage(**data2)])
         homepage2 = HomePage.objects.filter(
@@ -99,10 +91,10 @@ class HomePageModelTest(TestCase):
         active_homepage = HomePage.get_active()
         assert active_homepage == homepage2
 
-    def test_email_validation(self) -> None:
-        """Test email field validation"""
+    def test_social_url_validation(self) -> None:
+        """Test social media URL field validation"""
         invalid_data = self.homepage_data.copy()
-        invalid_data["contact_email"] = "invalid-email"
+        invalid_data["facebook_url"] = "not-a-valid-url"
 
         homepage = HomePage(**invalid_data)
         with self.assertRaises(ValidationError):
@@ -114,15 +106,12 @@ class HomePageModelTest(TestCase):
             "organization_name": "Minimal Org",
             "tagline": "Minimal tagline",
             "hero_title": "Minimal Hero",
-            "about_section_content": "Minimal content",
-            "contact_email": "minimal@test.org",
         }
         homepage = HomePage.objects.create(**minimal_data)
 
         # These should be blank/empty
         assert homepage.hero_subtitle == ""
         assert not homepage.hero_background_image
-        assert homepage.contact_phone == ""
         assert homepage.facebook_url == ""
         assert homepage.twitter_url == ""
         assert homepage.instagram_url == ""
@@ -138,12 +127,10 @@ class ContentBlockModelTest(TestCase):
             organization_name="Test Organization",
             tagline="Test tagline",
             hero_title="Welcome",
-            about_section_content="About content",
-            contact_email="contact@test.org",
         )
 
         self.content_block_data = {
-            "homepage": self.homepage,
+            "page_type": "homepage",
             "title": "Test Content Block",
             "block_type": "text",
             "content": "This is test content for the block",
@@ -156,7 +143,7 @@ class ContentBlockModelTest(TestCase):
         assert block.title == "Test Content Block"
         assert block.block_type == "text"
         assert block.content == "This is test content for the block"
-        assert block.homepage == self.homepage
+        assert block.page_type == "homepage"
         assert block.order == 1
         assert block.is_visible
         assert block.created_at is not None
@@ -165,7 +152,7 @@ class ContentBlockModelTest(TestCase):
     def test_content_block_str_representation(self) -> None:
         """Test string representation of content block"""
         block = ContentBlock.objects.create(**self.content_block_data)
-        expected_str = "Block: Test Content Block (Order: 1)"
+        expected_str = "Block: Test Content Block (Homepage, Order: 1)"
         assert str(block) == expected_str
 
     def test_content_block_str_without_title(self) -> None:
@@ -173,7 +160,7 @@ class ContentBlockModelTest(TestCase):
         data = self.content_block_data.copy()
         data["title"] = ""
         block = ContentBlock.objects.create(**data)
-        expected_str = "Block: text (Order: 1)"
+        expected_str = "Block: text (Homepage, Order: 1)"
         assert str(block) == expected_str
 
     def test_content_block_types(self) -> None:
@@ -191,13 +178,13 @@ class ContentBlockModelTest(TestCase):
     def test_default_values(self) -> None:
         """Test that default values are set correctly"""
         minimal_data = {
-            "homepage": self.homepage,
             "content": "Minimal content",
         }
         block = ContentBlock.objects.create(**minimal_data)
 
         assert block.title == ""
         assert block.block_type == "text"
+        assert block.page_type == "homepage"
         assert block.order == 0
         assert block.is_visible
         assert block.image_url == ""
@@ -209,19 +196,19 @@ class ContentBlockModelTest(TestCase):
         """Test that content blocks are ordered correctly"""
         # Create blocks with different orders
         block1 = ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Block 1",
             content="Content 1",
             order=3,
         )
         block2 = ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Block 2",
             content="Content 2",
             order=1,
         )
         block3 = ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Block 3",
             content="Content 3",
             order=2,
@@ -233,37 +220,38 @@ class ContentBlockModelTest(TestCase):
         assert blocks[1] == block3  # order=2
         assert blocks[2] == block1  # order=3
 
-    def test_content_block_homepage_relationship(self) -> None:
-        """Test the relationship between homepage and content blocks"""
+    def test_content_block_page_type_filtering(self) -> None:
+        """Test filtering content blocks by page type"""
         block1 = ContentBlock.objects.create(**self.content_block_data)
 
         data2 = self.content_block_data.copy()
-        data2["title"] = "Second Block"
+        data2["title"] = "About Block"
+        data2["page_type"] = "about"
         data2["order"] = 2
         block2 = ContentBlock.objects.create(**data2)
 
-        # Test reverse relationship
-        homepage_blocks = self.homepage.content_blocks.all()
-        assert homepage_blocks.count() == 2
+        # Test filtering by page type
+        homepage_blocks = ContentBlock.objects.filter(page_type="homepage")
+        assert homepage_blocks.count() == 1
         assert block1 in homepage_blocks
-        assert block2 in homepage_blocks
+        assert block2 not in homepage_blocks
 
-    def test_content_block_cascade_delete(self) -> None:
-        """Test that content blocks are deleted when homepage is deleted"""
+    def test_content_blocks_persist_after_homepage_delete(self) -> None:
+        """Test that content blocks persist when homepage is deleted"""
         block = ContentBlock.objects.create(**self.content_block_data)
         block_id = block.id
 
         # Delete homepage
         self.homepage.delete()
 
-        # Content block should also be deleted
-        assert not ContentBlock.objects.filter(id=block_id).exists()
+        # Content block should still exist
+        assert ContentBlock.objects.filter(id=block_id).exists()
 
     def test_visibility_filter(self) -> None:
         """Test filtering content blocks by visibility"""
         # Create visible block
         visible_block = ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Visible Block",
             content="Visible content",
             is_visible=True,
@@ -271,7 +259,7 @@ class ContentBlockModelTest(TestCase):
 
         # Create hidden block
         hidden_block = ContentBlock.objects.create(
-            homepage=self.homepage,
+            page_type="homepage",
             title="Hidden Block",
             content="Hidden content",
             is_visible=False,

@@ -117,6 +117,8 @@ INSTALLED_APPS = [
     "django_ratelimit",
     "lockdown",
     "storages",
+    "ckeditor",
+    "ckeditor_uploader",
     "coalition.content.apps.ContentConfig",
     "coalition.campaigns.apps.CampaignsConfig",
     "coalition.legislators.apps.LegislatorsConfig",
@@ -383,6 +385,62 @@ else:
             "LOCATION": CACHE_URL,
         },
     }
+
+# CKEditor Configuration
+CKEDITOR_UPLOAD_PATH = "uploads/"
+CKEDITOR_RESTRICT_BY_USER = True
+CKEDITOR_BROWSE_SHOW_DIRS = True
+CKEDITOR_ALLOW_NONIMAGE_FILES = False
+
+# CKEditor toolbar and plugin configuration
+CKEDITOR_CONFIGS = {
+    "default": {
+        "toolbar": "Custom",
+        "toolbar_Custom": [
+            ["Bold", "Italic", "Underline", "Strike"],
+            ["NumberedList", "BulletedList", "-", "Outdent", "Indent"],
+            ["JustifyLeft", "JustifyCenter", "JustifyRight", "JustifyBlock"],
+            ["Link", "Unlink"],
+            ["RemoveFormat", "Source"],
+            ["Undo", "Redo"],
+            ["Format", "Styles"],
+        ],
+        "height": 300,
+        "width": "100%",
+        "filebrowserWindowWidth": 940,
+        "filebrowserWindowHeight": 725,
+        "removePlugins": "stylesheetparser",
+        "allowedContent": True,
+        "extraAllowedContent": "iframe[*]",
+        "format_tags": "p;h1;h2;h3;h4;h5;h6;pre;address;div",
+        "stylesSet": [
+            {"name": "Lead paragraph", "element": "p", "attributes": {"class": "lead"}},
+            {
+                "name": "Button",
+                "element": "a",
+                "attributes": {"class": "btn btn-primary"},
+            },
+            {
+                "name": "Alert",
+                "element": "div",
+                "attributes": {"class": "alert alert-info"},
+            },
+        ],
+    },
+    "minimal": {
+        "toolbar": "Custom",
+        "toolbar_Custom": [
+            ["Bold", "Italic"],
+            ["NumberedList", "BulletedList"],
+            ["Link", "Unlink"],
+            ["RemoveFormat"],
+        ],
+        "height": 150,
+        "width": "100%",
+        "removePlugins": "stylesheetparser",
+        "allowedContent": True,
+    },
+}
 
 # Site Password Protection (django-lockdown)
 LOCKDOWN_ENABLED = os.getenv("SITE_PASSWORD_ENABLED", "false").lower() in (

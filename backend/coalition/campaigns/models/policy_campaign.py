@@ -2,6 +2,7 @@
 
 from typing import TYPE_CHECKING
 
+from ckeditor.fields import RichTextField
 from django.db import models
 from django.utils import timezone
 
@@ -37,7 +38,7 @@ class PolicyCampaign(models.Model):
     summary = models.TextField(
         help_text="Brief summary of the campaign's goals and position",
     )
-    description = models.TextField(
+    description = RichTextField(
         blank=True,
         help_text="Additional context/details about the campaign",
     )
@@ -49,8 +50,9 @@ class PolicyCampaign(models.Model):
         default=True,
         help_text="Allow stakeholders to endorse this campaign",
     )
-    endorsement_form_instructions = models.TextField(
+    endorsement_form_instructions = RichTextField(
         blank=True,
+        config_name="minimal",
         help_text="Custom instructions shown above the endorsement form",
     )
     created_at = models.DateTimeField(
@@ -61,10 +63,12 @@ class PolicyCampaign(models.Model):
         default=True,
         help_text="Whether campaign is active and accepting endorsements",
     )
-    image = models.ImageField(
-        upload_to="campaign_images/",
-        blank=True,
+    image = models.ForeignKey(
+        "content.Image",
+        on_delete=models.SET_NULL,
         null=True,
+        blank=True,
+        related_name="campaign_images",
         help_text="Hero image for the campaign displayed on detail page and cards",
     )
 

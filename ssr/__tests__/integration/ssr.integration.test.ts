@@ -36,7 +36,6 @@ describe("SSR Integration Tests", () => {
 
         const homepage = await response.json();
         expect(homepage).toHaveProperty("organization_name");
-        expect(homepage).toHaveProperty("about_section_title");
       },
       timeout,
     );
@@ -75,7 +74,6 @@ describe("SSR Integration Tests", () => {
 
         const homepage = await response.json();
         expect(homepage).toHaveProperty("organization_name");
-        expect(homepage).toHaveProperty("about_section_title");
       },
       timeout,
     );
