@@ -59,7 +59,9 @@ const Navbar: React.FC<NavbarProps> = ({
             <LinkComponent
               to="/"
               href="/"
-              className="flex items-center hover:opacity-80 transition-opacity duration-200"
+              className={`flex items-center hover:opacity-80 transition-opacity duration-200 ${
+                !logoUrl ? "text-white text-xl font-bold" : ""
+              }`}
               onClick={closeMenu}
             >
               {logoUrl ? (
@@ -69,9 +71,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   className="h-10 w-auto"
                 />
               ) : (
-                <span className="text-white text-xl font-bold">
-                  {organizationName}
-                </span>
+                organizationName
               )}
             </LinkComponent>
           </div>
