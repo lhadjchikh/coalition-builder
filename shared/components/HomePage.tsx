@@ -181,9 +181,10 @@ const HomePage: React.FC<HomePageProps> = ({
               <h2 className="text-3xl font-bold text-white sm:text-4xl">
                 {homepage.cta_title}
               </h2>
-              <p className="mt-4 text-xl text-blue-100">
-                {homepage.cta_content}
-              </p>
+              <div
+                className="mt-4 text-xl text-blue-100"
+                dangerouslySetInnerHTML={{ __html: homepage.cta_content }}
+              />
               {homepage.cta_button_url && homepage.cta_button_text && (
                 <div className="mt-8">
                   <a
