@@ -10,7 +10,6 @@ export interface Campaign {
   title: string;
   summary: string;
   description?: string;
-  image?: string;
   image_url?: string;
   image_alt_text?: string;
   endorsement_statement?: string;

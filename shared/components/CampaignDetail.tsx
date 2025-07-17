@@ -7,7 +7,6 @@ interface Campaign {
   title: string;
   summary: string;
   description?: string;
-  image?: string;
   image_url?: string;
   image_alt_text?: string;
   allow_endorsements?: boolean;
@@ -245,11 +244,11 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   return (
     <div className={className} data-testid="campaign-detail">
       {/* Hero Image Section */}
-      {campaign.image && (
+      {campaign.image_url && (
         <div className="relative">
           <img
-            src={campaign.image}
-            alt={`Hero image for ${campaign.title}`}
+            src={campaign.image_url}
+            alt={campaign.image_alt_text || `Hero image for ${campaign.title}`}
             className="w-full h-96 object-cover"
           />
           <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
@@ -280,7 +279,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <header className="mb-8">
           {/* Only show title and summary in header if there's no hero image */}
-          {!campaign.image && (
+          {!campaign.image_url && (
             <div className="text-center mb-8">
               <h1 className="text-4xl font-bold text-gray-900 mb-4">
                 {campaign.title}
