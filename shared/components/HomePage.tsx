@@ -4,6 +4,8 @@ import type { NavItemData } from "../types";
 
 interface NavbarProps {
   organizationName?: string;
+  logoUrl?: string;
+  logoAltText?: string;
   navItems?: NavItemData[];
 }
 
@@ -40,6 +42,8 @@ const HomePage: React.FC<HomePageProps> = ({
       {NavbarComponent && (
         <NavbarComponent
           organizationName={homepage.organization_name}
+          logoUrl={homepage.theme?.logo_url}
+          logoAltText={homepage.theme?.logo_alt_text}
           navItems={navItems}
         />
       )}
