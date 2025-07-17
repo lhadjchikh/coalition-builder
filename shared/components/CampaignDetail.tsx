@@ -430,12 +430,15 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
           aria-labelledby="endorsements-heading"
           ref={endorsementSectionRef}
         >
-          <h2
-            id="endorsements-heading"
-            className="text-2xl font-bold text-gray-900 mb-6"
-          >
-            Endorsements
-          </h2>
+          {/* Only show header if there are endorsements */}
+          {endorsementCount > 0 && (
+            <h2
+              id="endorsements-heading"
+              className="text-2xl font-bold text-gray-900 mb-6"
+            >
+              Endorsements
+            </h2>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div>
