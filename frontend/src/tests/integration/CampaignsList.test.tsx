@@ -255,4 +255,66 @@ describe('CampaignsList Integration', () => {
       expect(() => fireEvent.click(viewButton)).not.toThrow();
     });
   });
+
+  test('renders campaign with image and description', async () => {
+    // Mock data with image and long description
+    const mockData: Campaign[] = [
+      {
+        id: 1,
+        name: 'test-campaign',
+        title: 'Test Campaign',
+        summary: 'This is a test campaign',
+        description:
+          'This is a very long description that should be truncated when displayed in the campaign card because it exceeds the 100 character limit set by the component logic.',
+        image_url: 'https://example.com/image.jpg',
+        image_alt_text: 'Test campaign image',
+        allow_endorsements: true,
+        active: true,
+        created_at: '2024-01-01T00:00:00Z',
+      },
+    ];
+
+    // Use delayed promise
+    let resolveCampaigns: (_value: Campaign[]) => void;
+    const campaignsPromise = new Promise<Campaign[]>(resolve => {
+      resolveCampaigns = resolve;
+    });
+
+    (API.getCampaigns as jest.Mock).mockReturnValue(campaignsPromise);
+
+    await act(async () => {
+      render(<CampaignsList />);
+    });
+
+    // Resolve the campaigns data
+    await act(async () => {
+      resolveCampaigns!(mockData);
+      await campaignsPromise;
+    });
+
+    // Wait for the component to load
+    await act(async () => {
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('campaigns-list')).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
+    });
+
+    // Check that image is rendered
+    const image = screen.getByRole('img');
+    expect(image).toBeInTheDocument();
+    expect(image).toHaveAttribute('src', 'https://example.com/image.jpg');
+    expect(image).toHaveAttribute('alt', 'Test campaign image');
+
+    // Check that description is truncated
+    const truncatedText = screen.getByText(
+      /This is a very long description that should be truncated.../
+    );
+    expect(truncatedText).toBeInTheDocument();
+
+    // Check that endorsements indicator is shown
+    expect(screen.getByText('✓ Accepting endorsements')).toBeInTheDocument();
+  });
 });
