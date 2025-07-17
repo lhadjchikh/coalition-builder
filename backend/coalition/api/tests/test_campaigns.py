@@ -57,6 +57,18 @@ class PolicyCampaignAPITest(TestCase):
         assert data["name"] == "test-api-campaign"
         assert data["title"] == "Test API Campaign"
 
+    def test_campaign_schema_image_fields(self) -> None:
+        """Test that campaign schema includes image fields."""
+        response = self.client.get(f"/api/campaigns/{self.campaign.id}/")
+        assert response.status_code == 200
+
+        data = response.json()
+        # Test image fields are present (should be None when no image)
+        assert "image_url" in data
+        assert "image_alt_text" in data
+        assert data["image_url"] is None
+        assert data["image_alt_text"] is None
+
     def test_get_nonexistent_campaign(self) -> None:
         """Test 404 for non-existent campaign"""
         response = self.client.get("/api/campaigns/99999/")

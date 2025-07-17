@@ -21,9 +21,27 @@ from coalition.stakeholders.models import Stakeholder
 class PolicyCampaignOut(ModelSchema):
     """Response schema for PolicyCampaign model."""
 
+    # Add computed fields for image data
+    image_url: str | None = None
+    image_alt_text: str | None = None
+
     class Meta:
         model = PolicyCampaign
         fields = "__all__"
+
+    @staticmethod
+    def resolve_image_url(obj: PolicyCampaign) -> str | None:
+        """Get the image URL if an image is associated."""
+        if obj.image:
+            return obj.image.image_url
+        return None
+
+    @staticmethod
+    def resolve_image_alt_text(obj: PolicyCampaign) -> str | None:
+        """Get the image alt text if an image is associated."""
+        if obj.image:
+            return obj.image.alt_text
+        return None
 
 
 class StakeholderOut(ModelSchema):

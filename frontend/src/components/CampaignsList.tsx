@@ -53,11 +53,11 @@ const CampaignsList: React.FC<CampaignsListProps> = ({ onCampaignSelect }) => {
               className="campaign-card"
               data-testid={`campaigns-list-campaign-${campaign.id}`}
             >
-              {campaign.image && (
+              {campaign.image_url && (
                 <div className="campaign-card-image">
                   <img
-                    src={campaign.image}
-                    alt={`Image for ${campaign.title}`}
+                    src={campaign.image_url}
+                    alt={campaign.image_alt_text || `Image for ${campaign.title}`}
                     className="campaign-card-img"
                   />
                 </div>

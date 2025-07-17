@@ -15,6 +15,14 @@ locals {
     {
       name  = "SITE_PASSWORD_ENABLED"
       value = tostring(var.site_password_enabled)
+    },
+    {
+      name  = "AWS_REGION"
+      value = var.aws_region
+    },
+    {
+      name  = "AWS_DEFAULT_REGION"
+      value = var.aws_region
     }
   ]
 

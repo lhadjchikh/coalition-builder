@@ -478,6 +478,16 @@ STORAGES = {
 AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "")
 AWS_S3_REGION_NAME = os.getenv("AWS_REGION", "us-east-1")
 
+# Explicitly tell django-storages to use the default credential chain
+# This is important for ECS task roles
+AWS_S3_ACCESS_KEY_ID = None
+AWS_S3_SECRET_ACCESS_KEY = None
+AWS_S3_SESSION_TOKEN = None
+
+# Force boto3 to use the container credentials provider
+# This helps when running in ECS/Fargate
+AWS_S3_SIGNATURE_VERSION = "s3v4"
+
 # Use CloudFront domain for generating URLs when available
 if CLOUDFRONT_DOMAIN:
     AWS_S3_CUSTOM_DOMAIN = CLOUDFRONT_DOMAIN

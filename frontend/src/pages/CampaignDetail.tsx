@@ -65,6 +65,8 @@ const CampaignDetail: React.FC = () => {
         {homepage && (
           <Navbar
             organizationName={homepage.organization_name}
+            logoUrl={homepage.theme?.logo_url}
+            logoAltText={homepage.theme?.logo_alt_text}
             navItems={DEFAULT_NAV_ITEMS}
             LinkComponent={LinkWrapperComponent as any}
             useLocation={useLocation}
@@ -86,6 +88,8 @@ const CampaignDetail: React.FC = () => {
         {homepage && (
           <Navbar
             organizationName={homepage.organization_name}
+            logoUrl={homepage.theme?.logo_url}
+            logoAltText={homepage.theme?.logo_alt_text}
             navItems={DEFAULT_NAV_ITEMS}
             LinkComponent={LinkWrapperComponent as any}
             useLocation={useLocation}
@@ -110,6 +114,8 @@ const CampaignDetail: React.FC = () => {
       {homepage && (
         <Navbar
           organizationName={homepage.organization_name}
+          logoUrl={homepage.theme?.logo_url}
+          logoAltText={homepage.theme?.logo_alt_text}
           navItems={DEFAULT_NAV_ITEMS}
           LinkComponent={LinkWrapperComponent as any}
           useLocation={useLocation}

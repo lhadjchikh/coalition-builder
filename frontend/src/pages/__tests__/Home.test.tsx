@@ -172,7 +172,7 @@ describe('Home Page', () => {
     (API.getCampaigns as jest.Mock).mockResolvedValue(mockCampaigns);
     (API.getContentBlocksByPageType as jest.Mock).mockResolvedValue(mockContentBlocks);
 
-    const { rerender } = render(
+    render(
       <BrowserRouter>
         <Home />
       </BrowserRouter>

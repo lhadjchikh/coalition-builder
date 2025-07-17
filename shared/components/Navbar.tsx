@@ -3,6 +3,8 @@ import { NavItemData } from "../types";
 
 interface NavbarProps {
   organizationName?: string;
+  logoUrl?: string;
+  logoAltText?: string;
   navItems?: NavItemData[];
   className?: string;
   currentView?: string;
@@ -19,6 +21,8 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({
   organizationName = "Coalition Builder",
+  logoUrl,
+  logoAltText,
   navItems = [],
   className,
   currentView,
@@ -55,10 +59,20 @@ const Navbar: React.FC<NavbarProps> = ({
             <LinkComponent
               to="/"
               href="/"
-              className="text-white text-xl font-bold hover:text-gray-300 transition-colors duration-200"
+              className={`flex items-center hover:opacity-80 transition-opacity duration-200 ${
+                !logoUrl ? "text-white text-xl font-bold" : ""
+              }`}
               onClick={closeMenu}
             >
-              {organizationName}
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={logoAltText || `${organizationName} logo`}
+                  className="h-10 w-auto"
+                />
+              ) : (
+                organizationName
+              )}
             </LinkComponent>
           </div>
 

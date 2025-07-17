@@ -4,6 +4,8 @@ import type { NavItemData } from "../types";
 
 interface NavbarProps {
   organizationName?: string;
+  logoUrl?: string;
+  logoAltText?: string;
   navItems?: NavItemData[];
 }
 
@@ -40,6 +42,8 @@ const HomePage: React.FC<HomePageProps> = ({
       {NavbarComponent && (
         <NavbarComponent
           organizationName={homepage.organization_name}
+          logoUrl={homepage.theme?.logo_url}
+          logoAltText={homepage.theme?.logo_alt_text}
           navItems={navItems}
         />
       )}
@@ -129,27 +133,38 @@ const HomePage: React.FC<HomePageProps> = ({
                     {campaigns.map((campaign) => (
                       <div
                         key={campaign.id}
-                        className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+                        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                       >
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          {campaign.title}
-                        </h3>
-                        <p className="text-gray-600 mb-4">{campaign.summary}</p>
-                        {onCampaignSelect ? (
-                          <button
-                            onClick={() => onCampaignSelect(campaign)}
-                            className="text-blue-600 hover:text-blue-800 font-medium"
-                          >
-                            Learn more →
-                          </button>
-                        ) : (
-                          <a
-                            href={`/campaigns/${campaign.name}`}
-                            className="text-blue-600 hover:text-blue-800 font-medium"
-                          >
-                            Learn more →
-                          </a>
+                        {campaign.image_url && (
+                          <img
+                            src={campaign.image_url}
+                            alt={campaign.image_alt_text || campaign.title}
+                            className="w-full h-48 object-cover"
+                          />
                         )}
+                        <div className="p-6">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            {campaign.title}
+                          </h3>
+                          <p className="text-gray-600 mb-4">
+                            {campaign.summary}
+                          </p>
+                          {onCampaignSelect ? (
+                            <button
+                              onClick={() => onCampaignSelect(campaign)}
+                              className="text-blue-600 hover:text-blue-800 font-medium"
+                            >
+                              Learn more →
+                            </button>
+                          ) : (
+                            <a
+                              href={`/campaigns/${campaign.name}`}
+                              className="text-blue-600 hover:text-blue-800 font-medium"
+                            >
+                              Learn more →
+                            </a>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -166,9 +181,10 @@ const HomePage: React.FC<HomePageProps> = ({
               <h2 className="text-3xl font-bold text-white sm:text-4xl">
                 {homepage.cta_title}
               </h2>
-              <p className="mt-4 text-xl text-blue-100">
-                {homepage.cta_content}
-              </p>
+              <div
+                className="mt-4 text-xl text-blue-100"
+                dangerouslySetInnerHTML={{ __html: homepage.cta_content }}
+              />
               {homepage.cta_button_url && homepage.cta_button_text && (
                 <div className="mt-8">
                   <a
