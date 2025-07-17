@@ -13,10 +13,8 @@ class Command(BaseCommand):
 
     help = "Test S3 access and debug AWS credential issues"
 
-    def handle(self, *args: list, **options: dict) -> None:
+    def handle(self, *_args: list, **_options: dict) -> None:
         """Execute the command."""
-        # These arguments are required by Django but not used
-        del args, options
         self.stdout.write("=" * 60)
         self.stdout.write("Testing S3 Access and AWS Credentials")
         self.stdout.write("=" * 60)
@@ -36,8 +34,8 @@ class Command(BaseCommand):
         for var in env_vars:
             value = os.environ.get(var)
             if var in ["AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN"] and value:
-                # Mask sensitive values
-                value = value[:4] + "..." + value[-4:] if len(value) > 8 else "***"
+                # Completely mask sensitive values
+                value = "***MASKED***"
             self.stdout.write(f"  {var}: {value or 'Not set'}")
 
         # 2. Test boto3 credential chain

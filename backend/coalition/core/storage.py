@@ -70,8 +70,4 @@ class MediaStorage(S3Boto3Storage):
         # This is important for ECS task roles which use temporary credentials
         return boto3.Session(
             region_name=settings.AWS_S3_REGION_NAME,
-            # Don't specify credentials - let boto3 use the credential chain
-            aws_access_key_id=None,
-            aws_secret_access_key=None,
-            aws_session_token=None,
         )

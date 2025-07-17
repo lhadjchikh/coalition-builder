@@ -65,7 +65,7 @@ const Navbar: React.FC<NavbarProps> = ({
               {logoUrl ? (
                 <img
                   src={logoUrl}
-                  alt={logoAltText || organizationName}
+                  alt={logoAltText || `${organizationName} logo`}
                   className="h-10 w-auto"
                 />
               ) : (
