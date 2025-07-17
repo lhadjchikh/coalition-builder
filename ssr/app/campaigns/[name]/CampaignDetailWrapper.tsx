@@ -1,6 +1,9 @@
 "use client";
 
 import CampaignDetail from "@shared/components/CampaignDetail";
+import EndorsementForm from "@frontend/components/EndorsementForm";
+import EndorsementsList from "@frontend/components/EndorsementsList";
+import GrowthIcon from "@frontend/components/GrowthIcon";
 import "@frontend/components/Endorsements.css";
 import "@frontend/App.css";
 import type { Campaign } from "@frontend/types";
@@ -29,8 +32,9 @@ export default function CampaignDetailWrapper({
       campaignId={campaign.id}
       initialCampaign={campaign}
       apiClient={apiClient}
-      // Note: For SSR, we won't include analytics, endorsement form, or other interactive components
-      // since they're client-side only. The shared component handles optional dependencies gracefully.
+      EndorsementFormComponent={EndorsementForm}
+      EndorsementsListComponent={EndorsementsList}
+      GrowthIconComponent={GrowthIcon}
     />
   );
 }
