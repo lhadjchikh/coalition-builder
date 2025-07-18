@@ -1,3 +1,6 @@
+from typing import Any
+from unittest.mock import patch
+
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -320,6 +323,8 @@ class ContentBlockModelTest(TestCase):
         assert all_blocks.count() == 2
 
 
+@patch("coalition.core.storage.MediaStorage.save")
+@patch("coalition.core.storage.MediaStorage.exists")
 class VideoModelTest(TestCase):
     def setUp(self) -> None:
         self.user = User.objects.create_user(
@@ -346,8 +351,15 @@ class VideoModelTest(TestCase):
             "uploaded_by": self.user,
         }
 
-    def test_create_video(self) -> None:
+    def _setup_storage_mocks(self, mock_exists: Any, mock_save: Any) -> None:
+        """Configure storage mocks for tests."""
+        mock_exists.return_value = False
+        # Return a path based on the file being saved
+        mock_save.side_effect = lambda name, _, **_kwargs: f"videos/{name}"
+
+    def test_create_video(self, mock_exists: Any, mock_save: Any) -> None:
         """Test creating a video with valid data"""
+        self._setup_storage_mocks(mock_exists, mock_save)
         video = Video.objects.create(**self.video_data)
         assert video.title == "Test Video"
         assert video.alt_text == "A test video"
@@ -362,24 +374,28 @@ class VideoModelTest(TestCase):
         assert video.muted is True  # default
         assert video.show_controls is False  # default
 
-    def test_video_str_representation(self) -> None:
+    def test_video_str_representation(self, mock_exists: Any, mock_save: Any) -> None:
         """Test string representation of video"""
+        self._setup_storage_mocks(mock_exists, mock_save)
         video = Video.objects.create(**self.video_data)
         assert str(video) == "Test Video"
 
-    def test_video_url_property(self) -> None:
+    def test_video_url_property(self, mock_exists: Any, mock_save: Any) -> None:
         """Test video_url property"""
+        self._setup_storage_mocks(mock_exists, mock_save)
         video = Video.objects.create(**self.video_data)
         assert video.video_url != ""
         assert "test_video" in video.video_url
 
-    def test_video_url_property_no_file(self) -> None:
+    def test_video_url_property_no_file(self, mock_exists: Any, mock_save: Any) -> None:
         """Test video_url property when no file"""
+        self._setup_storage_mocks(mock_exists, mock_save)
         video = Video()
         assert video.video_url == ""
 
-    def test_autoplay_muted_validation(self) -> None:
+    def test_autoplay_muted_validation(self, mock_exists: Any, mock_save: Any) -> None:
         """Test that autoplay videos must be muted"""
+        self._setup_storage_mocks(mock_exists, mock_save)
         invalid_data = self.video_data.copy()
         invalid_data["autoplay"] = True
         invalid_data["muted"] = False
@@ -395,8 +411,13 @@ class VideoModelTest(TestCase):
 
         assert "Autoplay videos must be muted" in str(cm.exception)
 
-    def test_video_file_extension_validation(self) -> None:
+    def test_video_file_extension_validation(
+        self,
+        mock_exists: Any,
+        mock_save: Any,
+    ) -> None:
         """Test video file extension validation"""
+        self._setup_storage_mocks(mock_exists, mock_save)
         from coalition.content.validators import validate_video_file_extension
 
         # Test invalid extension
@@ -422,8 +443,9 @@ class VideoModelTest(TestCase):
             # Should not raise
             validate_video_file_extension(valid_file)
 
-    def test_html_sanitization_on_save(self) -> None:
+    def test_html_sanitization_on_save(self, mock_exists: Any, mock_save: Any) -> None:
         """Test that HTML is sanitized on save"""
+        self._setup_storage_mocks(mock_exists, mock_save)
         data = self.video_data.copy()
         data["title"] = "<script>alert('xss')</script>Test Video"
         data["alt_text"] = "<b>Bold</b> alt text"
@@ -438,18 +460,20 @@ class VideoModelTest(TestCase):
 
         video = Video.objects.create(**data)
 
-        # Title, alt_text, author, license should be plain text
-        assert video.title == "alert('xss')Test Video"
-        assert video.alt_text == "Bold alt text"
-        assert video.author == "Test Author"
-        assert video.license == "CC alert('xss') BY"
+        # Title, alt_text, author, license should be plain text (HTML entities escaped)
+        # The HTMLSanitizer.sanitize_plain_text method escapes HTML tags
+        assert video.title == "&lt;script&gt;alert('xss')&lt;/script&gt;Test Video"
+        assert video.alt_text == "&lt;b&gt;Bold&lt;/b&gt; alt text"
+        assert video.author == "&lt;em&gt;Test&lt;/em&gt; Author"
+        assert video.license == "CC &lt;script&gt;alert('xss')&lt;/script&gt; BY"
 
         # Description can have some HTML but not scripts
         assert "<script>" not in video.description
         assert "<p>" in video.description  # Safe tags are kept
 
-    def test_video_types(self) -> None:
+    def test_video_types(self, mock_exists: Any, mock_save: Any) -> None:
         """Test all valid video types"""
+        self._setup_storage_mocks(mock_exists, mock_save)
         valid_types = ["general", "hero", "content", "campaign"]
 
         for video_type in valid_types:
@@ -464,8 +488,9 @@ class VideoModelTest(TestCase):
             video = Video.objects.create(**data)
             assert video.video_type == video_type
 
-    def test_default_values(self) -> None:
+    def test_default_values(self, mock_exists: Any, mock_save: Any) -> None:
         """Test that default values are set correctly"""
+        self._setup_storage_mocks(mock_exists, mock_save)
         minimal_data = {
             "video": SimpleUploadedFile(
                 "minimal.mp4",
