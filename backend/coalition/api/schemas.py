@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 # Import models for ModelSchema
 from coalition.campaigns.models import Bill, PolicyCampaign
-from coalition.content.models import ContentBlock, HomePage, Theme
+from coalition.content.models import ContentBlock, HomePage, Theme, Video
 from coalition.endorsements.models import Endorsement
 from coalition.legislators.models import Legislator
 from coalition.stakeholders.models import Stakeholder
@@ -176,11 +176,29 @@ class ThemeOut(ModelSchema):
         return obj.updated_at.isoformat()
 
 
+class VideoOut(ModelSchema):
+    """Response schema for Video model with computed URL field."""
+
+    # Add computed property field
+    video_url: str
+
+    class Meta:
+        model = Video
+        fields = "__all__"
+
+    @staticmethod
+    def resolve_video_url(obj: "Video") -> str:
+        """Get the video URL"""
+        return obj.video_url
+
+
 class HomePageOut(ModelSchema):
     """Response schema for HomePage model with computed fields."""
 
     # Add computed property fields
     hero_background_image_url: str
+    hero_background_video_url: str | None = None
+    hero_background_video_data: VideoOut | None = None
     theme: ThemeOut | None = None
 
     class Meta:
@@ -191,6 +209,16 @@ class HomePageOut(ModelSchema):
     def resolve_hero_background_image_url(obj: "HomePage") -> str:
         """Get the hero background image URL"""
         return obj.hero_background_image_url
+
+    @staticmethod
+    def resolve_hero_background_video_url(obj: "HomePage") -> str | None:
+        """Get the hero background video URL"""
+        return obj.hero_background_video_url if obj.hero_background_video_url else None
+
+    @staticmethod
+    def resolve_hero_background_video_data(obj: "HomePage") -> "VideoOut | None":
+        """Get the hero background video data"""
+        return obj.hero_background_video if obj.hero_background_video else None
 
     @staticmethod
     def resolve_theme(obj: "HomePage") -> "ThemeOut | None":
