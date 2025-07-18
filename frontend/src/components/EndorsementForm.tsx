@@ -454,7 +454,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
               id="statement"
               value={statement}
               onChange={e => setStatement(e.target.value)}
-              rows={4}
+              rows={6}
               placeholder="Tell us why you support this campaign - your personal story, how this policy would impact you or your community, or what change you hope to see (optional)"
               data-testid="statement-textarea"
             />

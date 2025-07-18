@@ -35,8 +35,7 @@ const AboutPage: React.FC<AboutPageProps> = ({
   return (
     <PageLayout
       orgInfo={orgInfo}
-      title={`About ${orgInfo.organization_name}`}
-      subtitle={orgInfo.tagline}
+      title="About Us"
       error={error}
       NavbarComponent={NavbarComponent}
       FooterComponent={FooterComponent}

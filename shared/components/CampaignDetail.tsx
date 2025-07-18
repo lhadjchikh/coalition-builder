@@ -253,7 +253,9 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
           />
           <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
             <div className="text-center text-white px-4">
-              <h1 className="text-4xl font-bold mb-4">{campaign.title}</h1>
+              <h1 className="text-4xl font-bold sm:text-5xl md:text-6xl mb-4 font-theme-heading">
+                {campaign.title}
+              </h1>
               <p className="text-xl">{campaign.summary}</p>
             </div>
           </div>
@@ -281,7 +283,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
           {/* Only show title and summary in header if there's no hero image */}
           {!campaign.image_url && (
             <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl md:text-6xl mb-4 font-theme-heading">
                 {campaign.title}
               </h1>
               <p className="text-xl text-gray-600">{campaign.summary}</p>

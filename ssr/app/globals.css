@@ -44,3 +44,12 @@ footer a:hover {
 [data-ssr="true"] {
   visibility: visible;
 }
+
+/* Typography utilities from theme */
+.font-theme-heading {
+  font-family: var(--theme-font-heading, inherit);
+}
+
+.font-theme-body {
+  font-family: var(--theme-font-body, inherit);
+}

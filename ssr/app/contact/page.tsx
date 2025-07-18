@@ -6,7 +6,6 @@ import { generateCSSVariables } from "@shared/utils/theme";
 import { getFallbackHomepage } from "@shared/utils/homepage-data";
 import ContactPage from "@shared/components/ContactPage";
 import ContentBlock from "@shared/components/ContentBlock";
-import SocialLinks from "@shared/components/SocialLinks";
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
@@ -39,14 +38,20 @@ export default async function ContactPageSSR() {
   try {
     homepage = await ssrApiClient.getHomepage();
   } catch (err) {
-    console.error("Error fetching homepage:", err);
+    console.error(
+      "Error fetching homepage:",
+      err instanceof Error ? err.message : "Unknown error",
+    );
     homepage = getFallbackHomepage();
   }
 
   try {
     contentBlocks = await ssrApiClient.getContentBlocksByPageType("contact");
   } catch (err) {
-    console.error("Error fetching contact content blocks:", err);
+    console.error(
+      "Error fetching contact content blocks:",
+      err instanceof Error ? err.message : "Unknown error",
+    );
     error = err instanceof Error ? err.message : "Failed to fetch content";
   }
 
@@ -62,7 +67,6 @@ export default async function ContactPageSSR() {
         contentBlocks={contentBlocks}
         error={error}
         ContentBlockComponent={ContentBlock}
-        SocialLinksComponent={SocialLinks}
       />
     </>
   );

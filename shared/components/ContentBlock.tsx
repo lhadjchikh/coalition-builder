@@ -41,14 +41,14 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
     switch (block.block_type) {
       case "text":
         return (
-          <div className="prose prose-lg max-w-none">
+          <div className="prose prose-xl max-w-none">
             {block.title && (
-              <h3 className="text-3xl font-bold text-gray-900 mb-6">
+              <h3 className="text-3xl font-bold text-gray-900 mb-6 font-theme-heading">
                 {block.title}
               </h3>
             )}
             <div
-              className="text-lg text-gray-700 leading-relaxed"
+              className="text-xl text-gray-700 leading-relaxed"
               dangerouslySetInnerHTML={{ __html: block.content }}
             />
           </div>
@@ -58,7 +58,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
         return (
           <div className="text-center">
             {block.title && (
-              <h3 className="text-3xl font-bold text-gray-900 mb-6">
+              <h3 className="text-3xl font-bold text-gray-900 mb-6 font-theme-heading">
                 {block.title}
               </h3>
             )}
@@ -71,7 +71,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
             )}
             {block.content && (
               <div
-                className="mt-4 text-lg text-gray-600"
+                className="mt-4 text-xl text-gray-600"
                 dangerouslySetInnerHTML={{ __html: block.content }}
               />
             )}
@@ -83,12 +83,12 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
           <div className="flex flex-col lg:flex-row gap-8 items-center">
             <div className="flex-1">
               {block.title && (
-                <h3 className="text-3xl font-bold text-gray-900 mb-6">
+                <h3 className="text-3xl font-bold text-gray-900 mb-6 font-theme-heading">
                   {block.title}
                 </h3>
               )}
               <div
-                className="prose prose-lg text-gray-700 leading-relaxed"
+                className="prose prose-xl text-gray-700 leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: block.content }}
               />
             </div>
@@ -111,7 +111,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
               "{block.content}"
             </blockquote>
             {block.title && (
-              <cite className="text-lg text-gray-600 font-medium">
+              <cite className="text-xl text-gray-600 font-medium">
                 — {block.title}
               </cite>
             )}
@@ -122,12 +122,12 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
         return (
           <div className="text-center">
             {block.title && (
-              <h3 className="text-3xl font-bold text-gray-900 mb-6">
+              <h3 className="text-3xl font-bold text-gray-900 mb-6 font-theme-heading">
                 {block.title}
               </h3>
             )}
             <div
-              className="grid grid-cols-1 md:grid-cols-3 gap-8 text-lg"
+              className="grid grid-cols-1 md:grid-cols-3 gap-8 text-xl"
               dangerouslySetInnerHTML={{ __html: block.content }}
             />
           </div>
@@ -137,7 +137,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
         return (
           <div>
             {block.title && (
-              <h3 className="text-3xl font-bold text-gray-900 mb-6">
+              <h3 className="text-3xl font-bold text-gray-900 mb-6 font-theme-heading">
                 {block.title}
               </h3>
             )}
@@ -147,14 +147,14 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
 
       default:
         return (
-          <div className="prose prose-lg max-w-none">
+          <div className="prose prose-xl max-w-none">
             {block.title && (
-              <h3 className="text-3xl font-bold text-gray-900 mb-6">
+              <h3 className="text-3xl font-bold text-gray-900 mb-6 font-theme-heading">
                 {block.title}
               </h3>
             )}
             <div
-              className="text-lg text-gray-700 leading-relaxed"
+              className="text-xl text-gray-700 leading-relaxed"
               dangerouslySetInnerHTML={{ __html: block.content }}
             />
           </div>

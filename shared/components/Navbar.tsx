@@ -55,7 +55,7 @@ const Navbar: React.FC<NavbarProps> = ({
   return (
     <nav className={className || "bg-gray-800 sticky top-0 z-50 shadow-md"}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           {/* Brand */}
           <div className="flex-shrink-0">
             <LinkComponent
@@ -70,7 +70,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 <img
                   src={logoUrl}
                   alt={logoAltText || `${organizationName} logo`}
-                  className="h-10 w-auto"
+                  className="h-14 w-auto"
                 />
               ) : (
                 organizationName
@@ -90,7 +90,7 @@ const Navbar: React.FC<NavbarProps> = ({
                       key={`nav-item-${index}-${item.label}`}
                       to={item.href}
                       href={item.href}
-                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                      className={`px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
                         isActive
                           ? "bg-gray-900 text-white"
                           : "text-gray-300 hover:bg-gray-700 hover:text-white"
@@ -104,7 +104,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     <button
                       key={`nav-item-${index}-${item.label}`}
                       onClick={item.onClick}
-                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                      className={`px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
                         item.active
                           ? "bg-gray-900 text-white"
                           : "text-gray-300 hover:bg-gray-700 hover:text-white"
@@ -173,7 +173,7 @@ const Navbar: React.FC<NavbarProps> = ({
                       key={`mobile-nav-item-${index}-${item.label}`}
                       to={item.href}
                       href={item.href}
-                      className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+                      className={`block px-3 py-2 rounded-md text-lg font-medium transition-colors duration-200 ${
                         isActive
                           ? "bg-gray-900 text-white"
                           : "text-gray-300 hover:bg-gray-700 hover:text-white"
