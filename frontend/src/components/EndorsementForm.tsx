@@ -308,6 +308,26 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           </div>
 
           <div className="form-group">
+            <label htmlFor="type">Endorsor type *</label>
+            <select
+              id="type"
+              value={stakeholder.type}
+              onChange={e => handleStakeholderChange('type', e.target.value as Stakeholder['type'])}
+              required
+              data-testid="type-select"
+            >
+              <option value="" disabled>
+                Select endorsor type
+              </option>
+              {stakeholderTypes.map(type => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-group">
             <label htmlFor="name">Name *</label>
             <input
               id="name"
@@ -420,23 +440,6 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           </div>
 
           <div className="form-group">
-            <label htmlFor="type">Type *</label>
-            <select
-              id="type"
-              value={stakeholder.type}
-              onChange={e => handleStakeholderChange('type', e.target.value as Stakeholder['type'])}
-              required
-              data-testid="type-select"
-            >
-              {stakeholderTypes.map(type => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-group">
             <label htmlFor="statement">Additional Comments</label>
             <textarea
               id="statement"
@@ -452,13 +455,11 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
             <label className="checkbox-label">
               <input
                 type="checkbox"
-                checked={stakeholder.email_updates || false}
-                onChange={e =>
-                  setStakeholder(prev => ({ ...prev, email_updates: e.target.checked }))
-                }
-                data-testid="email-updates-checkbox"
+                checked={publicDisplay}
+                onChange={e => setPublicDisplay(e.target.checked)}
+                data-testid="public-display-checkbox"
               />
-              I would like to receive email updates about future policy endorsement opportunities
+              Display my endorsement publicly
             </label>
           </div>
 
@@ -466,11 +467,13 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
             <label className="checkbox-label">
               <input
                 type="checkbox"
-                checked={publicDisplay}
-                onChange={e => setPublicDisplay(e.target.checked)}
-                data-testid="public-display-checkbox"
+                checked={stakeholder.email_updates || false}
+                onChange={e =>
+                  setStakeholder(prev => ({ ...prev, email_updates: e.target.checked }))
+                }
+                data-testid="email-updates-checkbox"
               />
-              Display my endorsement publicly
+              I would like to receive email updates about future policy endorsement opportunities
             </label>
           </div>
 
