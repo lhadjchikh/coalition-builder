@@ -139,7 +139,7 @@ describe("RootLayout", () => {
     // Should log the error
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching homepage for layout:",
-      expect.any(Error),
+      "API Error",
     );
 
     // Should still render with fallback organization name
