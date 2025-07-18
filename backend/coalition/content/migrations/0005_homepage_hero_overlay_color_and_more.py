@@ -70,7 +70,8 @@ class Migration(migrations.Migration):
                 (
                     "title",
                     models.CharField(
-                        help_text="Title or name of the video", max_length=200,
+                        help_text="Title or name of the video",
+                        max_length=200,
                     ),
                 ),
                 (
@@ -83,7 +84,8 @@ class Migration(migrations.Migration):
                 (
                     "description",
                     models.TextField(
-                        blank=True, help_text="Optional description of the video",
+                        blank=True,
+                        help_text="Optional description of the video",
                     ),
                 ),
                 (
@@ -105,7 +107,8 @@ class Migration(migrations.Migration):
                 (
                     "source_url",
                     models.URLField(
-                        blank=True, help_text="Source URL where the video was obtained",
+                        blank=True,
+                        help_text="Source URL where the video was obtained",
                     ),
                 ),
                 (
@@ -153,13 +156,15 @@ class Migration(migrations.Migration):
                 (
                     "created_at",
                     models.DateTimeField(
-                        auto_now_add=True, help_text="When this video was uploaded",
+                        auto_now_add=True,
+                        help_text="When this video was uploaded",
                     ),
                 ),
                 (
                     "updated_at",
                     models.DateTimeField(
-                        auto_now=True, help_text="When this video was last updated",
+                        auto_now=True,
+                        help_text="When this video was last updated",
                     ),
                 ),
                 (

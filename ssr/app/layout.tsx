@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import StyledComponentsRegistry from "../lib/registry";
-import SSRNavbar from "../lib/components/SSRNavbar";
-import SSRFooter from "../lib/components/SSRFooter";
+import Navbar from "@shared/components/Navbar";
+import Footer from "@shared/components/Footer";
+import Link from "next/link";
 import CookieConsent from "@shared/components/CookieConsent";
 import GoogleAnalytics from "../components/GoogleAnalytics";
 import { ssrApiClient } from "../lib/api";
@@ -61,12 +62,30 @@ export default async function RootLayout({
               flexDirection: "column",
             }}
           >
-            <SSRNavbar
+            <Navbar
               organizationName={organizationName}
+              logoUrl={homepage?.theme?.logo_url}
+              logoAltText={homepage?.theme?.logo_alt_text}
               navItems={DEFAULT_NAV_ITEMS}
+              LinkComponent={({ href, children, className, onClick }) => (
+                <Link
+                  href={href || "/"}
+                  className={className}
+                  onClick={onClick}
+                >
+                  {children}
+                </Link>
+              )}
             />
             <main style={{ flex: 1 }}>{children}</main>
-            <SSRFooter orgInfo={homepage} />
+            <Footer
+              orgInfo={homepage}
+              LinkComponent={({ href, children, className }) => (
+                <Link href={href || "/"} className={className}>
+                  {children}
+                </Link>
+              )}
+            />
           </div>
           <CookieConsent />
           <GoogleAnalytics />
