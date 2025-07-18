@@ -1,7 +1,7 @@
 import React from 'react';
-import { ReactComponent as SeedSvg } from '../assets/icons/seed.svg';
-import { ReactComponent as SeedlingSvg } from '../assets/icons/seedling.svg';
-import { ReactComponent as TreeSvg } from '../assets/icons/tree.svg';
+import seedSvg from '../assets/icons/seed.svg';
+import seedlingSvg from '../assets/icons/seedling.svg';
+import treeSvg from '../assets/icons/tree.svg';
 
 interface GrowthIconProps {
   stage: 'seed' | 'seedling' | 'tree';
@@ -25,28 +25,29 @@ const GrowthIcon: React.FC<GrowthIconProps> = ({
     ...style,
   };
 
-  const getSeedIcon = () => (
-    <SeedSvg width={size} height={size} style={iconStyle} className={className} />
-  );
+  const getSvgUrl = () => {
+    switch (stage) {
+      case 'seed':
+        return seedSvg;
+      case 'seedling':
+        return seedlingSvg;
+      case 'tree':
+        return treeSvg;
+      default:
+        return seedSvg;
+    }
+  };
 
-  const getSeedlingIcon = () => (
-    <SeedlingSvg width={size} height={size} style={iconStyle} className={className} />
+  return (
+    <img
+      src={getSvgUrl()}
+      alt={`${stage} growth stage icon`}
+      width={size}
+      height={size}
+      style={iconStyle}
+      className={className}
+    />
   );
-
-  const getTreeIcon = () => (
-    <TreeSvg width={size} height={size} style={iconStyle} className={className} />
-  );
-
-  switch (stage) {
-    case 'seed':
-      return getSeedIcon();
-    case 'seedling':
-      return getSeedlingIcon();
-    case 'tree':
-      return getTreeIcon();
-    default:
-      return getSeedIcon();
-  }
 };
 
 export default GrowthIcon;

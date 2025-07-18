@@ -382,7 +382,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                   </div>
                 </div>
               )}
-              
+
               <div className="text-center">
                 <button
                   className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors text-lg"
