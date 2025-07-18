@@ -42,7 +42,6 @@ const ContactPage: React.FC<ContactPageProps> = ({
     <PageLayout
       orgInfo={orgInfo}
       title="Contact Us"
-      subtitle={`Get in touch with ${orgInfo.organization_name}`}
       error={error}
       NavbarComponent={NavbarComponent}
       FooterComponent={FooterComponent}
