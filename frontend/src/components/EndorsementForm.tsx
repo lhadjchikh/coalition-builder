@@ -440,13 +440,20 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           </div>
 
           <div className="form-group">
-            <label htmlFor="statement">Additional Comments</label>
+            <label htmlFor="statement">
+              Your Voice Matters - Share Your Story
+              <span className="label-helper">
+                Help us advocate for this policy by sharing why it matters to you. Your words may be
+                featured on our website (if you allow public display) and used when we speak with
+                legislators to show real constituent support.
+              </span>
+            </label>
             <textarea
               id="statement"
               value={statement}
               onChange={e => setStatement(e.target.value)}
               rows={4}
-              placeholder="Share why you support this campaign (optional)"
+              placeholder="Tell us why you support this campaign - your personal story, how this policy would impact you or your community, or what change you hope to see (optional)"
               data-testid="statement-textarea"
             />
           </div>
@@ -459,7 +466,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
                 onChange={e => setPublicDisplay(e.target.checked)}
                 data-testid="public-display-checkbox"
               />
-              Display my endorsement publicly
+              Display my endorsement and story publicly on the website
             </label>
           </div>
 

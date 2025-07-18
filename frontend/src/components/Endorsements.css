@@ -135,6 +135,15 @@
   color: #333;
 }
 
+.label-helper {
+  display: block;
+  font-weight: normal;
+  font-size: 0.875rem;
+  color: #666;
+  line-height: 1.4;
+  margin-top: 0.25rem;
+}
+
 .checkbox-label {
   display: flex !important;
   align-items: flex-start;
