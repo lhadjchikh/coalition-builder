@@ -52,7 +52,7 @@ const nextConfig = {
     // Add SVG handling
     config.module.rules.push({
       test: /\.svg$/,
-      type: 'asset/resource',
+      type: "asset/resource",
     });
 
     return config;
