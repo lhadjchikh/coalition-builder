@@ -27,18 +27,21 @@
   margin-bottom: 2rem;
 }
 
-.endorsement-statement {
+.endorsement-form .endorsement-statement {
   margin: 1.5rem 0;
+  background: none;
+  padding: 0;
+  border: none;
 }
 
-.endorsement-statement h4 {
+.endorsement-form .endorsement-statement h4 {
   margin: 0 0 1rem 0;
   color: #333;
   font-size: 1rem;
   font-weight: 500;
 }
 
-.endorsement-statement blockquote {
+.endorsement-form .endorsement-statement blockquote {
   margin: 0;
   padding: 1.25rem;
   background-color: #f8f9fa;
@@ -51,8 +54,8 @@
   quotes: none;
 }
 
-.endorsement-statement blockquote::before,
-.endorsement-statement blockquote::after {
+.endorsement-form .endorsement-statement blockquote::before,
+.endorsement-form .endorsement-statement blockquote::after {
   content: none;
 }
 
@@ -119,6 +122,37 @@
   margin-top: 0.25rem;
 }
 
+.form-group input[type='text'],
+.form-group input[type='email'],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  background-color: #fff;
+}
+
+.form-group input[type='text']:focus,
+.form-group input[type='email']:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.form-group textarea {
+  min-height: 120px;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
 .checkbox-label {
   display: flex !important;
   align-items: flex-start;
@@ -129,7 +163,8 @@
 .checkbox-label input[type='checkbox'] {
   width: auto !important;
   margin-right: 0.5rem;
-  margin-top: 0.125rem;
+  margin-top: 0.25rem;
+  flex-shrink: 0;
 }
 
 .submit-button {
@@ -279,7 +314,7 @@
   font-weight: 500;
 }
 
-.endorsement-statement {
+.endorsement-list-statement {
   margin: 1rem 0;
   padding: 1rem;
   background-color: #f8f9fa;
@@ -287,7 +322,7 @@
   border-radius: 4px;
 }
 
-.endorsement-statement blockquote {
+.endorsement-list-statement blockquote {
   margin: 0;
   font-style: italic;
   color: #555;

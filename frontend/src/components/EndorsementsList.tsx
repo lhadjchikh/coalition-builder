@@ -107,7 +107,7 @@ const EndorsementsList: React.FC<EndorsementsListProps> = ({
             </div>
 
             {endorsement.statement && (
-              <div className="endorsement-statement">
+              <div className="endorsement-list-statement">
                 <blockquote>"{endorsement.statement}"</blockquote>
               </div>
             )}
