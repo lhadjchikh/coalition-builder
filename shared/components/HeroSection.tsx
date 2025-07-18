@@ -116,7 +116,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
             }}
           >
             <source src={homepage.hero_background_video_url} type="video/mp4" />
-            {homepage.hero_background_video_url.endsWith(".webm") && (
+            {homepage.hero_background_video_url?.endsWith(".webm") && (
               <source
                 src={homepage.hero_background_video_url}
                 type="video/webm"
