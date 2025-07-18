@@ -484,7 +484,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
                 aria-required="true"
                 data-testid="terms-checkbox"
               />
-              I agree to the{' '}
+              I agree to the&nbsp;
               <a href="/terms" target="_blank" rel="noopener noreferrer">
                 Terms of Use
               </a>
