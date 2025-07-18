@@ -96,6 +96,7 @@ describe('EndorsementForm', () => {
     );
 
     // Fill out the form
+    fireEvent.change(screen.getByTestId('type-select'), { target: { value: 'business' } });
     fireEvent.change(screen.getByTestId('name-input'), { target: { value: 'John Doe' } });
     fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Test Org' } });
     fireEvent.change(screen.getByTestId('role-input'), { target: { value: 'Manager' } });
@@ -106,7 +107,6 @@ describe('EndorsementForm', () => {
     fireEvent.change(screen.getByTestId('city-input'), { target: { value: 'Baltimore' } });
     fireEvent.change(screen.getByTestId('state-select'), { target: { value: 'MD' } });
     fireEvent.change(screen.getByTestId('zip-code-input'), { target: { value: '21201' } });
-    fireEvent.change(screen.getByTestId('type-select'), { target: { value: 'business' } });
     fireEvent.change(screen.getByTestId('statement-textarea'), {
       target: { value: 'Great campaign!' },
     });
@@ -161,6 +161,7 @@ describe('EndorsementForm', () => {
       render(<EndorsementForm campaign={mockCampaign} />);
 
       // Fill out required fields
+      fireEvent.change(screen.getByTestId('type-select'), { target: { value: 'individual' } });
       fireEvent.change(screen.getByTestId('name-input'), { target: { value: 'John Doe' } });
       fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Test Org' } });
       fireEvent.change(screen.getByTestId('email-input'), { target: { value: 'john@test.com' } });
@@ -272,6 +273,7 @@ describe('EndorsementForm', () => {
       render(<EndorsementForm campaign={mockCampaign} />);
 
       // Fill out required fields
+      fireEvent.change(screen.getByTestId('type-select'), { target: { value: 'individual' } });
       fireEvent.change(screen.getByTestId('name-input'), { target: { value: 'Bot User' } });
       fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Bot Org' } });
       fireEvent.change(screen.getByTestId('email-input'), { target: { value: 'bot@spam.com' } });
