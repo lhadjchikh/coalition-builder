@@ -5,7 +5,7 @@ import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
 
-import coalition.content.models.video
+import coalition.content.validators
 
 
 class Migration(migrations.Migration):
@@ -63,7 +63,7 @@ class Migration(migrations.Migration):
                         help_text="The video file (.mov, .mp4, .webm)",
                         upload_to="videos/",
                         validators=[
-                            coalition.content.models.video.validate_video_file_extension,
+                            coalition.content.validators.validate_video_file_extension,
                         ],
                     ),
                 ),
