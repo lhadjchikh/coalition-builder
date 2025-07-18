@@ -7,7 +7,7 @@ import { DEFAULT_NAV_ITEMS, NavItemData } from "@shared/types";
 
 // Mock the dependencies
 jest.mock("../../lib/api");
-jest.mock("../../lib/components/SSRNavbar", () => ({
+jest.mock("../../components/SSRNavbar", () => ({
   __esModule: true,
   default: ({
     organizationName,
@@ -22,7 +22,7 @@ jest.mock("../../lib/components/SSRNavbar", () => ({
     </nav>
   ),
 }));
-jest.mock("../../lib/components/SSRFooter", () => ({
+jest.mock("../../components/SSRFooter", () => ({
   __esModule: true,
   default: ({ orgInfo }: { orgInfo?: { organization_name: string } }) => {
     const organizationName = orgInfo?.organization_name || "Coalition Builder";

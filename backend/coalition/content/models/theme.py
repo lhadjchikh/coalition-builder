@@ -206,18 +206,18 @@ class Theme(models.Model):
         return f"{self.name}{status}"
 
     @property
-    def logo_url(self) -> str:
-        """Return the URL of the uploaded logo, or empty string if no logo."""
+    def logo_url(self) -> str | None:
+        """Return the URL of the uploaded logo, or None if no logo."""
         if self.logo and hasattr(self.logo, "url"):
             return self.logo.url
-        return ""
+        return None
 
     @property
-    def favicon_url(self) -> str:
-        """Return the URL of the uploaded favicon, or empty string if no favicon."""
+    def favicon_url(self) -> str | None:
+        """Return the URL of the uploaded favicon, or None if no favicon."""
         if self.favicon and hasattr(self.favicon, "url"):
             return self.favicon.url
-        return ""
+        return None
 
     def clean(self) -> None:
         """Ensure only one active theme exists"""

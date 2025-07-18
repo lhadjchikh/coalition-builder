@@ -3,10 +3,12 @@
 from typing import TYPE_CHECKING
 
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from tinymce.models import HTMLField
 
 from coalition.content.html_sanitizer import HTMLSanitizer
+from coalition.content.validators import validate_hex_color
 
 if TYPE_CHECKING:
     from typing import Any
@@ -57,6 +59,30 @@ class HomePage(models.Model):
         blank=True,
         related_name="homepage_hero_images",
         help_text="Hero background image (optional)",
+    )
+    hero_background_video = models.ForeignKey(
+        "content.Video",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="homepage_hero_videos",
+        help_text="Hero background video (optional, takes precedence over image)",
+    )
+
+    # Hero overlay configuration
+    hero_overlay_enabled = models.BooleanField(
+        default=True,
+        help_text="Whether to show overlay on hero image/video for text readability",
+    )
+    hero_overlay_color = models.CharField(
+        max_length=7,
+        default="#000000",
+        help_text="Hex color code for the overlay (e.g., #000000 for black)",
+    )
+    hero_overlay_opacity = models.FloatField(
+        default=0.4,
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+        help_text="Overlay opacity (0.0 = transparent, 1.0 = opaque)",
     )
 
     # Call to action
@@ -133,8 +159,19 @@ class HomePage(models.Model):
             return self.hero_background_image.image.url
         return ""
 
+    @property
+    def hero_background_video_url(self) -> str:
+        """Return the URL of the hero background video, or empty string if no video."""
+        if (
+            self.hero_background_video
+            and self.hero_background_video.video
+            and hasattr(self.hero_background_video.video, "url")
+        ):
+            return self.hero_background_video.video.url
+        return ""
+
     def clean(self) -> None:
-        """Ensure only one active homepage configuration exists"""
+        """Validate homepage configuration"""
         if self.is_active:
             # Check if there's already an active homepage that's not this one
             existing_active = HomePage.objects.filter(is_active=True).exclude(
@@ -145,6 +182,14 @@ class HomePage(models.Model):
                     "Only one homepage configuration can be active at a time. "
                     "Please deactivate the current active configuration first.",
                 )
+
+        # Validate hex color format
+        try:
+            validate_hex_color(self.hero_overlay_color)
+        except ValidationError as e:
+            raise ValidationError(
+                {"hero_overlay_color": "Must be a valid hex color code"},
+            ) from e
 
     def save(self, *args: "Any", **kwargs: "Any") -> None:
         """Sanitize HTML fields before saving."""

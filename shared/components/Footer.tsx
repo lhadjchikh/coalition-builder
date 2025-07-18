@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import SocialLinks from "./SocialLinks";
 import { HomePage } from "../types";

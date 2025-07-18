@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import StyledComponentsRegistry from "../lib/registry";
-import SSRNavbar from "../lib/components/SSRNavbar";
-import SSRFooter from "../lib/components/SSRFooter";
+import SSRNavbar from "../components/SSRNavbar";
+import SSRFooter from "../components/SSRFooter";
 import CookieConsent from "@shared/components/CookieConsent";
 import GoogleAnalytics from "../components/GoogleAnalytics";
 import { ssrApiClient } from "../lib/api";
@@ -63,6 +63,8 @@ export default async function RootLayout({
           >
             <SSRNavbar
               organizationName={organizationName}
+              logoUrl={homepage?.theme?.logo_url}
+              logoAltText={homepage?.theme?.logo_alt_text}
               navItems={DEFAULT_NAV_ITEMS}
             />
             <main style={{ flex: 1 }}>{children}</main>

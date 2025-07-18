@@ -166,6 +166,25 @@ export interface Theme {
   updated_at: string;
 }
 
+// Video type definition
+export interface Video {
+  id: number;
+  title: string;
+  alt_text: string;
+  description?: string;
+  author?: string;
+  license?: string;
+  source_url?: string;
+  video_type: string;
+  autoplay: boolean;
+  loop: boolean;
+  muted: boolean;
+  show_controls: boolean;
+  video_url: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // Content management types
 export interface ContentBlock {
   id: number;
@@ -197,6 +216,13 @@ export interface HomePage {
   hero_title: string;
   hero_subtitle?: string;
   hero_background_image_url?: string; // Changed to match backend property
+  hero_background_video_url?: string;
+  hero_background_video_data?: Video;
+
+  // Hero overlay configuration
+  hero_overlay_enabled: boolean;
+  hero_overlay_color: string;
+  hero_overlay_opacity: number;
 
   // Call to action
   cta_title: string;
