@@ -3,7 +3,6 @@ import { HomePage } from '../types';
 import { ContentBlock } from '../services/api';
 import ContactPage from '@shared/components/ContactPage';
 import ContentBlockComponent from '@shared/components/ContentBlock';
-import SocialLinks from '@shared/components/SocialLinks';
 import Navbar from '@shared/components/Navbar';
 import Footer from '@shared/components/Footer';
 import { Link, useLocation } from 'react-router-dom';
@@ -65,7 +64,6 @@ const Contact: React.FC = () => {
         contentBlocks={contentBlocks}
         error={error}
         ContentBlockComponent={ContentBlockComponent}
-        SocialLinksComponent={SocialLinks}
         NavbarComponent={(props: any) => (
           <Navbar {...props} LinkComponent={Link} useLocation={useLocation} />
         )}
