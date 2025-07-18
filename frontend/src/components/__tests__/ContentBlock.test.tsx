@@ -250,7 +250,7 @@ describe('ContentBlock', () => {
 
       const blockquote = screen.getByText('"Test quote"');
       expect(blockquote.tagName).toBe('BLOCKQUOTE');
-      expect(blockquote).toHaveClass('text-xl', 'italic', 'text-gray-800', 'mb-4');
+      expect(blockquote).toHaveClass('text-2xl', 'italic', 'text-gray-800', 'mb-4');
     });
   });
 

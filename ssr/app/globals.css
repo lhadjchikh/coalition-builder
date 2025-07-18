@@ -29,8 +29,15 @@ a {
   text-decoration: none;
 }
 
-a:hover {
+/* Underline on hover for content links, but not navigation or footer */
+a:hover:not(nav a):not(footer a) {
   text-decoration: underline;
+}
+
+/* Ensure nav and footer links never have underlines */
+nav a:hover,
+footer a:hover {
+  text-decoration: none;
 }
 
 /* Utility class to mark SSR content */

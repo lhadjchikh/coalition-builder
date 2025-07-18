@@ -96,6 +96,7 @@ describe('EndorsementForm', () => {
     );
 
     // Fill out the form
+    fireEvent.change(screen.getByTestId('type-select'), { target: { value: 'business' } });
     fireEvent.change(screen.getByTestId('name-input'), { target: { value: 'John Doe' } });
     fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Test Org' } });
     fireEvent.change(screen.getByTestId('role-input'), { target: { value: 'Manager' } });
@@ -106,7 +107,6 @@ describe('EndorsementForm', () => {
     fireEvent.change(screen.getByTestId('city-input'), { target: { value: 'Baltimore' } });
     fireEvent.change(screen.getByTestId('state-select'), { target: { value: 'MD' } });
     fireEvent.change(screen.getByTestId('zip-code-input'), { target: { value: '21201' } });
-    fireEvent.change(screen.getByTestId('type-select'), { target: { value: 'business' } });
     fireEvent.change(screen.getByTestId('statement-textarea'), {
       target: { value: 'Great campaign!' },
     });
@@ -161,6 +161,7 @@ describe('EndorsementForm', () => {
       render(<EndorsementForm campaign={mockCampaign} />);
 
       // Fill out required fields
+      fireEvent.change(screen.getByTestId('type-select'), { target: { value: 'individual' } });
       fireEvent.change(screen.getByTestId('name-input'), { target: { value: 'John Doe' } });
       fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Test Org' } });
       fireEvent.change(screen.getByTestId('email-input'), { target: { value: 'john@test.com' } });
@@ -182,6 +183,36 @@ describe('EndorsementForm', () => {
       });
       expect(screen.getByText('Error: Submission failed')).toBeInTheDocument();
     });
+  });
+
+  it('renders HTML in form instructions', () => {
+    const campaignWithHTMLInstructions = {
+      ...mockCampaign,
+      endorsement_form_instructions:
+        'Please <strong>fill out all fields</strong> and <em>submit carefully</em>.',
+    };
+
+    render(<EndorsementForm campaign={campaignWithHTMLInstructions} />);
+
+    // Check that the form-instructions div exists
+    const formInstructionsDiv = document.querySelector('.form-instructions');
+    expect(formInstructionsDiv).toBeInTheDocument();
+
+    // Verify the HTML elements are rendered within the form instructions
+    const strongElement = formInstructionsDiv?.querySelector('strong');
+    const emElement = formInstructionsDiv?.querySelector('em');
+
+    expect(strongElement).toBeInTheDocument();
+    expect(strongElement).toHaveTextContent('fill out all fields');
+
+    expect(emElement).toBeInTheDocument();
+    expect(emElement).toHaveTextContent('submit carefully');
+
+    // Verify that the HTML is not rendered as plain text
+    expect(formInstructionsDiv).not.toHaveTextContent('<strong>');
+    expect(formInstructionsDiv).not.toHaveTextContent('</strong>');
+    expect(formInstructionsDiv).not.toHaveTextContent('<em>');
+    expect(formInstructionsDiv).not.toHaveTextContent('</em>');
   });
 
   it('validates required fields', () => {
@@ -242,6 +273,7 @@ describe('EndorsementForm', () => {
       render(<EndorsementForm campaign={mockCampaign} />);
 
       // Fill out required fields
+      fireEvent.change(screen.getByTestId('type-select'), { target: { value: 'individual' } });
       fireEvent.change(screen.getByTestId('name-input'), { target: { value: 'Bot User' } });
       fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Bot Org' } });
       fireEvent.change(screen.getByTestId('email-input'), { target: { value: 'bot@spam.com' } });

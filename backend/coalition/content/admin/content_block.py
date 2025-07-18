@@ -24,13 +24,18 @@ class ContentBlockAdmin(admin.ModelAdmin):
     list_editable = ("order", "is_visible")
 
     fieldsets = (
-        (None, {"fields": ("title", "block_type", "page_type", "order", "is_visible")}),
-        ("Content", {"fields": ("content",)}),
         (
-            "Image",
+            None,
             {
-                "fields": ("image",),
-                "classes": ("collapse",),
+                "fields": (
+                    "title",
+                    "block_type",
+                    "page_type",
+                    "order",
+                    "is_visible",
+                    "content",
+                    "image",
+                ),
             },
         ),
         (

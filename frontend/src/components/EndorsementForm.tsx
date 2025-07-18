@@ -17,7 +17,9 @@ export interface EndorsementFormRef {
 const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
   ({ campaign, onEndorsementSubmitted, onFormInteraction }, ref) => {
     const [stakeholder, setStakeholder] = useState<
-      Omit<Stakeholder, 'id' | 'created_at' | 'updated_at'>
+      Omit<Stakeholder, 'id' | 'created_at' | 'updated_at' | 'type'> & {
+        type: Stakeholder['type'] | '';
+      }
     >({
       name: '',
       organization: '',
@@ -27,7 +29,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
       city: '',
       state: '',
       zip_code: '',
-      type: 'individual',
+      type: '',
       email_updates: false,
     });
 
@@ -100,7 +102,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
       try {
         const endorsementData: EndorsementCreate = {
           campaign_id: campaign.id,
-          stakeholder,
+          stakeholder: stakeholder as Omit<Stakeholder, 'id' | 'created_at' | 'updated_at'>,
           statement,
           public_display: publicDisplay,
           terms_accepted: termsAccepted,
@@ -132,7 +134,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           city: '',
           state: '',
           zip_code: '',
-          type: 'individual',
+          type: '',
           email_updates: false,
         });
         setStatement('');
@@ -240,7 +242,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
 
         {campaign.endorsement_form_instructions && (
           <div className="form-instructions">
-            <p>{campaign.endorsement_form_instructions}</p>
+            <div dangerouslySetInnerHTML={{ __html: campaign.endorsement_form_instructions }} />
           </div>
         )}
 
@@ -305,6 +307,26 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
               tabIndex={-1}
               autoComplete="off"
             />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="type">Endorser type *</label>
+            <select
+              id="type"
+              value={stakeholder.type}
+              onChange={e => handleStakeholderChange('type', e.target.value as Stakeholder['type'])}
+              required
+              data-testid="type-select"
+            >
+              <option value="" disabled>
+                Select endorser type
+              </option>
+              {stakeholderTypes.map(type => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="form-group">
@@ -420,32 +442,34 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           </div>
 
           <div className="form-group">
-            <label htmlFor="type">Type *</label>
-            <select
-              id="type"
-              value={stakeholder.type}
-              onChange={e => handleStakeholderChange('type', e.target.value as Stakeholder['type'])}
-              required
-              data-testid="type-select"
-            >
-              {stakeholderTypes.map(type => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="statement">Additional Comments</label>
+            <label htmlFor="statement">
+              Your Voice Matters - Share Your Story
+              <span className="label-helper">
+                Help us advocate for this policy by sharing why it matters to you. Your words may be
+                featured on our website (if you allow public display) and used when we speak with
+                legislators to show real constituent support.
+              </span>
+            </label>
             <textarea
               id="statement"
               value={statement}
               onChange={e => setStatement(e.target.value)}
               rows={4}
-              placeholder="Share why you support this campaign (optional)"
+              placeholder="Tell us why you support this campaign - your personal story, how this policy would impact you or your community, or what change you hope to see (optional)"
               data-testid="statement-textarea"
             />
+          </div>
+
+          <div className="form-group">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={publicDisplay}
+                onChange={e => setPublicDisplay(e.target.checked)}
+                data-testid="public-display-checkbox"
+              />
+              Display my endorsement and story publicly on the website
+            </label>
           </div>
 
           <div className="form-group">
@@ -466,25 +490,13 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
             <label className="checkbox-label">
               <input
                 type="checkbox"
-                checked={publicDisplay}
-                onChange={e => setPublicDisplay(e.target.checked)}
-                data-testid="public-display-checkbox"
-              />
-              Display my endorsement publicly
-            </label>
-          </div>
-
-          <div className="form-group">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
                 checked={termsAccepted}
                 onChange={e => setTermsAccepted(e.target.checked)}
                 required
                 aria-required="true"
                 data-testid="terms-checkbox"
               />
-              I agree to the{' '}
+              I agree to the&nbsp;
               <a href="/terms" target="_blank" rel="noopener noreferrer">
                 Terms of Use
               </a>

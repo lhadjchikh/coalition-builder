@@ -12,8 +12,9 @@ from coalition.content.admin import (
     HomePageAdmin,
     ImageAdmin,
     ThemeAdmin,
+    VideoAdmin,
 )
-from coalition.content.models import ContentBlock, HomePage, Image, Theme
+from coalition.content.models import ContentBlock, HomePage, Image, Theme, Video
 
 
 class ThemeAdminTest(TestCase):
@@ -196,6 +197,64 @@ class HomePageAdminTest(TestCase):
         result = self.admin.has_hero_image(homepage_no_image)
         assert result is False
 
+    def test_has_hero_video_method(self) -> None:
+        """Test has_hero_video admin method"""
+        # Homepage without hero video
+        result = self.admin.has_hero_video(self.homepage)
+        assert result is False
+
+        # Create a video
+        from unittest.mock import patch
+
+        with (
+            patch("coalition.core.storage.MediaStorage.save") as mock_save,
+            patch("coalition.core.storage.MediaStorage.exists") as mock_exists,
+        ):
+            mock_exists.return_value = False
+            mock_save.return_value = "videos/test_video.mp4"
+
+            from django.core.files.uploadedfile import SimpleUploadedFile
+
+            video_file = SimpleUploadedFile(
+                "test_video.mp4",
+                b"video_content",
+                content_type="video/mp4",
+            )
+
+            video = Video.objects.create(
+                video=video_file,
+                title="Test Video",
+                alt_text="Test video alt text",
+                video_type="hero",
+                autoplay=True,
+                loop=True,
+                muted=True,
+            )
+
+            # Homepage with hero video
+            self.homepage.hero_background_video = video
+            self.homepage.save()
+            result = self.admin.has_hero_video(self.homepage)
+            assert result is True
+
+    def test_admin_video_fields_present(self) -> None:
+        """Test that video-related fields are present in admin configuration"""
+        all_fieldset_fields = []
+        for fieldset in self.admin.fieldsets:
+            all_fieldset_fields.extend(fieldset[1]["fields"])
+
+        # Video-related fields that should be in admin
+        video_fields = [
+            "hero_background_video",
+            "hero_overlay_enabled",
+            "hero_overlay_color",
+            "hero_overlay_opacity",
+        ]
+        for field in video_fields:
+            assert (
+                field in all_fieldset_fields
+            ), f"Field {field} not found in admin fieldsets"
+
     def test_admin_required_fields_present(self) -> None:
         """Test that all required fields are present in admin configuration"""
         all_fieldset_fields = []
@@ -369,3 +428,182 @@ class ImageAdminTest(TestCase):
                 value = getattr(self.image, field)
                 # Value can be None, but accessing it shouldn't error
                 assert (value is not None) or (value is None)
+
+
+class VideoAdminTest(TestCase):
+    """Test video admin interface functionality"""
+
+    def setUp(self) -> None:
+        self.site = AdminSite()
+        self.admin = VideoAdmin(Video, self.site)
+
+        self.user = User.objects.create_superuser(
+            username="admin",
+            email="admin@example.com",
+            password="testpass",
+        )
+
+        # Mock storage for video file
+        from unittest.mock import patch
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        self.storage_patcher = patch("coalition.core.storage.MediaStorage.save")
+        self.exists_patcher = patch("coalition.core.storage.MediaStorage.exists")
+        self.mock_save = self.storage_patcher.start()
+        self.mock_exists = self.exists_patcher.start()
+        self.mock_exists.return_value = False
+        self.mock_save.return_value = "videos/test_video.mp4"
+
+        video_file = SimpleUploadedFile(
+            "test_video.mp4",
+            b"video_content",
+            content_type="video/mp4",
+        )
+
+        self.video = Video.objects.create(
+            video=video_file,
+            title="Test Video",
+            alt_text="Test alt text",
+            description="Test description",
+            author="Test Author",
+            license="CC BY 4.0",
+            source_url="https://example.com/video",
+            video_type="hero",
+            autoplay=True,
+            loop=True,
+            muted=True,
+            show_controls=False,
+            uploaded_by=self.user,
+        )
+
+    def tearDown(self) -> None:
+        """Stop the mock patches"""
+        self.storage_patcher.stop()
+        self.exists_patcher.stop()
+
+    def test_admin_save_without_errors(self) -> None:
+        """Test that admin can save video without 500 errors"""
+        request = HttpRequest()
+        request.user = self.user
+        request.method = "POST"
+
+        # Test creating a new video
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        new_video_file = SimpleUploadedFile(
+            "new_test_video.mp4",
+            b"new_video_content",
+            content_type="video/mp4",
+        )
+
+        new_video = Video(
+            video=new_video_file,
+            title="New Test Video",
+            alt_text="New test alt text",
+            video_type="content",
+            autoplay=False,
+            loop=False,
+            muted=False,
+            show_controls=True,
+        )
+
+        # This should not raise any exceptions
+        self.admin.save_model(request, new_video, None, change=False)
+        assert new_video.id is not None
+        assert new_video.uploaded_by == self.user  # Should be set by save_model
+
+        # Test updating existing video
+        self.video.title = "Updated Test Video"
+        self.admin.save_model(request, self.video, None, change=True)
+        self.video.refresh_from_db()
+        assert self.video.title == "Updated Test Video"
+
+    def test_display_video_file(self) -> None:
+        """Test display_video_file method"""
+        # Video with file
+        result = self.admin.display_video_file(self.video)
+        assert result == "test_video.mp4"
+
+        # Video without file
+        video_no_file = Video(title="No File Video", alt_text="No file")
+        video_no_file.video = None
+        result = self.admin.display_video_file(video_no_file)
+        assert result == "-"
+
+    def test_display_video_preview(self) -> None:
+        """Test display_video_preview method"""
+        # Mock the video URL
+        from unittest.mock import PropertyMock, patch
+
+        with patch.object(
+            type(self.video.video),
+            "url",
+            new_callable=PropertyMock,
+        ) as mock_url:
+            mock_url.return_value = "https://example.com/videos/test_video.mp4"
+
+            result = self.admin.display_video_preview(self.video)
+            assert "<video" in result
+            assert 'width="320"' in result
+            assert 'height="240"' in result
+            assert "controls" in result
+            assert "https://example.com/videos/test_video.mp4" in result
+
+        # Video without file
+        video_no_file = Video(title="No File Video", alt_text="No file")
+        video_no_file.video = None
+        result = self.admin.display_video_preview(video_no_file)
+        assert result == "No video uploaded"
+
+    def test_admin_required_fields_present(self) -> None:
+        """Test that all required fields are present in admin configuration"""
+        all_fieldset_fields = []
+        for fieldset in self.admin.fieldsets:
+            all_fieldset_fields.extend(fieldset[1]["fields"])
+
+        # Required fields that should be in admin
+        required_fields = ["video", "title", "alt_text", "video_type"]
+        for field in required_fields:
+            assert (
+                field in all_fieldset_fields
+            ), f"Field {field} not found in admin fieldsets"
+
+    def test_admin_video_settings_fields_present(self) -> None:
+        """Test that video settings fields are present"""
+        all_fieldset_fields = []
+        for fieldset in self.admin.fieldsets:
+            all_fieldset_fields.extend(fieldset[1]["fields"])
+
+        # Video settings fields
+        settings_fields = ["autoplay", "loop", "muted", "show_controls"]
+        for field in settings_fields:
+            assert (
+                field in all_fieldset_fields
+            ), f"Field {field} not found in admin fieldsets"
+
+    def test_admin_readonly_fields(self) -> None:
+        """Test that readonly fields are properly configured"""
+        expected_readonly = ["created_at", "updated_at", "display_video_preview"]
+        for field in expected_readonly:
+            assert (
+                field in self.admin.readonly_fields
+            ), f"Field {field} not in readonly_fields"
+
+    def test_list_display_configuration(self) -> None:
+        """Test that list display shows expected fields"""
+        expected_fields = [
+            "title",
+            "video_type",
+            "display_video_file",
+            "autoplay",
+            "loop",
+            "muted",
+            "show_controls",
+            "uploaded_by",
+            "created_at",
+        ]
+        for field in expected_fields:
+            assert (
+                field in self.admin.list_display
+            ), f"Field {field} not in list_display"

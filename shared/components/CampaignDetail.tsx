@@ -355,52 +355,52 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
               </div>
             )}
 
-          {/* First Endorser Appeal (0 endorsements) */}
-          {campaign.allow_endorsements && endorsementCount === 0 && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
-              <div className="flex items-center gap-4">
-                {GrowthIconComponent && (
-                  <div className="flex-shrink-0">
-                    <GrowthIconComponent
-                      stage="seed"
-                      size="48px"
-                      color="#4caf50"
-                    />
-                  </div>
-                )}
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    Be the First to Show Support
-                  </h3>
-                  <p className="text-gray-700">
-                    Help launch this campaign by adding your voice to this
-                    important cause.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Prominent CTA in header */}
+          {/* Endorsement CTA Section */}
           {campaign.allow_endorsements && (
-            <div className="text-center mb-8">
-              <button
-                className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors text-lg"
-                onClick={scrollToEndorsementForm}
-              >
-                {endorsementCount === 0
-                  ? "Be the First to Endorse"
-                  : endorsementCount < SOCIAL_PROOF_THRESHOLD
-                    ? "Join the Early Supporters"
-                    : "Add Your Endorsement"}
-              </button>
-              <p className="text-gray-600 mt-2">
-                {endorsementCount === 0 &&
-                  "Help launch this important initiative."}
+            <div className="mb-8">
+              {endorsementCount === 0 && (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-4">
+                  <div className="flex items-center gap-4">
+                    {GrowthIconComponent && (
+                      <div className="flex-shrink-0">
+                        <GrowthIconComponent
+                          stage="seed"
+                          size="48px"
+                          color="#4caf50"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                        Be the First to Show Support
+                      </h3>
+                      <p className="text-gray-700">
+                        Help launch this campaign by adding your voice to this
+                        important cause.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="text-center">
+                <button
+                  className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors text-lg"
+                  onClick={scrollToEndorsementForm}
+                >
+                  {endorsementCount === 0
+                    ? "Be the First to Endorse"
+                    : endorsementCount < SOCIAL_PROOF_THRESHOLD
+                      ? "Join the Early Supporters"
+                      : "Add Your Endorsement"}
+                </button>
                 {endorsementCount > 0 &&
-                  endorsementCount < SOCIAL_PROOF_THRESHOLD &&
-                  "Join this growing movement in its early stages."}
-              </p>
+                  endorsementCount < SOCIAL_PROOF_THRESHOLD && (
+                    <p className="text-gray-600 mt-2">
+                      Join this growing movement in its early stages.
+                    </p>
+                  )}
+              </div>
             </div>
           )}
         </header>

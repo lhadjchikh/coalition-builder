@@ -34,11 +34,11 @@ locals {
     },
     {
       name  = "ALLOWED_HOSTS"
-      value = "${var.allowed_hosts},${var.alb_dns_name}"
+      value = "${var.allowed_hosts},${var.alb_dns_name},${var.domain_name},www.${var.domain_name}"
     },
     {
       name  = "CSRF_TRUSTED_ORIGINS"
-      value = var.csrf_trusted_origins
+      value = var.csrf_trusted_origins != "" ? "${var.csrf_trusted_origins},https://${var.domain_name},https://www.${var.domain_name}" : "https://${var.domain_name},https://www.${var.domain_name}"
     },
     {
       name  = "CACHE_URL"

@@ -10,82 +10,81 @@
 /* Endorsement Form Styles */
 .endorsement-form {
   max-width: 600px;
-  margin: 2rem 0;
+  margin: 0 0 2rem 0;
   padding: 2.5rem;
-  border: 3px solid #2196f3;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #ffffff, #f8fbff);
-  box-shadow: 0 8px 32px rgba(33, 150, 243, 0.15);
-  position: relative;
-  overflow: hidden;
-}
-
-.endorsement-form::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #4caf50, #2196f3, #9c27b0);
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .endorsement-form h3 {
   margin-top: 0;
-  color: #1976d2;
-  font-size: 2rem;
-  font-weight: 700;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
   text-align: center;
-  margin-bottom: 1.5rem;
-  position: relative;
-}
-
-.endorsement-form h3::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 3px;
-  background: linear-gradient(90deg, #4caf50, #2196f3);
-  border-radius: 2px;
+  margin-bottom: 2rem;
 }
 
 .endorsement-statement {
   margin: 1.5rem 0;
-  padding: 1rem;
-  background-color: #e8f4f8;
-  border-left: 4px solid #2196f3;
-  border-radius: 4px;
 }
 
 .endorsement-statement h4 {
-  margin-top: 0;
-  color: #1976d2;
+  margin: 0 0 1rem 0;
+  color: #333;
   font-size: 1rem;
+  font-weight: 500;
 }
 
 .endorsement-statement blockquote {
-  margin: 0.5rem 0 0 0;
+  margin: 0;
+  padding: 1.25rem;
+  background-color: #f8f9fa;
+  border-left: 4px solid #6c757d;
+  border-radius: 0.25rem;
   font-style: italic;
-  color: #555;
+  color: #495057;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  quotes: none;
+}
+
+.endorsement-statement blockquote::before,
+.endorsement-statement blockquote::after {
+  content: none;
 }
 
 .form-instructions {
   margin: 1rem 0;
-  padding: 1rem;
-  background-color: #f0f8f0;
-  border-radius: 4px;
-  border-left: 4px solid #4caf50;
 }
 
 .address-info-message {
   margin: 1.5rem 0;
-  padding: 1rem;
+  padding: 1rem 1rem 1rem 3rem;
   background-color: #e3f2fd;
   border-radius: 8px;
-  border-left: 4px solid #2196f3;
+  border: 1px solid #bbdefb;
+  position: relative;
+}
+
+.address-info-message::before {
+  content: 'ℹ';
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: #2196f3;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: bold;
+  font-style: normal;
 }
 
 .address-info-message p {
@@ -111,28 +110,18 @@
   color: #333;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-family: inherit;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: #2196f3;
-  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+.label-helper {
+  display: block;
+  font-weight: normal;
+  font-size: 0.875rem;
+  color: #666;
+  line-height: 1.4;
+  margin-top: 0.25rem;
 }
 
 .checkbox-label {
   display: flex !important;
-  align-items: center;
+  align-items: flex-start;
   font-weight: normal !important;
   cursor: pointer;
 }
@@ -140,6 +129,7 @@
 .checkbox-label input[type='checkbox'] {
   width: auto !important;
   margin-right: 0.5rem;
+  margin-top: 0.125rem;
 }
 
 .submit-button {
@@ -221,7 +211,8 @@
 
 /* Endorsements List Styles */
 .endorsements-list {
-  margin: 2rem 0;
+  margin: 0 0 2rem 0;
+  padding-top: 2.5rem;
 }
 
 .endorsements-list h3 {
