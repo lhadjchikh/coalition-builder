@@ -37,7 +37,7 @@ const HomePage: React.FC<HomePageProps> = ({
   contentBlocks = [],
 }) => {
   return (
-    <div className="min-h-screen bg-white">
+    <>
       {/* Navigation */}
       {NavbarComponent && (
         <NavbarComponent
@@ -199,24 +199,7 @@ const HomePage: React.FC<HomePageProps> = ({
           </section>
         )}
       </main>
-
-      {/* Footer */}
-      <footer id="footer" className="bg-gray-900">
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold text-white mb-4">
-              {homepage.organization_name}
-            </h3>
-            <p className="text-gray-300 mb-6">{homepage.tagline}</p>
-
-            {/* Social Links */}
-            {SocialLinksComponent && (
-              <SocialLinksComponent orgInfo={homepage} />
-            )}
-          </div>
-        </div>
-      </footer>
-    </div>
+    </>
   );
 };
 
