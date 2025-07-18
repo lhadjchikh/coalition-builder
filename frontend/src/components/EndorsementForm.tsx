@@ -17,7 +17,9 @@ export interface EndorsementFormRef {
 const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
   ({ campaign, onEndorsementSubmitted, onFormInteraction }, ref) => {
     const [stakeholder, setStakeholder] = useState<
-      Omit<Stakeholder, 'id' | 'created_at' | 'updated_at'>
+      Omit<Stakeholder, 'id' | 'created_at' | 'updated_at' | 'type'> & {
+        type: Stakeholder['type'] | '';
+      }
     >({
       name: '',
       organization: '',
@@ -100,7 +102,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
       try {
         const endorsementData: EndorsementCreate = {
           campaign_id: campaign.id,
-          stakeholder,
+          stakeholder: stakeholder as Omit<Stakeholder, 'id' | 'created_at' | 'updated_at'>,
           statement,
           public_display: publicDisplay,
           terms_accepted: termsAccepted,
