@@ -1,5 +1,6 @@
 """HomePage model for managing homepage content."""
 
+import re
 from typing import TYPE_CHECKING
 
 from django.core.exceptions import ValidationError
@@ -183,8 +184,6 @@ class HomePage(models.Model):
                 )
 
         # Validate hex color format
-        import re
-
         if not re.match(r"^#[0-9A-Fa-f]{6}$", self.hero_overlay_color):
             raise ValidationError(
                 "Hero overlay color must be a valid hex color code (e.g., #000000)",

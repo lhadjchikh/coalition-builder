@@ -1,5 +1,6 @@
 """Video model for managing videos with metadata and attribution."""
 
+import os
 from typing import TYPE_CHECKING, Any
 
 from django.core.exceptions import ValidationError
@@ -13,7 +14,6 @@ if TYPE_CHECKING:
 
 def validate_video_file_extension(value: Any) -> None:
     """Validate that the uploaded file is a supported video format."""
-    import os
 
     valid_extensions = [".mov", ".mp4", ".webm"]
     ext = os.path.splitext(value.name)[1].lower()

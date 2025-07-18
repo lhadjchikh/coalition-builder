@@ -213,7 +213,7 @@ class HomePageOut(ModelSchema):
     @staticmethod
     def resolve_hero_background_video_url(obj: "HomePage") -> str | None:
         """Get the hero background video URL"""
-        return obj.hero_background_video_url if obj.hero_background_video_url else None
+        return obj.hero_background_video_url or None
 
     @staticmethod
     def resolve_hero_background_video_data(obj: "HomePage") -> "VideoOut | None":

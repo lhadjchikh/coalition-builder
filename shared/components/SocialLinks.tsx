@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 
 // Interface for social links data

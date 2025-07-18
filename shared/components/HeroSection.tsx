@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from "react";
 import type { HomePage } from "../types/api";
 
@@ -32,11 +34,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
       (navigator as any).webkitConnection;
 
     if (connection) {
+      // Respect user's data saving preference
+      const saveData = connection.saveData;
+      if (saveData) {
+        return;
+      }
+
       // Load video only on fast connections (4g, wifi)
       const effectiveType = connection.effectiveType;
-      const saveData = connection.saveData;
-
-      if (!saveData && (effectiveType === "4g" || effectiveType === "wifi")) {
+      if (effectiveType === "4g" || effectiveType === "wifi") {
         setShouldLoadVideo(true);
       }
     } else {
@@ -110,10 +116,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
             }}
           >
             <source src={homepage.hero_background_video_url} type="video/mp4" />
-            <source
-              src={homepage.hero_background_video_url}
-              type="video/quicktime"
-            />
+            {homepage.hero_background_video_url.endsWith(".webm") && (
+              <source
+                src={homepage.hero_background_video_url}
+                type="video/webm"
+              />
+            )}
             Your browser does not support the video tag.
           </video>
           {/* Configurable overlay for better text readability */}
