@@ -40,7 +40,10 @@ export default async function RootLayout({
     homepage = await ssrApiClient.getHomepage();
     organizationName = homepage.organization_name;
   } catch (error) {
-    console.error("Error fetching homepage for layout:", error instanceof Error ? error.message : "Unknown error");
+    console.error(
+      "Error fetching homepage for layout:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
     const fallbackHomepage = getFallbackHomepage();
     organizationName = fallbackHomepage.organization_name;
     homepage = fallbackHomepage;
@@ -59,7 +62,10 @@ export default async function RootLayout({
       };
     }
   } catch (error) {
-    console.error("Error fetching theme CSS:", error instanceof Error ? error.message : "Unknown error");
+    console.error(
+      "Error fetching theme CSS:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
   }
 
   return (

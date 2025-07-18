@@ -38,14 +38,20 @@ export default async function ContactPageSSR() {
   try {
     homepage = await ssrApiClient.getHomepage();
   } catch (err) {
-    console.error("Error fetching homepage:", err instanceof Error ? err.message : "Unknown error");
+    console.error(
+      "Error fetching homepage:",
+      err instanceof Error ? err.message : "Unknown error",
+    );
     homepage = getFallbackHomepage();
   }
 
   try {
     contentBlocks = await ssrApiClient.getContentBlocksByPageType("contact");
   } catch (err) {
-    console.error("Error fetching contact content blocks:", err instanceof Error ? err.message : "Unknown error");
+    console.error(
+      "Error fetching contact content blocks:",
+      err instanceof Error ? err.message : "Unknown error",
+    );
     error = err instanceof Error ? err.message : "Failed to fetch content";
   }
 
