@@ -13,7 +13,8 @@ interface HeroSectionProps {
 }
 
 // Helper function to get video MIME type from URL
-const getVideoMimeType = (url: string): string => {
+const getVideoMimeType = (url: string | undefined): string => {
+  if (!url) return "video/mp4";
   if (url.endsWith(".webm")) return "video/webm";
   if (url.endsWith(".mp4")) return "video/mp4";
   if (url.endsWith(".mov")) return "video/quicktime";
