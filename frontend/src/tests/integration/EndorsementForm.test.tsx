@@ -184,6 +184,36 @@ describe('EndorsementForm', () => {
     });
   });
 
+  it('renders HTML in form instructions', () => {
+    const campaignWithHTMLInstructions = {
+      ...mockCampaign,
+      endorsement_form_instructions:
+        'Please <strong>fill out all fields</strong> and <em>submit carefully</em>.',
+    };
+
+    render(<EndorsementForm campaign={campaignWithHTMLInstructions} />);
+
+    // Check that the form-instructions div exists
+    const formInstructionsDiv = document.querySelector('.form-instructions');
+    expect(formInstructionsDiv).toBeInTheDocument();
+
+    // Verify the HTML elements are rendered within the form instructions
+    const strongElement = formInstructionsDiv?.querySelector('strong');
+    const emElement = formInstructionsDiv?.querySelector('em');
+
+    expect(strongElement).toBeInTheDocument();
+    expect(strongElement).toHaveTextContent('fill out all fields');
+
+    expect(emElement).toBeInTheDocument();
+    expect(emElement).toHaveTextContent('submit carefully');
+
+    // Verify that the HTML is not rendered as plain text
+    expect(formInstructionsDiv).not.toHaveTextContent('<strong>');
+    expect(formInstructionsDiv).not.toHaveTextContent('</strong>');
+    expect(formInstructionsDiv).not.toHaveTextContent('<em>');
+    expect(formInstructionsDiv).not.toHaveTextContent('</em>');
+  });
+
   it('validates required fields', () => {
     render(<EndorsementForm campaign={mockCampaign} />);
 

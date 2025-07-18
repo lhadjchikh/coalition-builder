@@ -240,7 +240,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
 
         {campaign.endorsement_form_instructions && (
           <div className="form-instructions">
-            <p>{campaign.endorsement_form_instructions}</p>
+            <div dangerouslySetInnerHTML={{ __html: campaign.endorsement_form_instructions }} />
           </div>
         )}
 
