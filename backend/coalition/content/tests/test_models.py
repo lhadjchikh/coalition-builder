@@ -139,7 +139,8 @@ class HomePageModelTest(TestCase):
         with self.assertRaises(ValidationError) as cm:
             homepage.full_clean()
 
-        assert "Hero overlay color must be a valid hex color code" in str(cm.exception)
+        # Check that the error is about hero_overlay_color
+        assert "hero_overlay_color" in str(cm.exception)
 
     def test_hero_overlay_opacity_validation(self) -> None:
         """Test hero overlay opacity range validation"""
@@ -396,7 +397,7 @@ class VideoModelTest(TestCase):
 
     def test_video_file_extension_validation(self) -> None:
         """Test video file extension validation"""
-        from coalition.content.models.video import validate_video_file_extension
+        from coalition.content.validators import validate_video_file_extension
 
         # Test invalid extension
         invalid_file = SimpleUploadedFile(

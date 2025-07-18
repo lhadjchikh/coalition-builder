@@ -1,6 +1,5 @@
 """HomePage model for managing homepage content."""
 
-import re
 from typing import TYPE_CHECKING
 
 from django.core.exceptions import ValidationError
@@ -9,6 +8,7 @@ from django.db import models
 from tinymce.models import HTMLField
 
 from coalition.content.html_sanitizer import HTMLSanitizer
+from coalition.content.validators import validate_hex_color
 
 if TYPE_CHECKING:
     from typing import Any
@@ -184,10 +184,12 @@ class HomePage(models.Model):
                 )
 
         # Validate hex color format
-        if not re.match(r"^#[0-9A-Fa-f]{6}$", self.hero_overlay_color):
+        try:
+            validate_hex_color(self.hero_overlay_color)
+        except ValidationError as e:
             raise ValidationError(
-                "Hero overlay color must be a valid hex color code (e.g., #000000)",
-            )
+                {"hero_overlay_color": "Must be a valid hex color code"},
+            ) from e
 
     def save(self, *args: "Any", **kwargs: "Any") -> None:
         """Sanitize HTML fields before saving."""

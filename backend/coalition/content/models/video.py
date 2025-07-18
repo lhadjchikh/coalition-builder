@@ -1,28 +1,15 @@
 """Video model for managing videos with metadata and attribution."""
 
-import os
 from typing import TYPE_CHECKING, Any
 
 from django.core.exceptions import ValidationError
 from django.db import models
 
 from coalition.content.html_sanitizer import HTMLSanitizer
+from coalition.content.validators import validate_video_file_extension
 
 if TYPE_CHECKING:
     pass
-
-
-def validate_video_file_extension(value: Any) -> None:
-    """Validate that the uploaded file is a supported video format."""
-
-    valid_extensions = [".mov", ".mp4", ".webm"]
-    ext = os.path.splitext(value.name)[1].lower()
-
-    if ext not in valid_extensions:
-        raise ValidationError(
-            f"Unsupported file extension {ext}. "
-            f'Allowed extensions: {", ".join(valid_extensions)}',
-        )
 
 
 class Video(models.Model):

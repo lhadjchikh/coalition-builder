@@ -3,9 +3,22 @@
 import React, { useState, useEffect, useRef } from "react";
 import type { HomePage } from "../types/api";
 
+interface NetworkInformation {
+  effectiveType?: string;
+  saveData?: boolean;
+}
+
 interface HeroSectionProps {
   homepage: HomePage;
 }
+
+// Helper function to get video MIME type from URL
+const getVideoMimeType = (url: string): string => {
+  if (url.endsWith(".webm")) return "video/webm";
+  if (url.endsWith(".mp4")) return "video/mp4";
+  if (url.endsWith(".mov")) return "video/quicktime";
+  return "video/mp4"; // Default fallback
+};
 
 const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
   const [videoError, setVideoError] = useState(false);
@@ -28,10 +41,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
     if (!hasVideo || prefersReducedMotion) return;
 
     // Check if user is on a slow connection
-    const connection =
-      (navigator as any).connection ||
-      (navigator as any).mozConnection ||
-      (navigator as any).webkitConnection;
+    const connection: NetworkInformation | undefined =
+      (navigator as Navigator & { connection?: NetworkInformation })
+        .connection ||
+      (navigator as Navigator & { mozConnection?: NetworkInformation })
+        .mozConnection ||
+      (navigator as Navigator & { webkitConnection?: NetworkInformation })
+        .webkitConnection;
 
     if (connection) {
       // Respect user's data saving preference
@@ -110,18 +126,16 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
             onLoadedData={() => {
               setVideoLoading(false);
               // Start playing when data is loaded
-              videoRef.current?.play().catch(() => {
-                // Silent catch - autoplay might be blocked
+              videoRef.current?.play().catch((error) => {
+                console.warn("Video autoplay failed:", error);
+                // Don't set videoError here as the video can still be played manually
               });
             }}
           >
-            <source src={homepage.hero_background_video_url} type="video/mp4" />
-            {homepage.hero_background_video_url?.endsWith(".webm") && (
-              <source
-                src={homepage.hero_background_video_url}
-                type="video/webm"
-              />
-            )}
+            <source
+              src={homepage.hero_background_video_url}
+              type={getVideoMimeType(homepage.hero_background_video_url)}
+            />
             Your browser does not support the video tag.
           </video>
           {/* Configurable overlay for better text readability */}
