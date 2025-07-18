@@ -310,7 +310,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           </div>
 
           <div className="form-group">
-            <label htmlFor="type">Endorsor type *</label>
+            <label htmlFor="type">Endorser type *</label>
             <select
               id="type"
               value={stakeholder.type}
@@ -319,7 +319,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
               data-testid="type-select"
             >
               <option value="" disabled>
-                Select endorsor type
+                Select endorser type
               </option>
               {stakeholderTypes.map(type => (
                 <option key={type.value} value={type.value}>
