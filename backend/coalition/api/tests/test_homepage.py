@@ -3,7 +3,7 @@ from unittest.mock import patch
 from django.test import TestCase
 from django.test.client import Client
 
-from coalition.content.models import ContentBlock, HomePage, Image
+from coalition.content.models import ContentBlock, HomePage, Image, Video
 
 
 class HomepageAPITest(TestCase):
@@ -282,6 +282,11 @@ class HomepageAPITest(TestCase):
             "hero_title",
             "hero_subtitle",
             "hero_background_image_url",
+            "hero_background_video_url",
+            "hero_background_video_data",
+            "hero_overlay_enabled",
+            "hero_overlay_color",
+            "hero_overlay_opacity",
             "cta_title",
             "cta_content",
             "cta_button_text",
@@ -528,3 +533,69 @@ class HomepageAPITest(TestCase):
             assert first_block["id"] == block_data["id"]
             assert first_block["title"] == block_data["title"]
             assert first_block["content"] == block_data["content"]
+
+    def test_homepage_with_hero_video(self) -> None:
+        """Test homepage API response when hero video is set"""
+        # Create a test video
+        video = Video.objects.create(
+            title="Hero Video",
+            alt_text="Hero background video",
+            video_type="hero",
+            autoplay=True,
+            loop=True,
+            muted=True,
+        )
+
+        # Patch video URL property
+        with patch.object(
+            Video,
+            "video_url",
+            new_callable=lambda: property(
+                lambda _: "https://test-bucket.s3.amazonaws.com/videos/hero.mp4",
+            ),
+        ):
+            # Update homepage with video
+            self.homepage.hero_background_video = video
+            self.homepage.save()
+
+            response = self.client.get("/api/homepage/")
+            assert response.status_code == 200
+            data = response.json()
+
+            # Check video URL resolver
+            assert (
+                data["hero_background_video_url"]
+                == "https://test-bucket.s3.amazonaws.com/videos/hero.mp4"
+            )
+
+            # Check video data resolver
+            assert data["hero_background_video_data"] is not None
+            assert data["hero_background_video_data"]["title"] == "Hero Video"
+            assert (
+                data["hero_background_video_data"]["alt_text"]
+                == "Hero background video"
+            )
+            assert data["hero_background_video_data"]["autoplay"] is True
+            assert data["hero_background_video_data"]["loop"] is True
+            assert data["hero_background_video_data"]["muted"] is True
+
+    def test_homepage_without_hero_video(self) -> None:
+        """Test homepage API response when no hero video is set"""
+        response = self.client.get("/api/homepage/")
+        assert response.status_code == 200
+        data = response.json()
+
+        # Check video URL resolver returns None when no video
+        assert data["hero_background_video_url"] is None
+        assert data["hero_background_video_data"] is None
+
+    def test_homepage_hero_overlay_fields(self) -> None:
+        """Test homepage API returns hero overlay configuration"""
+        response = self.client.get("/api/homepage/")
+        assert response.status_code == 200
+        data = response.json()
+
+        # Check overlay fields have default values
+        assert data["hero_overlay_enabled"] is True
+        assert data["hero_overlay_color"] == "#000000"
+        assert data["hero_overlay_opacity"] == 0.4
