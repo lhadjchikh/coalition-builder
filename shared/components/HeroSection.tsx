@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import type { HomePage } from "../types/api";
 
 interface HeroSectionProps {
@@ -7,10 +7,43 @@ interface HeroSectionProps {
 
 const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
   const [videoError, setVideoError] = useState(false);
+  const [videoLoading, setVideoLoading] = useState(true);
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
   const hasVideo = homepage.hero_background_video_url && !videoError;
   const hasImage =
     homepage.hero_background_image_url &&
     (!homepage.hero_background_video_url || videoError);
+
+  // Check if user has preference for reduced motion
+  const prefersReducedMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+  // Check connection speed
+  useEffect(() => {
+    if (!hasVideo || prefersReducedMotion) return;
+
+    // Check if user is on a slow connection
+    const connection =
+      (navigator as any).connection ||
+      (navigator as any).mozConnection ||
+      (navigator as any).webkitConnection;
+
+    if (connection) {
+      // Load video only on fast connections (4g, wifi)
+      const effectiveType = connection.effectiveType;
+      const saveData = connection.saveData;
+
+      if (!saveData && (effectiveType === "4g" || effectiveType === "wifi")) {
+        setShouldLoadVideo(true);
+      }
+    } else {
+      // If no connection API, load video after a short delay
+      setShouldLoadVideo(true);
+    }
+  }, [hasVideo, prefersReducedMotion]);
 
   // Helper function to convert hex color to rgba
   const hexToRgba = (hex: string, opacity: number): string => {
@@ -42,11 +75,14 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
       className={`relative py-24 sm:py-32 ${hasVideo || hasImage ? textColorClass : "bg-theme-bg-section"}`}
       style={heroStyle}
     >
-      {/* Video Background */}
-      {hasVideo && (
+      {/* Video Background - Progressive Enhancement */}
+      {hasVideo && shouldLoadVideo && !prefersReducedMotion && (
         <>
           <video
-            className="absolute inset-0 w-full h-full object-cover"
+            ref={videoRef}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+              videoLoading ? "opacity-0" : "opacity-100"
+            }`}
             autoPlay={homepage.hero_background_video_data?.autoplay ?? true}
             loop={homepage.hero_background_video_data?.loop ?? true}
             muted={homepage.hero_background_video_data?.muted ?? true}
@@ -54,12 +90,24 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
               homepage.hero_background_video_data?.show_controls ?? false
             }
             playsInline
+            preload="metadata"
+            poster={homepage.hero_background_image_url || undefined}
             aria-label={
               homepage.hero_background_video_data?.alt_text ||
               "Hero background video"
             }
-            onError={() => setVideoError(true)}
+            onError={() => {
+              setVideoError(true);
+              setVideoLoading(false);
+            }}
             onLoadStart={() => setVideoError(false)}
+            onLoadedData={() => {
+              setVideoLoading(false);
+              // Start playing when data is loaded
+              videoRef.current?.play().catch(() => {
+                // Silent catch - autoplay might be blocked
+              });
+            }}
           >
             <source src={homepage.hero_background_video_url} type="video/mp4" />
             <source
