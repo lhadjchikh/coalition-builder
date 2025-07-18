@@ -113,7 +113,7 @@
 
 .checkbox-label {
   display: flex !important;
-  align-items: center;
+  align-items: flex-start;
   font-weight: normal !important;
   cursor: pointer;
 }
@@ -121,6 +121,7 @@
 .checkbox-label input[type='checkbox'] {
   width: auto !important;
   margin-right: 0.5rem;
+  margin-top: 0.125rem;
 }
 
 .submit-button {
