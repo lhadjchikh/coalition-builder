@@ -21,6 +21,19 @@ const getVideoMimeType = (url: string | undefined): string => {
   return "video/mp4"; // Default fallback
 };
 
+// Helper function to get network information with proper typing
+const getNetworkInformation = (): NetworkInformation | undefined => {
+  if (typeof navigator === "undefined") return undefined;
+
+  const nav = navigator as Navigator & {
+    connection?: NetworkInformation;
+    mozConnection?: NetworkInformation;
+    webkitConnection?: NetworkInformation;
+  };
+
+  return nav.connection || nav.mozConnection || nav.webkitConnection;
+};
+
 const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
   const [videoError, setVideoError] = useState(false);
   const [videoLoading, setVideoLoading] = useState(true);
@@ -42,13 +55,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
     if (!hasVideo || prefersReducedMotion) return;
 
     // Check if user is on a slow connection
-    const connection: NetworkInformation | undefined =
-      (navigator as Navigator & { connection?: NetworkInformation })
-        .connection ||
-      (navigator as Navigator & { mozConnection?: NetworkInformation })
-        .mozConnection ||
-      (navigator as Navigator & { webkitConnection?: NetworkInformation })
-        .webkitConnection;
+    const connection = getNetworkInformation();
 
     if (connection) {
       // Respect user's data saving preference
@@ -128,7 +135,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
               setVideoLoading(false);
               // Start playing when data is loaded
               videoRef.current?.play().catch((error) => {
-                console.warn("Video autoplay failed:", error);
+                console.warn(
+                  `Video autoplay failed for URL: ${
+                    homepage.hero_background_video_url || "unknown"
+                  }. Error:`,
+                  error,
+                );
                 // Don't set videoError here as the video can still be played manually
               });
             }}
