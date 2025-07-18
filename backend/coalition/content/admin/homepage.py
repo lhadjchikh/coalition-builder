@@ -14,6 +14,7 @@ class HomePageAdmin(admin.ModelAdmin):
         "theme",
         "is_active",
         "has_hero_image",
+        "has_hero_video",
         "created_at",
         "updated_at",
     )
@@ -25,7 +26,34 @@ class HomePageAdmin(admin.ModelAdmin):
         (None, {"fields": ("organization_name", "tagline", "theme", "is_active")}),
         (
             "Hero Section",
-            {"fields": ("hero_title", "hero_subtitle", "hero_background_image")},
+            {
+                "fields": (
+                    "hero_title",
+                    "hero_subtitle",
+                    "hero_background_image",
+                    "hero_background_video",
+                ),
+                "description": (
+                    "You can set either a background image or video. "
+                    "Videos should be uploaded and configured in the Videos "
+                    "section first."
+                ),
+            },
+        ),
+        (
+            "Hero Overlay Settings",
+            {
+                "fields": (
+                    "hero_overlay_enabled",
+                    "hero_overlay_color",
+                    "hero_overlay_opacity",
+                ),
+                "classes": ("collapse",),
+                "description": (
+                    "Configure the overlay that appears on top of the hero "
+                    "image/video for better text readability."
+                ),
+            },
         ),
         (
             "Call to Action",
@@ -72,3 +100,10 @@ class HomePageAdmin(admin.ModelAdmin):
 
     has_hero_image.boolean = True
     has_hero_image.short_description = "Has Hero Image"
+
+    def has_hero_video(self, obj: HomePage) -> bool:
+        """Display whether homepage has a hero video"""
+        return bool(obj.hero_background_video)
+
+    has_hero_video.boolean = True
+    has_hero_video.short_description = "Has Hero Video"
