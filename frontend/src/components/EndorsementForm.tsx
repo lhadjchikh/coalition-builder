@@ -27,7 +27,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
       city: '',
       state: '',
       zip_code: '',
-      type: 'individual',
+      type: '',
       email_updates: false,
     });
 
@@ -132,7 +132,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           city: '',
           state: '',
           zip_code: '',
-          type: 'individual',
+          type: '',
           email_updates: false,
         });
         setStatement('');
