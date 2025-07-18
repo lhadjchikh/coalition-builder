@@ -1,7 +1,7 @@
 import React from 'react';
-import seedSvg from '../assets/icons/seed.svg';
-import seedlingSvg from '../assets/icons/seedling.svg';
-import treeSvg from '../assets/icons/tree.svg';
+import seedSvg from '@shared/assets/icons/seed.svg';
+import seedlingSvg from '@shared/assets/icons/seedling.svg';
+import treeSvg from '@shared/assets/icons/tree.svg';
 
 interface GrowthIconProps {
   stage: 'seed' | 'seedling' | 'tree';

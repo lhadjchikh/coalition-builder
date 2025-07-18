@@ -49,6 +49,12 @@ const nextConfig = {
       loader: "null-loader",
     });
 
+    // Add SVG handling
+    config.module.rules.push({
+      test: /\.svg$/,
+      type: 'asset/resource',
+    });
+
     return config;
   },
 
