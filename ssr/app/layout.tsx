@@ -5,6 +5,7 @@ import SSRNavbar from "../components/SSRNavbar";
 import SSRFooter from "../components/SSRFooter";
 import CookieConsent from "@shared/components/CookieConsent";
 import GoogleAnalytics from "../components/GoogleAnalytics";
+import ThemeStyles from "../components/ThemeStyles";
 import { ssrApiClient } from "../lib/api";
 import { NavItemData, DEFAULT_NAV_ITEMS } from "@shared/types";
 import { getFallbackHomepage } from "@shared/utils/homepage-data";
@@ -33,6 +34,7 @@ export default async function RootLayout({
   // Fetch homepage data for navbar and footer
   let organizationName = "";
   let homepage = null;
+  let themeStyles = { cssVariables: "", customCss: "" };
 
   try {
     homepage = await ssrApiClient.getHomepage();
@@ -44,11 +46,31 @@ export default async function RootLayout({
     homepage = fallbackHomepage;
   }
 
+  // Fetch theme CSS
+  try {
+    const response = await fetch(
+      `${process.env.API_URL || "http://localhost:8000"}/api/theme/current/css/`,
+    );
+    if (response.ok) {
+      const data = await response.json();
+      themeStyles = {
+        cssVariables: data.css_variables || "",
+        customCss: data.custom_css || "",
+      };
+    }
+  } catch (error) {
+    console.error("Error fetching theme CSS:", error);
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* The head tag is optional in Next.js App Router,
             but we include it explicitly to ensure it's present for SSR tests */}
+        <ThemeStyles
+          cssVariables={themeStyles.cssVariables}
+          customCss={themeStyles.customCss}
+        />
       </head>
       <body>
         <StyledComponentsRegistry>

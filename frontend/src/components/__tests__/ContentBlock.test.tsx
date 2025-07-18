@@ -83,7 +83,7 @@ describe('ContentBlock', () => {
 
       const proseDiv = screen.getByText('Test content').closest('.prose');
       expect(proseDiv).toBeInTheDocument();
-      expect(proseDiv).toHaveClass('prose', 'max-w-none');
+      expect(proseDiv).toHaveClass('prose', 'prose-xl', 'max-w-none');
     });
   });
 
@@ -278,7 +278,7 @@ describe('ContentBlock', () => {
       render(<ContentBlock block={block} />);
 
       const gridDiv = screen.getByText('Stat content').closest('.grid');
-      expect(gridDiv).toHaveClass('grid', 'grid-cols-1', 'md:grid-cols-3', 'gap-8');
+      expect(gridDiv).toHaveClass('grid', 'grid-cols-1', 'md:grid-cols-3', 'gap-8', 'text-xl');
     });
   });
 
