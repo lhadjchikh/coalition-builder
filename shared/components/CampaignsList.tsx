@@ -1,5 +1,4 @@
 import React from "react";
-import Button from "./Button";
 
 // Generic campaign interface that works with both frontend and SSR
 interface Campaign {
@@ -80,9 +79,13 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
                 ${cardClassName}
               `}
               data-testid={`campaign-${campaign.id}`}
-              onClick={(e) => {
-                // Only trigger if the click wasn't on the button
-                if ((e.target as HTMLElement).closest("button") === null) {
+              tabIndex={0}
+              role="button"
+              aria-label={`View details for ${campaign.title}`}
+              onClick={() => onCampaignSelect?.(campaign)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
                   onCampaignSelect?.(campaign);
                 }
               }}
@@ -125,29 +128,11 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
                   </div>
                 )}
 
-                <Button
-                  onClick={() => {
-                    onCampaignSelect?.(campaign);
-                  }}
-                  variant="primary"
-                  size="sm"
-                  fullWidth
-                  className="
-                    group-hover:bg-theme-primary-dark 
-                    group-hover:shadow-lg 
-                    transition-all duration-300
-                    relative overflow-hidden
-                  "
-                  data-testid={`view-campaign-${campaign.id}`}
-                >
-                  <span className="relative z-10">Learn More →</span>
-                  <span
-                    className="
-                    absolute inset-0 bg-white opacity-0 
-                    group-hover:opacity-20 transition-opacity duration-300
-                  "
-                  ></span>
-                </Button>
+                <div className="flex items-center justify-between">
+                  <span className="text-theme-primary font-semibold group-hover:text-theme-primary-dark transition-colors">
+                    Learn More →
+                  </span>
+                </div>
               </div>
             </div>
           ))}
