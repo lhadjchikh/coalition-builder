@@ -1,0 +1,67 @@
+/* Global styles shared between frontend and SSR apps */
+
+/* Basic link styling */
+a {
+  color: #0070f3;
+  text-decoration: none;
+}
+
+/* Underline on hover for content links, but not navigation, footer, or buttons */
+a:hover:not(nav a):not(footer a):not(.no-underline) {
+  text-decoration: underline;
+}
+
+/* Ensure nav and footer links never have underlines */
+nav a:hover,
+footer a:hover {
+  text-decoration: none;
+}
+
+/* Ensure buttons and elements with no-underline class never have underlines */
+a.no-underline,
+a.no-underline:hover,
+button,
+button:hover,
+[role="button"],
+[role="button"]:hover {
+  text-decoration: none !important;
+}
+
+/* Global heading styles - use theme fonts */
+h1,
+h2,
+h3 {
+  font-family:
+    var(--theme-font-heading),
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+}
+
+/* Typography utilities from theme */
+.font-theme-heading {
+  font-family: var(--theme-font-heading, inherit);
+}
+
+.font-theme-body {
+  font-family: var(--theme-font-body, inherit);
+}
+
+/* Optimal reading width utilities */
+.max-w-reading {
+  max-width: 65ch; /* ~65 characters for optimal reading */
+}
+
+.max-w-reading-lg {
+  max-width: 75ch; /* Slightly wider for larger text */
+}
+
+.max-w-prose-container {
+  max-width: 65ch;
+  margin-left: auto;
+  margin-right: auto;
+}

@@ -169,7 +169,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
           </h1>
           {homepage.hero_subtitle && (
             <p
-              className={`mt-6 text-xl font-theme-body ${textColorClass} max-w-3xl mx-auto leading-relaxed`}
+              className={`mt-6 text-xl font-theme-body ${textColorClass} max-w-reading-lg mx-auto leading-relaxed`}
             >
               {homepage.hero_subtitle}
             </p>

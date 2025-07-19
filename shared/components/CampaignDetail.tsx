@@ -259,7 +259,9 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
               <h1 className="text-4xl font-bold sm:text-5xl md:text-6xl mb-4">
                 {campaign.title}
               </h1>
-              <p className="text-xl">{campaign.summary}</p>
+              <p className="text-xl max-w-reading-lg mx-auto">
+                {campaign.summary}
+              </p>
             </div>
           </div>
         </div>
@@ -267,17 +269,21 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
 
       {/* Sticky Endorsement CTA */}
       {campaign.allow_endorsements && showStickyCard && !isFormActive && (
-        <div className="fixed top-0 left-0 right-0 bg-theme-accent text-white p-4 z-50 shadow-lg">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <span className="font-medium">Support this campaign!</span>
-            <Button
-              variant="accent-inverted"
-              size="sm"
-              onClick={scrollToEndorsementForm}
-              aria-label="Scroll to endorsement form"
-            >
-              Endorse Now
-            </Button>
+        <div className="fixed top-0 left-0 right-0 bg-theme-secondary text-white z-50 shadow-lg">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-20">
+              <span className="text-lg font-medium">
+                Support this campaign!
+              </span>
+              <Button
+                variant="primary"
+                size="md"
+                onClick={scrollToEndorsementForm}
+                aria-label="Scroll to endorsement form"
+              >
+                Endorse Now
+              </Button>
+            </div>
           </div>
         </div>
       )}
@@ -290,7 +296,9 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
               <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl md:text-6xl mb-4">
                 {campaign.title}
               </h1>
-              <p className="text-xl text-gray-600">{campaign.summary}</p>
+              <p className="text-xl text-gray-600 max-w-reading-lg mx-auto">
+                {campaign.summary}
+              </p>
             </div>
           )}
 
@@ -391,7 +399,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
 
               <div className="text-center">
                 <Button
-                  variant="accent"
+                  variant="secondary"
                   size="lg"
                   onClick={scrollToEndorsementForm}
                 >
@@ -420,12 +428,12 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
           >
             <h2
               id="campaign-description-heading"
-              className="text-2xl font-bold text-gray-900 mb-6"
+              className="text-3xl font-bold text-gray-900 mb-6"
             >
               About This Campaign
             </h2>
             <div
-              className="prose max-w-none text-gray-700"
+              className="prose prose-lg max-w-prose-container text-gray-700"
               dangerouslySetInnerHTML={{ __html: campaign.description }}
             />
           </section>

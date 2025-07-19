@@ -48,6 +48,11 @@ module.exports = {
         "theme-small": "var(--theme-font-size-small, 0.875rem)",
         "theme-large": "var(--theme-font-size-large, 1.125rem)",
       },
+      maxWidth: {
+        reading: "65ch",
+        "reading-lg": "75ch",
+        "prose-container": "65ch",
+      },
     },
   },
   plugins: [],
