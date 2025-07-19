@@ -272,7 +272,9 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         <div className="fixed top-0 left-0 right-0 bg-theme-secondary text-white z-50 shadow-lg">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-20">
-              <span className="text-lg font-medium">Support this campaign!</span>
+              <span className="text-lg font-medium">
+                Support this campaign!
+              </span>
               <Button
                 variant="primary"
                 size="md"
