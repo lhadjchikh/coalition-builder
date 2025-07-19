@@ -1,6 +1,7 @@
 import React from "react";
 import type { Campaign, HomePage, ContentBlock } from "../types/api";
 import type { NavItemData } from "../types";
+import Button from "./Button";
 
 interface NavbarProps {
   organizationName?: string;
@@ -76,12 +77,13 @@ const HomePage: React.FC<HomePageProps> = ({
                 )}
                 {homepage.cta_button_url && homepage.cta_button_text && (
                   <div className="mt-10">
-                    <a
+                    <Button
                       href={homepage.cta_button_url}
-                      className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 no-underline"
+                      variant="primary"
+                      size="lg"
                     >
                       {homepage.cta_button_text}
-                    </a>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -152,19 +154,21 @@ const HomePage: React.FC<HomePageProps> = ({
                             {campaign.summary}
                           </p>
                           {onCampaignSelect ? (
-                            <button
+                            <Button
                               onClick={() => onCampaignSelect(campaign)}
-                              className="inline-block px-4 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700 font-medium transition-colors duration-200 no-underline"
+                              variant="primary"
+                              size="sm"
                             >
                               Learn more →
-                            </button>
+                            </Button>
                           ) : (
-                            <a
+                            <Button
                               href={`/campaigns/${campaign.name}`}
-                              className="inline-block px-4 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700 font-medium transition-colors duration-200 no-underline"
+                              variant="primary"
+                              size="sm"
                             >
                               Learn more →
-                            </a>
+                            </Button>
                           )}
                         </div>
                       </div>
@@ -189,12 +193,13 @@ const HomePage: React.FC<HomePageProps> = ({
               />
               {homepage.cta_button_url && homepage.cta_button_text && (
                 <div className="mt-8">
-                  <a
+                  <Button
                     href={homepage.cta_button_url}
-                    className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-theme-accent bg-white hover:bg-gray-100 transition-colors duration-200 no-underline"
+                    variant="accent-inverted"
+                    size="lg"
                   >
                     {homepage.cta_button_text}
-                  </a>
+                  </Button>
                 </div>
               )}
             </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import Button from "./Button";
 
 // Generic interfaces that work with both frontend and SSR
 interface Campaign {
@@ -267,13 +268,14 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         <div className="fixed top-0 left-0 right-0 bg-theme-accent text-white p-4 z-50 shadow-lg">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <span className="font-medium">Support this campaign!</span>
-            <button
-              className="bg-white text-theme-accent px-4 py-2 rounded font-medium hover:bg-gray-100 transition-colors"
+            <Button
+              variant="accent-inverted"
+              size="sm"
               onClick={scrollToEndorsementForm}
               aria-label="Scroll to endorsement form"
             >
               Endorse Now
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -386,8 +388,9 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
               )}
 
               <div className="text-center">
-                <button
-                  className="bg-theme-accent text-white px-8 py-3 rounded-lg font-medium hover:bg-theme-accent-dark transition-colors text-lg"
+                <Button
+                  variant="accent"
+                  size="lg"
                   onClick={scrollToEndorsementForm}
                 >
                   {endorsementCount === 0
@@ -395,7 +398,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                     : endorsementCount < SOCIAL_PROOF_THRESHOLD
                       ? "Join the Early Supporters"
                       : "Add Your Endorsement"}
-                </button>
+                </Button>
                 {endorsementCount > 0 &&
                   endorsementCount < SOCIAL_PROOF_THRESHOLD && (
                     <p className="text-gray-600 mt-2">

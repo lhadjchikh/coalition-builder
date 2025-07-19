@@ -3,6 +3,7 @@ import { HomePage, Campaign, ContentBlock } from "../types/api";
 import { NavItemData } from "../types";
 import PageLayout from "./PageLayout";
 import ContentBlocksList from "./ContentBlocksList";
+import Button from "./Button";
 
 interface NavbarProps {
   organizationName?: string;
@@ -92,19 +93,21 @@ const CampaignsPage: React.FC<CampaignsPageProps> = ({
                   </h3>
                   <p className="text-gray-600 mb-4">{campaign.summary}</p>
                   {onCampaignSelect ? (
-                    <button
+                    <Button
                       onClick={() => onCampaignSelect(campaign)}
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 no-underline"
+                      variant="primary"
+                      size="sm"
                     >
                       Learn More →
-                    </button>
+                    </Button>
                   ) : (
-                    <a
+                    <Button
                       href={`/campaigns/${campaign.name}`}
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 no-underline"
+                      variant="primary"
+                      size="sm"
                     >
                       Learn More →
-                    </a>
+                    </Button>
                   )}
                 </div>
               </div>
