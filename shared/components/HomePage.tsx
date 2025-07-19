@@ -154,14 +154,14 @@ const HomePage: React.FC<HomePageProps> = ({
                           {onCampaignSelect ? (
                             <button
                               onClick={() => onCampaignSelect(campaign)}
-                              className="text-blue-600 hover:text-blue-800 font-medium"
+                              className="inline-block px-4 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700 font-medium transition-colors duration-200 no-underline"
                             >
                               Learn more →
                             </button>
                           ) : (
                             <a
                               href={`/campaigns/${campaign.name}`}
-                              className="text-blue-600 hover:text-blue-800 font-medium"
+                              className="inline-block px-4 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700 font-medium transition-colors duration-200 no-underline"
                             >
                               Learn more →
                             </a>
