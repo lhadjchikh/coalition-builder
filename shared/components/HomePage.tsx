@@ -78,7 +78,7 @@ const HomePage: React.FC<HomePageProps> = ({
                   <div className="mt-10">
                     <a
                       href={homepage.cta_button_url}
-                      className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-gray-50 transition-colors duration-200"
+                      className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 no-underline"
                     >
                       {homepage.cta_button_text}
                     </a>
@@ -191,7 +191,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 <div className="mt-8">
                   <a
                     href={homepage.cta_button_url}
-                    className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-gray-50 transition-colors duration-200"
+                    className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 no-underline"
                   >
                     {homepage.cta_button_text}
                   </a>
