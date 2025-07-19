@@ -426,16 +426,18 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             role="region"
             aria-labelledby="campaign-description-heading"
           >
-            <h2
-              id="campaign-description-heading"
-              className="text-3xl font-bold text-gray-900 mb-6"
-            >
-              About This Campaign
-            </h2>
-            <div
-              className="prose prose-lg max-w-prose-container text-gray-700"
-              dangerouslySetInnerHTML={{ __html: campaign.description }}
-            />
+            <div className="max-w-prose-container">
+              <h2
+                id="campaign-description-heading"
+                className="text-3xl font-bold text-gray-900 mb-6"
+              >
+                About This Campaign
+              </h2>
+              <div
+                className="prose prose-lg text-gray-700"
+                dangerouslySetInnerHTML={{ __html: campaign.description }}
+              />
+            </div>
           </section>
         )}
 
