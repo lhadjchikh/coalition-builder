@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* Import shared global styles */
-@import "../../shared/styles/global.css";
+@import "../shared/styles/global.css";
 
 :root {
   --foreground-rgb: 0, 0, 0;
