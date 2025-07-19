@@ -48,7 +48,11 @@ const Home: React.FC = () => {
         setHomepage(homepageResult.value);
       } else {
         console.error('Error fetching homepage:', homepageResult.reason);
-        setHomepageError(homepageResult.reason instanceof Error ? homepageResult.reason.message : 'Failed to fetch homepage');
+        setHomepageError(
+          homepageResult.reason instanceof Error
+            ? homepageResult.reason.message
+            : 'Failed to fetch homepage'
+        );
         // Use fallback homepage data
         setHomepage(getFallbackHomepage());
       }
@@ -58,7 +62,11 @@ const Home: React.FC = () => {
         setCampaigns(campaignsResult.value);
       } else {
         console.error('Error fetching campaigns:', campaignsResult.reason);
-        setCampaignsError(campaignsResult.reason instanceof Error ? campaignsResult.reason.message : 'Failed to fetch campaigns');
+        setCampaignsError(
+          campaignsResult.reason instanceof Error
+            ? campaignsResult.reason.message
+            : 'Failed to fetch campaigns'
+        );
       }
 
       // Handle content blocks result
