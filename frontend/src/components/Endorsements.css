@@ -137,6 +137,41 @@
   background-color: #fff;
 }
 
+/* Custom select styling */
+.form-group select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1em;
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+.form-group select:hover {
+  border-color: #999;
+}
+
+/* Style select options */
+.form-group select option {
+  padding: 0.5rem;
+  background-color: #fff;
+  color: #333;
+}
+
+.form-group select option:hover {
+  background-color: #f5f5f5;
+}
+
+/* Disabled select styling */
+.form-group select:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .form-group input[type='text']:focus,
 .form-group input[type='email']:focus,
 .form-group select:focus,
