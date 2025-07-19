@@ -10,7 +10,7 @@ class ContentBlockAdmin(admin.ModelAdmin):
     """Admin interface for ContentBlock model."""
 
     list_display = (
-        "title",
+        "display_title",
         "block_type",
         "page_type",
         "order",
@@ -50,6 +50,14 @@ class ContentBlockAdmin(admin.ModelAdmin):
             {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},
         ),
     )
+
+    def display_title(self, obj: ContentBlock) -> str:
+        """Display title with a more meaningful placeholder for empty titles"""
+        if obj.title:
+            return obj.title
+        return f"(No title - {obj.get_block_type_display()})"
+
+    display_title.short_description = "Title"
 
     def has_image(self, obj: ContentBlock) -> bool:
         """Display whether content block has an image"""
