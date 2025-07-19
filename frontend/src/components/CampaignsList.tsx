@@ -85,7 +85,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({ onCampaignSelect }) => {
                 <div className="campaign-actions">
                   <button
                     className="view-campaign-btn"
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
                       onCampaignSelect?.(campaign);
                     }}
