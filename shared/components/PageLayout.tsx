@@ -53,7 +53,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
               {title}
             </h1>
             {subtitle && (
-              <p className="mt-4 text-xl text-gray-600">{subtitle}</p>
+              <p className="mt-4 text-xl text-gray-600 max-w-4xl">{subtitle}</p>
             )}
           </div>
         </div>

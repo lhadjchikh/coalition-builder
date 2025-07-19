@@ -78,7 +78,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
     switch (block.block_type) {
       case "text":
         return (
-          <div className="prose prose-xl max-w-none">
+          <div className="prose prose-xl max-w-4xl mx-auto">
             {block.title && (
               <h3 className="text-3xl font-bold text-gray-900 mb-6">
                 {block.title}
@@ -108,7 +108,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
             )}
             {block.content && (
               <div
-                className="mt-4 text-xl text-gray-600"
+                className="mt-4 text-xl text-gray-600 max-w-4xl mx-auto"
                 dangerouslySetInnerHTML={{ __html: block.content }}
               />
             )}
@@ -143,7 +143,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
 
       case "quote":
         return (
-          <div className="text-center">
+          <div className="text-center max-w-4xl mx-auto">
             <blockquote className="text-2xl italic text-gray-800 mb-4">
               "{block.content}"
             </blockquote>

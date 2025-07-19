@@ -110,7 +110,7 @@ const HomePage: React.FC<HomePageProps> = ({
                   {homepage.campaigns_section_title}
                 </h2>
                 {homepage.campaigns_section_subtitle && (
-                  <p className="mt-4 text-xl text-gray-600">
+                  <p className="mt-4 text-xl text-gray-600 max-w-4xl mx-auto">
                     {homepage.campaigns_section_subtitle}
                   </p>
                 )}
@@ -184,7 +184,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 {homepage.cta_title}
               </h2>
               <div
-                className="mt-4 text-xl text-blue-100"
+                className="mt-4 text-xl text-blue-100 max-w-4xl mx-auto"
                 dangerouslySetInnerHTML={{ __html: homepage.cta_content }}
               />
               {homepage.cta_button_url && homepage.cta_button_text && (
