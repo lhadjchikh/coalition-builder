@@ -206,7 +206,11 @@
 }
 
 .submit-button {
-  background: linear-gradient(135deg, var(--theme-accent, #f59e0b), var(--theme-accent-dark, #d97706));
+  background: linear-gradient(
+    135deg,
+    var(--theme-accent, #f59e0b),
+    var(--theme-accent-dark, #d97706)
+  );
   color: white;
   padding: 1rem 2.5rem;
   border: none;
@@ -495,7 +499,11 @@
 }
 
 .header-endorse-button {
-  background: linear-gradient(135deg, var(--theme-secondary, #64748b), var(--theme-secondary-dark, #475569));
+  background: linear-gradient(
+    135deg,
+    var(--theme-secondary, #64748b),
+    var(--theme-secondary-dark, #475569)
+  );
   color: white;
   padding: 1rem 2.5rem;
   border: none;

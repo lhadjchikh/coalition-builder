@@ -255,13 +255,11 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             className="w-full h-96 object-cover"
           />
           <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-            <div className="text-center text-white px-4">
+            <div className="text-center text-white px-4 max-w-prose-container">
               <h1 className="text-4xl font-bold sm:text-5xl md:text-6xl mb-4">
                 {campaign.title}
               </h1>
-              <p className="text-xl max-w-reading-lg mx-auto">
-                {campaign.summary}
-              </p>
+              <p className="text-xl">{campaign.summary}</p>
             </div>
           </div>
         </div>
@@ -292,132 +290,134 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         <header className="mb-8">
           {/* Only show title and summary in header if there's no hero image */}
           {!campaign.image_url && (
-            <div className="text-center mb-8">
+            <div className="max-w-prose-container text-center mb-8">
               <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl md:text-6xl mb-4">
                 {campaign.title}
               </h1>
-              <p className="text-xl text-gray-600 max-w-reading-lg mx-auto">
-                {campaign.summary}
-              </p>
+              <p className="text-xl text-gray-600">{campaign.summary}</p>
             </div>
           )}
 
-          {/* Smart Social Proof Section */}
-          {campaign.allow_endorsements &&
-            endorsementCount >= SOCIAL_PROOF_THRESHOLD && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
-                <div className="flex items-center gap-4 mb-4">
-                  {GrowthIconComponent && (
-                    <div className="flex-shrink-0">
-                      <GrowthIconComponent
-                        stage="tree"
-                        size="48px"
-                        color="#4caf50"
-                      />
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    <div className="text-2xl font-bold text-green-800">
-                      {endorsementCount}{" "}
-                      {endorsementCount === 1 ? "Endorsement" : "Endorsements"}
-                    </div>
-                    <p className="text-green-700">
-                      Join {endorsementCount} supporters backing this campaign
-                    </p>
-                  </div>
-                </div>
-                {recentEndorsements > 0 &&
-                  endorsementCount >= MOMENTUM_DISPLAY_THRESHOLD && (
-                    <div className="bg-yellow-100 border border-yellow-200 rounded px-3 py-1 inline-block">
-                      <span className="text-yellow-800 text-sm font-medium">
-                        ✨ {recentEndorsements} new{" "}
-                        {recentEndorsements === 1
-                          ? "endorsement"
-                          : "endorsements"}{" "}
-                        this week
-                      </span>
-                    </div>
-                  )}
-              </div>
-            )}
-
-          {/* Early Supporter Appeal (1-9 endorsements) */}
-          {campaign.allow_endorsements &&
-            endorsementCount > 0 &&
-            endorsementCount < SOCIAL_PROOF_THRESHOLD && (
-              <div className="bg-theme-primary/5 border border-theme-primary/20 rounded-lg p-6 mb-6">
-                <div className="flex items-center gap-4">
-                  {GrowthIconComponent && (
-                    <div className="flex-shrink-0">
-                      <GrowthIconComponent
-                        stage="seedling"
-                        size="48px"
-                        color="#4caf50"
-                      />
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-theme-primary-dark mb-2">
-                      Join the Early Supporters
-                    </h3>
-                    <p className="text-theme-primary">
-                      Be among the founding voices advocating for this important
-                      initiative.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-          {/* Endorsement CTA Section */}
-          {campaign.allow_endorsements && (
-            <div className="mb-8">
-              {endorsementCount === 0 && (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-4">
-                  <div className="flex items-center gap-4">
+          <div className="max-w-prose-container">
+            {/* Smart Social Proof Section */}
+            {campaign.allow_endorsements &&
+              endorsementCount >= SOCIAL_PROOF_THRESHOLD && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+                  <div className="flex items-center gap-4 mb-4">
                     {GrowthIconComponent && (
                       <div className="flex-shrink-0">
                         <GrowthIconComponent
-                          stage="seed"
+                          stage="tree"
                           size="48px"
                           color="#4caf50"
                         />
                       </div>
                     )}
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                        Be the First to Show Support
+                      <div className="text-2xl font-bold text-green-800">
+                        {endorsementCount}{" "}
+                        {endorsementCount === 1
+                          ? "Endorsement"
+                          : "Endorsements"}
+                      </div>
+                      <p className="text-green-700">
+                        Join {endorsementCount} supporters backing this campaign
+                      </p>
+                    </div>
+                  </div>
+                  {recentEndorsements > 0 &&
+                    endorsementCount >= MOMENTUM_DISPLAY_THRESHOLD && (
+                      <div className="bg-yellow-100 border border-yellow-200 rounded px-3 py-1 inline-block">
+                        <span className="text-yellow-800 text-sm font-medium">
+                          ✨ {recentEndorsements} new{" "}
+                          {recentEndorsements === 1
+                            ? "endorsement"
+                            : "endorsements"}{" "}
+                          this week
+                        </span>
+                      </div>
+                    )}
+                </div>
+              )}
+
+            {/* Early Supporter Appeal (1-9 endorsements) */}
+            {campaign.allow_endorsements &&
+              endorsementCount > 0 &&
+              endorsementCount < SOCIAL_PROOF_THRESHOLD && (
+                <div className="bg-theme-primary/5 border border-theme-primary/20 rounded-lg p-6 mb-6">
+                  <div className="flex items-center gap-4">
+                    {GrowthIconComponent && (
+                      <div className="flex-shrink-0">
+                        <GrowthIconComponent
+                          stage="seedling"
+                          size="48px"
+                          color="#4caf50"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-theme-primary-dark mb-2">
+                        Join the Early Supporters
                       </h3>
-                      <p className="text-gray-700">
-                        Help launch this campaign by adding your voice to this
-                        important cause.
+                      <p className="text-theme-primary">
+                        Be among the founding voices advocating for this
+                        important initiative.
                       </p>
                     </div>
                   </div>
                 </div>
               )}
 
-              <div className="text-center">
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  onClick={scrollToEndorsementForm}
-                >
-                  {endorsementCount === 0
-                    ? "Be the First to Endorse"
-                    : endorsementCount < SOCIAL_PROOF_THRESHOLD
-                      ? "Join the Early Supporters"
-                      : "Add Your Endorsement"}
-                </Button>
-                {endorsementCount > 0 &&
-                  endorsementCount < SOCIAL_PROOF_THRESHOLD && (
-                    <p className="text-gray-600 mt-2">
-                      Join this growing movement in its early stages.
-                    </p>
-                  )}
+            {/* Endorsement CTA Section */}
+            {campaign.allow_endorsements && (
+              <div className="mb-8">
+                {endorsementCount === 0 && (
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-4">
+                    <div className="flex items-center gap-4">
+                      {GrowthIconComponent && (
+                        <div className="flex-shrink-0">
+                          <GrowthIconComponent
+                            stage="seed"
+                            size="48px"
+                            color="#4caf50"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                          Be the First to Show Support
+                        </h3>
+                        <p className="text-gray-700">
+                          Help launch this campaign by adding your voice to this
+                          important cause.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="text-center">
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    onClick={scrollToEndorsementForm}
+                  >
+                    {endorsementCount === 0
+                      ? "Be the First to Endorse"
+                      : endorsementCount < SOCIAL_PROOF_THRESHOLD
+                        ? "Join the Early Supporters"
+                        : "Add Your Endorsement"}
+                  </Button>
+                  {endorsementCount > 0 &&
+                    endorsementCount < SOCIAL_PROOF_THRESHOLD && (
+                      <p className="text-gray-600 mt-2">
+                        Join this growing movement in its early stages.
+                      </p>
+                    )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </header>
 
         {campaign.description && (

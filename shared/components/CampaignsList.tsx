@@ -82,7 +82,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
               data-testid={`campaign-${campaign.id}`}
               onClick={(e) => {
                 // Only trigger if the click wasn't on the button
-                if ((e.target as HTMLElement).closest('button') === null) {
+                if ((e.target as HTMLElement).closest("button") === null) {
                   onCampaignSelect?.(campaign);
                 }
               }}
