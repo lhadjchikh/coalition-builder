@@ -50,8 +50,10 @@ const CampaignsList: React.FC<CampaignsListProps> = ({ onCampaignSelect }) => {
           {campaigns.map(campaign => (
             <div
               key={campaign.id}
-              className="campaign-card"
+              className="campaign-card clickable-card"
               data-testid={`campaigns-list-campaign-${campaign.id}`}
+              onClick={() => onCampaignSelect?.(campaign)}
+              style={{ cursor: 'pointer' }}
             >
               {campaign.image_url && (
                 <div className="campaign-card-image">
@@ -83,10 +85,13 @@ const CampaignsList: React.FC<CampaignsListProps> = ({ onCampaignSelect }) => {
                 <div className="campaign-actions">
                   <button
                     className="view-campaign-btn"
-                    onClick={() => onCampaignSelect?.(campaign)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCampaignSelect?.(campaign);
+                    }}
                     data-testid={`view-campaign-${campaign.id}`}
                   >
-                    View Campaign
+                    Learn More →
                   </button>
                 </div>
               </div>
