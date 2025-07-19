@@ -38,7 +38,7 @@ locals {
     },
     {
       name  = "CSRF_TRUSTED_ORIGINS"
-      value = var.csrf_trusted_origins != "" ? "${var.csrf_trusted_origins},https://${var.domain_name},https://www.${var.domain_name}" : "https://${var.domain_name},https://www.${var.domain_name}"
+      value = var.csrf_trusted_origins != "" ? "${var.csrf_trusted_origins},https://${var.domain_name},https://www.${var.domain_name},http://${var.alb_dns_name}" : "https://${var.domain_name},https://www.${var.domain_name},http://${var.alb_dns_name}"
     },
     {
       name  = "CACHE_URL"

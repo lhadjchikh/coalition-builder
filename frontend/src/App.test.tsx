@@ -1,4 +1,14 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
+import App from './App';
+
+// Mock Router to avoid nested router issues
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  BrowserRouter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Routes: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Route: ({ element }: { element: React.ReactNode }) => <div>{element}</div>,
+}));
 
 // Mock page components to focus on App's routing responsibilities
 jest.mock('./pages/Home', () => {
@@ -43,38 +53,37 @@ jest.mock('@shared/components/CookieConsent', () => {
   };
 });
 
-// Mock the pages to isolate App testing
-const AppComponent = () => {
-  return (
-    <div className="App">
-      <div data-testid="google-analytics">Mock Google Analytics</div>
-      <div data-testid="cookie-consent">Mock Cookie Consent</div>
-      <div data-testid="home-page">Mock Home Page</div>
-    </div>
-  );
-};
-
-// Helper function to render App
-const renderApp = () => {
-  return render(<AppComponent />);
-};
-
 describe('App component', () => {
-  test('renders without crashing', () => {
-    renderApp();
+  test('renders app structure with all components', () => {
+    render(<App />);
+
+    // App wrapper should exist
+    const appDiv = document.querySelector('.App');
+    expect(appDiv).toBeInTheDocument();
+
+    // All components should be rendered through the mocked router
+    expect(screen.getByTestId('google-analytics')).toBeInTheDocument();
+    expect(screen.getByTestId('cookie-consent')).toBeInTheDocument();
     expect(screen.getByTestId('home-page')).toBeInTheDocument();
   });
 
-  test('renders global components', () => {
-    renderApp();
-    expect(screen.getByTestId('google-analytics')).toBeInTheDocument();
-    expect(screen.getByTestId('cookie-consent')).toBeInTheDocument();
+  test('renders about page component', () => {
+    render(<App />);
+    expect(screen.getByTestId('about-page')).toBeInTheDocument();
   });
 
-  test('renders app structure', () => {
-    renderApp();
-    expect(screen.getByTestId('home-page')).toBeInTheDocument();
-    expect(screen.getByTestId('google-analytics')).toBeInTheDocument();
-    expect(screen.getByTestId('cookie-consent')).toBeInTheDocument();
+  test('renders campaigns page component', () => {
+    render(<App />);
+    expect(screen.getByTestId('campaigns-page')).toBeInTheDocument();
+  });
+
+  test('renders contact page component', () => {
+    render(<App />);
+    expect(screen.getByTestId('contact-page')).toBeInTheDocument();
+  });
+
+  test('renders campaign detail page component', () => {
+    render(<App />);
+    expect(screen.getByTestId('campaign-detail-page')).toBeInTheDocument();
   });
 });

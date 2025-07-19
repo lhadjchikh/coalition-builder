@@ -1,6 +1,7 @@
 import React from "react";
 import type { Campaign, HomePage, ContentBlock } from "../types/api";
 import type { NavItemData } from "../types";
+import Button from "./Button";
 
 interface NavbarProps {
   organizationName?: string;
@@ -66,7 +67,7 @@ const HomePage: React.FC<HomePageProps> = ({
           <section className="relative bg-gradient-to-r from-blue-600 to-blue-800 py-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center">
-                <h1 className="text-4xl font-bold text-white sm:text-5xl md:text-6xl font-theme-heading">
+                <h1 className="text-4xl font-bold text-white sm:text-5xl md:text-6xl">
                   {homepage.hero_title}
                 </h1>
                 {homepage.hero_subtitle && (
@@ -76,12 +77,13 @@ const HomePage: React.FC<HomePageProps> = ({
                 )}
                 {homepage.cta_button_url && homepage.cta_button_text && (
                   <div className="mt-10">
-                    <a
+                    <Button
                       href={homepage.cta_button_url}
-                      className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-gray-50 transition-colors duration-200"
+                      variant="primary"
+                      size="lg"
                     >
                       {homepage.cta_button_text}
-                    </a>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -110,24 +112,26 @@ const HomePage: React.FC<HomePageProps> = ({
                   {homepage.campaigns_section_title}
                 </h2>
                 {homepage.campaigns_section_subtitle && (
-                  <p className="mt-4 text-xl text-gray-600">
+                  <p className="mt-4 text-xl text-gray-600 max-w-4xl mx-auto">
                     {homepage.campaigns_section_subtitle}
                   </p>
                 )}
               </div>
 
               <div className="mt-12">
-                {campaignsError && !campaigns.length ? (
-                  <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
-                    <p>Unable to load campaigns at this time.</p>
-                    {process.env.NODE_ENV === "development" && (
-                      <p className="text-sm mt-1">{campaignsError}</p>
-                    )}
-                  </div>
-                ) : campaigns.length === 0 ? (
-                  <div className="text-center text-gray-600">
-                    <p>No campaigns are currently available.</p>
-                  </div>
+                {campaigns.length === 0 ? (
+                  campaignsError ? (
+                    <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+                      <p>Unable to load campaigns at this time.</p>
+                      {process.env.NODE_ENV === "development" && (
+                        <p className="text-sm mt-1">{campaignsError}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center text-gray-600">
+                      <p>No campaigns are currently available.</p>
+                    </div>
+                  )
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {campaigns.map((campaign) => (
@@ -150,19 +154,21 @@ const HomePage: React.FC<HomePageProps> = ({
                             {campaign.summary}
                           </p>
                           {onCampaignSelect ? (
-                            <button
+                            <Button
                               onClick={() => onCampaignSelect(campaign)}
-                              className="text-blue-600 hover:text-blue-800 font-medium"
+                              variant="primary"
+                              size="sm"
                             >
                               Learn more →
-                            </button>
+                            </Button>
                           ) : (
-                            <a
+                            <Button
                               href={`/campaigns/${campaign.name}`}
-                              className="text-blue-600 hover:text-blue-800 font-medium"
+                              variant="primary"
+                              size="sm"
                             >
                               Learn more →
-                            </a>
+                            </Button>
                           )}
                         </div>
                       </div>
@@ -176,23 +182,24 @@ const HomePage: React.FC<HomePageProps> = ({
 
         {/* Call to Action Section */}
         {homepage.cta_content && (
-          <section className="py-16 bg-blue-600">
+          <section className="py-16 bg-theme-accent">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
               <h2 className="text-3xl font-bold text-white sm:text-4xl">
                 {homepage.cta_title}
               </h2>
               <div
-                className="mt-4 text-xl text-blue-100"
+                className="mt-4 text-xl text-white/90 max-w-4xl mx-auto"
                 dangerouslySetInnerHTML={{ __html: homepage.cta_content }}
               />
               {homepage.cta_button_url && homepage.cta_button_text && (
                 <div className="mt-8">
-                  <a
+                  <Button
                     href={homepage.cta_button_url}
-                    className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-gray-50 transition-colors duration-200"
+                    variant="accent-inverted"
+                    size="lg"
                   >
                     {homepage.cta_button_text}
-                  </a>
+                  </Button>
                 </div>
               )}
             </div>

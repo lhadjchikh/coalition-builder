@@ -1,4 +1,7 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from "react";
+import Button from "./Button";
 
 // Generic interfaces that work with both frontend and SSR
 interface Campaign {
@@ -200,7 +203,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         data-testid="campaign-loading"
       >
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-theme-primary mx-auto mb-4"></div>
           <p className="text-gray-600">Loading campaign...</p>
         </div>
       </div>
@@ -253,7 +256,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
           />
           <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
             <div className="text-center text-white px-4">
-              <h1 className="text-4xl font-bold sm:text-5xl md:text-6xl mb-4 font-theme-heading">
+              <h1 className="text-4xl font-bold sm:text-5xl md:text-6xl mb-4">
                 {campaign.title}
               </h1>
               <p className="text-xl">{campaign.summary}</p>
@@ -264,16 +267,17 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
 
       {/* Sticky Endorsement CTA */}
       {campaign.allow_endorsements && showStickyCard && !isFormActive && (
-        <div className="fixed top-0 left-0 right-0 bg-blue-600 text-white p-4 z-50 shadow-lg">
+        <div className="fixed top-0 left-0 right-0 bg-theme-accent text-white p-4 z-50 shadow-lg">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <span className="font-medium">Support this campaign!</span>
-            <button
-              className="bg-white text-blue-600 px-4 py-2 rounded font-medium hover:bg-gray-100 transition-colors"
+            <Button
+              variant="accent-inverted"
+              size="sm"
               onClick={scrollToEndorsementForm}
               aria-label="Scroll to endorsement form"
             >
               Endorse Now
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -283,7 +287,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
           {/* Only show title and summary in header if there's no hero image */}
           {!campaign.image_url && (
             <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl md:text-6xl mb-4 font-theme-heading">
+              <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl md:text-6xl mb-4">
                 {campaign.title}
               </h1>
               <p className="text-xl text-gray-600">{campaign.summary}</p>
@@ -333,7 +337,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
           {campaign.allow_endorsements &&
             endorsementCount > 0 &&
             endorsementCount < SOCIAL_PROOF_THRESHOLD && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+              <div className="bg-theme-primary/5 border border-theme-primary/20 rounded-lg p-6 mb-6">
                 <div className="flex items-center gap-4">
                   {GrowthIconComponent && (
                     <div className="flex-shrink-0">
@@ -345,10 +349,10 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                     </div>
                   )}
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                    <h3 className="text-lg font-semibold text-theme-primary-dark mb-2">
                       Join the Early Supporters
                     </h3>
-                    <p className="text-blue-700">
+                    <p className="text-theme-primary">
                       Be among the founding voices advocating for this important
                       initiative.
                     </p>
@@ -386,8 +390,9 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
               )}
 
               <div className="text-center">
-                <button
-                  className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors text-lg"
+                <Button
+                  variant="accent"
+                  size="lg"
                   onClick={scrollToEndorsementForm}
                 >
                   {endorsementCount === 0
@@ -395,7 +400,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                     : endorsementCount < SOCIAL_PROOF_THRESHOLD
                       ? "Join the Early Supporters"
                       : "Add Your Endorsement"}
-                </button>
+                </Button>
                 {endorsementCount > 0 &&
                   endorsementCount < SOCIAL_PROOF_THRESHOLD && (
                     <p className="text-gray-600 mt-2">

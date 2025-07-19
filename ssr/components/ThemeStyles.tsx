@@ -18,7 +18,7 @@ const ThemeStyles: React.FC<ThemeStylesProps> = ({
       {cssVariables && (
         <style
           dangerouslySetInnerHTML={{
-            __html: `:root { ${cssVariables} }`,
+            __html: cssVariables,
           }}
         />
       )}

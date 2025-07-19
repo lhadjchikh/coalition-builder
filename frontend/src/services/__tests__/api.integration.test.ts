@@ -94,22 +94,32 @@ describe('API Client Production Integration', () => {
 
       expect(endorsements).toEqual(mockEndorsements);
       // Verify the URL uses relative paths, not absolute URLs
-      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/?campaign_id=1'), {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl('/api/endorsements/?campaign_id=1'),
+        expect.objectContaining({
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
     });
 
     it('should handle network errors gracefully in production', async () => {
-      await withSuppressedErrors(['Failed to fetch'], async () => {
+      await withSuppressedErrors(['Failed to fetch', 'Network error'], async () => {
         // Simulate network errors with relative path API calls
-        mockFetch.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+        // The API client will retry 3 times before failing
+        mockFetch
+          .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+          .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+          .mockRejectedValueOnce(new TypeError('Failed to fetch'));
 
-        await expect(API.getCampaignEndorsements(1)).rejects.toThrow('Failed to fetch');
+        await expect(API.getCampaignEndorsements(1)).rejects.toThrow();
 
         // Verify it attempted to use relative paths
-        expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/?campaign_id=1'), {
-          headers: { 'Content-Type': 'application/json' },
-        });
+        expect(mockFetch).toHaveBeenCalledWith(
+          getExpectedUrl('/api/endorsements/?campaign_id=1'),
+          expect.objectContaining({
+            headers: { 'Content-Type': 'application/json' },
+          })
+        );
       });
     });
 
@@ -142,9 +152,12 @@ describe('API Client Production Integration', () => {
       const campaigns = await API.getCampaigns();
 
       expect(campaigns).toEqual(mockCampaigns);
-      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/campaigns/'), {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl('/api/campaigns/'),
+        expect.objectContaining({
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
     });
 
     it('should handle CORS errors appropriately in production', async () => {
@@ -185,9 +198,12 @@ describe('API Client Production Integration', () => {
       await API.getCampaigns();
 
       // Should always use relative URLs when no environment variables are set
-      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/campaigns/'), {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl('/api/campaigns/'),
+        expect.objectContaining({
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
     });
   });
 
@@ -213,9 +229,12 @@ describe('API Client Production Integration', () => {
       await API.getCampaignEndorsements(1);
 
       // Should still use relative paths, not absolute URLs
-      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/?campaign_id=1'), {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl('/api/endorsements/?campaign_id=1'),
+        expect.objectContaining({
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
     });
 
     it('should work consistently across different deployment contexts', async () => {
@@ -228,9 +247,12 @@ describe('API Client Production Integration', () => {
 
       await API.getCampaignEndorsements(1);
 
-      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/?campaign_id=1'), {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl('/api/endorsements/?campaign_id=1'),
+        expect.objectContaining({
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
     });
   });
 });

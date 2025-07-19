@@ -83,7 +83,7 @@ describe('ContentBlock', () => {
 
       const proseDiv = screen.getByText('Test content').closest('.prose');
       expect(proseDiv).toBeInTheDocument();
-      expect(proseDiv).toHaveClass('prose', 'prose-xl', 'max-w-none');
+      expect(proseDiv).toHaveClass('prose', 'prose-xl', 'max-w-4xl', 'mx-auto');
     });
   });
 

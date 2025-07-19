@@ -62,6 +62,7 @@ describe('API Service', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.resetAllMocks();
     // Start with clean environment for each test
     jest.replaceProperty(process, 'env', createCleanEnv());
     // Reset window to undefined for most tests (simulating SSR context)
@@ -124,6 +125,8 @@ describe('API Service', () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'same-origin',
+        signal: expect.any(AbortSignal),
       });
     });
 
@@ -137,7 +140,11 @@ describe('API Service', () => {
 
     it('should handle network failures', async () => {
       await withSuppressedErrors(['Network error'], async () => {
-        mockFetch.mockRejectedValueOnce(new Error('Network error'));
+        // All retry attempts fail
+        mockFetch
+          .mockRejectedValueOnce(new Error('Network error'))
+          .mockRejectedValueOnce(new Error('Network error'))
+          .mockRejectedValueOnce(new Error('Network error'));
 
         await expect(API.getCampaigns()).rejects.toThrow('Network error');
       });
@@ -163,6 +170,8 @@ describe('API Service', () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'same-origin',
+        signal: expect.any(AbortSignal),
       });
     });
   });
@@ -188,6 +197,8 @@ describe('API Service', () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'same-origin',
+        signal: expect.any(AbortSignal),
       });
     });
 
@@ -220,6 +231,8 @@ describe('API Service', () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'same-origin',
+        signal: expect.any(AbortSignal),
       });
     });
 
@@ -270,6 +283,8 @@ describe('API Service', () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'same-origin',
+        signal: expect.any(AbortSignal),
       });
     });
 
@@ -320,6 +335,8 @@ describe('API Service', () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'same-origin',
+        signal: expect.any(AbortSignal),
       });
     });
 
@@ -342,6 +359,8 @@ describe('API Service', () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'same-origin',
+        signal: expect.any(AbortSignal),
       });
     });
   });
@@ -401,6 +420,8 @@ describe('API Service', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(mockEndorsementData),
+        credentials: 'same-origin',
+        signal: expect.any(AbortSignal),
       });
     });
 
@@ -427,7 +448,11 @@ describe('API Service', () => {
 
     it('should handle network failures during creation', async () => {
       await withSuppressedErrors(['Network error'], async () => {
-        mockFetch.mockRejectedValueOnce(new Error('Network error'));
+        // All retry attempts fail
+        mockFetch
+          .mockRejectedValueOnce(new Error('Network error'))
+          .mockRejectedValueOnce(new Error('Network error'))
+          .mockRejectedValueOnce(new Error('Network error'));
 
         await expect(API.createEndorsement(mockEndorsementData)).rejects.toThrow('Network error');
       });
@@ -453,6 +478,8 @@ describe('API Service', () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'same-origin',
+        signal: expect.any(AbortSignal),
       });
     });
 
@@ -486,6 +513,8 @@ describe('API Service', () => {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'same-origin',
+          signal: expect.any(AbortSignal),
         }
       );
     });
@@ -537,6 +566,8 @@ describe('API Service', () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'same-origin',
+        signal: expect.any(AbortSignal),
       });
     });
 
@@ -568,7 +599,11 @@ describe('API Service', () => {
 
     it('should handle fetch rejections', async () => {
       await withSuppressedErrors(['Fetch failed'], async () => {
-        mockFetch.mockRejectedValueOnce(new Error('Fetch failed'));
+        // All retry attempts fail
+        mockFetch
+          .mockRejectedValueOnce(new Error('Fetch failed'))
+          .mockRejectedValueOnce(new Error('Fetch failed'))
+          .mockRejectedValueOnce(new Error('Fetch failed'));
 
         await expect(API.getCampaigns()).rejects.toThrow('Fetch failed');
       });
@@ -582,23 +617,155 @@ describe('API Service', () => {
     });
   });
 
+  describe('Retry logic', () => {
+    it('should retry on network error and succeed on second attempt', async () => {
+      const mockCampaigns: Campaign[] = [
+        {
+          id: 1,
+          name: 'test-campaign',
+          title: 'Test Campaign',
+          summary: 'Test summary',
+          active: true,
+          created_at: '2023-01-01T00:00:00Z',
+        },
+      ];
+
+      // First attempt fails, second succeeds
+      mockFetch
+        .mockRejectedValueOnce(new Error('Network error'))
+        .mockResolvedValueOnce(createMockResponse(mockCampaigns));
+
+      const campaigns = await API.getCampaigns();
+      expect(campaigns).toEqual(mockCampaigns);
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+
+    it('should retry up to 3 times before failing', async () => {
+      await withSuppressedErrors(['Network error'], async () => {
+        // All attempts fail
+        mockFetch
+          .mockRejectedValueOnce(new Error('Network error'))
+          .mockRejectedValueOnce(new Error('Network error'))
+          .mockRejectedValueOnce(new Error('Network error'));
+
+        await expect(API.getCampaigns()).rejects.toThrow('Network error');
+        expect(mockFetch).toHaveBeenCalledTimes(3);
+      });
+    });
+
+    it('should not retry on non-network errors', async () => {
+      await withSuppressedErrors(['HTTP error! status: 400'], async () => {
+        mockFetch.mockResolvedValueOnce(createMockResponse({}, { ok: false, status: 400 }));
+
+        await expect(API.getCampaigns()).rejects.toThrow('HTTP error! status: 400');
+        expect(mockFetch).toHaveBeenCalledTimes(1); // No retry
+      });
+    });
+  });
+
+  describe('Timeout functionality', () => {
+    it('should timeout requests after 30 seconds', async () => {
+      await withSuppressedErrors(['Request timeout'], async () => {
+        jest.useFakeTimers();
+
+        // Mock a hanging request that never resolves
+        let capturedSignal: AbortSignal | undefined;
+        const abortError = Object.assign(new Error('The operation was aborted'), {
+          name: 'AbortError',
+        });
+
+        mockFetch.mockImplementationOnce((url, options) => {
+          capturedSignal = options?.signal;
+
+          // Return a promise that rejects when aborted
+          return new Promise((resolve, reject) => {
+            capturedSignal?.addEventListener('abort', () => {
+              reject(abortError);
+            });
+          });
+        });
+
+        const promise = API.getCampaigns();
+
+        // Wait a bit for the request to be initiated
+        await Promise.resolve();
+
+        // Fast-forward 30 seconds
+        jest.advanceTimersByTime(30000);
+
+        jest.useRealTimers();
+
+        await expect(promise).rejects.toThrow('Request timeout');
+      });
+    });
+
+    it('should abort request on timeout', async () => {
+      await withSuppressedErrors(['Request timeout'], async () => {
+        jest.useFakeTimers();
+
+        let capturedSignal: AbortSignal | undefined;
+        const abortError = Object.assign(new Error('The operation was aborted'), {
+          name: 'AbortError',
+        });
+
+        mockFetch.mockImplementationOnce((url, options) => {
+          capturedSignal = options?.signal;
+
+          // Return a promise that rejects when aborted
+          return new Promise((resolve, reject) => {
+            capturedSignal?.addEventListener('abort', () => {
+              reject(abortError);
+            });
+          });
+        });
+
+        const promise = API.getCampaigns();
+
+        // Wait a bit for the request to be initiated
+        await Promise.resolve();
+
+        // Verify signal exists and is not aborted initially
+        expect(capturedSignal).toBeDefined();
+        expect(capturedSignal?.aborted).toBe(false);
+
+        // Fast-forward 30 seconds
+        jest.advanceTimersByTime(30000);
+
+        // Signal should now be aborted
+        expect(capturedSignal?.aborted).toBe(true);
+
+        jest.useRealTimers();
+
+        await expect(promise).rejects.toThrow('Request timeout');
+      });
+    });
+  });
+
   describe('Console logging', () => {
-    let consoleSpy: jest.SpyInstance;
+    let consoleErrorSpy: jest.SpyInstance;
+    let consoleWarnSpy: jest.SpyInstance;
 
     beforeEach(() => {
-      consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     });
 
     afterEach(() => {
-      consoleSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+      consoleWarnSpy.mockRestore();
     });
 
     it('should log errors when requests fail', async () => {
       const error = new Error('Network error');
-      mockFetch.mockRejectedValueOnce(error);
+      // All retry attempts fail
+      mockFetch
+        .mockRejectedValueOnce(error)
+        .mockRejectedValueOnce(error)
+        .mockRejectedValueOnce(error);
 
       await expect(API.getCampaigns()).rejects.toThrow('Network error');
-      expect(consoleSpy).toHaveBeenCalledWith(
+      // Should see final failure
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
         'API request failed for %s:',
         getExpectedUrl('/api/campaigns/'),
         error
@@ -607,7 +774,11 @@ describe('API Service', () => {
 
     it('should log errors when endorsement creation fails', async () => {
       const error = new Error('Creation failed');
-      mockFetch.mockRejectedValueOnce(error);
+      // All retry attempts fail
+      mockFetch
+        .mockRejectedValueOnce(error)
+        .mockRejectedValueOnce(error)
+        .mockRejectedValueOnce(error);
 
       const endorsementData: EndorsementCreate = {
         campaign_id: 1,
@@ -627,10 +798,43 @@ describe('API Service', () => {
       };
 
       await expect(API.createEndorsement(endorsementData)).rejects.toThrow('Creation failed');
-      expect(consoleSpy).toHaveBeenCalledWith(
+      // Should see final failure
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
         'API request failed for %s:',
         getExpectedUrl('/api/endorsements/'),
         error
+      );
+    });
+
+    // Skip this test - API client is already initialized before the test runs
+    it.skip('should log API base URL construction in development', async () => {
+      // The API client is initialized when the module loads,
+      // so we can't test the initialization logging in this way
+    });
+  });
+
+  describe('Request options', () => {
+    it('should include credentials same-origin', async () => {
+      mockFetch.mockResolvedValueOnce(createMockResponse([]));
+
+      await API.getCampaigns();
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          credentials: 'same-origin',
+        })
+      );
+    });
+
+    it('should include signal for abort controller', async () => {
+      mockFetch.mockResolvedValueOnce(createMockResponse([]));
+
+      await API.getCampaigns();
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          signal: expect.any(AbortSignal),
+        })
       );
     });
   });
