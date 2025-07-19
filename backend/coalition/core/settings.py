@@ -99,6 +99,14 @@ CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access to CSRF token
 CSRF_COOKIE_SAMESITE = "Lax"  # Reasonable default for most applications
 CSRF_USE_SESSIONS = False  # Use cookie-based CSRF tokens (more flexible)
 
+# Security settings for AWS ALB
+# Tell Django to trust the X-Forwarded-Proto header from the load balancer
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Use the X-Forwarded-Host header from the load balancer
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+
 ORGANIZATION_NAME = os.getenv("ORGANIZATION_NAME", "Coalition Builder")
 TAGLINE = os.getenv("ORG_TAGLINE", "Building strong advocacy partnerships")
 CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "info@example.org")
