@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Theme } from '@shared/utils/theme';
+import { Theme, hexToRgb, lightenColor, darkenColor } from '@shared/utils/theme';
 import { loadGoogleFonts } from '@shared/utils/googleFonts';
 
 interface ThemeContextType {
@@ -67,14 +67,78 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
     await fetchActiveTheme();
   };
 
+  // Helper functions for color manipulation
+  const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result
+      ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
+      : null;
+  };
+
+  const rgbToHex = (r: number, g: number, b: number): string => {
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  };
+
+  const darkenColor = (hex: string, amount: number): string => {
+    const rgb = hexToRgb(hex);
+    if (!rgb) return hex;
+
+    const { r, g, b } = rgb;
+    const newR = Math.max(0, Math.round(r * (1 - amount)));
+    const newG = Math.max(0, Math.round(g * (1 - amount)));
+    const newB = Math.max(0, Math.round(b * (1 - amount)));
+
+    return rgbToHex(newR, newG, newB);
+  };
+
   // Apply theme CSS variables to the document
   const applyThemeToDocument = (themeData: Theme): void => {
     const root = document.documentElement;
 
     // Set CSS custom properties
+    // Set primary color and variants
     root.style.setProperty('--theme-primary', themeData.primary_color);
+    root.style.setProperty('--theme-primary-light', lightenColor(themeData.primary_color, 0.1));
+    root.style.setProperty('--theme-primary-dark', darkenColor(themeData.primary_color, 0.1));
+    const primaryRgb = hexToRgb(themeData.primary_color);
+    if (primaryRgb) {
+      root.style.setProperty(
+        '--theme-primary-rgb',
+        `${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}`
+      );
+    }
+
+    // Set secondary color and variants
     root.style.setProperty('--theme-secondary', themeData.secondary_color);
+    root.style.setProperty('--theme-secondary-light', lightenColor(themeData.secondary_color, 0.1));
+    root.style.setProperty('--theme-secondary-dark', darkenColor(themeData.secondary_color, 0.1));
+    const secondaryRgb = hexToRgb(themeData.secondary_color);
+    if (secondaryRgb) {
+      root.style.setProperty(
+        '--theme-secondary-rgb',
+        `${secondaryRgb.r}, ${secondaryRgb.g}, ${secondaryRgb.b}`
+      );
+    }
+
+    // Set accent color
     root.style.setProperty('--theme-accent', themeData.accent_color);
+
+    // Set derived accent colors
+    root.style.setProperty('--theme-accent-dark', darkenColor(themeData.accent_color, 0.1));
+    root.style.setProperty('--theme-accent-darker', darkenColor(themeData.accent_color, 0.2));
+
+    // Set RGB values for accent color
+    const accentRgb = hexToRgb(themeData.accent_color);
+    if (accentRgb) {
+      root.style.setProperty(
+        '--theme-accent-rgb',
+        `${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b}`
+      );
+    }
 
     root.style.setProperty('--theme-bg', themeData.background_color);
     root.style.setProperty('--theme-bg-section', themeData.section_background_color);
@@ -110,8 +174,17 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
     // Remove theme CSS variables
     const themeVars = [
       '--theme-primary',
+      '--theme-primary-light',
+      '--theme-primary-dark',
+      '--theme-primary-rgb',
       '--theme-secondary',
+      '--theme-secondary-light',
+      '--theme-secondary-dark',
+      '--theme-secondary-rgb',
       '--theme-accent',
+      '--theme-accent-dark',
+      '--theme-accent-darker',
+      '--theme-accent-rgb',
       '--theme-bg',
       '--theme-bg-section',
       '--theme-bg-card',

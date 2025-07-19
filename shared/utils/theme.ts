@@ -144,7 +144,9 @@ export function generateCSSVariables(theme: Theme | null): string {
 /**
  * Simple color manipulation functions (fallback if polished is not available)
  */
-function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+export function hexToRgb(
+  hex: string,
+): { r: number; g: number; b: number } | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? {
@@ -159,7 +161,7 @@ function rgbToHex(r: number, g: number, b: number): string {
   return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
 
-function lightenColor(hex: string, amount: number): string {
+export function lightenColor(hex: string, amount: number): string {
   const rgb = hexToRgb(hex);
   if (!rgb) return hex;
 
@@ -171,7 +173,7 @@ function lightenColor(hex: string, amount: number): string {
   return rgbToHex(newR, newG, newB);
 }
 
-function darkenColor(hex: string, amount: number): string {
+export function darkenColor(hex: string, amount: number): string {
   const rgb = hexToRgb(hex);
   if (!rgb) return hex;
 
