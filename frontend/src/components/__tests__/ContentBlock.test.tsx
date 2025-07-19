@@ -208,7 +208,14 @@ describe('ContentBlock', () => {
       render(<ContentBlock block={block} />);
 
       const container = screen.getByText('Test').closest('.flex');
-      expect(container).toHaveClass('flex', 'flex-col', 'lg:flex-row', 'gap-8', 'items-center');
+      expect(container).toHaveClass(
+        'flex',
+        'flex-col',
+        'lg:flex-row',
+        'gap-6',
+        'lg:gap-8',
+        'items-center'
+      );
     });
   });
 
