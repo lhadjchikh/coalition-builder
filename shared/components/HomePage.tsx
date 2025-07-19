@@ -178,20 +178,20 @@ const HomePage: React.FC<HomePageProps> = ({
 
         {/* Call to Action Section */}
         {homepage.cta_content && (
-          <section className="py-16 bg-blue-600">
+          <section className="py-16 bg-theme-accent">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
               <h2 className="text-3xl font-bold text-white sm:text-4xl">
                 {homepage.cta_title}
               </h2>
               <div
-                className="mt-4 text-xl text-blue-100 max-w-4xl mx-auto"
+                className="mt-4 text-xl text-white/90 max-w-4xl mx-auto"
                 dangerouslySetInnerHTML={{ __html: homepage.cta_content }}
               />
               {homepage.cta_button_url && homepage.cta_button_text && (
                 <div className="mt-8">
                   <a
                     href={homepage.cta_button_url}
-                    className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 no-underline"
+                    className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-theme-accent bg-white hover:bg-gray-100 transition-colors duration-200 no-underline"
                   >
                     {homepage.cta_button_text}
                   </a>
