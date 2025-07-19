@@ -133,17 +133,17 @@ describe('Home Page', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Unable to load page')).toBeInTheDocument();
-      expect(screen.getByText('Please try again later.')).toBeInTheDocument();
+      // Should now show fallback homepage data instead of error
+      expect(screen.getByTestId('homepage-name')).toHaveTextContent('Coalition Builder');
+      expect(screen.getByTestId('homepage-error')).toHaveTextContent('Failed to fetch homepage');
     });
 
-    expect(consoleSpy).toHaveBeenCalledWith('Error fetching homepage data:', error);
+    expect(consoleSpy).toHaveBeenCalledWith('Error fetching homepage:', error);
     consoleSpy.mockRestore();
-  });
+  }, 10000);
 
   it('should handle campaigns fetch error', async () => {
-    // When Promise.all fails, all requests fail
-    const error = new Error('Failed to fetch data');
+    const error = new Error('Failed to fetch campaigns');
     (API.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
     (API.getCampaigns as jest.Mock).mockRejectedValue(error);
     (API.getContentBlocksByPageType as jest.Mock).mockResolvedValue(mockContentBlocks);
@@ -158,14 +158,14 @@ describe('Home Page', () => {
     );
 
     await waitFor(() => {
-      // Since Promise.all fails when any promise fails, homepage will be null
-      expect(screen.getByText('Unable to load page')).toBeInTheDocument();
-      expect(screen.getByText('Please try again later.')).toBeInTheDocument();
+      // Should still show the homepage but with campaigns error
+      expect(screen.getByTestId('homepage-name')).toHaveTextContent('Test Organization');
+      expect(screen.getByTestId('campaigns-error')).toHaveTextContent('Failed to fetch campaigns');
     });
 
-    expect(consoleSpy).toHaveBeenCalledWith('Error fetching homepage data:', error);
+    expect(consoleSpy).toHaveBeenCalledWith('Error fetching campaigns:', error);
     consoleSpy.mockRestore();
-  });
+  }, 10000);
 
   it('should handle navigation to campaign detail', async () => {
     (API.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);

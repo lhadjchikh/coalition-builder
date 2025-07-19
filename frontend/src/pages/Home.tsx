@@ -8,6 +8,7 @@ import SocialLinks from '@shared/components/SocialLinks';
 import Navbar from '@shared/components/Navbar';
 import Footer from '@shared/components/Footer';
 import { Link, useLocation } from 'react-router-dom';
+import { getFallbackHomepage } from '@shared/utils/homepage-data';
 
 const LinkWrapper: React.FC<{
   to?: string;
@@ -35,27 +36,39 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const [homepageData, campaignsData, contentBlocksData] = await Promise.all([
-          API.getHomepage(),
-          API.getCampaigns(),
-          API.getContentBlocksByPageType('homepage'),
-        ]);
-        setHomepage(homepageData);
-        setCampaigns(campaignsData);
-        setContentBlocks(contentBlocksData);
-      } catch (err) {
-        console.error('Error fetching homepage data:', err);
-        if (err instanceof Error) {
-          setHomepageError(err.message);
-          setCampaignsError(err.message);
-        } else {
-          setHomepageError('Failed to fetch data');
-          setCampaignsError('Failed to fetch data');
-        }
-      } finally {
-        setLoading(false);
+      // Use Promise.allSettled to handle partial failures gracefully
+      const [homepageResult, campaignsResult, contentBlocksResult] = await Promise.allSettled([
+        API.getHomepage(),
+        API.getCampaigns(),
+        API.getContentBlocksByPageType('homepage'),
+      ]);
+
+      // Handle homepage result
+      if (homepageResult.status === 'fulfilled') {
+        setHomepage(homepageResult.value);
+      } else {
+        console.error('Error fetching homepage:', homepageResult.reason);
+        setHomepageError(homepageResult.reason instanceof Error ? homepageResult.reason.message : 'Failed to fetch homepage');
+        // Use fallback homepage data
+        setHomepage(getFallbackHomepage());
       }
+
+      // Handle campaigns result
+      if (campaignsResult.status === 'fulfilled') {
+        setCampaigns(campaignsResult.value);
+      } else {
+        console.error('Error fetching campaigns:', campaignsResult.reason);
+        setCampaignsError(campaignsResult.reason instanceof Error ? campaignsResult.reason.message : 'Failed to fetch campaigns');
+      }
+
+      // Handle content blocks result
+      if (contentBlocksResult.status === 'fulfilled') {
+        setContentBlocks(contentBlocksResult.value);
+      } else {
+        console.error('Error fetching content blocks:', contentBlocksResult.reason);
+      }
+
+      setLoading(false);
     };
 
     fetchData();
