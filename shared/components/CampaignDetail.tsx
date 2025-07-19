@@ -259,7 +259,9 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
               <h1 className="text-4xl font-bold sm:text-5xl md:text-6xl mb-4">
                 {campaign.title}
               </h1>
-              <p className="text-xl">{campaign.summary}</p>
+              <p className="text-xl max-w-reading-lg mx-auto">
+                {campaign.summary}
+              </p>
             </div>
           </div>
         </div>
@@ -290,7 +292,9 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
               <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl md:text-6xl mb-4">
                 {campaign.title}
               </h1>
-              <p className="text-xl text-gray-600">{campaign.summary}</p>
+              <p className="text-xl text-gray-600 max-w-reading-lg mx-auto">
+                {campaign.summary}
+              </p>
             </div>
           )}
 
@@ -425,7 +429,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
               About This Campaign
             </h2>
             <div
-              className="prose max-w-none text-gray-700"
+              className="prose max-w-prose-container text-gray-700"
               dangerouslySetInnerHTML={{ __html: campaign.description }}
             />
           </section>

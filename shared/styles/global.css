@@ -50,3 +50,18 @@ h3 {
 .font-theme-body {
   font-family: var(--theme-font-body, inherit);
 }
+
+/* Optimal reading width utilities */
+.max-w-reading {
+  max-width: 65ch; /* ~65 characters for optimal reading */
+}
+
+.max-w-reading-lg {
+  max-width: 75ch; /* Slightly wider for larger text */
+}
+
+.max-w-prose-container {
+  max-width: 65ch;
+  margin-left: auto;
+  margin-right: auto;
+}

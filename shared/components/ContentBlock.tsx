@@ -80,7 +80,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
     switch (block.block_type) {
       case "text":
         return (
-          <div className="prose prose-xl max-w-4xl mx-auto">
+          <div className="prose prose-xl max-w-prose-container mx-auto">
             {block.title && (
               <h3 className="text-3xl font-bold text-gray-900 mb-6">
                 {block.title}
@@ -110,7 +110,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
             )}
             {block.content && (
               <div
-                className="mt-4 text-xl text-gray-600 max-w-4xl mx-auto"
+                className="mt-4 text-xl text-gray-600 max-w-reading-lg mx-auto"
                 dangerouslySetInnerHTML={{ __html: block.content }}
               />
             )}
@@ -127,7 +127,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
                 </h3>
               )}
               <div
-                className="prose prose-xl text-gray-700 leading-relaxed"
+                className="prose prose-xl text-gray-700 leading-relaxed max-w-reading"
                 dangerouslySetInnerHTML={{ __html: block.content }}
               />
             </div>
@@ -145,7 +145,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
 
       case "quote":
         return (
-          <div className="text-center max-w-4xl mx-auto">
+          <div className="text-center max-w-reading-lg mx-auto">
             <blockquote className="text-2xl italic text-gray-800 mb-4">
               "{block.content}"
             </blockquote>
@@ -186,7 +186,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
 
       default:
         return (
-          <div className="prose prose-xl max-w-none">
+          <div className="prose prose-xl max-w-prose-container">
             {block.title && (
               <h3 className="text-3xl font-bold text-gray-900 mb-6">
                 {block.title}
