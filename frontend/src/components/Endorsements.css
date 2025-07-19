@@ -207,7 +207,7 @@
 }
 
 .submit-button {
-  background: linear-gradient(135deg, #4caf50, #45a049);
+  background: linear-gradient(135deg, var(--theme-accent), var(--theme-accent-dark));
   color: white;
   padding: 1rem 2.5rem;
   border: none;
@@ -219,7 +219,7 @@
   width: 100%;
   text-transform: uppercase;
   letter-spacing: 1px;
-  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  box-shadow: 0 4px 15px rgba(var(--theme-accent-rgb), 0.3);
   position: relative;
   overflow: hidden;
 }
@@ -240,9 +240,13 @@
 }
 
 .submit-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #45a049, #3d8b40);
+  background: linear-gradient(
+    135deg,
+    var(--theme-accent-dark),
+    var(--theme-accent-darker, var(--theme-accent-dark))
+  );
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+  box-shadow: 0 6px 20px rgba(var(--theme-accent-rgb), 0.4);
 }
 
 .submit-button:active:not(:disabled) {
@@ -258,10 +262,10 @@
 
 .success-message {
   padding: 1rem;
-  background-color: #e8f5e8;
-  border: 1px solid #4caf50;
+  background-color: rgba(var(--theme-accent-rgb, 245, 158, 11), 0.1);
+  border: 1px solid var(--theme-accent);
   border-radius: 4px;
-  color: #2e7d32;
+  color: var(--theme-accent-dark);
   margin: 1rem 0;
 }
 
@@ -419,7 +423,7 @@
 }
 
 .header-endorse-button {
-  background: linear-gradient(135deg, #4caf50, #45a049);
+  background: linear-gradient(135deg, var(--theme-accent), var(--theme-accent-dark));
   color: white;
   padding: 1rem 2.5rem;
   border: none;
@@ -428,15 +432,19 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  box-shadow: 0 4px 15px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.3);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
 .header-endorse-button:hover {
-  background: linear-gradient(135deg, #45a049, #3d8b40);
+  background: linear-gradient(
+    135deg,
+    var(--theme-accent-dark),
+    var(--theme-accent-darker, var(--theme-accent-dark))
+  );
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+  box-shadow: 0 6px 20px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.4);
 }
 
 .header-endorse-button:active {
@@ -447,9 +455,13 @@
 .social-proof {
   margin: 2rem 0;
   padding: 1.5rem;
-  background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--theme-accent-rgb, 245, 158, 11), 0.1),
+    rgba(var(--theme-accent-rgb, 245, 158, 11), 0.05)
+  );
   border-radius: 12px;
-  border: 2px solid #4caf50;
+  border: 2px solid var(--theme-accent);
   text-align: center;
 }
 
@@ -464,21 +476,21 @@
 .endorsement-count {
   font-size: 3rem;
   font-weight: 900;
-  color: #2e7d32;
-  text-shadow: 2px 2px 4px rgba(46, 125, 50, 0.1);
+  color: var(--theme-accent-dark);
+  text-shadow: 2px 2px 4px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.1);
 }
 
 .endorsement-label {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #388e3c;
+  color: var(--theme-accent);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
 .social-proof-text {
   font-size: 1.1rem;
-  color: #2e7d32;
+  color: var(--theme-accent-dark);
   font-weight: 500;
   margin: 0;
 }
@@ -501,8 +513,12 @@
 .early-supporter-appeal {
   margin: 2rem 0;
   padding: 2.5rem;
-  background: linear-gradient(135deg, #e8f5e8, #f1f8e9);
-  border: 2px solid #4caf50;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--theme-accent-rgb, 245, 158, 11), 0.1),
+    rgba(var(--theme-accent-rgb, 245, 158, 11), 0.05)
+  );
+  border: 2px solid var(--theme-accent);
   border-radius: 12px;
 }
 
@@ -515,10 +531,10 @@
 
 .early-supporter-icon {
   font-size: 4rem;
-  color: #4caf50;
+  color: var(--theme-accent);
   flex-shrink: 0;
   line-height: 1;
-  text-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+  text-shadow: 0 2px 4px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.3);
 }
 
 .early-supporter-text {
@@ -584,19 +600,19 @@
 
 .momentum-badge {
   display: inline-block;
-  background: linear-gradient(135deg, #4caf50, #45a049);
+  background: linear-gradient(135deg, var(--theme-accent), var(--theme-accent-dark));
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 8px;
   font-weight: 600;
   font-size: 0.9rem;
-  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+  box-shadow: 0 2px 8px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.2);
   transition: all 0.2s ease;
 }
 
 .momentum-badge:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  box-shadow: 0 4px 12px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.3);
 }
 
 /* Sticky CTA */

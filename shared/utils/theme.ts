@@ -89,14 +89,26 @@ export function generateCSSVariables(theme: Theme | null): string {
       --theme-primary: ${currentTheme.primary_color};
       --theme-primary-light: ${lightenColor(currentTheme.primary_color, 0.1)};
       --theme-primary-dark: ${darkenColor(currentTheme.primary_color, 0.1)};
+      --theme-primary-rgb: ${(() => {
+        const rgb = hexToRgb(currentTheme.primary_color);
+        return rgb ? `${rgb.r}, ${rgb.g}, ${rgb.b}` : "37, 99, 235";
+      })()};
       
       --theme-secondary: ${currentTheme.secondary_color};
       --theme-secondary-light: ${lightenColor(currentTheme.secondary_color, 0.1)};
       --theme-secondary-dark: ${darkenColor(currentTheme.secondary_color, 0.1)};
+      --theme-secondary-rgb: ${(() => {
+        const rgb = hexToRgb(currentTheme.secondary_color);
+        return rgb ? `${rgb.r}, ${rgb.g}, ${rgb.b}` : "100, 116, 139";
+      })()};
       
       --theme-accent: ${currentTheme.accent_color};
       --theme-accent-light: ${lightenColor(currentTheme.accent_color, 0.1)};
       --theme-accent-dark: ${darkenColor(currentTheme.accent_color, 0.1)};
+      --theme-accent-rgb: ${(() => {
+        const rgb = hexToRgb(currentTheme.accent_color);
+        return rgb ? `${rgb.r}, ${rgb.g}, ${rgb.b}` : "245, 158, 11";
+      })()};
       
       --theme-bg: ${currentTheme.background_color};
       --theme-bg-section: ${currentTheme.section_background_color};
