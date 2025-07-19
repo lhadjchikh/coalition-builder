@@ -149,7 +149,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 <div className="mt-8">
                   <Button
                     href={homepage.cta_button_url}
-                    variant="primary"
+                    variant="accent"
                     size="lg"
                   >
                     {homepage.cta_button_text}
