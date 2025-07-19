@@ -206,7 +206,7 @@
 }
 
 .submit-button {
-  background: linear-gradient(135deg, var(--theme-primary, #2563eb), var(--theme-primary-dark, #1d4ed8));
+  background: linear-gradient(135deg, var(--theme-accent, #f59e0b), var(--theme-accent-dark, #d97706));
   color: white;
   padding: 1rem 2.5rem;
   border: none;
@@ -218,7 +218,7 @@
   width: 100%;
   text-transform: uppercase;
   letter-spacing: 1px;
-  box-shadow: 0 4px 15px rgba(var(--theme-primary-rgb, 37, 99, 235), 0.3);
+  box-shadow: 0 4px 15px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.3);
   position: relative;
   overflow: hidden;
 }
@@ -241,11 +241,11 @@
 .submit-button:hover:not(:disabled) {
   background: linear-gradient(
     135deg,
-    var(--theme-primary-dark, #1d4ed8),
-    var(--theme-primary-darker, #1e40af)
+    var(--theme-accent-dark, #d97706),
+    var(--theme-accent-darker, #b45309)
   );
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(var(--theme-primary-rgb, 37, 99, 235), 0.4);
+  box-shadow: 0 6px 20px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.4);
 }
 
 .submit-button:active:not(:disabled) {
