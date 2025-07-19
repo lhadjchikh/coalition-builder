@@ -79,23 +79,26 @@ class FrontendApiClient extends BaseApiClient {
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
           console.error('API request timed out for %s after %dms', url, this.timeout);
-          throw new Error(`Request timed out after ${this.timeout}ms`);
+          throw new Error('Request timeout');
         }
-        if (error.message.includes('Failed to fetch') || error.message.includes('Network error')) {
-          // Retry on network errors if we haven't exceeded max retries
-          if (retryCount < this.maxRetries) {
-            console.warn(
-              'Network error for %s - retrying in %dms (attempt %d/%d)',
-              url,
-              this.retryDelay,
-              retryCount + 1,
-              this.maxRetries
-            );
-            await new Promise(resolve => setTimeout(resolve, this.retryDelay));
-            return this.requestWithRetry<T>(endpoint, options, retryCount + 1);
-          }
-          console.error('Network error for %s - possible CORS issue or server not responding', url);
-          throw new Error('Network error - please check if the server is running');
+
+        // Check for network errors and retry
+        const isNetworkError =
+          error.message.includes('Failed to fetch') ||
+          error.message.includes('Network error') ||
+          error.message === 'Network request failed' ||
+          error.name === 'TypeError'; // TypeError often indicates network issues
+
+        if (isNetworkError && retryCount < this.maxRetries - 1) {
+          console.warn(
+            'Network error for %s - retrying in %dms (attempt %d/%d)',
+            url,
+            this.retryDelay,
+            retryCount + 1,
+            this.maxRetries
+          );
+          await new Promise(resolve => setTimeout(resolve, this.retryDelay));
+          return this.requestWithRetry<T>(endpoint, options, retryCount + 1);
         }
       }
       console.error('API request failed for %s:', url, error);
