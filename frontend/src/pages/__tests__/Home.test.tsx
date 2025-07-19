@@ -203,4 +203,120 @@ describe('Home Page', () => {
       expect(screen.getByText('Please try again later.')).toBeInTheDocument();
     });
   });
+
+  it('should handle content blocks fetch error', async () => {
+    const error = new Error('Failed to fetch content blocks');
+    (API.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
+    (API.getCampaigns as jest.Mock).mockResolvedValue(mockCampaigns);
+    (API.getContentBlocksByPageType as jest.Mock).mockRejectedValue(error);
+
+    // Mock console.error to prevent test output noise
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
+    render(
+      <BrowserRouter>
+        <Home />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      // Should still show the homepage and campaigns but no content blocks
+      expect(screen.getByTestId('homepage-name')).toHaveTextContent('Test Organization');
+      expect(screen.getByTestId('campaigns-count')).toHaveTextContent('2 campaigns');
+      expect(screen.getByTestId('content-blocks-count')).toHaveTextContent('0 blocks');
+    });
+
+    expect(consoleSpy).toHaveBeenCalledWith('Error fetching content blocks:', error);
+    consoleSpy.mockRestore();
+  });
+
+  it('should handle non-Error object rejection for homepage', async () => {
+    (API.getHomepage as jest.Mock).mockRejectedValue('String error');
+    (API.getCampaigns as jest.Mock).mockResolvedValue(mockCampaigns);
+    (API.getContentBlocksByPageType as jest.Mock).mockResolvedValue(mockContentBlocks);
+
+    // Mock console.error to prevent test output noise
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
+    render(
+      <BrowserRouter>
+        <Home />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      // Should show fallback homepage with generic error message
+      expect(screen.getByTestId('homepage-name')).toHaveTextContent('Coalition Builder');
+      expect(screen.getByTestId('homepage-error')).toHaveTextContent('Failed to fetch homepage');
+    });
+
+    expect(consoleSpy).toHaveBeenCalledWith('Error fetching homepage:', 'String error');
+    consoleSpy.mockRestore();
+  });
+
+  it('should handle non-Error object rejection for campaigns', async () => {
+    (API.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
+    (API.getCampaigns as jest.Mock).mockRejectedValue('String error');
+    (API.getContentBlocksByPageType as jest.Mock).mockResolvedValue(mockContentBlocks);
+
+    // Mock console.error to prevent test output noise
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
+    render(
+      <BrowserRouter>
+        <Home />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      // Should show homepage with generic campaigns error message
+      expect(screen.getByTestId('homepage-name')).toHaveTextContent('Test Organization');
+      expect(screen.getByTestId('campaigns-error')).toHaveTextContent('Failed to fetch campaigns');
+    });
+
+    expect(consoleSpy).toHaveBeenCalledWith('Error fetching campaigns:', 'String error');
+    consoleSpy.mockRestore();
+  });
+
+  it('should handle campaign selection and navigation', async () => {
+    // Create a custom test component that captures the onCampaignSelect callback
+    let capturedOnCampaignSelect: ((campaign: any) => void) | undefined;
+
+    jest.doMock('@shared/components/HomePage', () => ({
+      __esModule: true,
+      default: (props: any) => {
+        capturedOnCampaignSelect = props.onCampaignSelect;
+        return (
+          <div data-testid="home-page">
+            <div data-testid="homepage-name">{props.homepage?.organization_name}</div>
+            <button data-testid="select-campaign">Select Campaign</button>
+          </div>
+        );
+      },
+    }));
+
+    // Re-require Home after mocking to get the updated mock
+    jest.resetModules();
+    const { default: HomeWithMock } = await import('../Home');
+
+    (API.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
+    (API.getCampaigns as jest.Mock).mockResolvedValue(mockCampaigns);
+    (API.getContentBlocksByPageType as jest.Mock).mockResolvedValue(mockContentBlocks);
+
+    render(
+      <BrowserRouter>
+        <HomeWithMock />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('home-page')).toBeInTheDocument();
+    });
+
+    // Simulate campaign selection by calling the captured callback
+    expect(capturedOnCampaignSelect).toBeDefined();
+    capturedOnCampaignSelect!({ id: 1, name: 'test-campaign', title: 'Test Campaign' });
+
+    expect(mockNavigate).toHaveBeenCalledWith('/campaigns/test-campaign');
+  });
 });
