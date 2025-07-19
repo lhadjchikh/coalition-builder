@@ -269,11 +269,11 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
 
       {/* Sticky Endorsement CTA */}
       {campaign.allow_endorsements && showStickyCard && !isFormActive && (
-        <div className="fixed top-0 left-0 right-0 bg-theme-accent text-white p-4 z-50 shadow-lg">
+        <div className="fixed top-0 left-0 right-0 bg-theme-secondary text-white p-4 z-50 shadow-lg">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <span className="font-medium">Support this campaign!</span>
             <Button
-              variant="accent-inverted"
+              variant="secondary"
               size="sm"
               onClick={scrollToEndorsementForm}
               aria-label="Scroll to endorsement form"
@@ -395,7 +395,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
 
               <div className="text-center">
                 <Button
-                  variant="accent"
+                  variant="secondary"
                   size="lg"
                   onClick={scrollToEndorsementForm}
                 >

@@ -182,7 +182,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
         {/* Call to Action Section */}
         {homepage.cta_content && (
-          <section className="py-16 bg-theme-accent">
+          <section className="py-16 bg-theme-secondary">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
               <h2 className="text-3xl font-bold text-white sm:text-4xl">
                 {homepage.cta_title}
@@ -195,7 +195,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 <div className="mt-8">
                   <Button
                     href={homepage.cta_button_url}
-                    variant="accent-inverted"
+                    variant="primary"
                     size="lg"
                   >
                     {homepage.cta_button_text}
