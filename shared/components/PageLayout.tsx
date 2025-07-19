@@ -45,30 +45,36 @@ const PageLayout: React.FC<PageLayoutProps> = ({
         />
       )}
 
-      <main role="main" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main role="main">
         {/* Page Header */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl">
-            {title}
-          </h1>
-          {subtitle && <p className="mt-4 text-xl text-gray-600">{subtitle}</p>}
-        </div>
-
-        {/* Error Display */}
-        {error && (
-          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-8">
-            <p>
-              Unable to load {title ? title.toLowerCase() : "content"} at this
-              time.
-            </p>
-            {process.env.NODE_ENV === "development" && (
-              <p className="text-sm mt-1">{error}</p>
+        <div className="bg-gray-50 border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl">
+              {title}
+            </h1>
+            {subtitle && (
+              <p className="mt-4 text-xl text-gray-600">{subtitle}</p>
             )}
           </div>
-        )}
+        </div>
 
-        {/* Main Content */}
-        {children}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Error Display */}
+          {error && (
+            <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-8">
+              <p>
+                Unable to load {title ? title.toLowerCase() : "content"} at this
+                time.
+              </p>
+              {process.env.NODE_ENV === "development" && (
+                <p className="text-sm mt-1">{error}</p>
+              )}
+            </div>
+          )}
+
+          {/* Main Content */}
+          {children}
+        </div>
       </main>
 
       {/* Footer */}

@@ -104,7 +104,7 @@ describe('API Client Production Integration', () => {
 
     it('should handle network errors gracefully in production', async () => {
       await withSuppressedErrors(['Failed to fetch', 'Network error'], async () => {
-        // Simulate network errors with relative path API calls  
+        // Simulate network errors with relative path API calls
         // The API client will retry 3 times before failing
         mockFetch
           .mockRejectedValueOnce(new TypeError('Failed to fetch'))
