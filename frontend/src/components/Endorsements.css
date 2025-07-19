@@ -206,7 +206,11 @@
 }
 
 .submit-button {
-  background: linear-gradient(135deg, var(--theme-accent), var(--theme-accent-dark));
+  background: linear-gradient(
+    135deg,
+    var(--theme-accent, #f59e0b),
+    var(--theme-accent-dark, #d97706)
+  );
   color: white;
   padding: 1rem 2.5rem;
   border: none;
@@ -218,7 +222,7 @@
   width: 100%;
   text-transform: uppercase;
   letter-spacing: 1px;
-  box-shadow: 0 4px 15px rgba(var(--theme-accent-rgb), 0.3);
+  box-shadow: 0 4px 15px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.3);
   position: relative;
   overflow: hidden;
 }
@@ -241,11 +245,11 @@
 .submit-button:hover:not(:disabled) {
   background: linear-gradient(
     135deg,
-    var(--theme-accent-dark),
-    var(--theme-accent-darker, var(--theme-accent-dark))
+    var(--theme-accent-dark, #d97706),
+    var(--theme-accent-darker, #b45309)
   );
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(var(--theme-accent-rgb), 0.4);
+  box-shadow: 0 6px 20px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.4);
 }
 
 .submit-button:active:not(:disabled) {
@@ -495,7 +499,11 @@
 }
 
 .header-endorse-button {
-  background: linear-gradient(135deg, var(--theme-accent), var(--theme-accent-dark));
+  background: linear-gradient(
+    135deg,
+    var(--theme-secondary, #64748b),
+    var(--theme-secondary-dark, #475569)
+  );
   color: white;
   padding: 1rem 2.5rem;
   border: none;
@@ -504,7 +512,7 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.3);
+  box-shadow: 0 4px 15px rgba(var(--theme-secondary-rgb, 100, 116, 139), 0.3);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -512,11 +520,11 @@
 .header-endorse-button:hover {
   background: linear-gradient(
     135deg,
-    var(--theme-accent-dark),
-    var(--theme-accent-darker, var(--theme-accent-dark))
+    var(--theme-secondary-dark, #475569),
+    var(--theme-secondary-darker, #334155)
   );
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.4);
+  box-shadow: 0 6px 20px rgba(var(--theme-secondary-rgb, 100, 116, 139), 0.4);
 }
 
 .header-endorse-button:active {

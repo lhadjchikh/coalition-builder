@@ -9,22 +9,25 @@ import Contact from './pages/Contact';
 import CampaignDetail from './pages/CampaignDetail';
 import GoogleAnalytics from './components/GoogleAnalytics';
 import CookieConsent from '@shared/components/CookieConsent';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <div className="App">
-        <GoogleAnalytics />
-        <CookieConsent />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/campaigns" element={<Campaigns />} />
-          <Route path="/campaigns/:name" element={<CampaignDetail />} />
-          <Route path="/contact" element={<Contact />} />
-        </Routes>
-      </div>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <div className="App">
+          <GoogleAnalytics />
+          <CookieConsent />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/campaigns" element={<Campaigns />} />
+            <Route path="/campaigns/:name" element={<CampaignDetail />} />
+            <Route path="/contact" element={<Contact />} />
+          </Routes>
+        </div>
+      </Router>
+    </ThemeProvider>
   );
 };
 

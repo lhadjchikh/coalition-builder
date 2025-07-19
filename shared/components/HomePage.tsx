@@ -2,6 +2,7 @@ import React from "react";
 import type { Campaign, HomePage, ContentBlock } from "../types/api";
 import type { NavItemData } from "../types";
 import Button from "./Button";
+import CampaignsList from "./CampaignsList";
 
 interface NavbarProps {
   organizationName?: string;
@@ -119,62 +120,15 @@ const HomePage: React.FC<HomePageProps> = ({
               </div>
 
               <div className="mt-12">
-                {campaigns.length === 0 ? (
-                  campaignsError ? (
-                    <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
-                      <p>Unable to load campaigns at this time.</p>
-                      {process.env.NODE_ENV === "development" && (
-                        <p className="text-sm mt-1">{campaignsError}</p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-center text-gray-600">
-                      <p>No campaigns are currently available.</p>
-                    </div>
-                  )
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {campaigns.map((campaign) => (
-                      <div
-                        key={campaign.id}
-                        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                      >
-                        {campaign.image_url && (
-                          <img
-                            src={campaign.image_url}
-                            alt={campaign.image_alt_text || campaign.title}
-                            className="w-full h-48 object-cover"
-                          />
-                        )}
-                        <div className="p-6">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            {campaign.title}
-                          </h3>
-                          <p className="text-gray-600 mb-4">
-                            {campaign.summary}
-                          </p>
-                          {onCampaignSelect ? (
-                            <Button
-                              onClick={() => onCampaignSelect(campaign)}
-                              variant="primary"
-                              size="sm"
-                            >
-                              Learn more →
-                            </Button>
-                          ) : (
-                            <Button
-                              href={`/campaigns/${campaign.name}`}
-                              variant="primary"
-                              size="sm"
-                            >
-                              Learn more →
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <CampaignsList
+                  campaigns={campaigns}
+                  onCampaignSelect={
+                    onCampaignSelect ||
+                    ((campaign) =>
+                      (window.location.href = `/campaigns/${campaign.name}`))
+                  }
+                  error={campaignsError}
+                />
               </div>
             </div>
           </section>
@@ -195,7 +149,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 <div className="mt-8">
                   <Button
                     href={homepage.cta_button_url}
-                    variant="primary"
+                    variant="accent"
                     size="lg"
                   >
                     {homepage.cta_button_text}
