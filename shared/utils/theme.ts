@@ -126,6 +126,11 @@ export function generateCSSVariables(theme: Theme | null): string {
       --theme-font-size-small: ${currentTheme.font_size_small}rem;
       --theme-font-size-large: ${currentTheme.font_size_large}rem;
     }
+    
+    /* Apply theme fonts to headings */
+    h1, h2, h3 {
+      font-family: var(--theme-font-heading), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
   `.trim();
 }
 

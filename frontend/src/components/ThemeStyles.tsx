@@ -13,21 +13,11 @@ interface ThemeStylesProps {
 export const ThemeStyles: React.FC<ThemeStylesProps> = ({ theme }) => {
   const themeCSS = generateCSSVariables(theme ?? null);
 
-  // Global heading styles to use theme fonts
-  const headingStyles = `
-    h1, h2, h3 {
-      font-family: var(--theme-font-heading), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    }
-  `;
-
   return (
-    <>
-      <style
-        dangerouslySetInnerHTML={{
-          __html: themeCSS,
-        }}
-      />
-      <style dangerouslySetInnerHTML={{ __html: headingStyles }} />
-    </>
+    <style
+      dangerouslySetInnerHTML={{
+        __html: themeCSS,
+      }}
+    />
   );
 };
