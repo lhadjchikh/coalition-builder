@@ -84,31 +84,38 @@ export function generateCSSVariables(theme: Theme | null): string {
     updated_at: "",
   };
 
+  // Extract RGB values for better readability
+  const primaryRgb = hexToRgb(currentTheme.primary_color);
+  const primaryRgbValue = primaryRgb
+    ? `${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}`
+    : "37, 99, 235";
+
+  const secondaryRgb = hexToRgb(currentTheme.secondary_color);
+  const secondaryRgbValue = secondaryRgb
+    ? `${secondaryRgb.r}, ${secondaryRgb.g}, ${secondaryRgb.b}`
+    : "100, 116, 139";
+
+  const accentRgb = hexToRgb(currentTheme.accent_color);
+  const accentRgbValue = accentRgb
+    ? `${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b}`
+    : "245, 158, 11";
+
   return `
     :root {
       --theme-primary: ${currentTheme.primary_color};
       --theme-primary-light: ${lightenColor(currentTheme.primary_color, 0.1)};
       --theme-primary-dark: ${darkenColor(currentTheme.primary_color, 0.1)};
-      --theme-primary-rgb: ${(() => {
-        const rgb = hexToRgb(currentTheme.primary_color);
-        return rgb ? `${rgb.r}, ${rgb.g}, ${rgb.b}` : "37, 99, 235";
-      })()};
+      --theme-primary-rgb: ${primaryRgbValue};
       
       --theme-secondary: ${currentTheme.secondary_color};
       --theme-secondary-light: ${lightenColor(currentTheme.secondary_color, 0.1)};
       --theme-secondary-dark: ${darkenColor(currentTheme.secondary_color, 0.1)};
-      --theme-secondary-rgb: ${(() => {
-        const rgb = hexToRgb(currentTheme.secondary_color);
-        return rgb ? `${rgb.r}, ${rgb.g}, ${rgb.b}` : "100, 116, 139";
-      })()};
+      --theme-secondary-rgb: ${secondaryRgbValue};
       
       --theme-accent: ${currentTheme.accent_color};
       --theme-accent-light: ${lightenColor(currentTheme.accent_color, 0.1)};
       --theme-accent-dark: ${darkenColor(currentTheme.accent_color, 0.1)};
-      --theme-accent-rgb: ${(() => {
-        const rgb = hexToRgb(currentTheme.accent_color);
-        return rgb ? `${rgb.r}, ${rgb.g}, ${rgb.b}` : "245, 158, 11";
-      })()};
+      --theme-accent-rgb: ${accentRgbValue};
       
       --theme-bg: ${currentTheme.background_color};
       --theme-bg-section: ${currentTheme.section_background_color};
