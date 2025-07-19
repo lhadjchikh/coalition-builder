@@ -76,9 +76,17 @@
   content: 'ⓘ';
   position: absolute;
   left: 1rem;
-  top: 1rem;
+  top: 1.1rem;
   font-size: 1.2rem;
   color: #2196f3;
+}
+
+.address-info-title {
+  margin: 0 0 0.5rem 0;
+  color: #0d47a1;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .address-info-message p {
