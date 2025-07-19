@@ -43,7 +43,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
         return (
           <div className="prose prose-xl max-w-none">
             {block.title && (
-              <h3 className="text-3xl font-bold text-gray-900 mb-6 font-theme-heading">
+              <h3 className="text-3xl font-bold text-gray-900 mb-6">
                 {block.title}
               </h3>
             )}
@@ -58,7 +58,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
         return (
           <div className="text-center">
             {block.title && (
-              <h3 className="text-3xl font-bold text-gray-900 mb-6 font-theme-heading">
+              <h3 className="text-3xl font-bold text-gray-900 mb-6">
                 {block.title}
               </h3>
             )}
@@ -83,7 +83,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
           <div className="flex flex-col lg:flex-row gap-8 items-center">
             <div className="flex-1">
               {block.title && (
-                <h3 className="text-3xl font-bold text-gray-900 mb-6 font-theme-heading">
+                <h3 className="text-3xl font-bold text-gray-900 mb-6">
                   {block.title}
                 </h3>
               )}
@@ -122,7 +122,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
         return (
           <div className="text-center">
             {block.title && (
-              <h3 className="text-3xl font-bold text-gray-900 mb-6 font-theme-heading">
+              <h3 className="text-3xl font-bold text-gray-900 mb-6">
                 {block.title}
               </h3>
             )}
@@ -137,7 +137,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
         return (
           <div>
             {block.title && (
-              <h3 className="text-3xl font-bold text-gray-900 mb-6 font-theme-heading">
+              <h3 className="text-3xl font-bold text-gray-900 mb-6">
                 {block.title}
               </h3>
             )}
@@ -149,7 +149,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
         return (
           <div className="prose prose-xl max-w-none">
             {block.title && (
-              <h3 className="text-3xl font-bold text-gray-900 mb-6 font-theme-heading">
+              <h3 className="text-3xl font-bold text-gray-900 mb-6">
                 {block.title}
               </h3>
             )}

@@ -13,6 +13,13 @@ const ThemeStyles: React.FC<ThemeStylesProps> = ({
     return null;
   }
 
+  // Global heading styles to use theme fonts
+  const headingStyles = `
+    h1, h2, h3 {
+      font-family: var(--theme-font-heading), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+  `;
+
   return (
     <>
       {cssVariables && (
@@ -22,6 +29,7 @@ const ThemeStyles: React.FC<ThemeStylesProps> = ({
           }}
         />
       )}
+      <style dangerouslySetInnerHTML={{ __html: headingStyles }} />
       {customCss && <style dangerouslySetInnerHTML={{ __html: customCss }} />}
     </>
   );
