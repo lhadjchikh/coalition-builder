@@ -742,72 +742,68 @@ describe('API Service', () => {
   });
 
   describe('Console logging', () => {
-    let consoleSpy: jest.SpyInstance;
-    let consoleLogSpy: jest.SpyInstance;
+    let consoleErrorSpy: jest.SpyInstance;
+    let consoleWarnSpy: jest.SpyInstance;
 
     beforeEach(() => {
-      consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     });
 
     afterEach(() => {
-      consoleSpy.mockRestore();
-      consoleLogSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+      consoleWarnSpy.mockRestore();
     });
 
     it('should log errors when requests fail', async () => {
-      await withSuppressedErrors(['Network error'], async () => {
-        const error = new Error('Network error');
-        // All retry attempts fail
-        mockFetch
-          .mockRejectedValueOnce(error)
-          .mockRejectedValueOnce(error)
-          .mockRejectedValueOnce(error);
+      const error = new Error('Network error');
+      // All retry attempts fail
+      mockFetch
+        .mockRejectedValueOnce(error)
+        .mockRejectedValueOnce(error)
+        .mockRejectedValueOnce(error);
 
-        await expect(API.getCampaigns()).rejects.toThrow('Network error');
-        // Should see final failure
-        expect(consoleSpy).toHaveBeenCalledWith(
-          'API request failed for %s:',
-          getExpectedUrl('/api/campaigns/'),
-          error
-        );
-      });
+      await expect(API.getCampaigns()).rejects.toThrow('Network error');
+      // Should see final failure
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'API request failed for %s:',
+        getExpectedUrl('/api/campaigns/'),
+        error
+      );
     });
 
     it('should log errors when endorsement creation fails', async () => {
-      await withSuppressedErrors(['Creation failed'], async () => {
-        const error = new Error('Creation failed');
-        // All retry attempts fail
-        mockFetch
-          .mockRejectedValueOnce(error)
-          .mockRejectedValueOnce(error)
-          .mockRejectedValueOnce(error);
+      const error = new Error('Creation failed');
+      // All retry attempts fail
+      mockFetch
+        .mockRejectedValueOnce(error)
+        .mockRejectedValueOnce(error)
+        .mockRejectedValueOnce(error);
 
-        const endorsementData: EndorsementCreate = {
-          campaign_id: 1,
-          stakeholder: {
-            name: 'John Doe',
-            organization: 'Test Org',
-            email: 'john@example.com',
-            street_address: '123 Main St',
-            city: 'Los Angeles',
-            state: 'CA',
-            zip_code: '90001',
-            type: 'individual',
-          },
-          statement: 'I support this campaign',
-          public_display: true,
-          terms_accepted: true,
-        };
+      const endorsementData: EndorsementCreate = {
+        campaign_id: 1,
+        stakeholder: {
+          name: 'John Doe',
+          organization: 'Test Org',
+          email: 'john@example.com',
+          street_address: '123 Main St',
+          city: 'Los Angeles',
+          state: 'CA',
+          zip_code: '90001',
+          type: 'individual',
+        },
+        statement: 'I support this campaign',
+        public_display: true,
+        terms_accepted: true,
+      };
 
-        await expect(API.createEndorsement(endorsementData)).rejects.toThrow('Creation failed');
-        // Should see final failure
-        expect(consoleSpy).toHaveBeenCalledWith(
-          'API request failed for %s:',
-          getExpectedUrl('/api/endorsements/'),
-          error
-        );
-      });
+      await expect(API.createEndorsement(endorsementData)).rejects.toThrow('Creation failed');
+      // Should see final failure
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'API request failed for %s:',
+        getExpectedUrl('/api/endorsements/'),
+        error
+      );
     });
 
     // Skip this test - API client is already initialized before the test runs
