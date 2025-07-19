@@ -161,10 +161,14 @@
 }
 
 .checkbox-label input[type='checkbox'] {
-  width: auto !important;
-  margin-right: 0.5rem;
-  margin-top: 0.25rem;
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+  margin-right: 0.75rem;
+  margin-top: 0.125rem;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .submit-button {
