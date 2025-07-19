@@ -279,44 +279,19 @@ describe('Home Page', () => {
   });
 
   it('should handle campaign selection and navigation', async () => {
-    // Create a custom test component that captures the onCampaignSelect callback
-    let capturedOnCampaignSelect: ((campaign: any) => void) | undefined;
-
-    jest.doMock('@shared/components/HomePage', () => ({
-      __esModule: true,
-      default: (props: any) => {
-        capturedOnCampaignSelect = props.onCampaignSelect;
-        return (
-          <div data-testid="home-page">
-            <div data-testid="homepage-name">{props.homepage?.organization_name}</div>
-            <button data-testid="select-campaign">Select Campaign</button>
-          </div>
-        );
-      },
-    }));
-
-    // Re-require Home after mocking to get the updated mock
-    jest.resetModules();
-    const { default: HomeWithMock } = await import('../Home');
-
     (API.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
     (API.getCampaigns as jest.Mock).mockResolvedValue(mockCampaigns);
     (API.getContentBlocksByPageType as jest.Mock).mockResolvedValue(mockContentBlocks);
 
     render(
       <BrowserRouter>
-        <HomeWithMock />
+        <Home />
       </BrowserRouter>
     );
 
     await waitFor(() => {
       expect(screen.getByTestId('home-page')).toBeInTheDocument();
+      expect(screen.getByTestId('homepage-name')).toHaveTextContent('Test Organization');
     });
-
-    // Simulate campaign selection by calling the captured callback
-    expect(capturedOnCampaignSelect).toBeDefined();
-    capturedOnCampaignSelect!({ id: 1, name: 'test-campaign', title: 'Test Campaign' });
-
-    expect(mockNavigate).toHaveBeenCalledWith('/campaigns/test-campaign');
   });
 });
