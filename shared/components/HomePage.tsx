@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import type { Campaign, HomePage, ContentBlock } from "../types/api";
 import type { NavItemData } from "../types";

@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 
 // Generic campaign interface that works with both frontend and SSR
