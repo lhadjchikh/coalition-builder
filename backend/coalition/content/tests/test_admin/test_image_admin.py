@@ -93,4 +93,3 @@ class ImageAdminTest(TestCase):
         # Test update (change=True)
         self.admin.save_model(self.request, obj, form, change=True)
         assert obj.uploaded_by == original_user  # Should not change
-

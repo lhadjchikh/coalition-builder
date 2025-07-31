@@ -103,4 +103,3 @@ class HomePageAdminTest(TestCase):
 
         assert self.admin.fieldsets[5][0] == "Social Media"
         assert "collapse" in self.admin.fieldsets[5][1].get("classes", ())
-

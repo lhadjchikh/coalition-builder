@@ -22,14 +22,19 @@ const createMockHomepage = (overrides?: Partial<HomePage>): HomePage => ({
   hero_title: 'Welcome to Our Site',
   hero_subtitle: 'This is a subtitle',
   hero_background_image_url: 'https://example.com/image.jpg',
-  hero_background_video_url: null,
-  hero_background_video_data: null,
+  hero_background_video_url: undefined,
+  hero_background_video_data: undefined,
   hero_overlay_enabled: false,
   hero_overlay_color: '#000000',
   hero_overlay_opacity: 0.5,
   cta_button_text: 'Get Started',
   cta_button_url: '/start',
-  content_blocks: [],
+  cta_title: 'Take Action',
+  campaigns_section_title: 'Our Campaigns',
+  show_campaigns_section: true,
+  is_active: true,
+  created_at: '2023-01-01T00:00:00Z',
+  updated_at: '2023-01-01T00:00:00Z',
   ...overrides,
 });
 
@@ -69,8 +74,8 @@ describe('HeroSection', () => {
 
     it('does not render CTA button when not provided', () => {
       const homepage = createMockHomepage({
-        cta_button_text: null,
-        cta_button_url: null,
+        cta_button_text: '',
+        cta_button_url: undefined,
       });
       render(<HeroSection homepage={homepage} />);
 
@@ -79,7 +84,7 @@ describe('HeroSection', () => {
 
     it('does not render subtitle when not provided', () => {
       const homepage = createMockHomepage({
-        hero_subtitle: null,
+        hero_subtitle: undefined,
       });
       render(<HeroSection homepage={homepage} />);
 
@@ -124,7 +129,7 @@ describe('HeroSection', () => {
 
     it('uses theme heading color without background', () => {
       const homepage = createMockHomepage({
-        hero_background_image_url: null,
+        hero_background_image_url: undefined,
       });
       render(<HeroSection homepage={homepage} />);
 
@@ -146,11 +151,18 @@ describe('HeroSection', () => {
       const homepage = createMockHomepage({
         hero_background_video_url: 'https://example.com/video.mp4',
         hero_background_video_data: {
+          id: 1,
+          title: 'Hero Video',
+          video_type: 'mp4',
+          video_url: 'https://example.com/video.mp4',
           autoplay: true,
           loop: true,
           muted: true,
           show_controls: false,
           alt_text: 'Hero video',
+          description: 'Hero background video',
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z',
         },
       });
 

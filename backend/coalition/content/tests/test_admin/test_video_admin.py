@@ -138,4 +138,3 @@ class VideoAdminTest(TestCase):
 
         self.admin.save_model(self.request, obj, form, change=True)
         assert obj.uploaded_by == existing_user  # Should not change
-
