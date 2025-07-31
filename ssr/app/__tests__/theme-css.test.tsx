@@ -26,7 +26,7 @@ jest.mock("../../components/GoogleAnalytics", () => ({
   __esModule: true,
   default: (): null => null,
 }));
-jest.mock("../../../shared/components/LegalDocumentTracker", () => ({
+jest.mock("@shared/components/LegalDocumentTracker", () => ({
   __esModule: true,
   default: (): null => null,
 }));
