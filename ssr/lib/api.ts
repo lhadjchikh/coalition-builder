@@ -11,6 +11,7 @@ class SSRApiClient extends BaseApiClient {
       process.env.NEXT_PUBLIC_API_URL ||
       "http://localhost:8000";
 
+    console.log(`[SSR API] Initializing with baseURL: ${baseURL} (API_URL: ${process.env.API_URL})`);
     super({ baseURL });
   }
 
@@ -19,6 +20,7 @@ class SSRApiClient extends BaseApiClient {
     options?: RequestInit,
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
+    console.log(`[SSR API] Making request to: ${url}`);
 
     try {
       const response = await fetch(url, {
@@ -30,13 +32,17 @@ class SSRApiClient extends BaseApiClient {
         ...options,
       });
 
+      console.log(`[SSR API] Response status: ${response.status}`);
+      
       if (!response.ok) {
+        const text = await response.text();
+        console.error(`[SSR API] Error response body: ${text}`);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       return await response.json();
     } catch (error) {
-      console.error(`API request failed for ${url}:`, error);
+      console.error(`[SSR API] Request failed for ${url}:`, error);
       throw error;
     }
   }

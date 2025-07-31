@@ -49,6 +49,8 @@ ARG NEXT_PUBLIC_API_URL
 ARG API_URL
 
 # Build with cache enabled
+# Skip static generation during build since API is not available
+ENV SKIP_STATIC_GENERATION=true
 RUN --mount=type=cache,target=/app/.next/cache npm run build
 
 # Compile TypeScript health check to JavaScript
