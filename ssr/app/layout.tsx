@@ -53,7 +53,7 @@ export default async function RootLayout({
   // Fetch theme CSS
   try {
     const response = await fetch(
-      `${process.env.API_URL || "http://localhost:8000"}/api/theme/current/css/`,
+      `${process.env.API_URL || "http://localhost:8000"}/api/themes/active/css/`,
     );
     if (response.ok) {
       const data = await response.json();
