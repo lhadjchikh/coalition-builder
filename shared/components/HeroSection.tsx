@@ -22,6 +22,22 @@ const getVideoMimeType = (url: string | undefined): string => {
   return "video/mp4"; // Default fallback
 };
 
+/**
+ * Determines whether a video should load based on the network connection type.
+ *
+ * @param effectiveType - The effective type of the network connection.
+ *   Possible values include "slow-2g", "2g", "3g", "4g", or undefined.
+ * @returns Returns `true` if the video should load, or `false` if the connection is too slow.
+ */
+const shouldLoadVideoForConnection = (
+  effectiveType: string | undefined,
+): boolean => {
+  // Load video unless on slow connections
+  return (
+    !effectiveType || (effectiveType !== "slow-2g" && effectiveType !== "2g")
+  );
+};
+
 // Helper function to get network information with proper typing
 const getNetworkInformation = (): NetworkInformation | undefined => {
   if (typeof navigator === "undefined") return undefined;
@@ -65,9 +81,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
         return;
       }
 
-      // Load video only on fast connections (4g, wifi)
+      // Load video unless on slow connections
       const effectiveType = connection.effectiveType;
-      if (effectiveType === "4g" || effectiveType === "wifi") {
+      if (shouldLoadVideoForConnection(effectiveType)) {
         setShouldLoadVideo(true);
       }
     } else {
@@ -181,13 +197,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
             <div className="mt-10">
               <Button
                 href={homepage.cta_button_url}
-                variant={hasVideo || hasImage ? "accent-inverted" : "primary"}
+                variant="secondary"
                 size="lg"
-                className={
-                  hasVideo || hasImage
-                    ? "shadow-lg hover:shadow-xl"
-                    : "shadow hover:shadow-lg"
-                }
+                className="shadow-lg hover:shadow-xl"
               >
                 {homepage.cta_button_text}
               </Button>

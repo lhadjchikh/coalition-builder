@@ -72,9 +72,6 @@ const nextConfig = {
       NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     }),
   },
-  serverRuntimeConfig: {
-    API_URL: process.env.API_URL || "http://localhost:8000",
-  },
 
   // Rewrites for API calls - routes relative paths to backend
   // This handles both SSR server-side calls and client-side relative paths

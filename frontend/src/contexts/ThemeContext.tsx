@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Theme, hexToRgb, lightenColor, darkenColor, rgbToHex } from '@shared/utils/theme';
+import { Theme, hexToRgb, lightenColor, darkenColor } from '@shared/utils/theme';
 import { loadGoogleFonts } from '@shared/utils/googleFonts';
 
 interface ThemeContextType {
