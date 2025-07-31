@@ -182,7 +182,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
                 href={homepage.cta_button_url}
                 className={`inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md transition-colors duration-200 ${
                   hasVideo || hasImage
-                    ? "text-theme-heading bg-white hover:bg-gray-100 shadow-lg hover:shadow-xl"
+                    ? "text-gray-900 bg-white hover:bg-gray-100 shadow-lg hover:shadow-xl"
                     : "text-white bg-theme-primary hover:bg-theme-primary-dark shadow hover:shadow-lg"
                 }`}
               >
