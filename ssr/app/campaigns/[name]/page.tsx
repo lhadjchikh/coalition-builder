@@ -13,17 +13,14 @@ interface CampaignPageProps {
 
 export default async function CampaignPage({ params }: CampaignPageProps) {
   const resolvedParams = await params;
-  console.log(`[Campaign Page] Rendering campaign: ${resolvedParams.name}`);
-  
   try {
     // Efficiently fetch the specific campaign by name
     const campaign = await apiClient.getCampaignByName(resolvedParams.name);
-    console.log(`[Campaign Page] Successfully fetched campaign: ${campaign.title}`);
 
     // Return the CampaignDetail component with the full campaign data
     return <CampaignDetailWrapper campaign={campaign} />;
   } catch (error) {
-    console.error(`[Campaign Page] Error fetching campaign '${resolvedParams.name}':`, error);
+    console.error("Error fetching campaign:", error);
     notFound();
   }
 }
