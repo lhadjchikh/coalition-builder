@@ -65,9 +65,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
         return;
       }
 
-      // Load video only on fast connections (4g, wifi)
+      // Load video on 3g or better connections
       const effectiveType = connection.effectiveType;
-      if (effectiveType === "4g" || effectiveType === "wifi") {
+      if (effectiveType === "4g" || effectiveType === "3g") {
         setShouldLoadVideo(true);
       }
     } else {
