@@ -53,7 +53,9 @@ const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <nav className={className || "bg-gray-800 sticky top-0 z-50 shadow-md"}>
+    <nav
+      className={className || "bg-theme-primary sticky top-0 z-50 shadow-md"}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Brand */}
@@ -92,8 +94,8 @@ const Navbar: React.FC<NavbarProps> = ({
                       href={item.href}
                       className={`px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
                         isActive
-                          ? "bg-gray-900 text-white"
-                          : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                          ? "bg-theme-primary-dark text-white"
+                          : "text-white/90 hover:bg-white/10 hover:text-white"
                       }`}
                     >
                       {item.label}
@@ -106,8 +108,8 @@ const Navbar: React.FC<NavbarProps> = ({
                       onClick={item.onClick}
                       className={`px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
                         item.active
-                          ? "bg-gray-900 text-white"
-                          : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                          ? "bg-theme-primary-dark text-white"
+                          : "text-white/90 hover:bg-white/10 hover:text-white"
                       }`}
                     >
                       {item.label}
@@ -122,7 +124,7 @@ const Navbar: React.FC<NavbarProps> = ({
           <div className="md:hidden">
             <button
               onClick={toggleMenu}
-              className="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white"
+              className="bg-theme-primary inline-flex items-center justify-center p-2 rounded-md text-white/80 hover:text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white"
               aria-expanded={isMenuOpen}
               aria-label="Toggle navigation menu"
             >
@@ -163,7 +165,7 @@ const Navbar: React.FC<NavbarProps> = ({
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-800">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-theme-primary">
               {navItems.map((item, index) => {
                 const isActive = isActiveLink(item.href);
 
@@ -175,8 +177,8 @@ const Navbar: React.FC<NavbarProps> = ({
                       href={item.href}
                       className={`block px-3 py-2 rounded-md text-lg font-medium transition-colors duration-200 ${
                         isActive
-                          ? "bg-gray-900 text-white"
-                          : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                          ? "bg-theme-primary-dark text-white"
+                          : "text-white/90 hover:bg-white/10 hover:text-white"
                       }`}
                       onClick={closeMenu}
                     >
@@ -193,8 +195,8 @@ const Navbar: React.FC<NavbarProps> = ({
                       }}
                       className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
                         item.active
-                          ? "bg-gray-900 text-white"
-                          : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                          ? "bg-theme-primary-dark text-white"
+                          : "text-white/90 hover:bg-white/10 hover:text-white"
                       }`}
                     >
                       {item.label}
