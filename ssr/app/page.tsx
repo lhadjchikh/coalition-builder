@@ -49,18 +49,18 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-// Helper function to fetch JSON with consistent error handling
-async function fetchWithErrorHandling(
+// Helper function to fetch API resources with JSON parsing and error handling
+async function fetchApiResource<T>(
   url: string,
   options: RequestInit,
   resourceName: string,
-): Promise<any> {
+): Promise<T> {
   const response = await fetch(url, options);
   if (!response.ok) {
     throw new Error(`Failed to fetch ${resourceName}: HTTP ${response.status}`);
   }
   try {
-    return await response.json();
+    return (await response.json()) as T;
   } catch (error) {
     throw new Error(`Failed to parse JSON for ${resourceName}`);
   }
@@ -81,17 +81,17 @@ export default async function HomePage() {
 
   const [homepageResult, campaignsResult, contentBlocksResult] =
     await Promise.allSettled([
-      fetchWithErrorHandling(
+      fetchApiResource<HomePageType>(
         `${baseUrl}/api/homepage/`,
         fetchOptions,
         "homepage",
       ),
-      fetchWithErrorHandling(
+      fetchApiResource<Campaign[]>(
         `${baseUrl}/api/campaigns/`,
         fetchOptions,
         "campaigns",
       ),
-      fetchWithErrorHandling(
+      fetchApiResource<ContentBlock[]>(
         `${baseUrl}/api/content-blocks/?page_type=homepage`,
         fetchOptions,
         "content blocks",
