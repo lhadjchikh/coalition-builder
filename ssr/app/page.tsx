@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
       `${process.env.API_URL || "http://localhost:8000"}/api/homepage/`,
       { cache: "no-store" },
     );
-    if (!response.ok) throw new Error("Failed to fetch");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const homepage = await response.json();
     return {
       title: homepage.organization_name,
@@ -59,16 +59,28 @@ export default async function HomePage() {
   const [homepageResult, campaignsResult, contentBlocksResult] =
     await Promise.allSettled([
       fetch(`${baseUrl}/api/homepage/`, fetchOptions).then((r) =>
-        r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)),
+        r.ok
+          ? r.json()
+          : Promise.reject(
+              new Error(`Failed to fetch homepage: HTTP ${r.status}`),
+            ),
       ),
       fetch(`${baseUrl}/api/campaigns/`, fetchOptions).then((r) =>
-        r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)),
+        r.ok
+          ? r.json()
+          : Promise.reject(
+              new Error(`Failed to fetch campaigns: HTTP ${r.status}`),
+            ),
       ),
       fetch(
         `${baseUrl}/api/content-blocks/?page_type=homepage`,
         fetchOptions,
       ).then((r) =>
-        r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)),
+        r.ok
+          ? r.json()
+          : Promise.reject(
+              new Error(`Failed to fetch content blocks: HTTP ${r.status}`),
+            ),
       ),
     ]);
 

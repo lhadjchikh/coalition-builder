@@ -22,6 +22,16 @@ const getVideoMimeType = (url: string | undefined): string => {
   return "video/mp4"; // Default fallback
 };
 
+// Helper function to determine if video should load based on connection
+const shouldLoadVideoForConnection = (
+  effectiveType: string | undefined,
+): boolean => {
+  // Load video unless on slow connections
+  return (
+    !effectiveType || (effectiveType !== "slow-2g" && effectiveType !== "2g")
+  );
+};
+
 // Helper function to get network information with proper typing
 const getNetworkInformation = (): NetworkInformation | undefined => {
   if (typeof navigator === "undefined") return undefined;
@@ -67,11 +77,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
 
       // Load video unless on slow connections
       const effectiveType = connection.effectiveType;
-      if (
-        !effectiveType ||
-        (effectiveType !== "slow-2g" && effectiveType !== "2g")
-      ) {
-        // If effectiveType is undefined/null, assume decent connection
+      if (shouldLoadVideoForConnection(effectiveType)) {
         setShouldLoadVideo(true);
       }
     } else {

@@ -304,17 +304,8 @@ describe('HeroSection', () => {
       });
     });
 
-    it('uses correct MIME type for mp4 video files', () => {
-      // Test that video element would be rendered with correct mime type
-      // The component uses a helper function to determine MIME type based on file extension
-      // For .mp4 files, it should return "video/mp4"
-      const videoUrl = 'https://example.com/video.mp4';
-      const expectedMimeType = 'video/mp4';
-
-      // Verify the expected behavior
-      expect(videoUrl.endsWith('.mp4')).toBe(true);
-      expect(expectedMimeType).toBe('video/mp4');
-    });
+    // Note: MIME type functionality is tested implicitly in other video tests
+    // The getVideoMimeType helper function correctly sets MIME types based on file extensions
 
     it('includes poster image in video props when both video and image are provided', () => {
       // Test that the component logic would include poster

@@ -2,10 +2,7 @@ import React from "react";
 import { render } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import RootLayout from "../layout";
-import { ssrApiClient } from "../../lib/api";
-
 // Mock the dependencies
-jest.mock("../../lib/api");
 jest.mock("../../components/SSRNavbar", () => ({
   __esModule: true,
   default: () => <nav>SSR Navbar</nav>,
@@ -68,9 +65,6 @@ describe("Theme CSS Loading", () => {
   });
 
   it("should fetch and include Google Fonts in theme CSS", async () => {
-    // Mock homepage API response
-    (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
-
     // Mock theme CSS API response with Google Fonts
     const mockThemeCSS = {
       css_variables: `@import url("https://fonts.googleapis.com/css2?family=Merriweather:400,500,600,700&family=Barlow:400,500,600,700&display=swap");
@@ -131,8 +125,6 @@ describe("Theme CSS Loading", () => {
   });
 
   it("should handle theme CSS without Google Fonts", async () => {
-    (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
-
     const mockThemeCSS = {
       css_variables: `:root {
   --theme-primary: #333333;
@@ -171,8 +163,6 @@ describe("Theme CSS Loading", () => {
   });
 
   it("should handle failed theme CSS fetch gracefully", async () => {
-    (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
-
     // Mock failed fetch
     (global.fetch as jest.Mock).mockImplementation((url: string) => {
       if (url.includes("/api/homepage/")) {
