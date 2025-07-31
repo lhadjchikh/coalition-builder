@@ -9,6 +9,7 @@ import type { Metadata } from "next";
 import { getFallbackHomepage } from "@shared/utils/homepage-data";
 import { generateCSSVariables } from "@shared/utils/theme";
 import HomePageComponent from "@shared/components/HomePage";
+import { fetchApiResource } from "../lib/utils/api";
 
 // Import shared components
 import HeroSection from "@shared/components/HeroSection";
@@ -46,23 +47,6 @@ export async function generateMetadata(): Promise<Metadata> {
       applicationName: "Coalition Builder",
       authors: [{ name: "Coalition Builder Team" }],
     };
-  }
-}
-
-// Helper function to fetch API resources with JSON parsing and error handling
-async function fetchApiResource<T>(
-  url: string,
-  options: RequestInit,
-  resourceName: string,
-): Promise<T> {
-  const response = await fetch(url, options);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${resourceName}: HTTP ${response.status}`);
-  }
-  try {
-    return (await response.json()) as T;
-  } catch (error) {
-    throw new Error(`Failed to parse JSON for ${resourceName}`);
   }
 }
 
