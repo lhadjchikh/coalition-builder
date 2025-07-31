@@ -30,6 +30,7 @@ def create_test_data() -> int:
                 name="test-campaign",
                 title="Test Campaign",
                 summary="This is a test campaign for integration testing",
+                active=True,
             )
             print("Created test campaign")
 
