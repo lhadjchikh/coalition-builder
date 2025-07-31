@@ -2,11 +2,18 @@
 // This ensures consistency with frontend API while adding SSR-specific features
 
 import { BaseApiClient } from "@shared/services/api-client";
+import getConfig from "next/config";
 
 // SSR-compatible API client that extends the shared base client
 class SSRApiClient extends BaseApiClient {
   constructor() {
+    // Get server runtime config for server-side API calls
+    const { serverRuntimeConfig } = getConfig() || {};
+
+    // Use serverRuntimeConfig.API_URL for server-side requests
+    // This allows Docker containers to use internal hostnames
     const baseURL =
+      serverRuntimeConfig?.API_URL ||
       process.env.API_URL ||
       process.env.NEXT_PUBLIC_API_URL ||
       "http://localhost:8000";
