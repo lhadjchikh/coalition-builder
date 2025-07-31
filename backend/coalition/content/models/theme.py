@@ -252,7 +252,29 @@ class Theme(models.Model):
 
     def generate_css_variables(self) -> str:
         """Generate CSS custom properties for this theme"""
-        return f"""
+        css_parts = []
+
+        # Add Google Fonts import if specified
+        if (
+            self.google_fonts
+            and isinstance(self.google_fonts, list)
+            and len(self.google_fonts) > 0
+        ):
+            # Filter out empty strings and format font names
+            font_families = []
+            for font in self.google_fonts:
+                if font and font.strip():
+                    # Replace spaces with + and add default weights
+                    font_name = font.strip().replace(" ", "+")
+                    font_families.append(f"{font_name}:400,500,600,700")
+
+            if font_families:
+                fonts_url = f"https://fonts.googleapis.com/css2?family={'&family='.join(font_families)}&display=swap"
+                css_parts.append(f'@import url("{fonts_url}");')
+
+        # Add CSS variables
+        css_parts.append(
+            f"""
         :root {{
             /* Brand Colors */
             --theme-primary: {self.primary_color};
@@ -278,4 +300,7 @@ class Theme(models.Model):
             --theme-font-size-small: {self.font_size_small}rem;
             --theme-font-size-large: {self.font_size_large}rem;
         }}
-        """.strip()
+        """.strip(),
+        )
+
+        return "\n\n".join(css_parts)
