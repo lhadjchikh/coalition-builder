@@ -181,13 +181,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
             <div className="mt-10">
               <Button
                 href={homepage.cta_button_url}
-                variant={hasVideo || hasImage ? "accent-inverted" : "primary"}
+                variant="secondary"
                 size="lg"
-                className={
-                  hasVideo || hasImage
-                    ? "shadow-lg hover:shadow-xl"
-                    : "shadow hover:shadow-lg"
-                }
+                className="shadow-lg hover:shadow-xl"
               >
                 {homepage.cta_button_text}
               </Button>
