@@ -51,7 +51,7 @@ jobs:
             -t coalition_ssr:latest \
             -f Dockerfile.ssr \
             --build-arg NEXT_PUBLIC_API_URL=http://localhost:8000 \
-            --build-arg API_URL=http://localhost:8000 \
+            --build-arg API_URL=http://api:8000 \
             .
 
       - name: Start all containers
