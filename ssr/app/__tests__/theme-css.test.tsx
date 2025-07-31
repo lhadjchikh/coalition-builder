@@ -24,11 +24,11 @@ jest.mock("@shared/components/CookieConsent", () => ({
 }));
 jest.mock("../../components/GoogleAnalytics", () => ({
   __esModule: true,
-  default: () => null,
+  default: (): null => null,
 }));
 jest.mock("../../../shared/components/LegalDocumentTracker", () => ({
   __esModule: true,
-  default: () => null,
+  default: (): null => null,
 }));
 
 // Mock ThemeStyles to capture its props
@@ -138,7 +138,7 @@ describe("Theme CSS Loading", () => {
   --theme-primary: #333333;
   --theme-font-heading: 'Arial', sans-serif;
 }`,
-      custom_css: null,
+      custom_css: null as string | null,
     };
 
     (global.fetch as jest.Mock).mockImplementation((url: string) => {
