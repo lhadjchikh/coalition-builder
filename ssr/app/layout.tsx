@@ -38,8 +38,19 @@ export default async function RootLayout({
   let themeStyles = { cssVariables: "", customCss: "" };
 
   try {
-    homepage = await ssrApiClient.getHomepage();
-    organizationName = homepage.organization_name;
+    // Fetch homepage data without caching for layout
+    const response = await fetch(
+      `${process.env.API_URL || "http://localhost:8000"}/api/homepage/`,
+      {
+        cache: "no-store", // Disable caching for layout data
+      },
+    );
+    if (response.ok) {
+      homepage = await response.json();
+      organizationName = homepage.organization_name;
+    } else {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
   } catch (error) {
     console.error(
       "Error fetching homepage for layout:",
@@ -54,6 +65,9 @@ export default async function RootLayout({
   try {
     const response = await fetch(
       `${process.env.API_URL || "http://localhost:8000"}/api/themes/active/css/`,
+      {
+        cache: "no-store", // Disable caching for theme data
+      },
     );
     if (response.ok) {
       const data = await response.json();

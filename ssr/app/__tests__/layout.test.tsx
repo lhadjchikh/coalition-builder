@@ -44,6 +44,9 @@ jest.mock("@shared/components/CookieConsent", () => ({
   default: () => <div data-testid="cookie-consent">Cookie Consent</div>,
 }));
 
+// Mock fetch globally
+global.fetch = jest.fn();
+
 describe("RootLayout", () => {
   const mockHomepage = {
     id: 1,
@@ -70,10 +73,28 @@ describe("RootLayout", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (global.fetch as jest.Mock).mockClear();
   });
 
   it("renders layout with navbar, content, and footer", async () => {
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
+
+    // Mock fetch for layout's direct API calls
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes("/api/homepage/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockHomepage,
+        });
+      }
+      if (url.includes("/api/themes/active/css/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ css_variables: "", custom_css: "" }),
+        });
+      }
+      return Promise.reject(new Error("Unknown URL"));
+    });
 
     // RootLayout returns an HTML document structure, so we need to extract the body content
     const layoutResult = await RootLayout({
@@ -127,6 +148,23 @@ describe("RootLayout", () => {
       new Error("API Error"),
     );
 
+    // Mock fetch to fail for homepage
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes("/api/homepage/")) {
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+        });
+      }
+      if (url.includes("/api/themes/active/css/")) {
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+        });
+      }
+      return Promise.reject(new Error("Unknown URL"));
+    });
+
     const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
     const layoutResult = await RootLayout({
@@ -139,7 +177,7 @@ describe("RootLayout", () => {
     // Should log the error
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching homepage for layout:",
-      "API Error",
+      "HTTP error! status: 500",
     );
 
     // Should still render with fallback organization name
@@ -164,6 +202,23 @@ describe("RootLayout", () => {
       homepageWithoutNavItems,
     );
 
+    // Mock fetch for layout's direct API calls
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes("/api/homepage/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => homepageWithoutNavItems,
+        });
+      }
+      if (url.includes("/api/themes/active/css/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ css_variables: "", custom_css: "" }),
+        });
+      }
+      return Promise.reject(new Error("Unknown URL"));
+    });
+
     const layoutResult = await RootLayout({
       children: <div>Test Content</div>,
     });
@@ -185,6 +240,23 @@ describe("RootLayout", () => {
       homepageWithNullNavItems,
     );
 
+    // Mock fetch for layout's direct API calls
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes("/api/homepage/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => homepageWithNullNavItems,
+        });
+      }
+      if (url.includes("/api/themes/active/css/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ css_variables: "", custom_css: "" }),
+        });
+      }
+      return Promise.reject(new Error("Unknown URL"));
+    });
+
     const layoutResult = await RootLayout({
       children: <div>Test Content</div>,
     });
@@ -200,6 +272,23 @@ describe("RootLayout", () => {
 
   it("maintains SSR data attribute", async () => {
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
+
+    // Mock fetch for layout's direct API calls
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes("/api/homepage/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockHomepage,
+        });
+      }
+      if (url.includes("/api/themes/active/css/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ css_variables: "", custom_css: "" }),
+        });
+      }
+      return Promise.reject(new Error("Unknown URL"));
+    });
 
     const layoutResult = await RootLayout({
       children: <div>Test Content</div>,

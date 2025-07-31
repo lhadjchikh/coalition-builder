@@ -82,9 +82,20 @@ describe("Theme CSS Loading", () => {
       custom_css: ".custom { color: red; }",
     };
 
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockThemeCSS,
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes("/api/homepage/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockHomepage,
+        });
+      }
+      if (url.includes("/api/themes/active/css/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockThemeCSS,
+        });
+      }
+      return Promise.reject(new Error("Unknown URL"));
     });
 
     // Render the layout
@@ -97,6 +108,7 @@ describe("Theme CSS Loading", () => {
     // Verify fetch was called with correct endpoint
     expect(global.fetch).toHaveBeenCalledWith(
       "http://localhost:8000/api/themes/active/css/",
+      { cache: "no-store" },
     );
 
     // Verify ThemeStyles received the correct props
@@ -129,9 +141,20 @@ describe("Theme CSS Loading", () => {
       custom_css: null,
     };
 
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockThemeCSS,
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes("/api/homepage/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockHomepage,
+        });
+      }
+      if (url.includes("/api/themes/active/css/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockThemeCSS,
+        });
+      }
+      return Promise.reject(new Error("Unknown URL"));
     });
 
     const Layout = await RootLayout({
@@ -151,9 +174,20 @@ describe("Theme CSS Loading", () => {
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
 
     // Mock failed fetch
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: false,
-      status: 404,
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes("/api/homepage/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockHomepage,
+        });
+      }
+      if (url.includes("/api/themes/active/css/")) {
+        return Promise.resolve({
+          ok: false,
+          status: 404,
+        });
+      }
+      return Promise.reject(new Error("Unknown URL"));
     });
 
     const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();

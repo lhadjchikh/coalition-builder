@@ -17,7 +17,12 @@ import SocialLinks from "@shared/components/SocialLinks";
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
-    const homepage = await ssrApiClient.getHomepage();
+    const response = await fetch(
+      `${process.env.API_URL || "http://localhost:8000"}/api/homepage/`,
+      { cache: "no-store" },
+    );
+    if (!response.ok) throw new Error("Failed to fetch");
+    const homepage = await response.json();
     return {
       title: homepage.organization_name,
       description: homepage.tagline,
@@ -48,11 +53,23 @@ export default async function HomePage() {
   // Fetch homepage, campaigns, and content blocks in parallel for better performance (server-side)
   // Note: Homepage is also fetched in layout.tsx for nav/footer. Next.js App Router
   // automatically deduplicates identical requests within the same render cycle.
+  const baseUrl = process.env.API_URL || "http://localhost:8000";
+  const fetchOptions = { cache: "no-store" as const };
+
   const [homepageResult, campaignsResult, contentBlocksResult] =
     await Promise.allSettled([
-      ssrApiClient.getHomepage(),
-      ssrApiClient.getCampaigns(),
-      ssrApiClient.getContentBlocksByPageType("homepage"),
+      fetch(`${baseUrl}/api/homepage/`, fetchOptions).then((r) =>
+        r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)),
+      ),
+      fetch(`${baseUrl}/api/campaigns/`, fetchOptions).then((r) =>
+        r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)),
+      ),
+      fetch(
+        `${baseUrl}/api/content-blocks/?page_type=homepage`,
+        fetchOptions,
+      ).then((r) =>
+        r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)),
+      ),
     ]);
 
   // Handle homepage result
