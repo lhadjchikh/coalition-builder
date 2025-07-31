@@ -22,7 +22,13 @@ export async function generateMetadata(): Promise<Metadata> {
       { cache: "no-store" },
     );
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const homepage = await response.json();
+
+    let homepage;
+    try {
+      homepage = await response.json();
+    } catch (error) {
+      throw new Error("Failed to parse JSON response");
+    }
     return {
       title: homepage.organization_name,
       description: homepage.tagline,
@@ -43,6 +49,23 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
+// Helper function to fetch JSON with consistent error handling
+async function fetchWithErrorHandling(
+  url: string,
+  options: RequestInit,
+  resourceName: string,
+): Promise<any> {
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${resourceName}: HTTP ${response.status}`);
+  }
+  try {
+    return await response.json();
+  } catch (error) {
+    throw new Error(`Failed to parse JSON for ${resourceName}`);
+  }
+}
+
 export default async function HomePage() {
   let campaigns: Campaign[] = [];
   let homepage: HomePageType | null = null;
@@ -58,29 +81,20 @@ export default async function HomePage() {
 
   const [homepageResult, campaignsResult, contentBlocksResult] =
     await Promise.allSettled([
-      fetch(`${baseUrl}/api/homepage/`, fetchOptions).then((r) =>
-        r.ok
-          ? r.json()
-          : Promise.reject(
-              new Error(`Failed to fetch homepage: HTTP ${r.status}`),
-            ),
+      fetchWithErrorHandling(
+        `${baseUrl}/api/homepage/`,
+        fetchOptions,
+        "homepage",
       ),
-      fetch(`${baseUrl}/api/campaigns/`, fetchOptions).then((r) =>
-        r.ok
-          ? r.json()
-          : Promise.reject(
-              new Error(`Failed to fetch campaigns: HTTP ${r.status}`),
-            ),
+      fetchWithErrorHandling(
+        `${baseUrl}/api/campaigns/`,
+        fetchOptions,
+        "campaigns",
       ),
-      fetch(
+      fetchWithErrorHandling(
         `${baseUrl}/api/content-blocks/?page_type=homepage`,
         fetchOptions,
-      ).then((r) =>
-        r.ok
-          ? r.json()
-          : Promise.reject(
-              new Error(`Failed to fetch content blocks: HTTP ${r.status}`),
-            ),
+        "content blocks",
       ),
     ]);
 

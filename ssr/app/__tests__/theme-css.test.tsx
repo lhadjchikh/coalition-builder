@@ -58,6 +58,37 @@ describe("Theme CSS Loading", () => {
     hero_title: "Welcome",
   };
 
+  // Helper function to setup fetch mocks
+  const setupFetchMock = (
+    homepageData: any = mockHomepage,
+    themeCSSData?: any,
+    options: { homepageOk?: boolean; themeCssOk?: boolean } = {},
+  ) => {
+    const { homepageOk = true, themeCssOk = true } = options;
+
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes("/api/homepage/")) {
+        return Promise.resolve({
+          ok: homepageOk,
+          json: async () => homepageData,
+        });
+      }
+      if (url.includes("/api/themes/active/css/")) {
+        if (themeCSSData) {
+          return Promise.resolve({
+            ok: themeCssOk,
+            json: async () => themeCSSData,
+          });
+        }
+        return Promise.resolve({
+          ok: false,
+          status: 404,
+        });
+      }
+      return Promise.reject(new Error("Unknown URL"));
+    });
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     capturedThemeStylesProps = null;
@@ -76,21 +107,7 @@ describe("Theme CSS Loading", () => {
       custom_css: ".custom { color: red; }",
     };
 
-    (global.fetch as jest.Mock).mockImplementation((url: string) => {
-      if (url.includes("/api/homepage/")) {
-        return Promise.resolve({
-          ok: true,
-          json: async () => mockHomepage,
-        });
-      }
-      if (url.includes("/api/themes/active/css/")) {
-        return Promise.resolve({
-          ok: true,
-          json: async () => mockThemeCSS,
-        });
-      }
-      return Promise.reject(new Error("Unknown URL"));
-    });
+    setupFetchMock(mockHomepage, mockThemeCSS);
 
     // Render the layout
     const Layout = await RootLayout({
@@ -133,21 +150,7 @@ describe("Theme CSS Loading", () => {
       custom_css: null as string | null,
     };
 
-    (global.fetch as jest.Mock).mockImplementation((url: string) => {
-      if (url.includes("/api/homepage/")) {
-        return Promise.resolve({
-          ok: true,
-          json: async () => mockHomepage,
-        });
-      }
-      if (url.includes("/api/themes/active/css/")) {
-        return Promise.resolve({
-          ok: true,
-          json: async () => mockThemeCSS,
-        });
-      }
-      return Promise.reject(new Error("Unknown URL"));
-    });
+    setupFetchMock(mockHomepage, mockThemeCSS);
 
     const Layout = await RootLayout({
       children: <div>Test Content</div>,
@@ -163,22 +166,8 @@ describe("Theme CSS Loading", () => {
   });
 
   it("should handle failed theme CSS fetch gracefully", async () => {
-    // Mock failed fetch
-    (global.fetch as jest.Mock).mockImplementation((url: string) => {
-      if (url.includes("/api/homepage/")) {
-        return Promise.resolve({
-          ok: true,
-          json: async () => mockHomepage,
-        });
-      }
-      if (url.includes("/api/themes/active/css/")) {
-        return Promise.resolve({
-          ok: false,
-          status: 404,
-        });
-      }
-      return Promise.reject(new Error("Unknown URL"));
-    });
+    // Mock failed fetch for theme CSS
+    setupFetchMock(mockHomepage);
 
     const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
 

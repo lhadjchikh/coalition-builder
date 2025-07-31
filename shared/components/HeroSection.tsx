@@ -22,7 +22,13 @@ const getVideoMimeType = (url: string | undefined): string => {
   return "video/mp4"; // Default fallback
 };
 
-// Helper function to determine if video should load based on connection
+/**
+ * Determines whether a video should load based on the network connection type.
+ *
+ * @param effectiveType - The effective type of the network connection.
+ *   Possible values include "slow-2g", "2g", "3g", "4g", or undefined.
+ * @returns Returns `true` if the video should load, or `false` if the connection is too slow.
+ */
 const shouldLoadVideoForConnection = (
   effectiveType: string | undefined,
 ): boolean => {
