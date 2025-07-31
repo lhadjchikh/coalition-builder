@@ -24,15 +24,19 @@ def create_test_data() -> int:
         from coalition.legislators.models import Legislator
         from coalition.stakeholders.models import Stakeholder
 
-        # Create a test campaign if none exists
-        if not PolicyCampaign.objects.exists():
-            PolicyCampaign.objects.create(
-                name="test-campaign",
-                title="Test Campaign",
-                summary="This is a test campaign for integration testing",
-                active=True,
-            )
+        # Create or update the test campaign
+        campaign, created = PolicyCampaign.objects.update_or_create(
+            name="test-campaign",
+            defaults={
+                "title": "Test Campaign",
+                "summary": "This is a test campaign for integration testing",
+                "active": True,
+            },
+        )
+        if created:
             print("Created test campaign")
+        else:
+            print("Updated test campaign to ensure it is active")
 
         # Create a test stakeholder if none exists
         if not Stakeholder.objects.exists():
@@ -48,8 +52,7 @@ def create_test_data() -> int:
             print("Created test stakeholder")
 
             # Create a test endorsement if none exists
-            campaign = PolicyCampaign.objects.first()
-            if campaign and not Endorsement.objects.exists():
+            if not Endorsement.objects.exists():
                 Endorsement.objects.create(
                     stakeholder=stakeholder,
                     campaign=campaign,
