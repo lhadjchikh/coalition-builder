@@ -97,7 +97,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
                   <img
                     src={campaign.image_url}
                     alt={campaign.image_alt_text || campaign.title}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-cover"
                   />
                 </div>
               )}
