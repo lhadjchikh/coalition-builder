@@ -119,9 +119,9 @@ describe("Theme CSS Loading", () => {
 
     // The test already verifies that ThemeStyles received the correct props
     // We can check that the CSS includes Google Fonts import
-    expect(capturedThemeStylesProps.cssVariables).toContain("@import url");
+    expect(capturedThemeStylesProps.cssVariables).toContain("@import url(");
     expect(capturedThemeStylesProps.cssVariables).toContain(
-      "fonts.googleapis.com",
+      "https://fonts.googleapis.com/css2?",
     );
     expect(capturedThemeStylesProps.cssVariables).toContain("Merriweather");
     expect(capturedThemeStylesProps.cssVariables).toContain("Barlow");
@@ -164,9 +164,9 @@ describe("Theme CSS Loading", () => {
     render(Layout);
 
     // Verify that ThemeStyles received CSS without Google Fonts
-    expect(capturedThemeStylesProps.cssVariables).not.toContain("@import url");
+    expect(capturedThemeStylesProps.cssVariables).not.toContain("@import url(");
     expect(capturedThemeStylesProps.cssVariables).not.toContain(
-      "fonts.googleapis.com",
+      "https://fonts.googleapis.com/css2?",
     );
   });
 

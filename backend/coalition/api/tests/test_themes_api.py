@@ -43,9 +43,9 @@ class ThemeAPITest(TestCase):
         assert "css_variables" in data
         css_content = data["css_variables"]
 
-        # Check that Google Fonts @import is included
-        assert "@import url" in css_content
-        assert "fonts.googleapis.com" in css_content
+        # Check that Google Fonts @import is included with proper URL
+        assert "@import url(" in css_content
+        assert "https://fonts.googleapis.com/css2?" in css_content
         assert "Merriweather" in css_content
         assert "Barlow" in css_content
         assert "family=Merriweather:400,500,600,700" in css_content
@@ -73,8 +73,8 @@ class ThemeAPITest(TestCase):
         css_content = data["css_variables"]
 
         # Should not include @import
-        assert "@import url" not in css_content
-        assert "fonts.googleapis.com" not in css_content
+        assert "@import url(" not in css_content
+        assert "https://fonts.googleapis.com/css2?" not in css_content
 
         # But should still have CSS variables
         assert "--theme-primary: #333333;" in css_content
@@ -88,7 +88,8 @@ class ThemeAPITest(TestCase):
         data = response.json()
 
         css_content = data["css_variables"]
-        assert "@import url" in css_content
+        assert "@import url(" in css_content
+        assert "https://fonts.googleapis.com/css2?" in css_content
         assert "Merriweather" in css_content
 
     def test_theme_css_with_spaces_in_font_names(self) -> None:
