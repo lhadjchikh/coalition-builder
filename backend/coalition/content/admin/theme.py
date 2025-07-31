@@ -13,6 +13,8 @@ class ThemeAdmin(admin.ModelAdmin):
     list_filter = ("is_active", "created_at")
     search_fields = ("name", "description")
     readonly_fields = ("created_at", "updated_at")
+    save_as = True
+    save_as_continue = True
 
     fieldsets = (
         (None, {"fields": ("name", "description", "is_active")}),
