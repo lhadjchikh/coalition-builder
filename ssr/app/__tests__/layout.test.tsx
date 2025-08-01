@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import RootLayout from "../layout";
 import { ssrApiClient } from "../../lib/api";
-import { DEFAULT_NAV_ITEMS, NavItemData } from "@shared/types";
+import { DEFAULT_NAV_ITEMS, NavItemData, HomePage } from "@shared/types";
 
 // Mock the dependencies
 jest.mock("../../lib/api");
@@ -48,13 +48,16 @@ jest.mock("@shared/components/CookieConsent", () => ({
 global.fetch = jest.fn();
 
 describe("RootLayout", () => {
-  const mockHomepage = {
+  const mockHomepage: HomePage = {
     id: 1,
     organization_name: "Test Organization",
     tagline: "Test tagline",
     hero_title: "Test Hero",
     hero_subtitle: "Test subtitle",
     hero_background_image_url: "",
+    hero_overlay_enabled: false,
+    hero_overlay_color: "#000000",
+    hero_overlay_opacity: 0.5,
     cta_title: "Get Involved",
     cta_content: "Test CTA",
     cta_button_text: "Join Us",
@@ -84,13 +87,24 @@ describe("RootLayout", () => {
       if (url.includes("/api/homepage/")) {
         return Promise.resolve({
           ok: true,
-          json: async () => mockHomepage,
+          json: async (): Promise<HomePage> => mockHomepage,
+        });
+      }
+      if (url.includes("/api/themes/active/") && !url.includes("/css/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async (): Promise<{ google_fonts: string[] }> => ({
+            google_fonts: [],
+          }),
         });
       }
       if (url.includes("/api/themes/active/css/")) {
         return Promise.resolve({
           ok: true,
-          json: async () => ({ css_variables: "", custom_css: "" }),
+          json: async (): Promise<{
+            css_variables: string;
+            custom_css: string;
+          }> => ({ css_variables: "", custom_css: "" }),
         });
       }
       return Promise.reject(new Error("Unknown URL"));
@@ -207,13 +221,16 @@ describe("RootLayout", () => {
       if (url.includes("/api/homepage/")) {
         return Promise.resolve({
           ok: true,
-          json: async () => homepageWithoutNavItems,
+          json: async (): Promise<HomePage> => homepageWithoutNavItems,
         });
       }
       if (url.includes("/api/themes/active/css/")) {
         return Promise.resolve({
           ok: true,
-          json: async () => ({ css_variables: "", custom_css: "" }),
+          json: async (): Promise<{
+            css_variables: string;
+            custom_css: string;
+          }> => ({ css_variables: "", custom_css: "" }),
         });
       }
       return Promise.reject(new Error("Unknown URL"));
@@ -245,13 +262,16 @@ describe("RootLayout", () => {
       if (url.includes("/api/homepage/")) {
         return Promise.resolve({
           ok: true,
-          json: async () => homepageWithNullNavItems,
+          json: async (): Promise<HomePage> => homepageWithNullNavItems,
         });
       }
       if (url.includes("/api/themes/active/css/")) {
         return Promise.resolve({
           ok: true,
-          json: async () => ({ css_variables: "", custom_css: "" }),
+          json: async (): Promise<{
+            css_variables: string;
+            custom_css: string;
+          }> => ({ css_variables: "", custom_css: "" }),
         });
       }
       return Promise.reject(new Error("Unknown URL"));
@@ -278,13 +298,24 @@ describe("RootLayout", () => {
       if (url.includes("/api/homepage/")) {
         return Promise.resolve({
           ok: true,
-          json: async () => mockHomepage,
+          json: async (): Promise<HomePage> => mockHomepage,
+        });
+      }
+      if (url.includes("/api/themes/active/") && !url.includes("/css/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async (): Promise<{ google_fonts: string[] }> => ({
+            google_fonts: [],
+          }),
         });
       }
       if (url.includes("/api/themes/active/css/")) {
         return Promise.resolve({
           ok: true,
-          json: async () => ({ css_variables: "", custom_css: "" }),
+          json: async (): Promise<{
+            css_variables: string;
+            custom_css: string;
+          }> => ({ css_variables: "", custom_css: "" }),
         });
       }
       return Promise.reject(new Error("Unknown URL"));

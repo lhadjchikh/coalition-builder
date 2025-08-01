@@ -57,6 +57,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Debug Chrome issues
+  const isChrome =
+    typeof window !== "undefined" &&
+    /Chrome/.test(navigator.userAgent) &&
+    /Google Inc/.test(navigator.vendor);
+
   const hasVideo = homepage.hero_background_video_url && !videoError;
   const hasImage =
     homepage.hero_background_image_url &&
@@ -67,9 +73,16 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
     typeof window !== "undefined" &&
     window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-  // Check connection speed
+  // Check connection speed and Chrome compatibility
   useEffect(() => {
     if (!hasVideo || prefersReducedMotion) return;
+
+    // For Chrome, load video immediately to avoid timing issues
+    if (isChrome) {
+      console.log("Chrome detected - loading video immediately");
+      setShouldLoadVideo(true);
+      return;
+    }
 
     // Check if user is on a slow connection
     const connection = getNetworkInformation();
@@ -87,10 +100,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
         setShouldLoadVideo(true);
       }
     } else {
-      // If no connection API, load video after a short delay
+      // If no connection API, load video immediately
+      // This ensures Chrome doesn't miss the video load timing
       setShouldLoadVideo(true);
     }
-  }, [hasVideo, prefersReducedMotion]);
+  }, [hasVideo, prefersReducedMotion, isChrome]);
 
   // Helper function to convert hex color to rgba
   const hexToRgba = (hex: string, opacity: number): string => {
@@ -137,35 +151,81 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
               homepage.hero_background_video_data?.show_controls ?? false
             }
             playsInline
-            preload="metadata"
+            preload={isChrome ? "auto" : "metadata"}
             poster={homepage.hero_background_image_url || undefined}
+            // Chrome-specific attributes
+            {...(isChrome && {
+              disablePictureInPicture: true,
+              disableRemotePlayback: true,
+            })}
             aria-label={
               homepage.hero_background_video_data?.alt_text ||
               "Hero background video"
             }
-            onError={() => {
+            onError={(e) => {
+              console.error("Video playback error:", e);
               setVideoError(true);
               setVideoLoading(false);
             }}
-            onLoadStart={() => setVideoError(false)}
+            onLoadStart={() => {
+              setVideoError(false);
+              setVideoLoading(true);
+            }}
+            onCanPlay={() => {
+              setVideoLoading(false);
+            }}
             onLoadedData={() => {
               setVideoLoading(false);
-              // Start playing when data is loaded
-              videoRef.current?.play().catch((error) => {
-                console.warn(
-                  `Video autoplay failed for URL: ${
-                    homepage.hero_background_video_url || "unknown"
-                  }. Error:`,
-                  error,
-                );
-                // Don't set videoError here as the video can still be played manually
-              });
+              // For Chrome: ensure video is truly ready before attempting play
+              if (videoRef.current && videoRef.current.readyState >= 3) {
+                // Chrome-specific debugging
+                if (isChrome) {
+                  console.log("Chrome detected - Video state:", {
+                    readyState: videoRef.current.readyState,
+                    paused: videoRef.current.paused,
+                    muted: videoRef.current.muted,
+                    autoplay: videoRef.current.autoplay,
+                    src: videoRef.current.src,
+                    currentSrc: videoRef.current.currentSrc,
+                  });
+                }
+
+                videoRef.current.play().catch((error) => {
+                  console.warn(
+                    `Video autoplay failed for URL: ${
+                      homepage.hero_background_video_url || "unknown"
+                    }. Error:`,
+                    error,
+                  );
+                  // Chrome might block autoplay - try playing muted
+                  if (videoRef.current && !videoRef.current.muted) {
+                    videoRef.current.muted = true;
+                    videoRef.current.play().catch(() => {
+                      // If still failing, don't treat as error - show poster instead
+                      console.warn("Video autoplay not allowed by browser");
+                    });
+                  }
+                });
+              }
             }}
           >
             <source
               src={homepage.hero_background_video_url}
               type={getVideoMimeType(homepage.hero_background_video_url)}
             />
+            {/* Add WebM source if the video is MP4 for better Chrome compatibility */}
+            {homepage.hero_background_video_url?.endsWith(".mp4") && (
+              <source
+                src={homepage.hero_background_video_url.replace(
+                  ".mp4",
+                  ".webm",
+                )}
+                type="video/webm"
+                onError={() => {
+                  // Silently fail if WebM version doesn't exist
+                }}
+              />
+            )}
             Your browser does not support the video tag.
           </video>
           {/* Configurable overlay for better text readability */}

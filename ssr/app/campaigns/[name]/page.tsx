@@ -3,7 +3,7 @@ import { apiClient } from "../../../lib/api";
 import CampaignDetailWrapper from "./CampaignDetailWrapper";
 
 // Force dynamic rendering at request time
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface CampaignPageProps {
   params: Promise<{

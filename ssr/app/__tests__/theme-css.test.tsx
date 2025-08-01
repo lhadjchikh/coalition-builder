@@ -27,6 +27,23 @@ jest.mock("@shared/components/LegalDocumentTracker", () => ({
   __esModule: true,
   default: (): null => null,
 }));
+jest.mock("../../components/GoogleFontsLoader", () => ({
+  __esModule: true,
+  default: ({ googleFonts }: { googleFonts?: string[] }) => {
+    if (!googleFonts || googleFonts.length === 0) return null;
+    return (
+      <>
+        {googleFonts.map((font) => (
+          <link
+            key={font}
+            rel="stylesheet"
+            href={`https://fonts.googleapis.com/css2?family=${font}`}
+          />
+        ))}
+      </>
+    );
+  },
+}));
 
 // Mock ThemeStyles to capture its props
 let capturedThemeStylesProps: any = null;
@@ -62,15 +79,29 @@ describe("Theme CSS Loading", () => {
   const setupFetchMock = (
     homepageData: any = mockHomepage,
     themeCSSData?: any,
-    options: { homepageOk?: boolean; themeCssOk?: boolean } = {},
+    options: {
+      homepageOk?: boolean;
+      themeCssOk?: boolean;
+      themeData?: any;
+    } = {},
   ) => {
-    const { homepageOk = true, themeCssOk = true } = options;
+    const {
+      homepageOk = true,
+      themeCssOk = true,
+      themeData = { google_fonts: [] },
+    } = options;
 
     (global.fetch as jest.Mock).mockImplementation((url: string) => {
       if (url.includes("/api/homepage/")) {
         return Promise.resolve({
           ok: homepageOk,
           json: async () => homepageData,
+        });
+      }
+      if (url.includes("/api/themes/active/") && !url.includes("/css/")) {
+        return Promise.resolve({
+          ok: themeCssOk,
+          json: async () => themeData,
         });
       }
       if (url.includes("/api/themes/active/css/")) {
@@ -96,10 +127,14 @@ describe("Theme CSS Loading", () => {
   });
 
   it("should fetch and include Google Fonts in theme CSS", async () => {
-    // Mock theme CSS API response with Google Fonts
+    // Mock theme data with Google Fonts
+    const mockThemeData = {
+      google_fonts: ["Merriweather", "Barlow"],
+    };
+
+    // Mock theme CSS API response (without @import since it's stripped now)
     const mockThemeCSS = {
-      css_variables: `@import url("https://fonts.googleapis.com/css2?family=Merriweather:400,500,600,700&family=Barlow:400,500,600,700&display=swap");
-:root {
+      css_variables: `:root {
   --theme-primary: #4A7C59;
   --theme-font-heading: 'Merriweather', serif;
   --theme-font-body: 'Barlow', sans-serif;
@@ -107,7 +142,7 @@ describe("Theme CSS Loading", () => {
       custom_css: ".custom { color: red; }",
     };
 
-    setupFetchMock(mockHomepage, mockThemeCSS);
+    setupFetchMock(mockHomepage, mockThemeCSS, { themeData: mockThemeData });
 
     // Render the layout
     const Layout = await RootLayout({
@@ -116,7 +151,11 @@ describe("Theme CSS Loading", () => {
 
     const { container } = render(Layout);
 
-    // Verify fetch was called with correct endpoint
+    // Verify fetch was called with correct endpoints
+    expect(global.fetch).toHaveBeenCalledWith(
+      "http://localhost:8000/api/themes/active/",
+      { cache: "no-store" },
+    );
     expect(global.fetch).toHaveBeenCalledWith(
       "http://localhost:8000/api/themes/active/css/",
       { cache: "no-store" },
@@ -128,12 +167,6 @@ describe("Theme CSS Loading", () => {
       customCss: mockThemeCSS.custom_css,
     });
 
-    // The test already verifies that ThemeStyles received the correct props
-    // We can check that the CSS includes Google Fonts import
-    expect(capturedThemeStylesProps.cssVariables).toContain("@import url(");
-    expect(capturedThemeStylesProps.cssVariables).toContain(
-      "https://fonts.googleapis.com/css2?",
-    );
     expect(capturedThemeStylesProps.cssVariables).toContain("Merriweather");
     expect(capturedThemeStylesProps.cssVariables).toContain("Barlow");
     expect(capturedThemeStylesProps.cssVariables).toContain(

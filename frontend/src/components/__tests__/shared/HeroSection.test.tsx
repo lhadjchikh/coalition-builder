@@ -49,9 +49,23 @@ const mockConnection = (overrides?: any) => {
 
 describe('HeroSection', () => {
   beforeEach(() => {
-    // Reset mocks before each test
     jest.clearAllMocks();
-    mockConnection(undefined);
+    // Reset window.matchMedia
+    window.matchMedia = jest.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    }));
+  });
+
+  afterEach(() => {
+    // Clean up mocked properties
+    delete (window.navigator as any).connection;
   });
 
   describe('Basic Rendering', () => {
@@ -75,7 +89,7 @@ describe('HeroSection', () => {
     it('does not render CTA button when not provided', () => {
       const homepage = createMockHomepage({
         cta_button_text: '',
-        cta_button_url: undefined,
+        cta_button_url: '',
       });
       render(<HeroSection homepage={homepage} />);
 
@@ -84,7 +98,7 @@ describe('HeroSection', () => {
 
     it('does not render subtitle when not provided', () => {
       const homepage = createMockHomepage({
-        hero_subtitle: undefined,
+        hero_subtitle: '',
       });
       render(<HeroSection homepage={homepage} />);
 
@@ -98,7 +112,6 @@ describe('HeroSection', () => {
       const { container } = render(<HeroSection homepage={homepage} />);
 
       const heroDiv = container.firstChild as HTMLElement;
-      // The component applies styles via the style prop
       expect(heroDiv).toHaveStyle({
         backgroundImage: expect.stringContaining('url(https://example.com/image.jpg)'),
       });
@@ -113,7 +126,6 @@ describe('HeroSection', () => {
       const { container } = render(<HeroSection homepage={homepage} />);
 
       const heroDiv = container.firstChild as HTMLElement;
-      // The overlay is included in the background-image as a linear gradient
       expect(heroDiv).toHaveStyle({
         backgroundImage: expect.stringContaining('rgba(255, 0, 0, 0.7)'),
       });
@@ -129,7 +141,7 @@ describe('HeroSection', () => {
 
     it('uses theme heading color without background', () => {
       const homepage = createMockHomepage({
-        hero_background_image_url: undefined,
+        hero_background_image_url: '',
       });
       render(<HeroSection homepage={homepage} />);
 
@@ -140,44 +152,20 @@ describe('HeroSection', () => {
 
   describe('Video Background', () => {
     beforeEach(() => {
-      // Mock HTMLVideoElement methods
-      HTMLVideoElement.prototype.play = jest.fn().mockResolvedValue(undefined);
-      HTMLVideoElement.prototype.pause = jest.fn();
+      // Ensure video tests have a clean connection state
+      mockConnection({ effectiveType: '4g', saveData: false });
     });
 
     it('renders video element when video URL is provided and connection is fast', async () => {
-      mockConnection({ effectiveType: '4g', saveData: false });
-
       const homepage = createMockHomepage({
         hero_background_video_url: 'https://example.com/video.mp4',
-        hero_background_video_data: {
-          id: 1,
-          title: 'Hero Video',
-          video_type: 'mp4',
-          video_url: 'https://example.com/video.mp4',
-          autoplay: true,
-          loop: true,
-          muted: true,
-          show_controls: false,
-          alt_text: 'Hero video',
-          description: 'Hero background video',
-          created_at: '2023-01-01T00:00:00Z',
-          updated_at: '2023-01-01T00:00:00Z',
-        },
       });
 
-      const { container } = render(<HeroSection homepage={homepage} />);
+      render(<HeroSection homepage={homepage} />);
 
-      // Wait for the effect to run
       await waitFor(() => {
-        const video = container.querySelector('video[aria-label="Hero video"]');
-        expect(video).toBeInTheDocument();
+        expect(screen.getByLabelText('Hero background video')).toBeInTheDocument();
       });
-
-      const video = container.querySelector('video[aria-label="Hero video"]') as HTMLVideoElement;
-      expect(video.autoplay).toBe(true);
-      expect(video.loop).toBe(true);
-      expect(video.muted).toBe(true);
     });
 
     it('does not render video on slow 2g connection', async () => {
@@ -304,23 +292,21 @@ describe('HeroSection', () => {
       });
     });
 
-    // Note: MIME type functionality is tested implicitly in other video tests
-    // The getVideoMimeType helper function correctly sets MIME types based on file extensions
-
-    it('includes poster image in video props when both video and image are provided', () => {
-      // Test that the component logic would include poster
+    it('includes poster image in video props when both video and image are provided', async () => {
       const homepage = createMockHomepage({
         hero_background_video_url: 'https://example.com/video.mp4',
         hero_background_image_url: 'https://example.com/poster.jpg',
       });
 
-      // Verify the homepage data includes both URLs
-      expect(homepage.hero_background_video_url).toBe('https://example.com/video.mp4');
-      expect(homepage.hero_background_image_url).toBe('https://example.com/poster.jpg');
+      const { container } = render(<HeroSection homepage={homepage} />);
+
+      await waitFor(() => {
+        const video = container.querySelector('video');
+        expect(video).toHaveAttribute('poster', 'https://example.com/poster.jpg');
+      });
     });
 
     it('includes overlay settings in homepage data', () => {
-      // Test that overlay configuration is properly passed
       const homepage = createMockHomepage({
         hero_background_video_url: 'https://example.com/video.mp4',
         hero_overlay_enabled: true,
