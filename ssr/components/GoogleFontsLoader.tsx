@@ -11,15 +11,14 @@ const GoogleFontsLoader: React.FC<GoogleFontsLoaderProps> = ({
     return null;
   }
 
-  // Filter out empty strings and format font names
-  const fontFamilies: string[] = [];
-  for (const font of googleFonts) {
-    if (font && font.trim()) {
+  // Filter out empty strings and format font names using functional approach
+  const fontFamilies = googleFonts
+    .filter((font) => font && font.trim())
+    .map((font) => {
       // Replace spaces with + and add default weights
       const fontName = font.trim().replace(/ /g, "+");
-      fontFamilies.push(`${fontName}:wght@400;500;600;700`);
-    }
-  }
+      return `${fontName}:wght@400;500;600;700`;
+    });
 
   if (fontFamilies.length === 0) {
     return null;
