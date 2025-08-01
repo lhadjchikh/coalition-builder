@@ -7,7 +7,7 @@ from typing import Any
 from django.core.exceptions import ValidationError
 
 # Valid video file extensions
-VALID_VIDEO_EXTENSIONS = [".mov", ".mp4", ".webm"]
+VALID_VIDEO_EXTENSIONS = [".mp4"]
 
 # Hex color regex pattern
 HEX_COLOR_PATTERN = re.compile(r"^#[0-9A-Fa-f]{6}$")
