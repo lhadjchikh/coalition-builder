@@ -97,7 +97,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
         return (
           <div className="text-center">
             {block.title && (
-              <h3 className="text-3xl font-bold text-gray-900 mb-6 px-4 sm:px-0">
+              <h3 className="text-3xl font-bold text-gray-900 mb-6">
                 {block.title}
               </h3>
             )}
@@ -110,7 +110,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
             )}
             {block.content && (
               <div
-                className="mt-4 text-xl text-gray-600 max-w-reading-lg mx-auto px-4 sm:px-0"
+                className="mt-4 text-xl text-gray-600 max-w-reading-lg mx-auto"
                 dangerouslySetInnerHTML={{ __html: block.content }}
               />
             )}
@@ -120,7 +120,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
       case "text_image":
         return (
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center">
-            <div className="flex-1 content-block-text w-full lg:w-auto px-4 sm:px-0">
+            <div className="flex-1 content-block-text w-full lg:w-auto">
               {block.title && (
                 <h3 className="text-3xl font-bold text-gray-900 mb-6">
                   {block.title}
@@ -204,7 +204,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
   // Determine container padding based on block type
   const getContainerPadding = () => {
     if (block.block_type === "image" || block.block_type === "text_image") {
-      return "px-0 sm:px-6 lg:px-8";
+      return "px-4 sm:px-6 lg:px-8";
     }
     return "px-4 sm:px-6 lg:px-8";
   };
