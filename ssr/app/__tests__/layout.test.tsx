@@ -87,6 +87,12 @@ describe("RootLayout", () => {
           json: async () => mockHomepage,
         });
       }
+      if (url.includes("/api/themes/active/") && !url.includes("/css/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ google_fonts: [] }),
+        });
+      }
       if (url.includes("/api/themes/active/css/")) {
         return Promise.resolve({
           ok: true,
@@ -279,6 +285,12 @@ describe("RootLayout", () => {
         return Promise.resolve({
           ok: true,
           json: async () => mockHomepage,
+        });
+      }
+      if (url.includes("/api/themes/active/") && !url.includes("/css/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ google_fonts: [] }),
         });
       }
       if (url.includes("/api/themes/active/css/")) {

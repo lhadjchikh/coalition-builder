@@ -7,6 +7,7 @@ import SSRFooter from "../components/SSRFooter";
 import CookieConsent from "@shared/components/CookieConsent";
 import GoogleAnalytics from "../components/GoogleAnalytics";
 import ThemeStyles from "../components/ThemeStyles";
+import GoogleFontsLoader from "../components/GoogleFontsLoader";
 import { ssrApiClient } from "../lib/api";
 import { NavItemData, DEFAULT_NAV_ITEMS } from "@shared/types";
 import { getFallbackHomepage } from "@shared/utils/homepage-data";
@@ -36,6 +37,7 @@ export default async function RootLayout({
   let organizationName = "";
   let homepage = null;
   let themeStyles = { cssVariables: "", customCss: "" };
+  let googleFonts: string[] = [];
 
   try {
     // Fetch homepage data without caching for layout
@@ -61,24 +63,40 @@ export default async function RootLayout({
     homepage = fallbackHomepage;
   }
 
-  // Fetch theme CSS
+  // Fetch theme data
   try {
     const response = await fetch(
-      `${process.env.API_URL || "http://localhost:8000"}/api/themes/active/css/`,
+      `${process.env.API_URL || "http://localhost:8000"}/api/themes/active/`,
       {
         cache: "no-store", // Disable caching for theme data
       },
     );
     if (response.ok) {
-      const data = await response.json();
-      themeStyles = {
-        cssVariables: data.css_variables || "",
-        customCss: data.custom_css || "",
-      };
+      const theme = await response.json();
+      googleFonts = theme.google_fonts || [];
+
+      // Generate CSS without @import statements
+      const cssResponse = await fetch(
+        `${process.env.API_URL || "http://localhost:8000"}/api/themes/active/css/`,
+        {
+          cache: "no-store",
+        },
+      );
+      if (cssResponse.ok) {
+        const data = await cssResponse.json();
+        // Remove @import statements from css_variables
+        let cssVariables = data.css_variables || "";
+        cssVariables = cssVariables.replace(/@import[^;]+;/g, "").trim();
+
+        themeStyles = {
+          cssVariables,
+          customCss: data.custom_css || "",
+        };
+      }
     }
   } catch (error) {
     console.error(
-      "Error fetching theme CSS:",
+      "Error fetching theme data:",
       error instanceof Error ? error.message : "Unknown error",
     );
   }
@@ -88,6 +106,7 @@ export default async function RootLayout({
       <head>
         {/* The head tag is optional in Next.js App Router,
             but we include it explicitly to ensure it's present for SSR tests */}
+        <GoogleFontsLoader googleFonts={googleFonts} />
         <ThemeStyles
           cssVariables={themeStyles.cssVariables}
           customCss={themeStyles.customCss}
