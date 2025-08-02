@@ -55,7 +55,7 @@ describe('Navbar', () => {
       const mockUseLocation = jest.fn(() => ({ pathname: '/' }));
       render(<Navbar navItems={customNavItems} useLocation={mockUseLocation} />);
       const homeLink = screen.getByText('Home');
-      expect(homeLink).toHaveClass('bg-theme-primary-dark');
+      expect(homeLink).toHaveClass('bg-white/20');
     });
 
     it('renders links as anchor tags when href is provided', () => {
@@ -96,7 +96,7 @@ describe('Navbar', () => {
           to: '/',
           href: '/',
           children: 'Home',
-          className: expect.stringContaining('px-3 py-2 rounded-md'),
+          className: expect.stringContaining('rounded-xl'),
         }),
         undefined
       );

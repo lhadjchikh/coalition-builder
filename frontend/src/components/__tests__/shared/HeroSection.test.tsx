@@ -335,7 +335,7 @@ describe('HeroSection', () => {
       render(<HeroSection homepage={homepage} />);
 
       const ctaButton = screen.getByText('Get Started');
-      expect(ctaButton).toHaveClass('shadow-lg hover:shadow-xl');
+      expect(ctaButton).toHaveClass('shadow-soft');
     });
   });
 });
