@@ -55,6 +55,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
   const [videoError, setVideoError] = useState(false);
   const [videoLoading, setVideoLoading] = useState(true);
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const hasVideo = homepage.hero_background_video_url && !videoError;
@@ -90,6 +91,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
     }
   }, [hasVideo, prefersReducedMotion]);
 
+  // Preload background image
+  useEffect(() => {
+    if (!hasImage || !homepage.hero_background_image_url) return;
+
+    const img = new Image();
+    img.onload = () => setImageLoaded(true);
+    img.src = homepage.hero_background_image_url;
+  }, [hasImage, homepage.hero_background_image_url]);
+
   // Helper function to convert hex color to rgba
   const hexToRgba = (hex: string, opacity: number): string => {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -105,7 +115,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
 
   // Apply background image to section only when there's an image but no video
   const heroStyle: React.CSSProperties =
-    hasImage && !hasVideo
+    hasImage && !hasVideo && imageLoaded
       ? {
           backgroundImage: `linear-gradient(${overlayStyle}, ${overlayStyle}), url(${homepage.hero_background_image_url})`,
           backgroundSize: "cover",
@@ -119,13 +129,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
 
   return (
     <section
-      className={`relative overflow-hidden -mt-20 ${hasVideo || hasImage ? textColorClass : "bg-theme-bg-section"} ${hasVideo ? "bg-theme-primary" : ""}`}
+      className={`relative overflow-hidden -mt-20 ${hasVideo || hasImage ? textColorClass : "bg-theme-bg-section"} ${hasVideo ? "bg-theme-primary" : ""} ${hasImage && !hasVideo ? "transition-all duration-1000" : ""}`}
       style={heroStyle}
     >
       {/* Background Image Layer - Shows while video loads */}
       {hasImage && hasVideo && (
         <div
-          className="absolute inset-0 z-0"
+          className={`absolute inset-0 z-0 transition-opacity duration-1000 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
           data-testid="hero-background-image"
           data-background-url={homepage.hero_background_image_url}
           style={{
