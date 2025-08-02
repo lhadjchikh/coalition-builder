@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavItemData } from "../types";
 
 interface NavbarProps {
@@ -37,7 +37,21 @@ const Navbar: React.FC<NavbarProps> = ({
   useLocation,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const location = useLocation?.();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const offset = window.scrollY;
+      setScrolled(offset > 20);
+    };
+
+    // Set initial state
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -56,7 +70,9 @@ const Navbar: React.FC<NavbarProps> = ({
     <nav
       className={
         className ||
-        "navbar-glass fixed top-0 left-0 right-0 z-50 border-b border-white/10"
+        `fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled ? "navbar-glass border-b border-white/10" : "bg-transparent"
+        }`
       }
     >
       <div className="max-w-7xl mx-auto container-padding">
@@ -67,7 +83,11 @@ const Navbar: React.FC<NavbarProps> = ({
               to="/"
               href="/"
               className={`flex items-center hover:opacity-80 transition-opacity duration-200 ${
-                !logoUrl ? "text-white text-xl font-bold" : ""
+                !logoUrl
+                  ? `text-xl font-bold ${
+                      scrolled ? "text-white" : "text-white drop-shadow-lg"
+                    }`
+                  : ""
               }`}
               onClick={closeMenu}
             >
@@ -99,7 +119,7 @@ const Navbar: React.FC<NavbarProps> = ({
                         isActive
                           ? "bg-white/20 text-white shadow-soft"
                           : "text-white/90 hover:bg-white/10 hover:text-white"
-                      }`}
+                      } ${!scrolled ? "drop-shadow-lg" : ""}`}
                     >
                       {item.label}
                     </LinkComponent>
@@ -113,7 +133,7 @@ const Navbar: React.FC<NavbarProps> = ({
                         item.active
                           ? "bg-white/20 text-white shadow-soft"
                           : "text-white/90 hover:bg-white/10 hover:text-white"
-                      }`}
+                      } ${!scrolled ? "drop-shadow-lg" : ""}`}
                     >
                       {item.label}
                     </button>
@@ -167,7 +187,7 @@ const Navbar: React.FC<NavbarProps> = ({
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden">
+          <div className="md:hidden navbar-glass rounded-b-xl">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
               {navItems.map((item, index) => {
                 const isActive = isActiveLink(item.href);
