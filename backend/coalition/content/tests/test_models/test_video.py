@@ -108,7 +108,7 @@ class VideoModelTest(TestCase):
 
         # Test invalid extensions
         invalid_extensions = [".avi", ".mov", ".webm", ".mkv", ".flv"]
-        
+
         for ext in invalid_extensions:
             invalid_file = SimpleUploadedFile(
                 f"test_video{ext}",
