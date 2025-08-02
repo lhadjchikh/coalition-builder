@@ -7,23 +7,11 @@ import ContentBlockComponent from '@shared/components/ContentBlock';
 import SocialLinks from '@shared/components/SocialLinks';
 import Navbar from '@shared/components/Navbar';
 import Footer from '@shared/components/Footer';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { getFallbackHomepage } from '@shared/utils/homepage-data';
-
-const LinkWrapper: React.FC<{
-  to?: string;
-  href?: string;
-  children: React.ReactNode;
-  className?: string;
-  onClick?: () => void;
-}> = ({ to, href, children, className, onClick }) => (
-  <Link to={to || href || '/'} className={className} onClick={onClick}>
-    {children}
-  </Link>
-);
 import { DEFAULT_NAV_ITEMS } from '@shared/types';
 import API from '../services/api';
-import { useNavigate } from 'react-router-dom';
+import LinkWrapper from '../components/LinkWrapper';
 
 const Home: React.FC = () => {
   const [homepage, setHomepage] = useState<HomePageType | null>(null);

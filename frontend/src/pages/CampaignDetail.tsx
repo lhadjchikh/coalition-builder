@@ -7,19 +7,8 @@ import EndorsementsList from '../components/EndorsementsList';
 import GrowthIcon from '../components/GrowthIcon';
 import Navbar from '@shared/components/Navbar';
 import Footer from '@shared/components/Footer';
-import { Link, useLocation } from 'react-router-dom';
-
-const LinkWrapper: React.FC<{
-  to?: string;
-  href?: string;
-  children: React.ReactNode;
-  className?: string;
-  onClick?: () => void;
-}> = ({ to, href, children, className, onClick }) => (
-  <Link to={to || href || '/'} className={className} onClick={onClick}>
-    {children}
-  </Link>
-);
+import { useLocation } from 'react-router-dom';
+import LinkWrapper from '../components/LinkWrapper';
 
 const LinkWrapperComponent = LinkWrapper as any;
 import { DEFAULT_NAV_ITEMS } from '@shared/types';
