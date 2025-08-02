@@ -139,7 +139,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
         {/* Call to Action Section */}
         {homepage.cta_content && (
-          <section className="section-spacing bg-theme-secondary">
+          <section className="section-spacing bg-theme-primary">
             <div className="max-w-7xl mx-auto container-padding text-center">
               <h2 className="h2 text-white">{homepage.cta_title}</h2>
               <div
