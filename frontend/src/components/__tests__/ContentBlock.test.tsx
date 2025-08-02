@@ -256,7 +256,14 @@ describe('ContentBlock', () => {
 
       const blockquote = screen.getByText('"Test quote"');
       expect(blockquote.tagName).toBe('BLOCKQUOTE');
-      expect(blockquote).toHaveClass('text-2xl', 'italic', 'text-theme-text-body', 'font-light', 'leading-relaxed', 'mb-6');
+      expect(blockquote).toHaveClass(
+        'text-2xl',
+        'italic',
+        'text-theme-text-body',
+        'font-light',
+        'leading-relaxed',
+        'mb-6'
+      );
     });
   });
 
@@ -284,7 +291,14 @@ describe('ContentBlock', () => {
       render(<ContentBlock block={block} />);
 
       const gridDiv = screen.getByText('Stat content').closest('.grid');
-      expect(gridDiv).toHaveClass('grid', 'grid-cols-1', 'md:grid-cols-2', 'lg:grid-cols-3', 'gap-8', 'lg:gap-12');
+      expect(gridDiv).toHaveClass(
+        'grid',
+        'grid-cols-1',
+        'md:grid-cols-2',
+        'lg:grid-cols-3',
+        'gap-8',
+        'lg:gap-12'
+      );
     });
   });
 
