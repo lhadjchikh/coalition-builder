@@ -56,7 +56,7 @@ const Navbar: React.FC<NavbarProps> = ({
     <nav
       className={
         className ||
-        "bg-theme-primary/95 backdrop-blur-md sticky top-0 z-50 shadow-soft border-b border-white/10"
+        "bg-theme-primary sticky top-0 z-50 shadow-md border-b border-theme-primary-dark/20"
       }
     >
       <div className="max-w-7xl mx-auto container-padding">
@@ -168,7 +168,7 @@ const Navbar: React.FC<NavbarProps> = ({
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-theme-primary">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
               {navItems.map((item, index) => {
                 const isActive = isActiveLink(item.href);
 

@@ -4,6 +4,20 @@
 @import "./spacing.css";
 @import "./typography.css";
 
+/* Ensure navbar has fallback styling and proper contrast */
+nav {
+  background-color: var(--theme-primary, #2563eb) !important;
+  color: white;
+}
+
+/* Ensure theme colors have proper defaults */
+:root {
+  /* Fallback colors in case theme doesn't load */
+  --theme-primary: #2563eb;
+  --theme-primary-light: #3b82f6;
+  --theme-primary-dark: #1d4ed8;
+}
+
 /* Modern CSS reset and base styles */
 *,
 *::before,
