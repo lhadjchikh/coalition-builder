@@ -118,11 +118,17 @@ describe('Navbar', () => {
           to: '/',
           href: '/',
           children: 'Coalition Builder',
-          className: expect.stringContaining('text-white text-xl font-bold'),
+          className: expect.any(String),
           onClick: expect.any(Function),
         }),
         undefined
       );
+
+      // Check that the className contains the required classes
+      const call = mockLinkComponent.mock.calls[0][0];
+      expect(call.className).toContain('text-white');
+      expect(call.className).toContain('text-xl');
+      expect(call.className).toContain('font-bold');
     });
   });
 

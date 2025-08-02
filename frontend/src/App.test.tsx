@@ -94,6 +94,18 @@ jest.mock('./pages/CampaignDetail', () => {
   };
 });
 
+jest.mock('./pages/Terms', () => {
+  return function MockTerms() {
+    return <div data-testid="terms-page">Mock Terms Page</div>;
+  };
+});
+
+jest.mock('./pages/Privacy', () => {
+  return function MockPrivacy() {
+    return <div data-testid="privacy-page">Mock Privacy Page</div>;
+  };
+});
+
 jest.mock('./components/GoogleAnalytics', () => {
   return function MockGoogleAnalytics() {
     return <div data-testid="google-analytics">Mock Google Analytics</div>;
