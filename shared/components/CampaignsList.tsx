@@ -36,7 +36,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
   headingText = "Policy Campaigns",
   className = "",
   cardClassName = "",
-  gridClassName = "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8",
+  gridClassName = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8",
 }) => {
   if (loading) {
     return (
@@ -74,7 +74,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
             <div
               key={campaign.id}
               className={`
-                card-modern overflow-hidden cursor-pointer group
+                card-modern overflow-hidden cursor-pointer group p-0
                 ${cardClassName}
               `}
               data-testid={`campaign-${campaign.id}`}
