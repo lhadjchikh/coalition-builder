@@ -56,8 +56,8 @@ describe('Navbar scroll behavior', () => {
 
   test('navbar adds drop-shadow to text when transparent on homepage', () => {
     const navItems = [
-      { label: 'Home', href: '/' },
       { label: 'About', href: '/about' },
+      { label: 'Campaigns', href: '/campaigns' },
     ];
 
     render(<Navbar navItems={navItems} useLocation={mockUseLocation} />);
@@ -65,7 +65,7 @@ describe('Navbar scroll behavior', () => {
     // Check desktop nav links have drop-shadow when transparent
     const links = screen.getAllByRole('link');
     links.forEach((link: HTMLElement) => {
-      if (link.textContent && ['Home', 'About'].includes(link.textContent)) {
+      if (link.textContent && ['About', 'Campaigns'].includes(link.textContent)) {
         expect(link).toHaveClass('drop-shadow-lg');
       }
     });
@@ -77,7 +77,7 @@ describe('Navbar scroll behavior', () => {
     // Check drop-shadow is removed when scrolled
     const scrolledLinks = screen.getAllByRole('link');
     scrolledLinks.forEach((link: HTMLElement) => {
-      if (link.textContent && ['Home', 'About'].includes(link.textContent)) {
+      if (link.textContent && ['About', 'Campaigns'].includes(link.textContent)) {
         expect(link).not.toHaveClass('drop-shadow-lg');
       }
     });

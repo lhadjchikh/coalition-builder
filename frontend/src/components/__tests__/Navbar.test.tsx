@@ -18,7 +18,6 @@ describe('Navbar', () => {
 
     it('renders default navigation items when provided', () => {
       render(<Navbar navItems={DEFAULT_NAV_ITEMS} />);
-      expect(screen.getByText('Home')).toBeInTheDocument();
       expect(screen.getByText('About')).toBeInTheDocument();
       expect(screen.getByText('Campaigns')).toBeInTheDocument();
       expect(screen.getByText('Contact')).toBeInTheDocument();
@@ -32,21 +31,21 @@ describe('Navbar', () => {
     it('renders empty navigation when no items provided', () => {
       render(<Navbar />);
       // Should not render any navigation items
-      expect(screen.queryByText('Home')).not.toBeInTheDocument();
       expect(screen.queryByText('About')).not.toBeInTheDocument();
+      expect(screen.queryByText('Campaigns')).not.toBeInTheDocument();
     });
   });
 
   describe('Custom Navigation Items', () => {
     const customNavItems = [
-      { label: 'Home', href: '/', active: true },
+      { label: 'Campaigns', href: '/campaigns' },
       { label: 'About', href: '/about' },
       { label: 'Contact', onClick: jest.fn() },
     ];
 
     it('renders custom navigation items', () => {
       render(<Navbar navItems={customNavItems} />);
-      expect(screen.getByText('Home')).toBeInTheDocument();
+      expect(screen.getByText('Campaigns')).toBeInTheDocument();
       expect(screen.getByText('About')).toBeInTheDocument();
       expect(screen.getByText('Contact')).toBeInTheDocument();
     });
@@ -58,19 +57,18 @@ describe('Navbar', () => {
       expect(aboutLink).toHaveClass('bg-white/20');
     });
 
-    it('does not apply active class to Home link when on homepage', () => {
-      const mockUseLocation = jest.fn(() => ({ pathname: '/' }));
+    it('applies active class to Campaigns link when on campaigns page', () => {
+      const mockUseLocation = jest.fn(() => ({ pathname: '/campaigns' }));
       render(<Navbar navItems={customNavItems} useLocation={mockUseLocation} />);
-      const homeLink = screen.getByText('Home');
-      expect(homeLink).not.toHaveClass('bg-white/20');
-      expect(homeLink).toHaveClass('text-white/90');
+      const campaignsLink = screen.getByText('Campaigns');
+      expect(campaignsLink).toHaveClass('bg-white/20');
     });
 
     it('renders links as anchor tags when href is provided', () => {
       render(<Navbar navItems={customNavItems} />);
-      const homeLink = screen.getByText('Home');
-      expect(homeLink.tagName).toBe('A');
-      expect(homeLink).toHaveAttribute('href', '/');
+      const campaignsLink = screen.getByText('Campaigns');
+      expect(campaignsLink.tagName).toBe('A');
+      expect(campaignsLink).toHaveAttribute('href', '/campaigns');
     });
 
     it('renders links as buttons when onClick is provided', () => {
@@ -92,7 +90,7 @@ describe('Navbar', () => {
   describe('Frontend App Navigation', () => {
     it('renders navigation items with LinkComponent', () => {
       const mockLinkComponent = jest.fn(({ children, ...props }) => <a {...props}>{children}</a>);
-      const navItems = [{ label: 'Home', href: '/' }];
+      const navItems = [{ label: 'About', href: '/about' }];
 
       render(<Navbar navItems={navItems} LinkComponent={mockLinkComponent} />);
       // Should be called twice - once for brand, once for nav item
@@ -101,9 +99,9 @@ describe('Navbar', () => {
       expect(mockLinkComponent).toHaveBeenNthCalledWith(
         2,
         expect.objectContaining({
-          to: '/',
-          href: '/',
-          children: 'Home',
+          to: '/about',
+          href: '/about',
+          children: 'About',
           className: expect.stringContaining('rounded-xl'),
         }),
         undefined
@@ -149,8 +147,8 @@ describe('Navbar', () => {
 
     it('toggles mobile menu when button is clicked', () => {
       const navItems = [
-        { label: 'Home', href: '/' },
         { label: 'About', href: '/about' },
+        { label: 'Campaigns', href: '/campaigns' },
       ];
 
       render(<Navbar navItems={navItems} />);
@@ -163,12 +161,12 @@ describe('Navbar', () => {
       fireEvent.click(toggleButton);
 
       // Mobile menu should be open now (multiple instances of nav items)
-      const mobileMenuItems = screen.getAllByText('Home');
+      const mobileMenuItems = screen.getAllByText('About');
       expect(mobileMenuItems.length).toBe(2); // One for desktop, one for mobile
     });
 
     it('closes mobile menu when navigation item is clicked', async () => {
-      const navItems = [{ label: 'Home', href: '/' }];
+      const navItems = [{ label: 'About', href: '/about' }];
 
       render(<Navbar navItems={navItems} />);
       const toggleButton = screen.getByLabelText('Toggle navigation menu');
@@ -177,7 +175,7 @@ describe('Navbar', () => {
       fireEvent.click(toggleButton);
 
       // Click navigation item (mobile version)
-      const mobileNavItems = screen.getAllByText('Home');
+      const mobileNavItems = screen.getAllByText('About');
       fireEvent.click(mobileNavItems[1]); // Click the mobile version
 
       // Menu should be closed (items should not be visible in mobile view)
@@ -225,7 +223,7 @@ describe('Navbar', () => {
 
   describe('Styled Components Props', () => {
     it('renders navigation menu correctly', () => {
-      const navItems = [{ label: 'Home', href: '/' }];
+      const navItems = [{ label: 'About', href: '/about' }];
 
       const { container } = render(<Navbar navItems={navItems} />);
 
@@ -234,7 +232,7 @@ describe('Navbar', () => {
       expect(navMenu).toBeInTheDocument();
 
       // Check that navigation items are rendered
-      expect(screen.getByText('Home')).toBeInTheDocument();
+      expect(screen.getByText('About')).toBeInTheDocument();
     });
 
     it('does not pass href attribute to button elements', () => {
@@ -246,11 +244,11 @@ describe('Navbar', () => {
     });
 
     it('passes href attribute only to anchor elements', () => {
-      const navItems = [{ label: 'Home', href: '/' }];
+      const navItems = [{ label: 'About', href: '/about' }];
 
       render(<Navbar navItems={navItems} />);
-      const homeLink = screen.getByText('Home');
-      expect(homeLink).toHaveAttribute('href', '/');
+      const aboutLink = screen.getByText('About');
+      expect(aboutLink).toHaveAttribute('href', '/about');
     });
   });
 
@@ -259,7 +257,7 @@ describe('Navbar', () => {
       render(<Navbar navItems={[]} />);
       expect(screen.getByText('Coalition Builder')).toBeInTheDocument();
       // Should not render any navigation items
-      expect(screen.queryByText('Home')).not.toBeInTheDocument();
+      expect(screen.queryByText('About')).not.toBeInTheDocument();
     });
 
     it('handles navigation items without onClick or href', () => {
