@@ -4,18 +4,67 @@
 @import "./spacing.css";
 @import "./typography.css";
 
-/* Ensure navbar has fallback styling and proper contrast */
-nav {
-  background-color: var(--theme-primary, #2563eb) !important;
-  color: white;
-}
-
 /* Ensure theme colors have proper defaults */
 :root {
   /* Fallback colors in case theme doesn't load */
   --theme-primary: #2563eb;
   --theme-primary-light: #3b82f6;
   --theme-primary-dark: #1d4ed8;
+}
+
+/* Modern glassmorphism navbar with proper contrast */
+.navbar-glass {
+  position: relative;
+
+  /* Use theme primary color with opacity */
+  --navbar-bg-fallback: var(--theme-primary, #2563eb);
+
+  /* Fallback for browsers that don't support backdrop-filter */
+  background-color: var(--navbar-bg-fallback);
+  opacity: 0.95;
+
+  /* Modern glass effect with proper contrast */
+  @supports (backdrop-filter: blur(12px)) or
+    (-webkit-backdrop-filter: blur(12px)) {
+    opacity: 1;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+
+    /* Enhanced glass background for better contrast over images */
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.3),
+      rgba(0, 0, 0, 0.2)
+    );
+  }
+
+  /* Ensure text is always white */
+  color: white;
+
+  /* Enhanced shadow for better elevation over images */
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    0 4px 24px rgba(0, 0, 0, 0.15);
+
+  /* Add subtle border */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure navbar links maintain visibility */
+.navbar-glass a,
+.navbar-glass button {
+  color: white;
+}
+
+/* Add a subtle dark overlay behind the blur for better contrast */
+@supports (backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px)) {
+  .navbar-glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.1);
+    z-index: -1;
+  }
 }
 
 /* Modern CSS reset and base styles */
