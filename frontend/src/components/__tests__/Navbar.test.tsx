@@ -58,12 +58,12 @@ describe('Navbar', () => {
       expect(aboutLink).toHaveClass('bg-white/20');
     });
 
-    it('does not apply active class to Home link when on homepage', () => {
+    it('applies active class to Home link when on homepage', () => {
       const mockUseLocation = jest.fn(() => ({ pathname: '/' }));
       render(<Navbar navItems={customNavItems} useLocation={mockUseLocation} />);
       const homeLink = screen.getByText('Home');
-      expect(homeLink).not.toHaveClass('bg-white/20');
-      expect(homeLink).toHaveClass('text-white/90');
+      expect(homeLink).toHaveClass('bg-white/20');
+      expect(homeLink).not.toHaveClass('text-white/90');
     });
 
     it('renders links as anchor tags when href is provided', () => {

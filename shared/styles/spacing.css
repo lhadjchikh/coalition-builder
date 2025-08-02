@@ -153,12 +153,18 @@
 .focus-ring {
   --ring-color: var(--theme-primary, #2563eb);
   --ring-offset: 3px;
+  position: relative;
 }
 
 .focus-ring:focus-visible {
   outline: 2px solid var(--ring-color);
   outline-offset: var(--ring-offset);
   border-radius: var(--radius-md);
+}
+
+/* Apply focus ring on keyboard navigation only */
+.focus-ring:focus:not(:focus-visible) {
+  outline: none;
 }
 
 /* Smooth scrolling */

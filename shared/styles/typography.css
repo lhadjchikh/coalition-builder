@@ -51,7 +51,7 @@ h1,
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-bold);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-6, 2rem);
 }
 
 h2,
@@ -60,7 +60,7 @@ h2,
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-bold);
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-5, 1.5rem);
 }
 
 h3,
@@ -68,7 +68,7 @@ h3,
   font-size: var(--font-size-3xl);
   line-height: var(--line-height-snug);
   font-weight: var(--font-weight-semibold);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-4, 1rem);
 }
 
 /* Progressive enhancement for text-wrap: balance */
@@ -88,7 +88,7 @@ h4,
   font-size: var(--font-size-2xl);
   line-height: var(--line-height-snug);
   font-weight: var(--font-weight-semibold);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-4, 1rem);
 }
 
 h5,
@@ -96,7 +96,7 @@ h5,
   font-size: var(--font-size-xl);
   line-height: var(--line-height-normal);
   font-weight: var(--font-weight-medium);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-3, 0.75rem);
 }
 
 h6,
@@ -104,7 +104,7 @@ h6,
   font-size: var(--font-size-lg);
   line-height: var(--line-height-normal);
   font-weight: var(--font-weight-medium);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-3, 0.75rem);
 }
 
 /* Body text styles */
@@ -128,7 +128,7 @@ h6,
 
 .card-modern .h4 {
   font-size: var(--font-size-xl);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-3, 0.75rem);
 }
 
 .text-body-sm {
@@ -144,7 +144,7 @@ h6,
   font-weight: var(--font-weight-normal);
   color: var(--theme-text-muted);
   max-width: var(--measure-wide);
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--space-8, 3rem);
 }
 
 /* Modern prose styles */
@@ -156,14 +156,14 @@ h6,
 }
 
 .prose-modern > * + * {
-  margin-top: var(--space-5);
+  margin-top: var(--space-5, 1.5rem);
 }
 
 .prose-modern h1,
 .prose-modern h2,
 .prose-modern h3 {
-  margin-top: var(--space-10);
-  margin-bottom: var(--space-5);
+  margin-top: var(--space-10, 4rem);
+  margin-bottom: var(--space-5, 1.5rem);
 }
 
 .prose-modern h1:first-child,
