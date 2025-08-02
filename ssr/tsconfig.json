@@ -61,6 +61,11 @@
     "frontend/src/components/StyledHomePage.tsx",
     "frontend/src/components/ThemeStyles.tsx",
     "frontend/src/components/styled/**/*",
+    "frontend/src/components/LinkWrapper.tsx",
+    "frontend/src/pages/Privacy.tsx",
+    "frontend/src/pages/Terms.tsx",
+    "frontend/src/pages/Home.tsx",
+    "frontend/src/pages/CampaignDetail.tsx",
     "frontend/src/contexts/StyledThemeProvider.tsx",
     "frontend/src/hooks/useStyledTheme.ts",
     "frontend/src/styles/styled.d.ts"
