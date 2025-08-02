@@ -7,6 +7,8 @@ import About from './pages/About';
 import Campaigns from './pages/Campaigns';
 import Contact from './pages/Contact';
 import CampaignDetail from './pages/CampaignDetail';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
 import GoogleAnalytics from './components/GoogleAnalytics';
 import CookieConsent from '@shared/components/CookieConsent';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -24,6 +26,8 @@ const App: React.FC = () => {
             <Route path="/campaigns" element={<Campaigns />} />
             <Route path="/campaigns/:name" element={<CampaignDetail />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
           </Routes>
         </div>
       </Router>

@@ -35,18 +35,9 @@ export default async function TermsPage({}: TermsPageProps): Promise<React.React
   return (
     <div className="container mx-auto px-4 py-8">
       <LegalDocumentTracker documentType="terms" />
-      <div className="max-w-4xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">{termsData.title}</h1>
-          <p className="text-gray-600">
-            Version {termsData.version} | Effective Date:{" "}
-            {new Date(termsData.effective_date).toLocaleDateString()}
-          </p>
-        </header>
-        <div className="prose prose-lg max-w-none">
-          {/* Content is sanitized server-side in LegalDocument.save() to prevent XSS */}
-          <div dangerouslySetInnerHTML={{ __html: termsData.content }} />
-        </div>
+      <div className="max-w-4xl mx-auto prose prose-lg max-w-none">
+        {/* Content is sanitized server-side in LegalDocument.save() to prevent XSS */}
+        <div dangerouslySetInnerHTML={{ __html: termsData.content }} />
       </div>
     </div>
   );
