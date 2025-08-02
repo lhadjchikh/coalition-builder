@@ -52,7 +52,7 @@ const HomePage: React.FC<HomePageProps> = ({
         />
       )}
 
-      <main role="main">
+      <main role="main" className="pt-20">
         {/* Development notice when using fallback data */}
         {process.env.NODE_ENV === "development" && homepageError && (
           <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4">
@@ -67,7 +67,7 @@ const HomePage: React.FC<HomePageProps> = ({
         {HeroComponent ? (
           <HeroComponent homepage={homepage} />
         ) : (
-          <section className="relative bg-gradient-to-r from-blue-600 to-blue-800 section-spacing-lg">
+          <section className="relative bg-gradient-to-r from-blue-600 to-blue-800 section-spacing-lg -mt-20 pt-32">
             <div className="max-w-7xl mx-auto container-padding">
               <div className="text-center max-w-4xl mx-auto">
                 <h1 className="h1 text-white">{homepage.hero_title}</h1>

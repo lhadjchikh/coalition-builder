@@ -56,7 +56,7 @@ const Navbar: React.FC<NavbarProps> = ({
     <nav
       className={
         className ||
-        "bg-theme-primary sticky top-0 z-50 shadow-md border-b border-theme-primary-dark/20"
+        "navbar-glass fixed top-0 left-0 right-0 z-50 border-b border-white/10"
       }
     >
       <div className="max-w-7xl mx-auto container-padding">

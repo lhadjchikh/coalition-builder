@@ -119,10 +119,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
 
   return (
     <section
-      className={`relative overflow-hidden ${hasVideo || hasImage ? textColorClass : "bg-theme-bg-section"}`}
+      className={`relative overflow-hidden -mt-20 ${hasVideo || hasImage ? textColorClass : "bg-theme-bg-section"}`}
       style={heroStyle}
     >
-      <div className="section-spacing-lg">
+      <div className="section-spacing-lg pt-40">
         {/* Video Background - Progressive Enhancement */}
         {hasVideo && shouldLoadVideo && !prefersReducedMotion && (
           <>
