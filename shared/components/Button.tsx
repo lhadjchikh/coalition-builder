@@ -66,7 +66,7 @@ const Button: React.FC<ButtonProps> = ({
   "aria-label": ariaLabel,
 }) => {
   const baseClasses =
-    "inline-flex items-center justify-center rounded-xl transition-all duration-300 transform hover:-translate-y-0.5 no-underline focus-ring disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none";
+    "inline-flex items-center justify-center radius-xl transition-all duration-300 transform hover:-translate-y-0.5 no-underline focus-ring disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none";
   const variantClasses = getVariantClasses(variant);
   const sizeClasses = getSizeClasses(size);
   const widthClass = fullWidth ? "w-full" : "";
@@ -81,7 +81,6 @@ const Button: React.FC<ButtonProps> = ({
         className={combinedClasses}
         aria-label={ariaLabel}
         onClick={disabled ? (e) => e.preventDefault() : onClick}
-        style={{ borderRadius: "var(--radius-xl)" }}
       >
         {children}
       </a>
@@ -95,7 +94,6 @@ const Button: React.FC<ButtonProps> = ({
       disabled={disabled}
       className={combinedClasses}
       aria-label={ariaLabel}
-      style={{ borderRadius: "var(--radius-xl)" }}
     >
       {children}
     </button>

@@ -52,7 +52,6 @@ h1,
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-bold);
   margin-bottom: var(--space-6);
-  text-wrap: balance;
 }
 
 h2,
@@ -62,7 +61,6 @@ h2,
   letter-spacing: var(--letter-spacing-tight);
   font-weight: var(--font-weight-bold);
   margin-bottom: var(--space-5);
-  text-wrap: balance;
 }
 
 h3,
@@ -71,7 +69,18 @@ h3,
   line-height: var(--line-height-snug);
   font-weight: var(--font-weight-semibold);
   margin-bottom: var(--space-4);
-  text-wrap: balance;
+}
+
+/* Progressive enhancement for text-wrap: balance */
+@supports (text-wrap: balance) {
+  h1,
+  .h1,
+  h2,
+  .h2,
+  h3,
+  .h3 {
+    text-wrap: balance;
+  }
 }
 
 h4,

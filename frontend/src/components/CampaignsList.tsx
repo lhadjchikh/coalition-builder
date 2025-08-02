@@ -65,8 +65,8 @@ const CampaignsList: React.FC<CampaignsListProps> = ({ onCampaignSelect }) => {
                 </div>
               )}
               <div className="campaign-card-content">
-                <h3>{campaign.title}</h3>
-                <p className="campaign-summary">{campaign.summary}</p>
+                <h3 className="text-no-break">{campaign.title}</h3>
+                <p className="campaign-summary text-no-break">{campaign.summary}</p>
 
                 {campaign.description && (
                   <p className="campaign-description">{campaign.description}</p>
