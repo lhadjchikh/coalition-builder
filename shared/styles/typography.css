@@ -111,6 +111,17 @@ h6,
   letter-spacing: var(--letter-spacing-normal);
 }
 
+/* Campaign card specific text optimization */
+.card-modern .text-body {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+
+.card-modern .h4 {
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--space-3);
+}
+
 .text-body-sm {
   font-size: var(--font-size-sm);
   line-height: var(--line-height-normal);

@@ -36,7 +36,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
   headingText = "Policy Campaigns",
   className = "",
   cardClassName = "",
-  gridClassName = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8",
+  gridClassName = "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8",
 }) => {
   if (loading) {
     return (
@@ -100,11 +100,11 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
               )}
 
               <div className="p-6 sm:p-8">
-                <h3 className="h4 text-theme-heading mb-3 line-clamp-2">
+                <h3 className="h4 text-theme-heading mb-3 break-normal">
                   {campaign.title}
                 </h3>
 
-                <p className="text-body text-theme-text-body mb-6 line-clamp-3">
+                <p className="text-body text-theme-text-body mb-6 break-normal hyphens-none">
                   {campaign.summary}
                 </p>
 
