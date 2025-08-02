@@ -64,6 +64,8 @@ const Navbar: React.FC<NavbarProps> = ({
 
   const isActiveLink = (href?: string) => {
     if (!location || !href) return false;
+    // Don't highlight Home link when on homepage
+    if (href === "/" && location.pathname === "/") return false;
     return location.pathname === href;
   };
 
