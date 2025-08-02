@@ -36,7 +36,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
   headingText = "Policy Campaigns",
   className = "",
   cardClassName = "",
-  gridClassName = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
+  gridClassName = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8",
 }) => {
   if (loading) {
     return (
@@ -50,7 +50,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
   if (error) {
     return (
       <div
-        className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded"
+        className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-6 py-4 rounded-xl"
         data-testid="error"
       >
         <p>{error}</p>
@@ -61,7 +61,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
   return (
     <div className={`campaigns-list ${className}`} data-testid="campaigns-list">
       {showHeading && (
-        <h2 className="text-3xl font-bold text-gray-900 mb-6">{headingText}</h2>
+        <h2 className="h2 text-theme-heading mb-10">{headingText}</h2>
       )}
 
       {campaigns.length === 0 ? (
@@ -74,10 +74,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
             <div
               key={campaign.id}
               className={`
-                bg-white rounded-lg shadow-md overflow-hidden 
-                hover:shadow-xl transition-all duration-300 
-                cursor-pointer group border border-gray-200
-                hover:border-gray-300 transform hover:-translate-y-1
+                card-modern overflow-hidden cursor-pointer group
                 ${cardClassName}
               `}
               data-testid={`campaign-${campaign.id}`}
@@ -102,20 +99,20 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
                 </div>
               )}
 
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
+              <div className="p-6 sm:p-8">
+                <h3 className="h4 text-theme-heading mb-3 line-clamp-2">
                   {campaign.title}
                 </h3>
 
-                <p className="text-gray-600 mb-4 line-clamp-3">
+                <p className="text-body text-theme-text-body mb-6 line-clamp-3">
                   {campaign.summary}
                 </p>
 
                 {campaign.allow_endorsements && (
                   <div className="mb-4">
-                    <span className="inline-flex items-center text-green-600 text-sm font-medium">
+                    <span className="inline-flex items-center text-green-600 text-sm font-medium bg-green-50 px-3 py-1 rounded-full">
                       <svg
-                        className="w-4 h-4 mr-1"
+                        className="w-4 h-4 mr-1.5"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >

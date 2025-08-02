@@ -118,92 +118,90 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
     hasVideo || hasImage ? "text-white" : "text-theme-heading";
 
   return (
-    <div
-      className={`relative py-24 sm:py-32 ${hasVideo || hasImage ? textColorClass : "bg-theme-bg-section"}`}
+    <section
+      className={`relative overflow-hidden ${hasVideo || hasImage ? textColorClass : "bg-theme-bg-section"}`}
       style={heroStyle}
     >
-      {/* Video Background - Progressive Enhancement */}
-      {hasVideo && shouldLoadVideo && !prefersReducedMotion && (
-        <>
-          <video
-            ref={videoRef}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-              videoLoading ? "opacity-0" : "opacity-100"
-            }`}
-            autoPlay={homepage.hero_background_video_data?.autoplay ?? true}
-            loop={homepage.hero_background_video_data?.loop ?? true}
-            muted={homepage.hero_background_video_data?.muted ?? true}
-            controls={
-              homepage.hero_background_video_data?.show_controls ?? false
-            }
-            playsInline
-            preload="metadata"
-            poster={homepage.hero_background_image_url || undefined}
-            aria-label={
-              homepage.hero_background_video_data?.alt_text ||
-              "Hero background video"
-            }
-            onError={() => {
-              setVideoError(true);
-              setVideoLoading(false);
-            }}
-            onLoadStart={() => {
-              setVideoError(false);
-              setVideoLoading(true);
-            }}
-            onCanPlay={() => {
-              setVideoLoading(false);
-            }}
-            onLoadedData={() => {
-              setVideoLoading(false);
-            }}
-          >
-            <source
-              src={homepage.hero_background_video_url}
-              type={getVideoMimeType(homepage.hero_background_video_url)}
-            />
-            Your browser does not support the video tag.
-          </video>
-          {/* Configurable overlay for better text readability */}
-          {homepage.hero_overlay_enabled && (
-            <div
-              className="absolute inset-0"
-              style={{ backgroundColor: overlayStyle }}
-            ></div>
-          )}
-        </>
-      )}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h1
-            className={`text-4xl font-bold ${textColorClass} sm:text-5xl lg:text-6xl`}
-          >
-            {homepage.hero_title}
-          </h1>
-          {homepage.hero_subtitle && (
-            <p
-              className={`mt-6 text-xl font-theme-body ${textColorClass} max-w-reading-lg mx-auto leading-relaxed`}
+      <div className="section-spacing-lg">
+        {/* Video Background - Progressive Enhancement */}
+        {hasVideo && shouldLoadVideo && !prefersReducedMotion && (
+          <>
+            <video
+              ref={videoRef}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+                videoLoading ? "opacity-0" : "opacity-100"
+              }`}
+              autoPlay={homepage.hero_background_video_data?.autoplay ?? true}
+              loop={homepage.hero_background_video_data?.loop ?? true}
+              muted={homepage.hero_background_video_data?.muted ?? true}
+              controls={
+                homepage.hero_background_video_data?.show_controls ?? false
+              }
+              playsInline
+              preload="metadata"
+              poster={homepage.hero_background_image_url || undefined}
+              aria-label={
+                homepage.hero_background_video_data?.alt_text ||
+                "Hero background video"
+              }
+              onError={() => {
+                setVideoError(true);
+                setVideoLoading(false);
+              }}
+              onLoadStart={() => {
+                setVideoError(false);
+                setVideoLoading(true);
+              }}
+              onCanPlay={() => {
+                setVideoLoading(false);
+              }}
+              onLoadedData={() => {
+                setVideoLoading(false);
+              }}
             >
-              {homepage.hero_subtitle}
-            </p>
-          )}
+              <source
+                src={homepage.hero_background_video_url}
+                type={getVideoMimeType(homepage.hero_background_video_url)}
+              />
+              Your browser does not support the video tag.
+            </video>
+            {/* Configurable overlay for better text readability */}
+            {homepage.hero_overlay_enabled && (
+              <div
+                className="absolute inset-0"
+                style={{ backgroundColor: overlayStyle }}
+              ></div>
+            )}
+          </>
+        )}
+        <div className="relative z-10 max-w-7xl mx-auto container-padding">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className={`h1 ${textColorClass} font-theme-heading`}>
+              {homepage.hero_title}
+            </h1>
+            {homepage.hero_subtitle && (
+              <p className={`lead ${textColorClass} mx-auto text-pretty`}>
+                {homepage.hero_subtitle}
+              </p>
+            )}
 
-          {/* Optional CTA button in hero */}
-          {homepage.cta_button_url && homepage.cta_button_text && (
-            <div className="mt-10">
-              <Button
-                href={homepage.cta_button_url}
-                variant="secondary"
-                size="lg"
-                className="shadow-lg hover:shadow-xl"
-              >
-                {homepage.cta_button_text}
-              </Button>
-            </div>
-          )}
+            {/* Optional CTA button in hero */}
+            {homepage.cta_button_url && homepage.cta_button_text && (
+              <div className="mt-8 sm:mt-10">
+                <Button
+                  href={homepage.cta_button_url}
+                  variant="secondary"
+                  size="lg"
+                  className="shadow-soft hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
+                >
+                  {homepage.cta_button_text}
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

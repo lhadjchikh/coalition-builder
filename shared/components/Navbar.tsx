@@ -54,9 +54,12 @@ const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <nav
-      className={className || "bg-theme-primary sticky top-0 z-50 shadow-md"}
+      className={
+        className ||
+        "bg-theme-primary/95 backdrop-blur-md sticky top-0 z-50 shadow-soft border-b border-white/10"
+      }
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto container-padding">
         <div className="flex justify-between items-center h-20">
           {/* Brand */}
           <div className="flex-shrink-0">
@@ -82,7 +85,7 @@ const Navbar: React.FC<NavbarProps> = ({
 
           {/* Desktop Navigation */}
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-8">
+            <div className="ml-12 flex items-baseline space-x-2">
               {navItems.map((item, index) => {
                 const isActive = isActiveLink(item.href);
 
@@ -92,9 +95,9 @@ const Navbar: React.FC<NavbarProps> = ({
                       key={`nav-item-${index}-${item.label}`}
                       to={item.href}
                       href={item.href}
-                      className={`px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+                      className={`px-4 py-2.5 rounded-xl text-base font-medium transition-all duration-300 ${
                         isActive
-                          ? "bg-theme-primary-dark text-white"
+                          ? "bg-white/20 text-white shadow-soft"
                           : "text-white/90 hover:bg-white/10 hover:text-white"
                       }`}
                     >
@@ -106,9 +109,9 @@ const Navbar: React.FC<NavbarProps> = ({
                     <button
                       key={`nav-item-${index}-${item.label}`}
                       onClick={item.onClick}
-                      className={`px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+                      className={`px-4 py-2.5 rounded-xl text-base font-medium transition-all duration-300 ${
                         item.active
-                          ? "bg-theme-primary-dark text-white"
+                          ? "bg-white/20 text-white shadow-soft"
                           : "text-white/90 hover:bg-white/10 hover:text-white"
                       }`}
                     >
@@ -124,7 +127,7 @@ const Navbar: React.FC<NavbarProps> = ({
           <div className="md:hidden">
             <button
               onClick={toggleMenu}
-              className="bg-theme-primary inline-flex items-center justify-center p-2 rounded-md text-white/80 hover:text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white"
+              className="bg-theme-primary inline-flex items-center justify-center p-3 rounded-xl text-white/80 hover:text-white hover:bg-white/10 focus-ring transition-all duration-300"
               aria-expanded={isMenuOpen}
               aria-label="Toggle navigation menu"
             >
