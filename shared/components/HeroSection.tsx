@@ -105,6 +105,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
     ? hexToRgba(homepage.hero_overlay_color, homepage.hero_overlay_opacity)
     : "rgba(0, 0, 0, 0)";
 
+  // Use background image as fallback for video, or as primary background
   const heroStyle: React.CSSProperties = hasImage
     ? {
         backgroundImage: `linear-gradient(${overlayStyle}, ${overlayStyle}), url(${homepage.hero_background_image_url})`,
@@ -119,7 +120,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
 
   return (
     <section
-      className={`relative overflow-hidden -mt-20 ${hasVideo || hasImage ? `${textColorClass} bg-theme-primary` : "bg-theme-bg-section"}`}
+      className={`relative overflow-hidden -mt-20 ${hasVideo || hasImage ? textColorClass : "bg-theme-bg-section"} ${hasImage ? "" : hasVideo ? "bg-theme-primary" : ""}`}
       style={heroStyle}
     >
       <div className="section-spacing-lg pt-40">
