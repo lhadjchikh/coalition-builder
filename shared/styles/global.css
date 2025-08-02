@@ -149,15 +149,57 @@ h3 {
     "Helvetica Neue",
     Arial,
     sans-serif;
+  /* Prevent layout shift with font-size-adjust */
+  font-size-adjust: 0.5;
 }
 
 /* Typography utilities from theme */
 .font-theme-heading {
   font-family: var(--theme-font-heading, inherit);
+  font-display: swap;
 }
 
 .font-theme-body {
   font-family: var(--theme-font-body, inherit);
+  font-display: swap;
+}
+
+/* Prevent FOUT (Flash of Unstyled Text) */
+.fonts-loading .font-theme-heading,
+.fonts-loading .font-theme-body,
+.fonts-loading .h1,
+.fonts-loading .h2,
+.fonts-loading .h3,
+.fonts-loading .h4,
+.fonts-loading .h5,
+.fonts-loading .h6 {
+  opacity: 0;
+}
+
+.fonts-loaded .font-theme-heading,
+.fonts-loaded .font-theme-body,
+.fonts-loaded .h1,
+.fonts-loaded .h2,
+.fonts-loaded .h3,
+.fonts-loaded .h4,
+.fonts-loaded .h5,
+.fonts-loaded .h6 {
+  animation: textFadeIn 0.2s ease-out forwards;
+}
+
+/* Immediate visibility for critical text */
+.no-font-fade {
+  opacity: 1 !important;
+  animation: none !important;
+}
+
+@keyframes textFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Optimal reading width utilities */
