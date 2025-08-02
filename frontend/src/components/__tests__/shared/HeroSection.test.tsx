@@ -293,18 +293,27 @@ describe('HeroSection', () => {
     });
 
     it('renders background image layer when both video and image are provided', () => {
+      mockConnection({ effectiveType: '4g', saveData: false });
+
       const homepage = createMockHomepage({
         hero_background_video_url: 'https://example.com/video.mp4',
         hero_background_image_url: 'https://example.com/poster.jpg',
       });
 
-      const { container } = render(<HeroSection homepage={homepage} />);
+      render(<HeroSection homepage={homepage} />);
 
-      const backgroundDiv = container.querySelector('div[style*="poster.jpg"]');
+      // Find the background div by test ID
+      const backgroundDiv = screen.getByTestId('hero-background-image');
       expect(backgroundDiv).toBeInTheDocument();
-      expect(backgroundDiv).toHaveStyle({
-        backgroundImage: expect.stringContaining('poster.jpg'),
-      });
+
+      // Verify the background URL is correct
+      expect(backgroundDiv).toHaveAttribute(
+        'data-background-url',
+        'https://example.com/poster.jpg'
+      );
+
+      // Verify it has the correct classes
+      expect(backgroundDiv).toHaveClass('absolute', 'inset-0', 'z-0');
     });
 
     it('includes overlay settings in homepage data', () => {

@@ -58,9 +58,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const hasVideo = homepage.hero_background_video_url && !videoError;
-  const hasImage =
-    homepage.hero_background_image_url &&
-    (!homepage.hero_background_video_url || videoError);
+  const hasImage = !!homepage.hero_background_image_url;
 
   // Check if user has preference for reduced motion
   const prefersReducedMotion =
@@ -105,8 +103,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
     ? hexToRgba(homepage.hero_overlay_color, homepage.hero_overlay_opacity)
     : "rgba(0, 0, 0, 0)";
 
-  // Use background image as fallback for video, or as primary background
-  // Only apply to section if image exists without video
+  // Apply background image to section only when there's an image but no video
   const heroStyle: React.CSSProperties =
     hasImage && !hasVideo
       ? {
@@ -122,13 +119,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
 
   return (
     <section
-      className={`relative overflow-hidden -mt-20 ${hasVideo || hasImage ? textColorClass : "bg-theme-bg-section"} ${hasVideo && !hasImage ? "bg-theme-primary" : ""}`}
+      className={`relative overflow-hidden -mt-20 ${hasVideo || hasImage ? textColorClass : "bg-theme-bg-section"} ${hasVideo && videoLoading && !hasImage ? "bg-theme-primary" : ""}`}
       style={heroStyle}
     >
       {/* Background Image Layer - Shows while video loads */}
       {hasImage && hasVideo && (
         <div
           className="absolute inset-0 z-0"
+          data-testid="hero-background-image"
+          data-background-url={homepage.hero_background_image_url}
           style={{
             backgroundImage: `linear-gradient(${overlayStyle}, ${overlayStyle}), url(${homepage.hero_background_image_url})`,
             backgroundSize: "cover",
@@ -138,58 +137,59 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
         />
       )}
 
-      <div className="relative section-spacing-lg pt-40">
-        {/* Video Background - Progressive Enhancement */}
-        {hasVideo && shouldLoadVideo && !prefersReducedMotion && (
-          <>
-            <video
-              ref={videoRef}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 z-10 ${
-                videoLoading ? "opacity-0" : "opacity-100"
-              }`}
-              autoPlay={homepage.hero_background_video_data?.autoplay ?? true}
-              loop={homepage.hero_background_video_data?.loop ?? true}
-              muted={homepage.hero_background_video_data?.muted ?? true}
-              controls={
-                homepage.hero_background_video_data?.show_controls ?? false
-              }
-              playsInline
-              preload="metadata"
-              aria-label={
-                homepage.hero_background_video_data?.alt_text ||
-                "Hero background video"
-              }
-              onError={() => {
-                setVideoError(true);
-                setVideoLoading(false);
-              }}
-              onLoadStart={() => {
-                setVideoError(false);
-                setVideoLoading(true);
-              }}
-              onCanPlay={() => {
-                setVideoLoading(false);
-              }}
-              onLoadedData={() => {
-                setVideoLoading(false);
-              }}
-            >
-              <source
-                src={homepage.hero_background_video_url}
-                type={getVideoMimeType(homepage.hero_background_video_url)}
-              />
-              Your browser does not support the video tag.
-            </video>
-            {/* Configurable overlay for better text readability */}
-            {homepage.hero_overlay_enabled && (
-              <div
-                className="absolute inset-0"
-                style={{ backgroundColor: overlayStyle }}
-              ></div>
-            )}
-          </>
-        )}
-        <div className="relative z-10 max-w-7xl mx-auto container-padding">
+      {/* Video Background - Progressive Enhancement */}
+      {hasVideo && shouldLoadVideo && !prefersReducedMotion && (
+        <>
+          <video
+            ref={videoRef}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 z-10 ${
+              videoLoading ? "opacity-0" : "opacity-100"
+            }`}
+            autoPlay={homepage.hero_background_video_data?.autoplay ?? true}
+            loop={homepage.hero_background_video_data?.loop ?? true}
+            muted={homepage.hero_background_video_data?.muted ?? true}
+            controls={
+              homepage.hero_background_video_data?.show_controls ?? false
+            }
+            playsInline
+            preload="metadata"
+            aria-label={
+              homepage.hero_background_video_data?.alt_text ||
+              "Hero background video"
+            }
+            onError={() => {
+              setVideoError(true);
+              setVideoLoading(false);
+            }}
+            onLoadStart={() => {
+              setVideoError(false);
+              setVideoLoading(true);
+            }}
+            onCanPlay={() => {
+              setVideoLoading(false);
+            }}
+            onLoadedData={() => {
+              setVideoLoading(false);
+            }}
+          >
+            <source
+              src={homepage.hero_background_video_url}
+              type={getVideoMimeType(homepage.hero_background_video_url)}
+            />
+            Your browser does not support the video tag.
+          </video>
+          {/* Configurable overlay for better text readability */}
+          {homepage.hero_overlay_enabled && (
+            <div
+              className="absolute inset-0 z-20"
+              style={{ backgroundColor: overlayStyle }}
+            ></div>
+          )}
+        </>
+      )}
+
+      <div className="relative z-30 section-spacing-lg pt-40">
+        <div className="relative max-w-7xl mx-auto container-padding">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className={`h1 ${textColorClass} font-theme-heading`}>
               {homepage.hero_title}
