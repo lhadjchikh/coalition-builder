@@ -70,8 +70,10 @@ const Navbar: React.FC<NavbarProps> = ({
     <nav
       className={
         className ||
-        `fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? "navbar-glass border-b border-white/10" : "bg-transparent"
+        `fixed top-0 left-0 right-0 z-50 border-b transition-all duration-300 ${
+          scrolled
+            ? "navbar-glass border-white/10"
+            : "bg-transparent border-transparent"
         }`
       }
     >

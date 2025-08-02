@@ -14,7 +14,9 @@ describe("Navbar scroll behavior", () => {
     const nav = container.querySelector("nav");
 
     expect(nav).toHaveClass("bg-transparent");
+    expect(nav).toHaveClass("border-transparent");
     expect(nav).not.toHaveClass("navbar-glass");
+    expect(nav).not.toHaveClass("border-white/10");
   });
 
   test("navbar becomes glass effect when scrolled", () => {
@@ -26,7 +28,9 @@ describe("Navbar scroll behavior", () => {
     fireEvent.scroll(window);
 
     expect(nav).toHaveClass("navbar-glass");
+    expect(nav).toHaveClass("border-white/10");
     expect(nav).not.toHaveClass("bg-transparent");
+    expect(nav).not.toHaveClass("border-transparent");
   });
 
   test("navbar transitions back to transparent when scrolled to top", () => {
@@ -42,7 +46,9 @@ describe("Navbar scroll behavior", () => {
     window.scrollY = 0;
     fireEvent.scroll(window);
     expect(nav).toHaveClass("bg-transparent");
+    expect(nav).toHaveClass("border-transparent");
     expect(nav).not.toHaveClass("navbar-glass");
+    expect(nav).not.toHaveClass("border-white/10");
   });
 
   test("navbar adds drop-shadow to text when transparent", () => {
