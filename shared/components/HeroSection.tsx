@@ -106,30 +106,45 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
     : "rgba(0, 0, 0, 0)";
 
   // Use background image as fallback for video, or as primary background
-  const heroStyle: React.CSSProperties = hasImage
-    ? {
-        backgroundImage: `linear-gradient(${overlayStyle}, ${overlayStyle}), url(${homepage.hero_background_image_url})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }
-    : {};
+  // Only apply to section if image exists without video
+  const heroStyle: React.CSSProperties =
+    hasImage && !hasVideo
+      ? {
+          backgroundImage: `linear-gradient(${overlayStyle}, ${overlayStyle}), url(${homepage.hero_background_image_url})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }
+      : {};
 
   const textColorClass =
     hasVideo || hasImage ? "text-white" : "text-theme-heading";
 
   return (
     <section
-      className={`relative overflow-hidden -mt-20 ${hasVideo || hasImage ? textColorClass : "bg-theme-bg-section"} ${hasImage ? "" : hasVideo ? "bg-theme-primary" : ""}`}
+      className={`relative overflow-hidden -mt-20 ${hasVideo || hasImage ? textColorClass : "bg-theme-bg-section"} ${hasVideo && !hasImage ? "bg-theme-primary" : ""}`}
       style={heroStyle}
     >
-      <div className="section-spacing-lg pt-40">
+      {/* Background Image Layer - Shows while video loads */}
+      {hasImage && hasVideo && (
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `linear-gradient(${overlayStyle}, ${overlayStyle}), url(${homepage.hero_background_image_url})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        />
+      )}
+
+      <div className="relative section-spacing-lg pt-40">
         {/* Video Background - Progressive Enhancement */}
         {hasVideo && shouldLoadVideo && !prefersReducedMotion && (
           <>
             <video
               ref={videoRef}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 z-10 ${
                 videoLoading ? "opacity-0" : "opacity-100"
               }`}
               autoPlay={homepage.hero_background_video_data?.autoplay ?? true}
@@ -140,7 +155,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
               }
               playsInline
               preload="metadata"
-              poster={homepage.hero_background_image_url || undefined}
               aria-label={
                 homepage.hero_background_video_data?.alt_text ||
                 "Hero background video"

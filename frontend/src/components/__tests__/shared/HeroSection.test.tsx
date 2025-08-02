@@ -292,7 +292,7 @@ describe('HeroSection', () => {
       });
     });
 
-    it('includes poster image in video props when both video and image are provided', async () => {
+    it('renders background image layer when both video and image are provided', () => {
       const homepage = createMockHomepage({
         hero_background_video_url: 'https://example.com/video.mp4',
         hero_background_image_url: 'https://example.com/poster.jpg',
@@ -300,9 +300,10 @@ describe('HeroSection', () => {
 
       const { container } = render(<HeroSection homepage={homepage} />);
 
-      await waitFor(() => {
-        const video = container.querySelector('video');
-        expect(video).toHaveAttribute('poster', 'https://example.com/poster.jpg');
+      const backgroundDiv = container.querySelector('div[style*="poster.jpg"]');
+      expect(backgroundDiv).toBeInTheDocument();
+      expect(backgroundDiv).toHaveStyle({
+        backgroundImage: expect.stringContaining('poster.jpg'),
       });
     });
 
