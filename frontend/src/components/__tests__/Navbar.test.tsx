@@ -52,10 +52,18 @@ describe('Navbar', () => {
     });
 
     it('applies active class to active navigation items', () => {
+      const mockUseLocation = jest.fn(() => ({ pathname: '/about' }));
+      render(<Navbar navItems={customNavItems} useLocation={mockUseLocation} />);
+      const aboutLink = screen.getByText('About');
+      expect(aboutLink).toHaveClass('bg-white/20');
+    });
+
+    it('does not apply active class to Home link when on homepage', () => {
       const mockUseLocation = jest.fn(() => ({ pathname: '/' }));
       render(<Navbar navItems={customNavItems} useLocation={mockUseLocation} />);
       const homeLink = screen.getByText('Home');
-      expect(homeLink).toHaveClass('bg-white/20');
+      expect(homeLink).not.toHaveClass('bg-white/20');
+      expect(homeLink).toHaveClass('text-white/90');
     });
 
     it('renders links as anchor tags when href is provided', () => {

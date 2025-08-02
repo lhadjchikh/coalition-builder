@@ -39,6 +39,7 @@ const Navbar: React.FC<NavbarProps> = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation?.();
+  const isHomepage = location?.pathname === "/" || location?.pathname === "";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -63,6 +64,8 @@ const Navbar: React.FC<NavbarProps> = ({
 
   const isActiveLink = (href?: string) => {
     if (!location || !href) return false;
+    // Don't highlight Home link when on homepage
+    if (href === "/" && location.pathname === "/") return false;
     return location.pathname === href;
   };
 
@@ -70,10 +73,12 @@ const Navbar: React.FC<NavbarProps> = ({
     <nav
       className={
         className ||
-        `fixed top-0 left-0 right-0 z-50 border-b transition-all duration-300 ${
-          scrolled
-            ? "navbar-glass border-white/10"
-            : "bg-transparent border-transparent"
+        `${isHomepage ? "fixed" : "sticky"} top-0 left-0 right-0 z-50 border-b transition-all duration-300 ${
+          isHomepage
+            ? scrolled
+              ? "navbar-glass border-white/10"
+              : "bg-transparent border-transparent"
+            : "navbar-glass border-white/10"
         }`
       }
     >
@@ -87,7 +92,9 @@ const Navbar: React.FC<NavbarProps> = ({
               className={`flex items-center hover:opacity-80 transition-opacity duration-200 ${
                 !logoUrl
                   ? `text-xl font-bold ${
-                      scrolled ? "text-white" : "text-white drop-shadow-lg"
+                      isHomepage && !scrolled
+                        ? "text-white drop-shadow-lg"
+                        : "text-white"
                     }`
                   : ""
               }`}
@@ -121,7 +128,7 @@ const Navbar: React.FC<NavbarProps> = ({
                         isActive
                           ? "bg-white/20 text-white shadow-soft"
                           : "text-white/90 hover:bg-white/10 hover:text-white"
-                      } ${!scrolled ? "drop-shadow-lg" : ""}`}
+                      } ${isHomepage && !scrolled ? "drop-shadow-lg" : ""}`}
                     >
                       {item.label}
                     </LinkComponent>
@@ -135,7 +142,7 @@ const Navbar: React.FC<NavbarProps> = ({
                         item.active
                           ? "bg-white/20 text-white shadow-soft"
                           : "text-white/90 hover:bg-white/10 hover:text-white"
-                      } ${!scrolled ? "drop-shadow-lg" : ""}`}
+                      } ${isHomepage && !scrolled ? "drop-shadow-lg" : ""}`}
                     >
                       {item.label}
                     </button>

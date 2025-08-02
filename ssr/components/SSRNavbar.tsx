@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Navbar from "@shared/components/Navbar";
 import { NavItemData } from "@shared/types";
 
@@ -13,6 +14,8 @@ interface SSRNavbarProps {
 }
 
 const SSRNavbar: React.FC<SSRNavbarProps> = (props) => {
+  const pathname = usePathname();
+
   return (
     <Navbar
       {...props}
@@ -21,6 +24,7 @@ const SSRNavbar: React.FC<SSRNavbarProps> = (props) => {
           {children}
         </Link>
       )}
+      useLocation={() => ({ pathname })}
     />
   );
 };
