@@ -10,8 +10,7 @@ interface FooterProps {
   showLegalLinks?: boolean;
   className?: string;
   LinkComponent?: React.ComponentType<{
-    to?: string;
-    href?: string;
+    to: string;
     children: React.ReactNode;
     className?: string;
   }>;
@@ -22,8 +21,8 @@ const Footer: React.FC<FooterProps> = ({
   showSocialLinks = true,
   showLegalLinks = true,
   className,
-  LinkComponent = ({ href, to, children, className }: any) => (
-    <a href={href || to} className={className}>
+  LinkComponent = ({ to, children, className }) => (
+    <a href={to} className={className}>
       {children}
     </a>
   ),
