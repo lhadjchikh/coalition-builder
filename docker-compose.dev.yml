@@ -5,6 +5,8 @@ services:
   api:
     build:
       target: python-deps # Use development build stage
+    env_file:
+      - .env
     environment:
       - DEBUG=True # Override to enable debug mode
     volumes:
@@ -15,6 +17,8 @@ services:
   ssr:
     build:
       target: deps # Use development build stage
+    env_file:
+      - .env
     environment:
       - NODE_ENV=development # Override to development mode
       # Analytics settings

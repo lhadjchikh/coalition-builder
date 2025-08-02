@@ -25,15 +25,15 @@ interface ButtonProps {
 const getVariantClasses = (variant: ButtonVariant): string => {
   switch (variant) {
     case "primary":
-      return "bg-theme-primary text-white hover:bg-theme-primary-dark";
+      return "bg-theme-primary text-white hover:bg-theme-primary-dark shadow-soft hover:shadow-lg";
     case "secondary":
-      return "bg-theme-secondary text-white hover:bg-theme-secondary-dark";
+      return "bg-theme-secondary text-white hover:bg-theme-secondary-dark shadow-soft hover:shadow-lg";
     case "accent":
-      return "bg-theme-accent text-white hover:bg-theme-accent-dark";
+      return "bg-theme-accent text-white hover:bg-theme-accent-dark shadow-soft hover:shadow-lg";
     case "accent-inverted":
-      return "bg-white text-theme-accent hover:bg-gray-100";
+      return "bg-white text-theme-accent hover:bg-gray-50 shadow-soft hover:shadow-lg";
     case "outline":
-      return "bg-transparent border-2 border-theme-primary text-theme-primary hover:bg-theme-primary hover:text-white";
+      return "bg-transparent border-2 border-theme-primary text-theme-primary hover:bg-theme-primary hover:text-white hover:shadow-md";
     case "ghost":
       return "bg-transparent text-theme-primary hover:bg-theme-primary/10";
     default:
@@ -44,12 +44,12 @@ const getVariantClasses = (variant: ButtonVariant): string => {
 const getSizeClasses = (size: ButtonSize): string => {
   switch (size) {
     case "sm":
-      return "px-3 py-1.5 text-sm";
+      return "px-4 py-2 text-sm";
     case "lg":
-      return "px-8 py-3 text-lg";
+      return "px-8 py-4 text-lg font-semibold";
     case "md":
     default:
-      return "px-6 py-2.5 text-base";
+      return "px-6 py-3 text-base font-medium";
   }
 };
 
@@ -66,7 +66,7 @@ const Button: React.FC<ButtonProps> = ({
   "aria-label": ariaLabel,
 }) => {
   const baseClasses =
-    "inline-flex items-center justify-center font-medium rounded-md transition-colors duration-200 no-underline disabled:opacity-60 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center rounded-xl transition-all duration-300 transform hover:-translate-y-0.5 no-underline focus-ring disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none";
   const variantClasses = getVariantClasses(variant);
   const sizeClasses = getSizeClasses(size);
   const widthClass = fullWidth ? "w-full" : "";
@@ -81,6 +81,7 @@ const Button: React.FC<ButtonProps> = ({
         className={combinedClasses}
         aria-label={ariaLabel}
         onClick={disabled ? (e) => e.preventDefault() : onClick}
+        style={{ borderRadius: "var(--radius-xl)" }}
       >
         {children}
       </a>
@@ -94,6 +95,7 @@ const Button: React.FC<ButtonProps> = ({
       disabled={disabled}
       className={combinedClasses}
       aria-label={ariaLabel}
+      style={{ borderRadius: "var(--radius-xl)" }}
     >
       {children}
     </button>

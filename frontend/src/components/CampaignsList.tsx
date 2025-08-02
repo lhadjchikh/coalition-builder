@@ -69,11 +69,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({ onCampaignSelect }) => {
                 <p className="campaign-summary">{campaign.summary}</p>
 
                 {campaign.description && (
-                  <p className="campaign-description">
-                    {campaign.description.length > 100
-                      ? `${campaign.description.substring(0, 100)}...`
-                      : campaign.description}
-                  </p>
+                  <p className="campaign-description">{campaign.description}</p>
                 )}
 
                 <div className="campaign-meta">
