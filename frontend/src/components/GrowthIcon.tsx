@@ -22,8 +22,7 @@ const GrowthIcon: React.FC<GrowthIconProps> = ({
     width: size,
     height: size,
     color: color,
-    opacity: 0.5,
-    filter: 'brightness(1.2)',
+    opacity: 0.8,
     ...style,
   };
 
