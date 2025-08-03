@@ -3,9 +3,7 @@
 import React from "react";
 import { HomePage, Campaign, ContentBlock } from "../types/api";
 import { NavItemData } from "../types";
-import PageLayout from "./PageLayout";
 import ContentBlocksList from "./ContentBlocksList";
-import Button from "./Button";
 import CampaignsList from "./CampaignsList";
 
 interface NavbarProps {
@@ -43,37 +41,70 @@ const CampaignsPage: React.FC<CampaignsPageProps> = ({
   navItems,
 }) => {
   return (
-    <PageLayout
-      orgInfo={homepage}
-      title={homepage.campaigns_section_title || "Policy Campaigns"}
-      subtitle={homepage.campaigns_section_subtitle}
-      error={contentError}
-      NavbarComponent={NavbarComponent}
-      FooterComponent={FooterComponent}
-      navItems={navItems}
-    >
-      {/* Content Blocks First */}
-      {contentBlocks.length > 0 && (
-        <ContentBlocksList
-          contentBlocks={contentBlocks}
-          pageType="campaigns"
-          ContentBlockComponent={ContentBlockComponent}
+    <div className="min-h-screen bg-white">
+      {/* Navigation */}
+      {NavbarComponent && (
+        <NavbarComponent
+          organizationName={homepage.organization_name}
+          navItems={navItems}
         />
       )}
 
-      {/* Campaigns Section */}
-      <section className="mt-12">
-        <CampaignsList
-          campaigns={campaigns}
-          onCampaignSelect={
-            onCampaignSelect ||
-            ((campaign) =>
-              (window.location.href = `/campaigns/${campaign.name}`))
-          }
-          error={campaignsError}
-        />
-      </section>
-    </PageLayout>
+      <main role="main">
+        {/* Page Header */}
+        <div className="bg-gray-50 border-b border-gray-200">
+          <div className="max-w-7xl mx-auto container-padding py-8">
+            <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl">
+              {homepage.campaigns_section_title || "Policy Campaigns"}
+            </h1>
+            {homepage.campaigns_section_subtitle && (
+              <p className="mt-4 text-xl text-gray-600 max-w-4xl">
+                {homepage.campaigns_section_subtitle}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Error Display */}
+        {contentError && (
+          <div className="max-w-7xl mx-auto container-padding py-8">
+            <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-8">
+              <p>Unable to load campaigns at this time.</p>
+              {process.env.NODE_ENV === "development" && (
+                <p className="text-sm mt-1">{contentError}</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Content Blocks First */}
+        {contentBlocks.length > 0 && (
+          <ContentBlocksList
+            contentBlocks={contentBlocks}
+            pageType="campaigns"
+            ContentBlockComponent={ContentBlockComponent}
+          />
+        )}
+
+        {/* Campaigns Section */}
+        <section className="section-spacing bg-gray-50">
+          <div className="max-w-7xl mx-auto container-padding">
+            <CampaignsList
+              campaigns={campaigns}
+              onCampaignSelect={
+                onCampaignSelect ||
+                ((campaign) =>
+                  (window.location.href = `/campaigns/${campaign.name}`))
+              }
+              error={campaignsError}
+            />
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      {FooterComponent && <FooterComponent orgInfo={homepage} />}
+    </div>
   );
 };
 
