@@ -442,17 +442,25 @@ TINYMCE_DEFAULT_CONFIG = {
             line-height: 1.6;
         }
     """,
-    # Allow SVG and all its child elements
+    # Allow SVG and all its child elements (except use for security)
+    # Also allow target attribute on links for opening in new window
     "extended_valid_elements": (
         "svg[*],path[*],g[*],circle[*],rect[*],line[*],polyline[*],polygon[*],"
-        "ellipse[*],text[*],tspan[*],defs[*],use[*],symbol[*],clipPath[*],"
+        "ellipse[*],text[*],tspan[*],defs[*],symbol[*],clipPath[*],"
         "mask[*],pattern[*],linearGradient[*],radialGradient[*],stop[*],"
-        "animate[*],animateTransform[*]"
+        "animate[*],animateTransform[*],"
+        "a[href|target|rel|title]"
     ),
     # Don't strip empty SVG elements
     "valid_children": "+body[style],+body[svg],+p[svg],+div[svg]",
-    # Allow data URIs in images
-    "allow_unsafe_link_target": True,
+    # Enable target option in link dialog
+    "link_target_list": [
+        {"title": "None", "value": ""},
+        {"title": "Same window", "value": "_self"},
+        {"title": "New window", "value": "_blank"},
+    ],
+    # Allow all attributes on links
+    "link_assume_external_targets": True,
 }
 
 # TinyMCE minimal configuration for simple fields
@@ -464,8 +472,16 @@ TINYMCE_MINIMAL_CONFIG = {
     "toolbar": "bold italic | bullist numlist | link | removeformat",
     "statusbar": False,
     # Allow basic SVG elements even in minimal config
-    "extended_valid_elements": "svg[*],path[*],circle[*],rect[*]",
+    "extended_valid_elements": (
+        "svg[*],path[*],circle[*],rect[*],a[href|target|rel|title]"
+    ),
     "valid_children": "+body[svg],+p[svg],+div[svg]",
+    # Enable target option in link dialog
+    "link_target_list": [
+        {"title": "None", "value": ""},
+        {"title": "Same window", "value": "_self"},
+        {"title": "New window", "value": "_blank"},
+    ],
 }
 
 # Site Password Protection (django-lockdown)

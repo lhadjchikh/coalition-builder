@@ -310,3 +310,49 @@ class ContentBlockModelTest(TestCase):
         # But the SVG structure should remain
         assert "<svg>" in sanitized
         assert "<circle" in sanitized
+
+    def test_target_blank_links_allowed(self) -> None:
+        """Test that target="_blank" is allowed on links."""
+        html_with_target = """
+        <p>Visit our 
+        <a href="https://example.com" target="_blank" rel="noopener">website</a>.</p>
+        <p>Check our <a href="https://example.org" target="_self">documentation</a>.</p>
+        <p>Bad link: <a href="javascript:alert('XSS')" target="_blank">click me</a></p>
+        """
+
+        sanitized = HTMLSanitizer.sanitize(html_with_target)
+
+        # target="_blank" should be preserved
+        assert 'target="_blank"' in sanitized
+        assert 'rel="noopener"' in sanitized
+        assert 'target="_self"' in sanitized
+
+        # But javascript: URLs should be removed
+        assert "javascript:" not in sanitized
+        assert "alert(" not in sanitized
+
+    def test_tinymce_content_with_target_blank(self) -> None:
+        """Test that content from TinyMCE with target="_blank" is preserved."""
+        # This simulates content that would come from TinyMCE
+        tinymce_content = """
+        <p>Check out our 
+        <a href="https://example.com" target="_blank" rel="noopener noreferrer">
+        external resource</a> for more information.</p>
+        <p>Also visit <a href="/internal-page">our documentation</a>.</p>
+        """
+
+        block = ContentBlock.objects.create(
+            page_type="homepage",
+            block_type="text",
+            content=tinymce_content,
+            order=1,
+        )
+
+        # Refresh from DB to get sanitized content
+        block.refresh_from_db()
+
+        # target="_blank" should be preserved
+        assert 'target="_blank"' in block.content
+        assert 'rel="noopener noreferrer"' in block.content
+        assert 'href="https://example.com"' in block.content
+        assert 'href="/internal-page"' in block.content
