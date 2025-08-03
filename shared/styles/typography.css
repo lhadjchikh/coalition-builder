@@ -328,14 +328,6 @@ h6,
   opacity: 0.8;
 }
 
-/* External link indicator */
-.content-prose a[target="_blank"]::after {
-  content: " ↗";
-  font-size: 0.75em;
-  vertical-align: super;
-  opacity: 0.7;
-}
-
 /* Label and caption styles */
 .label {
   font-size: var(--font-size-sm);
