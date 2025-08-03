@@ -313,16 +313,14 @@ h6,
 /* Link styles within content blocks */
 .content-prose a {
   color: var(--theme-primary, #0070f3);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  transition:
-    color 0.2s ease,
-    text-decoration-color 0.2s ease;
+  text-decoration: none;
+  transition: all 0.2s ease;
 }
 
 .content-prose a:hover {
   color: var(--theme-primary-dark, #0051cc);
-  text-decoration-color: var(--theme-primary-dark, #0051cc);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .content-prose a:visited {
