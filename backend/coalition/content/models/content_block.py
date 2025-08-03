@@ -40,6 +40,12 @@ class ContentBlock(models.Model):
         ("stacked_reversed", "Image Above Text"),
     ]
 
+    VERTICAL_ALIGNMENT_OPTIONS = [
+        ("top", "Top"),
+        ("middle", "Center"),
+        ("bottom", "Bottom"),
+    ]
+
     page_type = models.CharField(
         max_length=20,
         choices=PAGE_TYPES,
@@ -80,6 +86,16 @@ class ContentBlock(models.Model):
         default="default",
         blank=True,
         help_text="Layout arrangement for Text + Image blocks",
+    )
+
+    vertical_alignment = models.CharField(
+        max_length=10,
+        choices=VERTICAL_ALIGNMENT_OPTIONS,
+        default="middle",
+        blank=True,
+        help_text=(
+            "Vertical alignment of text relative to image for Text + Image blocks"
+        ),
     )
 
     css_classes = models.CharField(

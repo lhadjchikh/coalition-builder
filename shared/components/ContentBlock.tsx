@@ -11,6 +11,7 @@ interface ContentBlockData {
   image_url?: string;
   image_alt_text?: string;
   layout_option?: string;
+  vertical_alignment?: string;
   css_classes?: string;
   background_color?: string;
   is_visible?: boolean;
@@ -124,9 +125,22 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
           block.layout_option === "stacked_reversed";
         const isStackedReversed = block.layout_option === "stacked_reversed";
 
+        // Determine vertical alignment
+        const getAlignmentClass = () => {
+          switch (block.vertical_alignment) {
+            case "top":
+              return "items-start";
+            case "bottom":
+              return "items-end";
+            case "middle":
+            default:
+              return "items-center";
+          }
+        };
+
         return (
           <div
-            className={`grid gap-8 lg:gap-12 items-center ${
+            className={`grid gap-8 lg:gap-12 ${getAlignmentClass()} ${
               isStacked ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2"
             }`}
           >
