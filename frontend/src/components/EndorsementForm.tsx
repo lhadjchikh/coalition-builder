@@ -380,9 +380,10 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           <div className="address-info-message">
             <h4 className="address-info-title">Why do we need your address?</h4>
             <p>
-              We collect your address information solely to identify your legislative districts
-              (Congressional, State Senate, and State House). This helps your representatives
-              understand constituent support.
+              We use your address to identify your legislative districts (Congressional, State
+              Senate, and State House). This helps your representatives understand constituent
+              support by district. Your personal information will never be shared with other
+              organizations.
             </p>
           </div>
 
