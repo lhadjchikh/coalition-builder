@@ -74,6 +74,8 @@ class ContentBlockModelTest(TestCase):
         assert block.image_alt_text == ""
         assert block.css_classes == ""
         assert block.background_color == ""
+        assert block.animation_type == "none"
+        assert block.animation_delay == 0
 
     def test_content_block_ordering(self) -> None:
         """Test that content blocks are ordered correctly"""
@@ -356,3 +358,86 @@ class ContentBlockModelTest(TestCase):
         assert 'rel="noopener noreferrer"' in block.content
         assert 'href="https://example.com"' in block.content
         assert 'href="/internal-page"' in block.content
+
+    def test_animation_options(self) -> None:
+        """Test all valid animation options."""
+        valid_animations = [
+            ("fade-in", "Fade In"),
+            ("slide-up", "Slide Up"),
+            ("slide-left", "Slide from Left"),
+            ("slide-right", "Slide from Right"),
+            ("scale", "Scale In"),
+            ("none", "No Animation"),
+        ]
+
+        for animation_value, animation_label in valid_animations:
+            block = ContentBlock.objects.create(
+                page_type="homepage",
+                title=f"Test {animation_label}",
+                content="Test content",
+                animation_type=animation_value,
+                order=1,
+            )
+            assert block.animation_type == animation_value
+
+    def test_animation_delay(self) -> None:
+        """Test animation delay values."""
+        # Test various delay values
+        delay_values = [0, 100, 500, 1000, 2000]
+
+        for delay in delay_values:
+            block = ContentBlock.objects.create(
+                page_type="homepage",
+                title=f"Test delay {delay}",
+                content="Test content",
+                animation_delay=delay,
+                order=1,
+            )
+            assert block.animation_delay == delay
+
+    def test_animation_with_different_block_types(self) -> None:
+        """Test animation options work with all block types."""
+        block_types = ["text", "image", "text_image", "quote", "stats", "custom_html"]
+
+        for block_type in block_types:
+            block = ContentBlock.objects.create(
+                page_type="homepage",
+                title=f"Test {block_type} with animation",
+                block_type=block_type,
+                content="Test content",
+                animation_type="slide-up",
+                animation_delay=300,
+                order=1,
+            )
+            assert block.block_type == block_type
+            assert block.animation_type == "slide-up"
+            assert block.animation_delay == 300
+
+    def test_default_animation_is_none(self) -> None:
+        """Test that default animation is 'none'."""
+        block = ContentBlock.objects.create(
+            page_type="homepage",
+            title="Test default animation",
+            content="Test content",
+            order=1,
+        )
+        assert block.animation_type == "none"
+
+    def test_animation_delay_max_value(self) -> None:
+        """Test that animation delay cannot exceed 2000ms."""
+        from django.core.exceptions import ValidationError
+
+        block = ContentBlock(
+            page_type="homepage",
+            title="Test max delay",
+            content="Test content",
+            animation_delay=2001,  # Exceeds max value
+            order=1,
+        )
+
+        # The model validators are not run automatically on save,
+        # but we can test that the validator is present
+        with self.assertRaises(ValidationError) as context:
+            block.full_clean()
+
+        assert "animation_delay" in str(context.exception)

@@ -202,6 +202,8 @@ export interface ContentBlock {
   vertical_alignment?: string; // Vertical alignment of text relative to image
   css_classes?: string;
   background_color?: string;
+  animation_type?: string; // Animation effect type
+  animation_delay?: number; // Animation delay in milliseconds
   order: number;
   is_visible: boolean;
   created_at: string;
