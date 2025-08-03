@@ -235,6 +235,27 @@ h3 {
   max-width: 75ch; /* Slightly wider for larger text */
 }
 
+/* Content block utilities */
+.text-image-reversed > .grid > :first-child {
+  order: 2;
+}
+
+.text-image-reversed > .grid > :last-child {
+  order: 1;
+}
+
+/* On mobile, maintain standard order for better UX */
+/* Note: 1023px matches our existing breakpoint usage throughout the codebase */
+@media (max-width: 1023px) {
+  .text-image-reversed > .grid > :first-child {
+    order: 1;
+  }
+
+  .text-image-reversed > .grid > :last-child {
+    order: 2;
+  }
+}
+
 .max-w-prose-container {
   max-width: 65ch;
   margin-left: auto;

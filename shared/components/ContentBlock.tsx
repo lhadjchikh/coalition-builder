@@ -87,7 +87,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
               <h3 className="h3 text-theme-heading">{block.title}</h3>
             )}
             <div
-              className="text-body-lg text-theme-text-body"
+              className="text-body-lg text-theme-text-body content-prose"
               dangerouslySetInnerHTML={{ __html: block.content }}
             />
           </div>
@@ -110,7 +110,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
             )}
             {block.content && (
               <div
-                className="mt-6 text-body text-theme-text-muted max-w-reading-lg mx-auto"
+                className="mt-6 text-body text-theme-text-muted max-w-reading-lg mx-auto content-prose"
                 dangerouslySetInnerHTML={{ __html: block.content }}
               />
             )}
@@ -168,7 +168,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
                 <h3 className="h3 text-theme-heading">{block.title}</h3>
               )}
               <div
-                className="text-body-lg text-theme-text-body"
+                className="text-body-lg text-theme-text-body content-prose"
                 dangerouslySetInnerHTML={{ __html: block.content }}
               />
             </div>
@@ -205,7 +205,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
               <h3 className="h3 text-theme-heading mb-10">{block.title}</h3>
             )}
             <div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 content-prose"
               dangerouslySetInnerHTML={{ __html: block.content }}
             />
           </div>
@@ -230,7 +230,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
               <h3 className="h3 text-theme-heading">{block.title}</h3>
             )}
             <div
-              className="text-body-lg text-theme-text-body"
+              className="text-body-lg text-theme-text-body content-prose"
               dangerouslySetInnerHTML={{ __html: block.content }}
             />
           </div>
