@@ -594,7 +594,6 @@ describe('ContentBlock', () => {
 
       const blockContainer = container.firstChild as HTMLElement;
       expect(blockContainer).toHaveClass('w-full');
-      expect(blockContainer).not.toHaveClass('content-block-animate');
       expect(blockContainer).not.toHaveClass('content-block-visible');
     });
 
@@ -606,7 +605,7 @@ describe('ContentBlock', () => {
       const { container } = render(<ContentBlock block={block} />);
 
       const blockContainer = container.firstChild as HTMLElement;
-      expect(blockContainer).toHaveClass('content-block-animate', 'content-block-fade-in');
+      expect(blockContainer).toHaveClass('content-block-fade-in');
     });
 
     it('should apply slide-up animation classes', () => {
@@ -617,7 +616,7 @@ describe('ContentBlock', () => {
       const { container } = render(<ContentBlock block={block} />);
 
       const blockContainer = container.firstChild as HTMLElement;
-      expect(blockContainer).toHaveClass('content-block-animate', 'content-block-slide-up');
+      expect(blockContainer).toHaveClass('content-block-slide-up');
     });
 
     it('should apply slide-left animation classes', () => {
@@ -628,7 +627,7 @@ describe('ContentBlock', () => {
       const { container } = render(<ContentBlock block={block} />);
 
       const blockContainer = container.firstChild as HTMLElement;
-      expect(blockContainer).toHaveClass('content-block-animate', 'content-block-slide-left');
+      expect(blockContainer).toHaveClass('content-block-slide-left');
     });
 
     it('should apply slide-right animation classes', () => {
@@ -639,7 +638,7 @@ describe('ContentBlock', () => {
       const { container } = render(<ContentBlock block={block} />);
 
       const blockContainer = container.firstChild as HTMLElement;
-      expect(blockContainer).toHaveClass('content-block-animate', 'content-block-slide-right');
+      expect(blockContainer).toHaveClass('content-block-slide-right');
     });
 
     it('should apply scale animation classes', () => {
@@ -650,7 +649,7 @@ describe('ContentBlock', () => {
       const { container } = render(<ContentBlock block={block} />);
 
       const blockContainer = container.firstChild as HTMLElement;
-      expect(blockContainer).toHaveClass('content-block-animate', 'content-block-scale');
+      expect(blockContainer).toHaveClass('content-block-scale');
     });
 
     it('should apply animation delay style when specified', () => {
@@ -662,7 +661,7 @@ describe('ContentBlock', () => {
       const { container } = render(<ContentBlock block={block} />);
 
       const blockContainer = container.firstChild as HTMLElement;
-      expect(blockContainer).toHaveStyle({ animationDelay: '500ms' });
+      expect(blockContainer).toHaveStyle({ transitionDelay: '500ms' });
     });
 
     it('should not apply animation delay when animation is none', () => {
@@ -674,7 +673,7 @@ describe('ContentBlock', () => {
       const { container } = render(<ContentBlock block={block} />);
 
       const blockContainer = container.firstChild as HTMLElement;
-      expect(blockContainer.style.animationDelay).toBe('');
+      expect(blockContainer.style.transitionDelay).toBe('');
     });
 
     it('should use none as default animation when not specified', () => {
@@ -686,7 +685,7 @@ describe('ContentBlock', () => {
 
       const blockContainer = container.firstChild as HTMLElement;
       expect(blockContainer).toHaveClass('w-full');
-      expect(blockContainer).not.toHaveClass('content-block-animate');
+      expect(blockContainer).not.toHaveClass('content-block-fade-in');
     });
 
     it('should combine animation classes with custom CSS classes', () => {
@@ -698,12 +697,7 @@ describe('ContentBlock', () => {
       const { container } = render(<ContentBlock block={block} />);
 
       const blockContainer = container.firstChild as HTMLElement;
-      expect(blockContainer).toHaveClass(
-        'w-full',
-        'content-block-animate',
-        'content-block-slide-up',
-        'custom-class'
-      );
+      expect(blockContainer).toHaveClass('w-full', 'content-block-slide-up', 'custom-class');
     });
 
     it('should apply visible class after animation triggers', () => {

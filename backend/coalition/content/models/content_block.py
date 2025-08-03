@@ -2,6 +2,7 @@
 
 from typing import TYPE_CHECKING
 
+from django.core.validators import MaxValueValidator
 from django.db import models
 from tinymce.models import HTMLField
 
@@ -129,6 +130,7 @@ class ContentBlock(models.Model):
 
     animation_delay = models.PositiveIntegerField(
         default=0,
+        validators=[MaxValueValidator(2000)],
         help_text="Animation delay in milliseconds (0-2000)",
     )
 

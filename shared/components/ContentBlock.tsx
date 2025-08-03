@@ -66,7 +66,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
         observer.unobserve(blockRef.current);
       }
     };
-  }, []);
+  }, [block.animation_type]);
   if (block.is_visible === false) {
     return null;
   }
@@ -81,7 +81,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
       return `${baseClasses}${customClasses}`;
     }
 
-    const animationClass = `content-block-animate content-block-${animationType}`;
+    const animationClass = `content-block-${animationType}`;
     const visibilityClass = isVisible ? "content-block-visible" : "";
     const customClasses = block.css_classes ? ` ${block.css_classes}` : "";
     return `${baseClasses} ${animationClass} ${visibilityClass}${customClasses}`;
@@ -92,9 +92,9 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
     if (block.background_color) {
       style.backgroundColor = block.background_color;
     }
-    // Add animation delay if specified
+    // Add transition delay if specified
     if (block.animation_delay && block.animation_type !== "none") {
-      style.animationDelay = `${block.animation_delay}ms`;
+      style.transitionDelay = `${block.animation_delay}ms`;
     }
     return style;
   };

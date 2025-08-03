@@ -422,3 +422,22 @@ class ContentBlockModelTest(TestCase):
             order=1,
         )
         assert block.animation_type == "none"
+
+    def test_animation_delay_max_value(self) -> None:
+        """Test that animation delay cannot exceed 2000ms."""
+        from django.core.exceptions import ValidationError
+
+        block = ContentBlock(
+            page_type="homepage",
+            title="Test max delay",
+            content="Test content",
+            animation_delay=2001,  # Exceeds max value
+            order=1,
+        )
+
+        # The model validators are not run automatically on save,
+        # but we can test that the validator is present
+        with self.assertRaises(ValidationError) as context:
+            block.full_clean()
+
+        assert "animation_delay" in str(context.exception)
