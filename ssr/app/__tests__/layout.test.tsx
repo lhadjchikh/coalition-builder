@@ -124,7 +124,7 @@ describe("RootLayout", () => {
     const navbar = screen.getByTestId("ssr-navbar");
     expect(navbar).toBeInTheDocument();
     expect(navbar).toHaveTextContent("Test Organization");
-    expect(navbar).toHaveTextContent("4 nav items");
+    expect(navbar).toHaveTextContent("3 nav items");
 
     // Check for main content
     const mainContent = screen.getByTestId("page-content");

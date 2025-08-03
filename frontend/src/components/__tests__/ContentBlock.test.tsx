@@ -73,7 +73,7 @@ describe('ContentBlock', () => {
       expect(screen.queryByRole('heading', { level: 3 })).not.toBeInTheDocument();
     });
 
-    it('should apply prose classes for text blocks', () => {
+    it('should render text blocks without prose-modern class', () => {
       const block = {
         ...baseContentBlock,
         block_type: 'text',
@@ -81,8 +81,10 @@ describe('ContentBlock', () => {
       };
       render(<ContentBlock block={block} />);
 
+      const contentDiv = screen.getByText('Test content');
+      expect(contentDiv).toBeInTheDocument();
       const proseDiv = screen.getByText('Test content').closest('.prose-modern');
-      expect(proseDiv).toBeInTheDocument();
+      expect(proseDiv).not.toBeInTheDocument();
     });
   });
 
@@ -198,7 +200,7 @@ describe('ContentBlock', () => {
       expect(screen.queryByRole('img')).not.toBeInTheDocument();
     });
 
-    it('should apply responsive layout classes', () => {
+    it('should apply responsive grid layout classes', () => {
       const block = {
         ...baseContentBlock,
         block_type: 'text_image',
@@ -207,11 +209,11 @@ describe('ContentBlock', () => {
       };
       render(<ContentBlock block={block} />);
 
-      const container = screen.getByText('Test').closest('.flex');
+      const container = screen.getByText('Test').closest('.grid');
       expect(container).toHaveClass(
-        'flex',
-        'flex-col',
-        'lg:flex-row',
+        'grid',
+        'grid-cols-1',
+        'lg:grid-cols-2',
         'gap-8',
         'lg:gap-12',
         'items-center'
