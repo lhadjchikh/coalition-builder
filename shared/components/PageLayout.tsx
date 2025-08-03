@@ -48,7 +48,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       <main role="main">
         {/* Page Header */}
         <div className="bg-gray-50 border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-7xl mx-auto container-padding py-8">
             <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl">
               {title}
             </h1>
@@ -58,9 +58,9 @@ const PageLayout: React.FC<PageLayoutProps> = ({
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Error Display */}
-          {error && (
+        {/* Error Display */}
+        {error && (
+          <div className="max-w-7xl mx-auto container-padding py-8">
             <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-8">
               <p>
                 Unable to load {title ? title.toLowerCase() : "content"} at this
@@ -70,11 +70,11 @@ const PageLayout: React.FC<PageLayoutProps> = ({
                 <p className="text-sm mt-1">{error}</p>
               )}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Main Content */}
-          {children}
-        </div>
+        {/* Main Content - Allow full-width sections */}
+        {children}
       </main>
 
       {/* Footer */}

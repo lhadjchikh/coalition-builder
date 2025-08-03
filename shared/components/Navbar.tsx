@@ -160,7 +160,7 @@ const Navbar: React.FC<NavbarProps> = ({
   return (
     <nav className={getNavbarClasses()}>
       <div className="max-w-7xl mx-auto container-padding">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex items-center h-20">
           {/* Brand */}
           <div className="flex-shrink-0">
             <LinkComponent
@@ -182,8 +182,8 @@ const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:block">
-            <div className="ml-12 flex items-baseline space-x-2">
+          <div className="hidden md:block ml-auto">
+            <div className="flex items-baseline space-x-2">
               {navItems.map((item, index) => {
                 const isActive = isActiveLink(item.href);
 
@@ -214,7 +214,7 @@ const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="md:hidden ml-auto">
             <button
               onClick={toggleMenu}
               className="bg-theme-primary inline-flex items-center justify-center p-3 rounded-xl text-white/80 hover:text-white hover:bg-white/10 focus-ring transition-all duration-300"
