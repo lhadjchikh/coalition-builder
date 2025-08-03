@@ -42,13 +42,22 @@ const Navbar: React.FC<NavbarProps> = ({
   const isHomepage = location?.pathname === "/" || location?.pathname === "";
 
   useEffect(() => {
+    let ticking = false;
+    
     const handleScroll = () => {
-      const offset = window.scrollY;
-      setScrolled(offset > 20);
+      if (!ticking) {
+        ticking = true;
+        window.requestAnimationFrame(() => {
+          const offset = window.scrollY;
+          setScrolled(offset > 20);
+          ticking = false;
+        });
+      }
     };
 
     // Set initial state
-    handleScroll();
+    const offset = window.scrollY;
+    setScrolled(offset > 20);
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);

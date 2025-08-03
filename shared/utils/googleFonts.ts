@@ -11,11 +11,8 @@ export function loadGoogleFonts(googleFonts: string[]): void {
   // Only load fonts in browser environment
   if (typeof window === "undefined") return;
 
-  // Fallback timeout to show text even if fonts don't load
-  const fallbackTimeout = setTimeout(() => {
-    document.body.classList.remove("fonts-loading");
-    document.body.classList.add("fonts-loaded");
-  }, 2000); // Show text after 2 seconds regardless
+  // Track timeout to ensure it's always cleared
+  let fallbackTimeout: NodeJS.Timeout | null = null;
 
   // Dynamic import of webfontloader to avoid issues in SSR/shared contexts
   try {
@@ -42,6 +39,12 @@ export function loadGoogleFonts(googleFonts: string[]): void {
         // Add loading class to body
         document.body.classList.add("fonts-loading");
 
+        // Set fallback timeout after we know fonts will be loaded
+        fallbackTimeout = setTimeout(() => {
+          document.body.classList.remove("fonts-loading");
+          document.body.classList.add("fonts-loaded");
+        }, 2000); // Show text after 2 seconds regardless
+
         WebFont.load({
           google: {
             families: formattedFonts,
@@ -54,20 +57,25 @@ export function loadGoogleFonts(googleFonts: string[]): void {
           active: () => {
             // All fonts have loaded successfully
             console.log("Google Fonts loaded successfully");
-            clearTimeout(fallbackTimeout);
+            if (fallbackTimeout) clearTimeout(fallbackTimeout);
             document.body.classList.remove("fonts-loading");
             document.body.classList.add("fonts-loaded");
           },
           inactive: () => {
             // Fonts failed to load or timed out - show text anyway
             console.warn("Google Fonts failed to load or timed out");
-            clearTimeout(fallbackTimeout);
+            if (fallbackTimeout) clearTimeout(fallbackTimeout);
             document.body.classList.remove("fonts-loading");
             document.body.classList.add("fonts-loaded");
           },
         });
       } catch (importError) {
         console.warn("Failed to load webfontloader:", importError);
+        // Clean up timeout if import fails
+        if (fallbackTimeout) clearTimeout(fallbackTimeout);
+        // Ensure fonts are shown even if import fails
+        document.body.classList.remove("fonts-loading");
+        document.body.classList.add("fonts-loaded");
       }
     };
 

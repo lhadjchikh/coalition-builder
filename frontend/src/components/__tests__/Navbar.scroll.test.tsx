@@ -10,6 +10,11 @@ describe('Navbar scroll behavior', () => {
   beforeEach(() => {
     // Reset scroll position
     window.scrollY = 0;
+    // Mock requestAnimationFrame for tests
+    global.requestAnimationFrame = (callback) => {
+      callback(0);
+      return 0;
+    };
   });
 
   test('navbar is transparent at top of page on homepage', () => {
