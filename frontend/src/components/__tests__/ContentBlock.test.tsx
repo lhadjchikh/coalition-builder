@@ -219,6 +219,55 @@ describe('ContentBlock', () => {
         'items-center'
       );
     });
+
+    it('should apply reversed layout when layout_option is reversed', () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: 'text_image',
+        content: '<p>Test content</p>',
+        image_url: 'https://example.com/image.jpg',
+        layout_option: 'reversed',
+      };
+      render(<ContentBlock block={block} />);
+
+      const textDiv = screen.getByText('Test content').parentElement?.parentElement;
+      const imageDiv = screen.getByRole('img').parentElement;
+
+      expect(textDiv).toHaveClass('lg:order-2');
+      expect(imageDiv).toHaveClass('lg:order-1');
+    });
+
+    it('should apply stacked layout when layout_option is stacked', () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: 'text_image',
+        content: '<p>Test content</p>',
+        image_url: 'https://example.com/image.jpg',
+        layout_option: 'stacked',
+      };
+      render(<ContentBlock block={block} />);
+
+      const container = screen.getByText('Test content').closest('.grid');
+      expect(container).toHaveClass('grid-cols-1');
+      expect(container).not.toHaveClass('lg:grid-cols-2');
+    });
+
+    it('should apply stacked reversed layout when layout_option is stacked_reversed', () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: 'text_image',
+        content: '<p>Test content</p>',
+        image_url: 'https://example.com/image.jpg',
+        layout_option: 'stacked_reversed',
+      };
+      render(<ContentBlock block={block} />);
+
+      const textDiv = screen.getByText('Test content').parentElement?.parentElement;
+      const imageDiv = screen.getByRole('img').parentElement;
+
+      expect(textDiv).toHaveClass('order-2');
+      expect(imageDiv).toHaveClass('order-1');
+    });
   });
 
   describe('quote block type', () => {

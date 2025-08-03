@@ -10,6 +10,7 @@ interface ContentBlockData {
   block_type: string;
   image_url?: string;
   image_alt_text?: string;
+  layout_option?: string;
   css_classes?: string;
   background_color?: string;
   is_visible?: boolean;
@@ -116,9 +117,28 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
         );
 
       case "text_image":
+        // Determine grid layout based on layout_option
+        const isReversed = block.layout_option === "reversed";
+        const isStacked =
+          block.layout_option === "stacked" ||
+          block.layout_option === "stacked_reversed";
+        const isStackedReversed = block.layout_option === "stacked_reversed";
+
         return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <div>
+          <div
+            className={`grid gap-8 lg:gap-12 items-center ${
+              isStacked ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2"
+            }`}
+          >
+            <div
+              className={
+                isReversed && !isStacked
+                  ? "lg:order-2"
+                  : isStackedReversed
+                    ? "order-2"
+                    : ""
+              }
+            >
               {block.title && (
                 <h3 className="h3 text-theme-heading">{block.title}</h3>
               )}
@@ -128,7 +148,15 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
               />
             </div>
             {block.image_url && (
-              <div>
+              <div
+                className={
+                  isReversed && !isStacked
+                    ? "lg:order-1"
+                    : isStackedReversed
+                      ? "order-1"
+                      : ""
+                }
+              >
                 <img
                   src={block.image_url}
                   alt={block.image_alt_text || block.title || "Content image"}

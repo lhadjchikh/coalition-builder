@@ -33,6 +33,13 @@ class ContentBlock(models.Model):
         ("contact", "Contact Page"),
     ]
 
+    LAYOUT_OPTIONS = [
+        ("default", "Text Left, Image Right"),
+        ("reversed", "Image Left, Text Right"),
+        ("stacked", "Text Above Image"),
+        ("stacked_reversed", "Image Above Text"),
+    ]
+
     page_type = models.CharField(
         max_length=20,
         choices=PAGE_TYPES,
@@ -67,6 +74,14 @@ class ContentBlock(models.Model):
     )
 
     # Layout options
+    layout_option = models.CharField(
+        max_length=20,
+        choices=LAYOUT_OPTIONS,
+        default="default",
+        blank=True,
+        help_text="Layout arrangement for Text + Image blocks",
+    )
+
     css_classes = models.CharField(
         max_length=200,
         blank=True,
