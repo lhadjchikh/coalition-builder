@@ -172,6 +172,56 @@ h6,
   margin-top: 0;
 }
 
+/* Content block prose styles - restores list formatting */
+.content-prose ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.content-prose ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.content-prose ul ul,
+.content-prose ol ul {
+  list-style-type: circle;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.content-prose ul ul ul,
+.content-prose ol ul ul {
+  list-style-type: square;
+}
+
+.content-prose li {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.content-prose li > p {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.content-prose p {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.content-prose p:first-child {
+  margin-top: 0;
+}
+
+.content-prose p:last-child {
+  margin-bottom: 0;
+}
+
 /* Label and caption styles */
 .label {
   font-size: var(--font-size-sm);
