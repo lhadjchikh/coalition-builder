@@ -442,6 +442,17 @@ TINYMCE_DEFAULT_CONFIG = {
             line-height: 1.6;
         }
     """,
+    # Allow SVG and all its child elements
+    "extended_valid_elements": (
+        "svg[*],path[*],g[*],circle[*],rect[*],line[*],polyline[*],polygon[*],"
+        "ellipse[*],text[*],tspan[*],defs[*],use[*],symbol[*],clipPath[*],"
+        "mask[*],pattern[*],linearGradient[*],radialGradient[*],stop[*],"
+        "animate[*],animateTransform[*]"
+    ),
+    # Don't strip empty SVG elements
+    "valid_children": "+body[style],+body[svg],+p[svg],+div[svg]",
+    # Allow data URIs in images
+    "allow_unsafe_link_target": True,
 }
 
 # TinyMCE minimal configuration for simple fields
@@ -452,6 +463,9 @@ TINYMCE_MINIMAL_CONFIG = {
     "plugins": ["link", "lists", "autolink"],
     "toolbar": "bold italic | bullist numlist | link | removeformat",
     "statusbar": False,
+    # Allow basic SVG elements even in minimal config
+    "extended_valid_elements": "svg[*],path[*],circle[*],rect[*]",
+    "valid_children": "+body[svg],+p[svg],+div[svg]",
 }
 
 # Site Password Protection (django-lockdown)

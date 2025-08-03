@@ -1,5 +1,6 @@
 from django.test import TestCase
 
+from coalition.content.html_sanitizer import HTMLSanitizer
 from coalition.content.models import ContentBlock, HomePage
 
 
@@ -156,3 +157,156 @@ class ContentBlockModelTest(TestCase):
         # Filter for all blocks
         all_blocks = ContentBlock.objects.all()
         assert all_blocks.count() == 2
+
+    def test_heading_tags_preserved(self) -> None:
+        """Test that all heading tags (h1-h6) are preserved."""
+        html = """
+        <h1>Main Heading</h1>
+        <h2>Subheading</h2>
+        <h3>Section Title</h3>
+        <h4>Subsection</h4>
+        <h5>Minor Heading</h5>
+        <h6>Smallest Heading</h6>
+        <p>Regular paragraph</p>
+        """
+
+        sanitized = HTMLSanitizer.sanitize(html)
+
+        # All headings should be preserved
+        assert "<h1>Main Heading</h1>" in sanitized
+        assert "<h2>Subheading</h2>" in sanitized
+        assert "<h3>Section Title</h3>" in sanitized
+        assert "<h4>Subsection</h4>" in sanitized
+        assert "<h5>Minor Heading</h5>" in sanitized
+        assert "<h6>Smallest Heading</h6>" in sanitized
+        assert "<p>Regular paragraph</p>" in sanitized
+
+    def test_svg_elements_preserved(self) -> None:
+        """Test that SVG elements and attributes are preserved."""
+        svg = """
+        <svg viewBox="0 0 100 100" width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="40" fill="red" stroke="black" stroke-width="2"/>
+            <rect x="10" y="10" width="30" height="30" fill="blue" opacity="0.5"/>
+            <path d="M 10 10 L 90 90" stroke="green" stroke-width="3"/>
+            <g fill="orange">
+                <polygon points="50,10 90,90 10,90"/>
+            </g>
+        </svg>
+        """
+
+        sanitized = HTMLSanitizer.sanitize(svg)
+
+        # Check SVG elements are preserved
+        assert '<svg viewBox="0 0 100 100"' in sanitized
+        assert '<circle cx="50" cy="50" r="40"' in sanitized
+        assert '<rect x="10" y="10"' in sanitized
+        assert '<path d="M 10 10 L 90 90"' in sanitized
+        assert '<g fill="orange">' in sanitized
+        assert '<polygon points="50,10 90,90 10,90"' in sanitized
+
+        # Check attributes are preserved
+        assert 'fill="red"' in sanitized
+        assert 'stroke="black"' in sanitized
+        assert 'stroke-width="2"' in sanitized
+        assert 'opacity="0.5"' in sanitized
+
+    def test_svg_with_text(self) -> None:
+        """Test SVG with text elements."""
+        svg = """
+        <svg viewBox="0 0 200 50">
+            <text x="10" y="30" font-family="Arial" font-size="20" fill="black">
+                Hello World
+                <tspan x="10" y="45" font-size="14">Subtitle</tspan>
+            </text>
+        </svg>
+        """
+
+        sanitized = HTMLSanitizer.sanitize(svg)
+
+        assert '<text x="10" y="30"' in sanitized
+        assert 'font-family="Arial"' in sanitized
+        assert 'font-size="20"' in sanitized
+        assert '<tspan x="10" y="45"' in sanitized
+        assert "Hello World" in sanitized
+        assert "Subtitle" in sanitized
+
+    def test_svg_gradients_and_defs(self) -> None:
+        """Test SVG with gradients and defs."""
+        svg = """
+        <svg>
+            <defs>
+                <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="yellow" stop-opacity="1"/>
+                    <stop offset="100%" stop-color="red" stop-opacity="1"/>
+                </linearGradient>
+            </defs>
+            <rect fill="url(#grad1)" x="0" y="0" width="100" height="50"/>
+        </svg>
+        """
+
+        sanitized = HTMLSanitizer.sanitize(svg)
+
+        assert "<defs>" in sanitized
+        assert '<linearGradient id="grad1"' in sanitized
+        assert '<stop offset="0%"' in sanitized
+        assert 'stop-color="yellow"' in sanitized
+        assert 'fill="url(#grad1)"' in sanitized
+
+    def test_content_block_with_svg_and_headings(self) -> None:
+        """Test ContentBlock model with SVG and headings."""
+        content_with_svg_and_headings = """
+        <h2>Our Mission</h2>
+        <p>We believe in sustainability.</p>
+        <svg viewBox="0 0 100 100" width="50" height="50">
+            <circle cx="50" cy="50" r="40" fill="green"/>
+        </svg>
+        <h3>Key Points</h3>
+        <ul>
+            <li>Point 1</li>
+            <li>Point 2</li>
+        </ul>
+        """
+
+        block = ContentBlock.objects.create(
+            page_type="homepage",
+            block_type="text",
+            content=content_with_svg_and_headings,
+            order=1,
+        )
+
+        # Refresh from DB to get sanitized content
+        block.refresh_from_db()
+
+        # Check that headings are preserved
+        assert "<h2>Our Mission</h2>" in block.content
+        assert "<h3>Key Points</h3>" in block.content
+
+        # Check that SVG is preserved
+        assert '<svg viewBox="0 0 100 100"' in block.content
+        assert '<circle cx="50" cy="50" r="40"' in block.content
+        assert 'fill="green"' in block.content
+
+        # Check that other content is preserved
+        assert "<p>We believe in sustainability.</p>" in block.content
+        assert "<ul>" in block.content
+        assert "<li>Point 1</li>" in block.content
+
+    def test_dangerous_svg_attributes_removed(self) -> None:
+        """Test that dangerous SVG attributes are removed."""
+        dangerous_svg = """
+        <svg onload="alert('XSS')">
+            <circle cx="50" cy="50" r="40" onclick="alert('XSS')"/>
+            <script>alert('XSS')</script>
+        </svg>
+        """
+
+        sanitized = HTMLSanitizer.sanitize(dangerous_svg)
+
+        # Dangerous attributes and script tags should be removed
+        assert "onload" not in sanitized
+        assert "onclick" not in sanitized
+        assert "<script>" not in sanitized
+
+        # But the SVG structure should remain
+        assert "<svg>" in sanitized
+        assert "<circle" in sanitized

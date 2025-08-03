@@ -222,6 +222,94 @@ h6,
   margin-bottom: 0;
 }
 
+/* Heading styles within content blocks */
+.content-prose h1 {
+  font-size: var(--font-size-5xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: var(--theme-text-heading);
+}
+
+.content-prose h2 {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+  color: var(--theme-text-heading);
+}
+
+.content-prose h3 {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--theme-text-heading);
+}
+
+.content-prose h4 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--theme-text-heading);
+}
+
+.content-prose h5 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--theme-text-heading);
+}
+
+.content-prose h6 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--theme-text-heading);
+}
+
+/* First heading in content should have less top margin */
+.content-prose h1:first-child,
+.content-prose h2:first-child,
+.content-prose h3:first-child,
+.content-prose h4:first-child,
+.content-prose h5:first-child,
+.content-prose h6:first-child {
+  margin-top: 0;
+}
+
+/* SVG styles within content blocks */
+.content-prose svg {
+  display: inline-block;
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+/* Ensure SVGs scale properly */
+.content-prose svg:not([width]):not([height]) {
+  width: 100%;
+  height: auto;
+}
+
+/* Add some margin for standalone SVGs */
+.content-prose p > svg,
+.content-prose div > svg {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
 /* Label and caption styles */
 .label {
   font-size: var(--font-size-sm);
