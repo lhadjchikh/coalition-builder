@@ -16,6 +16,8 @@ interface ContentBlockData {
   background_color?: string;
   is_visible?: boolean;
   order?: number;
+  animation_type?: string;
+  animation_delay?: number;
 }
 
 interface ContentBlockProps {
@@ -27,6 +29,12 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
   const blockRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Skip animation if set to "none"
+    if (block.animation_type === "none") {
+      setIsVisible(true);
+      return;
+    }
+
     // Skip animation in SSR or if IntersectionObserver is not available
     if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
       setIsVisible(true);
@@ -64,16 +72,29 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
   }
 
   const getBlockClasses = () => {
-    const baseClasses = "w-full content-block-animate";
-    const animationClass = isVisible ? "content-block-visible" : "";
+    const baseClasses = "w-full";
+    const animationType = block.animation_type || "none";
+
+    // Skip animation classes if animation is set to "none"
+    if (animationType === "none") {
+      const customClasses = block.css_classes ? ` ${block.css_classes}` : "";
+      return `${baseClasses}${customClasses}`;
+    }
+
+    const animationClass = `content-block-animate content-block-${animationType}`;
+    const visibilityClass = isVisible ? "content-block-visible" : "";
     const customClasses = block.css_classes ? ` ${block.css_classes}` : "";
-    return `${baseClasses} ${animationClass}${customClasses}`;
+    return `${baseClasses} ${animationClass} ${visibilityClass}${customClasses}`;
   };
 
   const getBlockStyle = () => {
     const style: React.CSSProperties = {};
     if (block.background_color) {
       style.backgroundColor = block.background_color;
+    }
+    // Add animation delay if specified
+    if (block.animation_delay && block.animation_type !== "none") {
+      style.animationDelay = `${block.animation_delay}ms`;
     }
     return style;
   };

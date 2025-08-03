@@ -1,13 +1,72 @@
 /* Content Block Animations - Shared styles for frontend and SSR */
 
-/* Base animation class - hidden by default */
+/* Base animation classes for different animation types */
+
+/* Fade In (default) */
+.content-block-fade-in {
+  opacity: 0;
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.content-block-fade-in.content-block-visible {
+  opacity: 1;
+}
+
+/* Slide Up */
+.content-block-slide-up {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.content-block-slide-up.content-block-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Slide from Left */
+.content-block-slide-left {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.content-block-slide-left.content-block-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Slide from Right */
+.content-block-slide-right {
+  opacity: 0;
+  transform: translateX(30px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.content-block-slide-right.content-block-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Scale In */
+.content-block-scale {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.content-block-scale.content-block-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Legacy support - map old animate class to slide-up */
 .content-block-animate {
   opacity: 0;
   transform: translateY(30px);
   transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Visible state */
 .content-block-animate.content-block-visible {
   opacity: 1;
   transform: translateY(0);

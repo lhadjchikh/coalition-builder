@@ -46,6 +46,15 @@ class ContentBlock(models.Model):
         ("bottom", "Bottom"),
     ]
 
+    ANIMATION_OPTIONS = [
+        ("fade-in", "Fade In"),
+        ("slide-up", "Slide Up"),
+        ("slide-left", "Slide from Left"),
+        ("slide-right", "Slide from Right"),
+        ("scale", "Scale In"),
+        ("none", "No Animation"),
+    ]
+
     page_type = models.CharField(
         max_length=20,
         choices=PAGE_TYPES,
@@ -108,6 +117,19 @@ class ContentBlock(models.Model):
         max_length=7,
         blank=True,
         help_text="Background color in hex format (e.g., #ffffff)",
+    )
+
+    # Animation
+    animation_type = models.CharField(
+        max_length=20,
+        choices=ANIMATION_OPTIONS,
+        default="none",
+        help_text="Animation effect when block enters viewport",
+    )
+
+    animation_delay = models.PositiveIntegerField(
+        default=0,
+        help_text="Animation delay in milliseconds (0-2000)",
     )
 
     # Ordering and visibility
