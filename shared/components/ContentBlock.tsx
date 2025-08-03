@@ -80,7 +80,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
     switch (block.block_type) {
       case "text":
         return (
-          <div className="prose-modern mx-auto">
+          <div>
             {block.title && (
               <h3 className="h3 text-theme-heading">{block.title}</h3>
             )}
@@ -117,18 +117,18 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
 
       case "text_image":
         return (
-          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-center">
-            <div className="flex-1 content-block-text w-full lg:w-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div>
               {block.title && (
                 <h3 className="h3 text-theme-heading">{block.title}</h3>
               )}
               <div
-                className="prose-modern text-theme-text-body"
+                className="text-body-lg text-theme-text-body"
                 dangerouslySetInnerHTML={{ __html: block.content }}
               />
             </div>
             {block.image_url && (
-              <div className="flex-1 content-block-image w-full lg:w-auto">
+              <div>
                 <img
                   src={block.image_url}
                   alt={block.image_alt_text || block.title || "Content image"}
@@ -174,16 +174,13 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
                 {block.title}
               </h3>
             )}
-            <div
-              className="prose-modern mx-auto"
-              dangerouslySetInnerHTML={{ __html: block.content }}
-            />
+            <div dangerouslySetInnerHTML={{ __html: block.content }} />
           </div>
         );
 
       default:
         return (
-          <div className="prose-modern mx-auto">
+          <div>
             {block.title && (
               <h3 className="h3 text-theme-heading">{block.title}</h3>
             )}
