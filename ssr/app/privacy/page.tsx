@@ -38,17 +38,8 @@ export default async function PrivacyPage({}: PrivacyPageProps): Promise<React.R
   return (
     <div className="container mx-auto px-4 py-8">
       <LegalDocumentTracker documentType="privacy" />
-      <div className="max-w-4xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">{privacyData.title}</h1>
-          <p className="text-gray-600">
-            Version {privacyData.version} | Effective Date:{" "}
-            {new Date(privacyData.effective_date).toLocaleDateString()}
-          </p>
-        </header>
-        <div className="prose prose-lg max-w-none">
-          <div dangerouslySetInnerHTML={{ __html: privacyData.content }} />
-        </div>
+      <div className="max-w-4xl mx-auto prose prose-lg max-w-none">
+        <div dangerouslySetInnerHTML={{ __html: privacyData.content }} />
       </div>
     </div>
   );

@@ -73,7 +73,7 @@ describe('ContentBlock', () => {
       expect(screen.queryByRole('heading', { level: 3 })).not.toBeInTheDocument();
     });
 
-    it('should apply prose classes for text blocks', () => {
+    it('should render text blocks without prose-modern class', () => {
       const block = {
         ...baseContentBlock,
         block_type: 'text',
@@ -81,8 +81,10 @@ describe('ContentBlock', () => {
       };
       render(<ContentBlock block={block} />);
 
-      const proseDiv = screen.getByText('Test content').closest('.prose');
-      expect(proseDiv).toBeInTheDocument();
+      const contentDiv = screen.getByText('Test content');
+      expect(contentDiv).toBeInTheDocument();
+      const proseDiv = screen.getByText('Test content').closest('.prose-modern');
+      expect(proseDiv).not.toBeInTheDocument();
     });
   });
 
@@ -198,7 +200,7 @@ describe('ContentBlock', () => {
       expect(screen.queryByRole('img')).not.toBeInTheDocument();
     });
 
-    it('should apply responsive layout classes', () => {
+    it('should apply responsive grid layout classes', () => {
       const block = {
         ...baseContentBlock,
         block_type: 'text_image',
@@ -207,13 +209,13 @@ describe('ContentBlock', () => {
       };
       render(<ContentBlock block={block} />);
 
-      const container = screen.getByText('Test').closest('.flex');
+      const container = screen.getByText('Test').closest('.grid');
       expect(container).toHaveClass(
-        'flex',
-        'flex-col',
-        'lg:flex-row',
-        'gap-6',
-        'lg:gap-8',
+        'grid',
+        'grid-cols-1',
+        'lg:grid-cols-2',
+        'gap-8',
+        'lg:gap-12',
         'items-center'
       );
     });
@@ -256,7 +258,14 @@ describe('ContentBlock', () => {
 
       const blockquote = screen.getByText('"Test quote"');
       expect(blockquote.tagName).toBe('BLOCKQUOTE');
-      expect(blockquote).toHaveClass('text-2xl', 'italic', 'text-gray-800', 'mb-4');
+      expect(blockquote).toHaveClass(
+        'text-2xl',
+        'italic',
+        'text-theme-text-body',
+        'font-light',
+        'leading-relaxed',
+        'mb-6'
+      );
     });
   });
 
@@ -284,7 +293,14 @@ describe('ContentBlock', () => {
       render(<ContentBlock block={block} />);
 
       const gridDiv = screen.getByText('Stat content').closest('.grid');
-      expect(gridDiv).toHaveClass('grid', 'grid-cols-1', 'md:grid-cols-3', 'gap-8', 'text-xl');
+      expect(gridDiv).toHaveClass(
+        'grid',
+        'grid-cols-1',
+        'md:grid-cols-2',
+        'lg:grid-cols-3',
+        'gap-8',
+        'lg:gap-12'
+      );
     });
   });
 
@@ -397,10 +413,8 @@ describe('ContentBlock', () => {
       expect(innerContainer).toHaveClass(
         'max-w-7xl',
         'mx-auto',
-        'px-4',
-        'sm:px-6',
-        'lg:px-8',
-        'py-8'
+        'container-padding',
+        'section-spacing'
       );
     });
   });

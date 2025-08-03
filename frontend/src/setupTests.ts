@@ -12,7 +12,13 @@ if (typeof global !== 'undefined') {
 }
 
 // Mock fetch globally
-global.fetch = jest.fn() as jest.Mock;
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    ok: false,
+    status: 404,
+    json: () => Promise.resolve({ detail: 'Not found' }),
+  })
+) as jest.Mock;
 
 // Configure React Testing Library to be more lenient with act() warnings
 import { configure } from '@testing-library/react';
@@ -25,4 +31,12 @@ configure({
 // Helper to reset mocks
 beforeEach(() => {
   (global.fetch as jest.Mock).mockClear();
+  // Reset fetch to return 404 by default (no active theme)
+  (global.fetch as jest.Mock).mockImplementation(() =>
+    Promise.resolve({
+      ok: false,
+      status: 404,
+      json: () => Promise.resolve({ detail: 'Not found' }),
+    })
+  );
 });

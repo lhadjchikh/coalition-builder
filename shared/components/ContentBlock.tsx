@@ -80,14 +80,12 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
     switch (block.block_type) {
       case "text":
         return (
-          <div className="prose prose-xl max-w-prose-container mx-auto">
+          <div>
             {block.title && (
-              <h3 className="text-3xl font-bold text-gray-900 mb-6">
-                {block.title}
-              </h3>
+              <h3 className="h3 text-theme-heading">{block.title}</h3>
             )}
             <div
-              className="text-xl text-gray-700 leading-relaxed"
+              className="text-body-lg text-theme-text-body"
               dangerouslySetInnerHTML={{ __html: block.content }}
             />
           </div>
@@ -97,20 +95,20 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
         return (
           <div className="text-center">
             {block.title && (
-              <h3 className="text-3xl font-bold text-gray-900 mb-6 px-4 sm:px-0">
-                {block.title}
-              </h3>
+              <h3 className="h3 text-theme-heading mb-8">{block.title}</h3>
             )}
             {block.image_url && (
-              <img
-                src={block.image_url}
-                alt={block.image_alt_text || block.title || "Content image"}
-                className="rounded-lg shadow-md max-w-full h-auto mx-auto"
-              />
+              <figure className="relative inline-block">
+                <img
+                  src={block.image_url}
+                  alt={block.image_alt_text || block.title || "Content image"}
+                  className="rounded-2xl shadow-soft max-w-full h-auto mx-auto"
+                />
+              </figure>
             )}
             {block.content && (
               <div
-                className="mt-4 text-xl text-gray-600 max-w-reading-lg mx-auto px-4 sm:px-0"
+                className="mt-6 text-body text-theme-text-muted max-w-reading-lg mx-auto"
                 dangerouslySetInnerHTML={{ __html: block.content }}
               />
             )}
@@ -119,24 +117,22 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
 
       case "text_image":
         return (
-          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center">
-            <div className="flex-1 content-block-text w-full lg:w-auto px-4 sm:px-0">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div>
               {block.title && (
-                <h3 className="text-3xl font-bold text-gray-900 mb-6">
-                  {block.title}
-                </h3>
+                <h3 className="h3 text-theme-heading">{block.title}</h3>
               )}
               <div
-                className="prose prose-xl text-gray-700 leading-relaxed max-w-reading"
+                className="text-body-lg text-theme-text-body"
                 dangerouslySetInnerHTML={{ __html: block.content }}
               />
             </div>
             {block.image_url && (
-              <div className="flex-1 content-block-image w-full lg:w-auto">
+              <div>
                 <img
                   src={block.image_url}
                   alt={block.image_alt_text || block.title || "Content image"}
-                  className="rounded-lg shadow-md w-full h-auto"
+                  className="rounded-2xl shadow-soft w-full h-auto"
                 />
               </div>
             )}
@@ -146,11 +142,11 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
       case "quote":
         return (
           <div className="text-center max-w-reading-lg mx-auto">
-            <blockquote className="text-2xl italic text-gray-800 mb-4">
+            <blockquote className="text-2xl italic text-theme-text-body font-light leading-relaxed mb-6">
               "{block.content}"
             </blockquote>
             {block.title && (
-              <cite className="text-xl text-gray-600 font-medium">
+              <cite className="text-lg text-theme-text-muted font-medium">
                 — {block.title}
               </cite>
             )}
@@ -161,12 +157,10 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
         return (
           <div className="text-center">
             {block.title && (
-              <h3 className="text-3xl font-bold text-gray-900 mb-6">
-                {block.title}
-              </h3>
+              <h3 className="h3 text-theme-heading mb-10">{block.title}</h3>
             )}
             <div
-              className="grid grid-cols-1 md:grid-cols-3 gap-8 text-xl"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12"
               dangerouslySetInnerHTML={{ __html: block.content }}
             />
           </div>
@@ -176,7 +170,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
         return (
           <div>
             {block.title && (
-              <h3 className="text-3xl font-bold text-gray-900 mb-6">
+              <h3 className="h3 text-theme-heading text-center mb-8">
                 {block.title}
               </h3>
             )}
@@ -186,14 +180,12 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
 
       default:
         return (
-          <div className="prose prose-xl max-w-prose-container">
+          <div>
             {block.title && (
-              <h3 className="text-3xl font-bold text-gray-900 mb-6">
-                {block.title}
-              </h3>
+              <h3 className="h3 text-theme-heading">{block.title}</h3>
             )}
             <div
-              className="text-xl text-gray-700 leading-relaxed"
+              className="text-body-lg text-theme-text-body"
               dangerouslySetInnerHTML={{ __html: block.content }}
             />
           </div>
@@ -203,18 +195,21 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
 
   // Determine container padding based on block type
   const getContainerPadding = () => {
-    if (block.block_type === "image" || block.block_type === "text_image") {
-      return "px-0 sm:px-6 lg:px-8";
-    }
-    return "px-4 sm:px-6 lg:px-8";
+    return "container-padding";
   };
 
   return (
-    <div ref={blockRef} className={getBlockClasses()} style={getBlockStyle()}>
-      <div className={`max-w-7xl mx-auto ${getContainerPadding()} py-8`}>
+    <section
+      ref={blockRef}
+      className={getBlockClasses()}
+      style={getBlockStyle()}
+    >
+      <div
+        className={`max-w-7xl mx-auto ${getContainerPadding()} section-spacing`}
+      >
         {renderContent()}
       </div>
-    </div>
+    </section>
   );
 };
 

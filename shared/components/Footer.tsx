@@ -10,8 +10,7 @@ interface FooterProps {
   showLegalLinks?: boolean;
   className?: string;
   LinkComponent?: React.ComponentType<{
-    to?: string;
-    href?: string;
+    to: string;
     children: React.ReactNode;
     className?: string;
   }>;
@@ -22,8 +21,8 @@ const Footer: React.FC<FooterProps> = ({
   showSocialLinks = true,
   showLegalLinks = true,
   className,
-  LinkComponent = ({ href, to, children, className }: any) => (
-    <a href={href || to} className={className}>
+  LinkComponent = ({ to, children, className }) => (
+    <a href={to} className={className}>
       {children}
     </a>
   ),
@@ -36,14 +35,14 @@ const Footer: React.FC<FooterProps> = ({
 
   return (
     <footer className={className || "bg-gray-900"}>
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto section-spacing container-padding">
         <div className="text-center">
-          <h3 className="text-lg font-semibold text-white mb-4">
+          <h3 className="text-2xl font-semibold text-white mb-4">
             {orgInfo.organization_name}
           </h3>
 
           {orgInfo.tagline && (
-            <p className="text-gray-300 mb-6">{orgInfo.tagline}</p>
+            <p className="text-lg text-gray-300 mb-8">{orgInfo.tagline}</p>
           )}
 
           {/* Social Links */}
@@ -51,7 +50,7 @@ const Footer: React.FC<FooterProps> = ({
             <div className="mb-6">
               <SocialLinks
                 orgInfo={orgInfo}
-                className="flex justify-center space-x-6"
+                className="flex justify-center gap-6"
               />
             </div>
           )}
@@ -59,7 +58,7 @@ const Footer: React.FC<FooterProps> = ({
           {/* Legal Links */}
           {showLegalLinks && (
             <nav className="mb-6" aria-label="Legal links">
-              <div className="flex justify-center space-x-6">
+              <div className="flex justify-center gap-6">
                 <LinkComponent
                   to="/terms"
                   className="text-gray-400 hover:text-gray-300 transition-colors duration-200"
@@ -77,8 +76,8 @@ const Footer: React.FC<FooterProps> = ({
           )}
 
           {/* Copyright */}
-          <div className="pt-8 border-t border-gray-800">
-            <p className="text-gray-400 text-sm">
+          <div className="pt-8 mt-8 border-t border-gray-800">
+            <p className="text-gray-400 text-base">
               © {currentYear} {orgInfo.organization_name}. All rights reserved.
             </p>
           </div>

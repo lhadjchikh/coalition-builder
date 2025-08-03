@@ -106,20 +106,23 @@ class VideoModelTest(TestCase):
         self._setup_storage_mocks(mock_exists, mock_save)
         from coalition.content.validators import validate_video_file_extension
 
-        # Test invalid extension
-        invalid_file = SimpleUploadedFile(
-            "test_video.avi",
-            b"file_content",
-            content_type="video/avi",
-        )
+        # Test invalid extensions
+        invalid_extensions = [".avi", ".mov", ".webm", ".mkv", ".flv"]
 
-        with self.assertRaises(ValidationError) as cm:
-            validate_video_file_extension(invalid_file)
+        for ext in invalid_extensions:
+            invalid_file = SimpleUploadedFile(
+                f"test_video{ext}",
+                b"file_content",
+                content_type=f"video/{ext[1:]}",
+            )
 
-        assert "Unsupported file extension .avi" in str(cm.exception)
+            with self.assertRaises(ValidationError) as cm:
+                validate_video_file_extension(invalid_file)
 
-        # Test valid extensions
-        valid_extensions = [".mov", ".mp4", ".webm"]
+            assert f"Unsupported file extension {ext}" in str(cm.exception)
+
+        # Test valid extensions (only mp4 is supported for cross-browser compatibility)
+        valid_extensions = [".mp4"]
         for ext in valid_extensions:
             valid_file = SimpleUploadedFile(
                 f"test_video{ext}",

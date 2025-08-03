@@ -292,18 +292,28 @@ describe('HeroSection', () => {
       });
     });
 
-    it('includes poster image in video props when both video and image are provided', async () => {
+    it('renders background image layer when both video and image are provided', () => {
+      mockConnection({ effectiveType: '4g', saveData: false });
+
       const homepage = createMockHomepage({
         hero_background_video_url: 'https://example.com/video.mp4',
         hero_background_image_url: 'https://example.com/poster.jpg',
       });
 
-      const { container } = render(<HeroSection homepage={homepage} />);
+      render(<HeroSection homepage={homepage} />);
 
-      await waitFor(() => {
-        const video = container.querySelector('video');
-        expect(video).toHaveAttribute('poster', 'https://example.com/poster.jpg');
-      });
+      // Find the background div by test ID
+      const backgroundDiv = screen.getByTestId('hero-background-image');
+      expect(backgroundDiv).toBeInTheDocument();
+
+      // Verify the background URL is correct
+      expect(backgroundDiv).toHaveAttribute(
+        'data-background-url',
+        'https://example.com/poster.jpg'
+      );
+
+      // Verify it has the correct classes
+      expect(backgroundDiv).toHaveClass('absolute', 'inset-0', 'z-0');
     });
 
     it('includes overlay settings in homepage data', () => {
@@ -335,7 +345,7 @@ describe('HeroSection', () => {
       render(<HeroSection homepage={homepage} />);
 
       const ctaButton = screen.getByText('Get Started');
-      expect(ctaButton).toHaveClass('shadow-lg hover:shadow-xl');
+      expect(ctaButton).toHaveClass('shadow-soft');
     });
   });
 });

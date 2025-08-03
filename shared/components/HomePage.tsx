@@ -52,7 +52,7 @@ const HomePage: React.FC<HomePageProps> = ({
         />
       )}
 
-      <main role="main">
+      <main role="main" className="pt-20">
         {/* Development notice when using fallback data */}
         {process.env.NODE_ENV === "development" && homepageError && (
           <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4">
@@ -67,14 +67,12 @@ const HomePage: React.FC<HomePageProps> = ({
         {HeroComponent ? (
           <HeroComponent homepage={homepage} />
         ) : (
-          <section className="relative bg-gradient-to-r from-blue-600 to-blue-800 py-24">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center">
-                <h1 className="text-4xl font-bold text-white sm:text-5xl md:text-6xl">
-                  {homepage.hero_title}
-                </h1>
+          <section className="relative bg-gradient-to-r from-blue-600 to-blue-800 section-spacing-lg -mt-20 pt-32">
+            <div className="max-w-7xl mx-auto container-padding">
+              <div className="text-center max-w-4xl mx-auto">
+                <h1 className="h1 text-white">{homepage.hero_title}</h1>
                 {homepage.hero_subtitle && (
-                  <p className="mt-6 text-xl text-blue-100 max-w-3xl mx-auto">
+                  <p className="lead text-blue-100 mx-auto">
                     {homepage.hero_subtitle}
                   </p>
                 )}
@@ -108,14 +106,17 @@ const HomePage: React.FC<HomePageProps> = ({
 
         {/* Campaigns Section */}
         {homepage.show_campaigns_section && (
-          <section id="campaigns-section" className="py-16 bg-gray-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center">
-                <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+          <section
+            id="campaigns-section"
+            className="section-spacing bg-gray-50"
+          >
+            <div className="max-w-7xl mx-auto container-padding">
+              <div className="text-center max-w-4xl mx-auto mb-12">
+                <h2 className="h2 text-theme-heading">
                   {homepage.campaigns_section_title}
                 </h2>
                 {homepage.campaigns_section_subtitle && (
-                  <p className="mt-4 text-xl text-gray-600 max-w-4xl mx-auto">
+                  <p className="text-body-lg text-theme-text-muted mt-4">
                     {homepage.campaigns_section_subtitle}
                   </p>
                 )}
@@ -138,13 +139,11 @@ const HomePage: React.FC<HomePageProps> = ({
 
         {/* Call to Action Section */}
         {homepage.cta_content && (
-          <section className="py-16 bg-theme-secondary">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-              <h2 className="text-3xl font-bold text-white sm:text-4xl">
-                {homepage.cta_title}
-              </h2>
+          <section className="section-spacing bg-theme-primary">
+            <div className="max-w-7xl mx-auto container-padding text-center">
+              <h2 className="h2 text-white">{homepage.cta_title}</h2>
               <div
-                className="mt-4 text-xl text-white/90 max-w-4xl mx-auto"
+                className="text-body-lg text-white/90 max-w-3xl mx-auto mt-6"
                 dangerouslySetInnerHTML={{ __html: homepage.cta_content }}
               />
               {homepage.cta_button_url && homepage.cta_button_text && (

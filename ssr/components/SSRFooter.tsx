@@ -13,8 +13,8 @@ const SSRFooter: React.FC<SSRFooterProps> = ({ orgInfo }) => {
   return (
     <Footer
       orgInfo={orgInfo}
-      LinkComponent={({ href, children, className }) => (
-        <Link href={href || "/"} className={className}>
+      LinkComponent={({ to, children, className }) => (
+        <Link href={to || "/"} className={className}>
           {children}
         </Link>
       )}

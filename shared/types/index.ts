@@ -17,7 +17,6 @@ export type NavItemData = {
  * Default navigation items for SSR
  */
 export const DEFAULT_NAV_ITEMS: Pick<NavItemData, "label" | "href">[] = [
-  { label: "Home", href: "/" },
   { label: "About", href: "/about" },
   { label: "Campaigns", href: "/campaigns" },
   { label: "Contact", href: "/contact" },

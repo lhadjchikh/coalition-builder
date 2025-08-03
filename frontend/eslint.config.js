@@ -72,6 +72,28 @@ export default [
       'no-var': 'error',
     },
   },
+  // Jest mock files (CommonJS)
+  {
+    files: ['**/__mocks__/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      sourceType: 'commonjs',
+      globals: {
+        module: 'readonly',
+        exports: 'readonly',
+        require: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        global: 'readonly',
+        process: 'readonly',
+      },
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+      'no-undef': 'error',
+    },
+  },
+  // Test files
   {
     files: ['**/*.test.{js,jsx,ts,tsx}', '**/__tests__/**/*.{js,jsx,ts,tsx}'],
     languageOptions: {
