@@ -81,7 +81,6 @@ class HTMLSanitizer:
         "text",
         "tspan",
         "defs",
-        "use",
         "symbol",
         "clipPath",
         "mask",
@@ -95,8 +94,9 @@ class HTMLSanitizer:
 
     # Allowed attributes for specific tags
     ALLOWED_ATTRIBUTES = {
-        # Links - only href and title, no javascript: or data: URLs
-        "a": ["href", "title", "rel"],
+        # Links - href, title, target and rel attributes
+        # Note: javascript: and data: URLs are blocked by ALLOWED_PROTOCOLS
+        "a": ["href", "title", "target", "rel"],
         # Tables
         "table": ["class"],
         "th": ["scope", "colspan", "rowspan"],
@@ -240,16 +240,6 @@ class HTMLSanitizer:
             "style",
         ],
         "defs": ["class"],
-        "use": [
-            "href",
-            "xlink:href",
-            "x",
-            "y",
-            "width",
-            "height",
-            "transform",
-            "class",
-        ],
         "symbol": ["id", "viewBox", "preserveAspectRatio", "class"],
         "clipPath": ["id", "class"],
         "mask": ["id", "x", "y", "width", "height", "class"],
