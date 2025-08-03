@@ -125,7 +125,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
           block.layout_option === "stacked_reversed";
         const isStackedReversed = block.layout_option === "stacked_reversed";
 
-        // Determine vertical alignment
+        // Helper function to get vertical alignment class
         const getAlignmentClass = () => {
           switch (block.vertical_alignment) {
             case "top":
@@ -138,21 +138,32 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
           }
         };
 
+        // Helper function to get grid layout class
+        const getGridClass = () => {
+          const baseClasses = "grid gap-8 lg:gap-12";
+          const alignmentClass = getAlignmentClass();
+          const columnsClass = isStacked
+            ? "grid-cols-1"
+            : "grid-cols-1 lg:grid-cols-2";
+          return `${baseClasses} ${alignmentClass} ${columnsClass}`;
+        };
+
+        // Helper function to get order class for content elements
+        const getOrderClass = (elementType: "text" | "image") => {
+          if (elementType === "text") {
+            if (isReversed && !isStacked) return "lg:order-2";
+            if (isStackedReversed) return "order-2";
+            return "";
+          } else {
+            if (isReversed && !isStacked) return "lg:order-1";
+            if (isStackedReversed) return "order-1";
+            return "";
+          }
+        };
+
         return (
-          <div
-            className={`grid gap-8 lg:gap-12 ${getAlignmentClass()} ${
-              isStacked ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2"
-            }`}
-          >
-            <div
-              className={
-                isReversed && !isStacked
-                  ? "lg:order-2"
-                  : isStackedReversed
-                    ? "order-2"
-                    : ""
-              }
-            >
+          <div className={getGridClass()}>
+            <div className={getOrderClass("text")}>
               {block.title && (
                 <h3 className="h3 text-theme-heading">{block.title}</h3>
               )}
@@ -162,15 +173,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
               />
             </div>
             {block.image_url && (
-              <div
-                className={
-                  isReversed && !isStacked
-                    ? "lg:order-1"
-                    : isStackedReversed
-                      ? "order-1"
-                      : ""
-                }
-              >
+              <div className={getOrderClass("image")}>
                 <img
                   src={block.image_url}
                   alt={block.image_alt_text || block.title || "Content image"}
