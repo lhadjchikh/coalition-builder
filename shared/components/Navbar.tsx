@@ -38,18 +38,37 @@ const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const location = useLocation?.();
   const isHomepage = location?.pathname === "/" || location?.pathname === "";
 
   useEffect(() => {
     let ticking = false;
-    
+
     const handleScroll = () => {
       if (!ticking) {
         ticking = true;
         window.requestAnimationFrame(() => {
-          const offset = window.scrollY;
-          setScrolled(offset > 20);
+          const currentScrollY = window.scrollY;
+
+          // Update scrolled state
+          setScrolled(currentScrollY > 20);
+
+          // Determine scroll direction and visibility
+          if (currentScrollY <= 0) {
+            // At the top - always show
+            setIsVisible(true);
+          } else if (currentScrollY > lastScrollY && currentScrollY > 80) {
+            // Scrolling down & past 80px - hide
+            setIsVisible(false);
+            setIsMenuOpen(false); // Close mobile menu when hiding
+          } else if (currentScrollY < lastScrollY) {
+            // Scrolling up - show
+            setIsVisible(true);
+          }
+
+          setLastScrollY(currentScrollY);
           ticking = false;
         });
       }
@@ -58,10 +77,11 @@ const Navbar: React.FC<NavbarProps> = ({
     // Set initial state
     const offset = window.scrollY;
     setScrolled(offset > 20);
+    setLastScrollY(offset);
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [lastScrollY]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -80,7 +100,9 @@ const Navbar: React.FC<NavbarProps> = ({
     <nav
       className={
         className ||
-        `${isHomepage ? "fixed" : "sticky"} top-0 left-0 right-0 z-50 border-b transition-all duration-300 ${
+        `${isHomepage ? "fixed" : "sticky"} top-0 left-0 right-0 z-50 border-b transition-all duration-300 transform ${
+          isVisible ? "translate-y-0" : "-translate-y-full"
+        } ${
           isHomepage
             ? scrolled
               ? "navbar-glass border-white/10"

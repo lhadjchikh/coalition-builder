@@ -11,7 +11,7 @@ describe('Navbar scroll behavior', () => {
     // Reset scroll position
     window.scrollY = 0;
     // Mock requestAnimationFrame for tests
-    global.requestAnimationFrame = (callback) => {
+    global.requestAnimationFrame = callback => {
       callback(0);
       return 0;
     };
@@ -104,5 +104,75 @@ describe('Navbar scroll behavior', () => {
     // Should be sticky instead of fixed
     expect(nav).toHaveClass('sticky');
     expect(nav).not.toHaveClass('fixed');
+  });
+
+  test('navbar hides when scrolling down past 80px', () => {
+    const { container } = render(<Navbar useLocation={mockUseLocation} />);
+    const nav = container.querySelector('nav');
+
+    // Initially visible
+    expect(nav).toHaveClass('translate-y-0');
+
+    // Scroll down past 80px
+    window.scrollY = 100;
+    fireEvent.scroll(window);
+
+    expect(nav).toHaveClass('-translate-y-full');
+    expect(nav).not.toHaveClass('translate-y-0');
+  });
+
+  test('navbar shows when scrolling up', () => {
+    const { container } = render(<Navbar useLocation={mockUseLocation} />);
+    const nav = container.querySelector('nav');
+
+    // First scroll down past 80px
+    window.scrollY = 100;
+    fireEvent.scroll(window);
+    expect(nav).toHaveClass('-translate-y-full');
+
+    // Then scroll up a bit
+    window.scrollY = 90;
+    fireEvent.scroll(window);
+
+    expect(nav).toHaveClass('translate-y-0');
+    expect(nav).not.toHaveClass('-translate-y-full');
+  });
+
+  test('navbar always shows when at top of page', () => {
+    const { container } = render(<Navbar useLocation={mockUseLocation} />);
+    const nav = container.querySelector('nav');
+
+    // Scroll down to hide navbar
+    window.scrollY = 100;
+    fireEvent.scroll(window);
+    expect(nav).toHaveClass('-translate-y-full');
+
+    // Scroll back to top
+    window.scrollY = 0;
+    fireEvent.scroll(window);
+
+    expect(nav).toHaveClass('translate-y-0');
+    expect(nav).not.toHaveClass('-translate-y-full');
+  });
+
+  test('mobile menu closes when navbar hides', () => {
+    const navItems = [
+      { label: 'About', href: '/about' },
+      { label: 'Contact', href: '/contact' },
+    ];
+
+    render(<Navbar navItems={navItems} useLocation={mockUseLocation} />);
+    const toggleButton = screen.getByLabelText('Toggle navigation menu');
+
+    // Open mobile menu
+    fireEvent.click(toggleButton);
+    expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
+
+    // Scroll down to hide navbar
+    window.scrollY = 100;
+    fireEvent.scroll(window);
+
+    // Mobile menu should be closed
+    expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
   });
 });
