@@ -10,6 +10,8 @@ interface ContentBlockData {
   block_type: string;
   image_url?: string;
   image_alt_text?: string;
+  layout_option?: string;
+  vertical_alignment?: string;
   css_classes?: string;
   background_color?: string;
   is_visible?: boolean;
@@ -116,9 +118,52 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
         );
 
       case "text_image":
+        // Determine grid layout based on layout_option
+        const isReversed = block.layout_option === "reversed";
+        const isStacked =
+          block.layout_option === "stacked" ||
+          block.layout_option === "stacked_reversed";
+        const isStackedReversed = block.layout_option === "stacked_reversed";
+
+        // Helper function to get vertical alignment class
+        const getAlignmentClass = () => {
+          switch (block.vertical_alignment) {
+            case "top":
+              return "items-start";
+            case "bottom":
+              return "items-end";
+            case "middle":
+            default:
+              return "items-center";
+          }
+        };
+
+        // Helper function to get grid layout class
+        const getGridClass = () => {
+          const baseClasses = "grid gap-8 lg:gap-12";
+          const alignmentClass = getAlignmentClass();
+          const columnsClass = isStacked
+            ? "grid-cols-1"
+            : "grid-cols-1 lg:grid-cols-2";
+          return `${baseClasses} ${alignmentClass} ${columnsClass}`;
+        };
+
+        // Helper function to get order class for content elements
+        const getOrderClass = (elementType: "text" | "image") => {
+          if (elementType === "text") {
+            if (isReversed && !isStacked) return "lg:order-2";
+            if (isStackedReversed) return "order-2";
+            return "";
+          } else {
+            if (isReversed && !isStacked) return "lg:order-1";
+            if (isStackedReversed) return "order-1";
+            return "";
+          }
+        };
+
         return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <div>
+          <div className={getGridClass()}>
+            <div className={getOrderClass("text")}>
               {block.title && (
                 <h3 className="h3 text-theme-heading">{block.title}</h3>
               )}
@@ -128,7 +173,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
               />
             </div>
             {block.image_url && (
-              <div>
+              <div className={getOrderClass("image")}>
                 <img
                   src={block.image_url}
                   alt={block.image_alt_text || block.title || "Content image"}

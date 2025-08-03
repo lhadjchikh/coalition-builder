@@ -31,11 +31,11 @@ const ContentBlocksList: React.FC<ContentBlocksListProps> = ({
   }
 
   return (
-    <div className="space-y-8">
+    <>
       {contentBlocks.map((block) => (
         <ContentBlockComponent key={block.id} block={block} />
       ))}
-    </div>
+    </>
   );
 };
 

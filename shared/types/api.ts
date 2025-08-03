@@ -198,6 +198,8 @@ export interface ContentBlock {
   image_author?: string;
   image_license?: string;
   image_source_url?: string;
+  layout_option?: string; // Layout arrangement for Text + Image blocks
+  vertical_alignment?: string; // Vertical alignment of text relative to image
   css_classes?: string;
   background_color?: string;
   order: number;

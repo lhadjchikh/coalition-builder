@@ -47,7 +47,9 @@ describe('EndorsementForm', () => {
     expect(screen.getByTestId('submit-button')).toBeInTheDocument();
 
     // Check for the address info message
-    expect(screen.getByText(/We collect your address information solely/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/We use your address to identify your legislative districts/)
+    ).toBeInTheDocument();
   });
 
   it('does not render form when endorsements are not allowed', () => {

@@ -254,12 +254,14 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             alt={campaign.image_alt_text || `Hero image for ${campaign.title}`}
             className="w-full h-96 object-cover"
           />
-          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-            <div className="text-center text-white px-4 max-w-prose-container">
-              <h1 className="text-4xl font-bold sm:text-5xl md:text-6xl mb-4">
-                {campaign.title}
-              </h1>
-              <p className="text-xl">{campaign.summary}</p>
+          <div className="absolute inset-0 bg-black bg-opacity-40">
+            <div className="max-w-7xl mx-auto container-padding h-full flex items-center">
+              <div className="text-white max-w-prose-container">
+                <h1 className="text-4xl font-bold sm:text-5xl md:text-6xl mb-4">
+                  {campaign.title}
+                </h1>
+                <p className="text-xl">{campaign.summary}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -268,7 +270,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
       {/* Sticky Endorsement CTA */}
       {campaign.allow_endorsements && showStickyCard && !isFormActive && (
         <div className="fixed top-0 left-0 right-0 bg-theme-accent text-white z-50 shadow-lg">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto container-padding">
             <div className="flex items-center justify-between h-20">
               <span className="text-lg font-medium">
                 Support this campaign!
@@ -286,7 +288,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto container-padding py-8">
         <header className="mb-8">
           {/* Only show title and summary in header if there's no hero image */}
           {!campaign.image_url && (

@@ -39,10 +39,18 @@ class ContentBlockAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "Styling",
+            "Layout & Styling",
             {
-                "fields": ("css_classes", "background_color"),
+                "fields": (
+                    "layout_option",
+                    "vertical_alignment",
+                    "css_classes",
+                    "background_color",
+                ),
                 "classes": ("collapse",),
+                "description": (
+                    "Layout and alignment options only apply to Text + Image blocks"
+                ),
             },
         ),
         (
