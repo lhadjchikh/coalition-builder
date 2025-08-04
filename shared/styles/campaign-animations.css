@@ -1,0 +1,32 @@
+/* Campaign Card Animations */
+
+/* Initial state - scale down and invisible */
+.campaign-card-animate {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Visible state - scale to normal and fade in */
+.campaign-card-animate.campaign-card-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .campaign-card-animate,
+  .campaign-card-animate.campaign-card-visible {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Mobile optimizations - faster animations */
+@media (max-width: 768px) {
+  .campaign-card-animate {
+    transition-duration: 0.3s;
+  }
+}
