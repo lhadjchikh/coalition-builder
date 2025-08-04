@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface ImageWithCreditProps {
   src: string;
@@ -7,7 +7,7 @@ interface ImageWithCreditProps {
   author?: string;
   license?: string;
   sourceUrl?: string;
-  creditDisplay?: 'caption' | 'overlay' | 'tooltip' | 'none';
+  creditDisplay?: "caption" | "overlay" | "tooltip" | "none";
   className?: string;
   imgClassName?: string;
 }
@@ -19,9 +19,9 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
   author,
   license,
   sourceUrl,
-  creditDisplay = 'caption',
-  className = '',
-  imgClassName = '',
+  creditDisplay = "caption",
+  className = "",
+  imgClassName = "",
 }) => {
   // Build credit text
   const buildCreditText = (): string => {
@@ -39,7 +39,7 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
       parts.push(`is licensed under ${license.trim()}`);
     }
 
-    return parts.join(' ');
+    return parts.join(" ");
   };
 
   const creditText = buildCreditText();
@@ -47,7 +47,7 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
 
   // Render credit based on display mode
   const renderCredit = () => {
-    if (!hasCredit || creditDisplay === 'none') return null;
+    if (!hasCredit || creditDisplay === "none") return null;
 
     const creditElement = (
       <span className="text-xs text-gray-600">
@@ -67,10 +67,10 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
     );
 
     switch (creditDisplay) {
-      case 'caption':
+      case "caption":
         return <div className="mt-1 text-right">{creditElement}</div>;
 
-      case 'overlay':
+      case "overlay":
         return (
           <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-xs">
             {sourceUrl ? (
@@ -88,7 +88,7 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
           </div>
         );
 
-      case 'tooltip':
+      case "tooltip":
         return (
           <div className="group">
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -117,11 +117,13 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
 
   // Container classes based on display mode
   const containerClasses = [
-    creditDisplay === 'overlay' || creditDisplay === 'tooltip' ? 'relative inline-block' : '',
+    creditDisplay === "overlay" || creditDisplay === "tooltip"
+      ? "relative inline-block"
+      : "",
     className,
   ]
     .filter(Boolean)
-    .join(' ');
+    .join(" ");
 
   return (
     <div className={containerClasses}>

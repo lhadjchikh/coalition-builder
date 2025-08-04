@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import ImageWithCredit from "./ImageWithCredit";
 
 // Generic content block interface that works with both frontend and SSR
 interface ContentBlockData {
@@ -10,6 +11,10 @@ interface ContentBlockData {
   block_type: string;
   image_url?: string;
   image_alt_text?: string;
+  image_title?: string;
+  image_author?: string;
+  image_license?: string;
+  image_source_url?: string;
   layout_option?: string;
   vertical_alignment?: string;
   css_classes?: string;
@@ -121,11 +126,17 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
               <h3 className="h3 text-theme-heading mb-8">{block.title}</h3>
             )}
             {block.image_url && (
-              <figure className="relative inline-block">
-                <img
+              <figure className="relative inline-block max-w-full">
+                <ImageWithCredit
                   src={block.image_url}
                   alt={block.image_alt_text || block.title || "Content image"}
-                  className="rounded-2xl shadow-soft max-w-full h-auto mx-auto"
+                  title={block.image_title}
+                  author={block.image_author}
+                  license={block.image_license}
+                  sourceUrl={block.image_source_url}
+                  creditDisplay="caption"
+                  imgClassName="rounded-2xl shadow-soft max-w-full h-auto mx-auto"
+                  className="w-full"
                 />
               </figure>
             )}
@@ -195,10 +206,16 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
             </div>
             {block.image_url && (
               <div className={getOrderClass("image")}>
-                <img
+                <ImageWithCredit
                   src={block.image_url}
                   alt={block.image_alt_text || block.title || "Content image"}
-                  className="rounded-2xl shadow-soft w-full h-auto"
+                  title={block.image_title}
+                  author={block.image_author}
+                  license={block.image_license}
+                  sourceUrl={block.image_source_url}
+                  creditDisplay="caption"
+                  imgClassName="rounded-2xl shadow-soft w-full h-auto"
+                  className="w-full"
                 />
               </div>
             )}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import ImageWithCredit from "./ImageWithCredit";
 
 // Generic campaign interface that works with both frontend and SSR
 interface Campaign {
@@ -11,6 +12,9 @@ interface Campaign {
   description?: string;
   image_url?: string;
   image_alt_text?: string;
+  image_author?: string;
+  image_license?: string;
+  image_source_url?: string;
   allow_endorsements?: boolean;
   active?: boolean;
 }
@@ -137,10 +141,16 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
               >
                 {campaign.image_url && (
                   <div className="relative h-48 overflow-hidden bg-gray-100">
-                    <img
+                    <ImageWithCredit
                       src={campaign.image_url}
                       alt={campaign.image_alt_text || campaign.title}
-                      className="w-full h-full object-cover"
+                      title={campaign.title}
+                      author={campaign.image_author}
+                      license={campaign.image_license}
+                      sourceUrl={campaign.image_source_url}
+                      creditDisplay="overlay"
+                      imgClassName="w-full h-full object-cover"
+                      className="w-full h-full"
                     />
                   </div>
                 )}

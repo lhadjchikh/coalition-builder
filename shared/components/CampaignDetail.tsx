@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Button from "./Button";
+import ImageWithCredit from "./ImageWithCredit";
 
 // Generic interfaces that work with both frontend and SSR
 interface Campaign {
@@ -12,6 +13,9 @@ interface Campaign {
   description?: string;
   image_url?: string;
   image_alt_text?: string;
+  image_author?: string;
+  image_license?: string;
+  image_source_url?: string;
   allow_endorsements?: boolean;
   active?: boolean;
   created_at?: string;
@@ -249,10 +253,16 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
       {/* Hero Image Section */}
       {campaign.image_url && (
         <div className="relative">
-          <img
+          <ImageWithCredit
             src={campaign.image_url}
             alt={campaign.image_alt_text || `Hero image for ${campaign.title}`}
-            className="w-full h-96 object-cover"
+            title={campaign.title}
+            author={campaign.image_author}
+            license={campaign.image_license}
+            sourceUrl={campaign.image_source_url}
+            creditDisplay="overlay"
+            imgClassName="w-full h-96 object-cover"
+            className="w-full"
           />
           <div className="absolute inset-0 bg-black bg-opacity-40">
             <div className="max-w-7xl mx-auto container-padding h-full flex items-center">
