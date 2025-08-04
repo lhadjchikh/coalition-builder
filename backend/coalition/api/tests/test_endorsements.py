@@ -80,6 +80,7 @@ class EndorsementAPITest(TestCase):
         # Approve and verify the endorsement
         self.endorsement.email_verified = True
         self.endorsement.status = "approved"
+        self.endorsement.display_publicly = True
         self.endorsement.save()
 
         response = self.client.get("/api/endorsements/")
@@ -109,6 +110,7 @@ class EndorsementAPITest(TestCase):
         # Approve and verify the endorsement
         self.endorsement.email_verified = True
         self.endorsement.status = "approved"
+        self.endorsement.display_publicly = True
         self.endorsement.save()
 
         response = self.client.get(f"/api/endorsements/?campaign_id={self.campaign.id}")
@@ -324,6 +326,7 @@ class EndorsementAPITest(TestCase):
         # Make original endorsement approved and verified for comparison
         self.endorsement.email_verified = True
         self.endorsement.status = "approved"
+        self.endorsement.display_publicly = True
         self.endorsement.save()
 
         # Create private endorsement (also approved and verified)
@@ -343,6 +346,7 @@ class EndorsementAPITest(TestCase):
             public_display=False,
             email_verified=True,
             status="approved",
+            display_publicly=True,
         )
 
         # List all endorsements
@@ -627,6 +631,7 @@ class EndorsementAPIEnhancedTest(TestCase):
         # Make endorsement approved and verified to appear in export
         self.endorsement.email_verified = True
         self.endorsement.status = "approved"
+        self.endorsement.display_publicly = True
         self.endorsement.save()
 
         # Login as admin user
@@ -662,6 +667,7 @@ class EndorsementAPIEnhancedTest(TestCase):
             statement="+1+1+cmd|' /C calc'!A0",  # Statement with formula
             email_verified=True,
             status="approved",
+            display_publicly=True,
         )
 
         # Login as admin user
@@ -696,6 +702,7 @@ class EndorsementAPIEnhancedTest(TestCase):
         # Make endorsement approved and verified to appear in export
         self.endorsement.email_verified = True
         self.endorsement.status = "approved"
+        self.endorsement.display_publicly = True
         self.endorsement.save()
 
         # Login as admin user

@@ -120,6 +120,9 @@ describe('EndorsementForm', () => {
     // Check email updates checkbox
     fireEvent.click(screen.getByTestId('email-updates-checkbox'));
 
+    // Select organization authorization (since we provided an organization)
+    fireEvent.click(screen.getByTestId('org-behalf-radio'));
+
     // Accept terms (required)
     fireEvent.click(screen.getByTestId('terms-checkbox'));
 
@@ -130,7 +133,8 @@ describe('EndorsementForm', () => {
       expect(mockAPI.createEndorsement).toHaveBeenCalledWith({
         campaign_id: 1,
         stakeholder: {
-          name: 'John Doe',
+          first_name: 'John',
+          last_name: 'Doe',
           organization: 'Test Org',
           role: 'Manager',
           email: 'john@test.com',
@@ -144,6 +148,7 @@ describe('EndorsementForm', () => {
         statement: 'Great campaign!',
         public_display: true,
         terms_accepted: true,
+        org_authorized: true,
         form_metadata: expect.objectContaining({
           form_start_time: expect.any(String),
           website: '',

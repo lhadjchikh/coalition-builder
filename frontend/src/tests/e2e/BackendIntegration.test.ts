@@ -110,7 +110,8 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
     // Verify endorser structure
     const endorser = endorsers![0];
     expect(endorser).toHaveProperty('id');
-    expect(endorser).toHaveProperty('name');
+    expect(endorser).toHaveProperty('first_name');
+    expect(endorser).toHaveProperty('last_name');
     expect(endorser).toHaveProperty('organization');
     expect(endorser).toHaveProperty('email');
     expect(endorser).toHaveProperty('state');

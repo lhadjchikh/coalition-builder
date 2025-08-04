@@ -19,7 +19,8 @@ class EndorsementVerificationTest(TestCase):
 
     def setUp(self) -> None:
         self.stakeholder = Stakeholder.objects.create(
-            name="Test User",
+            first_name="Test",
+            last_name="User",
             organization="Test Org",
             email="test@example.com",
             state="MD",
@@ -63,7 +64,8 @@ class EndorsementVerificationTest(TestCase):
 
         # Create another stakeholder and campaign
         stakeholder2 = Stakeholder.objects.create(
-            name="Test User 2",
+            first_name="Test",
+            last_name="User 2",
             organization="Test Org 2",
             email="test2@example.com",
             state="VA",
@@ -123,12 +125,17 @@ class EndorsementVerificationTest(TestCase):
         endorsement.save()
         assert not endorsement.should_display_publicly
 
-        # Verified and approved = display
+        # Verified and approved but not selected for display = no display
         endorsement.status = "approved"
+        endorsement.save()
+        assert not endorsement.should_display_publicly
+
+        # Verified, approved, and selected for display = display
+        endorsement.display_publicly = True
         endorsement.save()
         assert endorsement.should_display_publicly
 
-        # Verified, approved, but public_display=False = no display
+        # Verified, approved, selected, but public_display=False = no display
         endorsement.public_display = False
         endorsement.save()
         assert not endorsement.should_display_publicly
