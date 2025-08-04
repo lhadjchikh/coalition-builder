@@ -106,6 +106,9 @@ export default async function RootLayout({
       <head>
         {/* The head tag is optional in Next.js App Router,
             but we include it explicitly to ensure it's present for SSR tests */}
+        {homepage?.theme?.favicon_url && (
+          <link rel="icon" href={homepage.theme.favicon_url} />
+        )}
         <GoogleFontsLoader googleFonts={googleFonts} />
         <ThemeStyles
           cssVariables={themeStyles.cssVariables}
