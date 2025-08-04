@@ -92,8 +92,8 @@ class HTMLSanitizationTest(TestCase):
         assert "Click2" in campaign.description
         assert "VB" in campaign.description
 
-    def test_campaign_plain_text_fields_escaped(self) -> None:
-        """Test that plain text fields have all HTML escaped."""
+    def test_campaign_plain_text_fields_stripped(self) -> None:
+        """Test that plain text fields have HTML tags removed."""
         campaign = PolicyCampaign.objects.create(
             name="test-plain-text",
             title="Test Campaign",
@@ -101,9 +101,9 @@ class HTMLSanitizationTest(TestCase):
             endorsement_statement="<b>Bold</b> statement",
         )
 
-        # All HTML should be escaped in plain text fields
-        assert "&lt;script&gt;" in campaign.summary
-        assert "&lt;b&gt;" in campaign.endorsement_statement
+        # HTML tags should be stripped but content preserved
+        assert "alert('xss')Normal text" in campaign.summary
+        assert "Bold statement" in campaign.endorsement_statement
         assert "<script>" not in campaign.summary
         assert "<b>" not in campaign.endorsement_statement
 
@@ -123,8 +123,9 @@ class HTMLSanitizationTest(TestCase):
         assert "bad()" in html_block.content  # Content is preserved
         assert "<h2>Title</h2>" in html_block.content
         assert "<p>Content</p>" in html_block.content
-        # Title should be escaped
-        assert "&lt;script&gt;" in html_block.title
+        # Title should have tags stripped but content preserved
+        assert "evilTest Block" in html_block.title
+        assert "<script>" not in html_block.title
 
     def test_allowed_html_preserved(self) -> None:
         """Test that allowed HTML tags and attributes are preserved."""
@@ -172,8 +173,8 @@ class HTMLSanitizationTest(TestCase):
             cta_content='<a href="javascript:void(0)">Click</a>',
         )
 
-        # Plain text fields should be escaped
-        assert "&lt;script&gt;" in homepage.hero_subtitle
+        # Plain text fields should have tags stripped but content preserved
+        assert "alert('xss')Subtitle" in homepage.hero_subtitle
         assert "<script>" not in homepage.hero_subtitle
 
         # HTML fields should be sanitized
@@ -189,7 +190,7 @@ class HTMLSanitizationTest(TestCase):
         # Test sanitize_plain_text method with None and empty string
         assert HTMLSanitizer.sanitize_plain_text(None) == ""
         assert HTMLSanitizer.sanitize_plain_text("") == ""
-        assert HTMLSanitizer.sanitize_plain_text("   ") == "   "  # Whitespace preserved
+        assert HTMLSanitizer.sanitize_plain_text("   ") == ""  # Whitespace is trimmed
 
     def test_html_sanitizer_edge_cases(self) -> None:
         """Test additional edge cases for HTML sanitizer."""
@@ -199,7 +200,7 @@ class HTMLSanitizationTest(TestCase):
 
         # Test plain text with HTML-like content
         result = HTMLSanitizer.sanitize_plain_text("<not>really</html>")
-        assert result == "&lt;not&gt;really&lt;/html&gt;"
+        assert result == "really"  # Tags stripped, content preserved
 
         # Test with mixed content
         result = HTMLSanitizer.sanitize("<p>Good</p><script>bad()</script>")

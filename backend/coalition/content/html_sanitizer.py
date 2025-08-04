@@ -340,18 +340,29 @@ class HTMLSanitizer:
     @classmethod
     def sanitize_plain_text(cls, text: str | None) -> str:
         """
-        Sanitize plain text by escaping all HTML entities.
-        Use this for fields that should never contain HTML.
+        Sanitize plain text by removing any HTML tags but preserving the text content.
+        Use this for fields that should never contain HTML markup.
 
         Args:
             text: Plain text to sanitize
 
         Returns:
-            Text with all HTML escaped
+            Text with HTML tags removed but content preserved
         """
         if not text:
             return ""
 
-        # This escapes ALL HTML, converting < to &lt; etc
-        # Use strip=False to escape tags rather than remove them
-        return bleach.clean(text, tags=[], strip=False)
+        # Use a simple regex to remove HTML tags while preserving content
+        # This avoids bleach's HTML entity escaping behavior
+        import re
+        from html import unescape
+
+        # Remove HTML/XML tags
+        cleaned = re.sub(r"<[^>]+>", "", text)
+
+        # Decode HTML entities to get proper characters
+        # This converts &amp; to &, &lt; to <, etc.
+        cleaned = unescape(cleaned)
+
+        # Trim whitespace
+        return cleaned.strip()
