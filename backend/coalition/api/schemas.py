@@ -146,6 +146,7 @@ class EndorsementOut(ModelSchema):
             "verification_token",
             "verification_sent_at",
             "admin_notes",
+            "display_publicly",  # Redundant for public API - only show approved
         ]
 
 

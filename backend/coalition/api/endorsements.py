@@ -336,17 +336,28 @@ def list_endorsements(
     request: HttpRequest,
     campaign_id: int = None,
 ) -> list[Endorsement]:
-    """List all approved public endorsements, optionally filtered by campaign"""
+    """List all publicly displayed endorsements in reverse chronological order
+
+    Only returns endorsements that have:
+    - User consent for public display
+    - Verified email address
+    - Admin approval (approved status)
+    - Admin selection for public display
+
+    Results are ordered by creation date, newest first.
+    """
     queryset = Endorsement.objects.select_related("stakeholder", "campaign").filter(
         status="approved",
         public_display=True,
         email_verified=True,
+        display_publicly=True,  # Admin approved for display
     )
 
     # Filter by campaign if campaign_id is provided
     if campaign_id is not None:
         queryset = queryset.filter(campaign_id=campaign_id)
 
+    # Order by created_at descending (newest first)
     return list(queryset.order_by("-created_at").all())
 
 

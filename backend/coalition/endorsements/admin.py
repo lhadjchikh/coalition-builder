@@ -20,6 +20,7 @@ class EndorsementAdmin(admin.ModelAdmin):
         "status_badge",
         "email_verified_badge",
         "public_display",
+        "display_publicly",
         "created_at",
         "reviewed_by",
     )
@@ -27,6 +28,7 @@ class EndorsementAdmin(admin.ModelAdmin):
         "status",
         "email_verified",
         "public_display",
+        "display_publicly",
         "created_at",
         "campaign",
         "stakeholder__type",
@@ -83,6 +85,7 @@ class EndorsementAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "status",
+                    "display_publicly",
                     "admin_notes",
                     "reviewed_by",
                     "reviewed_at",
@@ -118,6 +121,8 @@ class EndorsementAdmin(admin.ModelAdmin):
         "mark_verified",
         "send_verification_emails",
         "send_approval_notifications",
+        "approve_for_display",
+        "remove_from_display",
     ]
 
     def stakeholder_name(self, obj: Endorsement) -> str:
@@ -271,6 +276,37 @@ class EndorsementAdmin(admin.ModelAdmin):
         )
 
     send_approval_notifications.short_description = "Send approval notifications"
+
+    def approve_for_display(
+        self,
+        request: HttpRequest,
+        queryset: QuerySet[Endorsement],
+    ) -> None:
+        # Only approve endorsements that meet all requirements
+        count = queryset.filter(
+            status="approved",
+            email_verified=True,
+            public_display=True,
+        ).update(display_publicly=True)
+
+        self.message_user(
+            request,
+            f"Successfully approved {count} endorsement(s) for public display.",
+        )
+
+    approve_for_display.short_description = "Approve for public display"
+
+    def remove_from_display(
+        self,
+        request: HttpRequest,
+        queryset: QuerySet[Endorsement],
+    ) -> None:
+        count = queryset.update(display_publicly=False)
+
+        self.message_user(
+            request,
+            f"Successfully removed {count} endorsement(s) from public display.",
+        )
 
     def save_model(
         self,

@@ -10,7 +10,7 @@ Coalition Builder's endorsement system allows stakeholders to publicly support y
 - **Terms of Use acceptance** with audit trail tracking
 - **Email verification** to prevent spam and ensure authenticity
 - **Administrative moderation** to review and approve endorsements
-- **Public display** of approved endorsements
+- **Public display** of endorsements specifically selected by administrators
 - **Spam protection** and security measures
 
 ## Complete Workflow Diagram
@@ -79,12 +79,12 @@ flowchart TD
     II --> KK[Send Approval Email]
     JJ --> LL[Send Rejection Email]
 
-    %% Public Display
-    FF --> MM[Public Display Check]
+    %% Public Display Selection
+    FF --> MM[Admin Display Review]
     KK --> MM
-    MM --> NN{Display Criteria Met?}
+    MM --> NN{Admin Selects for Display?}
     NN -->|Yes| OO[✅ Publicly Displayed]
-    NN -->|No| PP[❌ Not Displayed]
+    NN -->|No| PP[Internal Record Only]
 
     %% Error Paths
     K --> QQ[Show Error Message]
@@ -137,11 +137,18 @@ flowchart TD
 
 - Verified endorsements appear in admin queue
 - Administrators review and approve/reject
-- Approved endorsements become publicly visible
+- Approved endorsements can then be selected for public display
 
-**Step 5: Public Display**
+**Step 5: Display Selection**
 
-- Approved endorsements appear on campaign pages with smart engagement features
+- Administrators explicitly select which approved endorsements to display publicly
+- This ensures quality control and allows for fair, transparent curation
+- Selected endorsements appear in reverse chronological order (newest first)
+
+**Step 6: Public Display**
+
+- Selected endorsements appear on campaign pages
+- All displayed endorsements are shown fairly in order of submission
 - Stakeholder information is displayed according to privacy settings
 - Endorsements help build campaign credibility and encourage further participation
 
@@ -171,8 +178,9 @@ flowchart TD
 2. **Endorsement Status Overview**
    - **Pending**: Newly submitted, awaiting email verification
    - **Verified**: Email verified, awaiting admin approval
-   - **Approved**: Live on public campaign pages
+   - **Approved**: Approved by admin, eligible for display selection
    - **Rejected**: Not displayed publicly
+   - **Display Status**: Separate field indicates if approved endorsement is selected for public display
 
 ### Managing Individual Endorsements
 
@@ -210,6 +218,8 @@ flowchart TD
 
 - Approve multiple endorsements at once
 - Reject multiple endorsements
+- **Approve for public display**: Select approved endorsements to display publicly
+- **Remove from public display**: Remove endorsements from public view
 - Export endorsement data
 
 ### Quality Control Guidelines
@@ -309,9 +319,10 @@ Stakeholders may have rights under privacy laws to:
 
 **Endorsement Display**:
 
-- Endorsements appear on campaign detail pages
-- Count of endorsements displayed prominently
-- Featured endorsements can be highlighted
+- Only endorsements explicitly selected for display appear on campaign pages
+- Displayed endorsements are shown in reverse chronological order (newest first)
+- All displayed endorsements are treated equally - no prioritization or featuring
+- Count of displayed endorsements shown prominently
 - Endorsements are categorized by stakeholder type
 
 ### Reporting and Analytics

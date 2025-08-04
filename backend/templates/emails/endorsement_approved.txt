@@ -3,7 +3,7 @@ Your Endorsement Has Been Approved!
 
 Hello {{ stakeholder.first_name }},
 
-Great news! Your endorsement for "{{ campaign.title }}" has been approved and is now publicly displayed.
+Great news! Your endorsement for "{{ campaign.title }}" has been approved.
 
 Campaign: {{ campaign.title }}
 Summary: {{ campaign.summary }}
@@ -13,7 +13,7 @@ Thank you for your support! Your endorsement helps demonstrate the broad coaliti
 
 View the campaign page: {{ campaign_url }}
 
-You can view your endorsement along with others on the campaign page. Feel free to share this page with your networks to help build even more support!
+Feel free to share the campaign page with your networks to help build even more support!
 
 Thank you for being part of our coalition.
 
