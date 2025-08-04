@@ -49,7 +49,13 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
     })();
 
   // Determine which display mode to use
-  const displayMode = caption ? captionDisplay || "below" : creditDisplay;
+  // If captionDisplay is explicitly set, use it regardless of whether there's a caption
+  const displayMode =
+    captionDisplay !== undefined
+      ? captionDisplay
+      : caption
+        ? "below"
+        : creditDisplay;
   const hasCredit = creditText.length > 0;
 
   // Render credit based on display mode
