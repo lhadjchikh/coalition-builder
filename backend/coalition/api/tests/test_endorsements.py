@@ -138,6 +138,7 @@ class EndorsementAPITest(TestCase):
             "statement": "As a local farmer, I strongly support this campaign",
             "public_display": True,
             "terms_accepted": True,
+            "org_authorized": True,  # Required since organization is provided
             "form_metadata": get_valid_form_metadata(),
         }
 
@@ -185,6 +186,7 @@ class EndorsementAPITest(TestCase):
             "statement": "Updated endorsement statement",
             "public_display": False,
             "terms_accepted": True,
+            "org_authorized": True,  # Required since organization is provided
             "form_metadata": get_valid_form_metadata(),
         }
 
@@ -228,6 +230,7 @@ class EndorsementAPITest(TestCase):
                 "type": "other",
             },
             "terms_accepted": True,
+            "org_authorized": True,  # Test Org authorization
             "form_metadata": get_valid_form_metadata(),
         }
 
@@ -257,6 +260,7 @@ class EndorsementAPITest(TestCase):
                 "type": "other",
             },
             "terms_accepted": True,
+            "org_authorized": True,  # Required since organization is provided
             "form_metadata": get_valid_form_metadata(),
         }
 
@@ -288,6 +292,7 @@ class EndorsementAPITest(TestCase):
             "statement": "Updated statement for existing endorsement",
             "public_display": False,
             "terms_accepted": True,
+            "org_authorized": True,  # Organization endorsement
             "form_metadata": get_valid_form_metadata(),
         }
 
@@ -372,6 +377,7 @@ class EndorsementAPITest(TestCase):
             "statement": "Test statement",
             "public_display": True,
             "terms_accepted": True,
+            "org_authorized": True,  # New Organization authorization
             "form_metadata": get_valid_form_metadata(),
         }
 
@@ -842,6 +848,7 @@ class TermsAcceptanceIntegrationTest(TestCase):
             "statement": "I support this campaign",
             "public_display": True,
             "terms_accepted": True,  # This should trigger TermsAcceptance creation
+            "org_authorized": True,  # Required since organization is provided
             "form_metadata": get_valid_form_metadata(),
         }
 
@@ -934,6 +941,7 @@ class TermsAcceptanceIntegrationTest(TestCase):
             "statement": "I support this campaign",
             "public_display": True,
             "terms_accepted": True,
+            "org_authorized": True,  # Required since organization is provided
             "form_metadata": get_valid_form_metadata(),
         }
 
@@ -985,6 +993,7 @@ class TermsAcceptanceIntegrationTest(TestCase):
             "statement": "I endorse this campaign",
             "public_display": True,
             "terms_accepted": True,
+            "org_authorized": True,  # Required since organization is provided
             "form_metadata": get_valid_form_metadata(),
         }
 

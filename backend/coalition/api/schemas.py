@@ -364,7 +364,11 @@ class StakeholderCreateSchema(Schema):
 
     first_name: str = Field(max_length=100, description="First name")
     last_name: str = Field(max_length=100, description="Last name")
-    organization: str = Field(max_length=200, description="Organization name")
+    organization: str = Field(
+        default="",
+        max_length=200,
+        description="Organization name (optional)",
+    )
     role: str = Field(default="", max_length=100, description="Role/title")
     email: str = Field(max_length=254, description="Email address")
 
@@ -419,10 +423,18 @@ class EndorsementCreateSchema(Schema):
     terms_accepted: bool = Field(
         description="Whether the user has accepted the terms of use",
     )
+    org_authorized: bool = Field(
+        default=False,
+        description="Whether the stakeholder is authorized to endorse on behalf "
+        "of their organization",
+    )
     # Structured spam prevention fields with validation
     form_metadata: SpamPreventionMetadata = Field(
         description="Spam prevention metadata with validation",
     )
+
+    # Organization authorization validation is done in the API endpoint
+    # because we need to check the stakeholder data after deserialization
 
 
 class EndorsementVerifySchema(Schema):

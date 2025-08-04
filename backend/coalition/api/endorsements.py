@@ -62,8 +62,8 @@ def _validate_stakeholder_data_match(
         existing_stakeholder.first_name.lower() == submitted_data["first_name"].lower()
         and existing_stakeholder.last_name.lower()
         == submitted_data["last_name"].lower()
-        and existing_stakeholder.organization.lower()
-        == submitted_data["organization"].lower()
+        and (existing_stakeholder.organization or "").lower()
+        == (submitted_data.get("organization") or "").lower()
         and (existing_stakeholder.role or "").lower()
         == (submitted_data.get("role") or "").lower()
         and existing_stakeholder.state.upper() == submitted_data["state"].upper()
@@ -107,7 +107,7 @@ def _get_or_create_stakeholder(
         defaults={
             "first_name": stakeholder_data["first_name"],
             "last_name": stakeholder_data["last_name"],
-            "organization": stakeholder_data["organization"],
+            "organization": stakeholder_data.get("organization", ""),
             "role": stakeholder_data.get("role"),
             "email": stakeholder_data["email"].lower(),  # Normalized in save()
             "street_address": stakeholder_data.get("street_address", ""),
@@ -261,6 +261,7 @@ def _create_endorsement_with_emails(
     statement: str,
     public_display: bool,
     terms_accepted: bool,
+    org_authorized: bool,
     ip_address: str,
     request: HttpRequest,
 ) -> Endorsement:
@@ -292,6 +293,7 @@ def _create_endorsement_with_emails(
             "status": "pending",  # Start as pending verification
             "terms_accepted": terms_accepted,
             "terms_accepted_at": timezone.now() if terms_accepted else None,
+            "org_authorized": org_authorized,
         },
     )
 
@@ -359,6 +361,14 @@ def create_endorsement(
         _validate_and_prepare_endorsement_data(request, data)
     )
 
+    # Validate organization authorization
+    if stakeholder_data.get("organization") and not data.org_authorized:
+        raise HttpError(
+            400,
+            "Organization authorization must be confirmed when endorsing on behalf "
+            "of an organization",
+        )
+
     # Perform comprehensive spam checks
     _perform_spam_checks(
         request,
@@ -376,6 +386,7 @@ def create_endorsement(
                 data.statement,
                 data.public_display,
                 data.terms_accepted,
+                data.org_authorized,
                 ip_address,
                 request,
             )
@@ -613,7 +624,11 @@ def export_endorsements_csv(
     )
 
     # Write data rows with CSV injection protection
-    for endorsement in queryset.order_by("campaign__title", "stakeholder__name"):
+    for endorsement in queryset.order_by(
+        "campaign__title",
+        "stakeholder__first_name",
+        "stakeholder__last_name",
+    ):
         writer.writerow(
             [
                 sanitize_csv_field(endorsement.campaign.title),
@@ -705,7 +720,11 @@ def export_endorsements_json(
         "endorsements": [],
     }
 
-    for endorsement in queryset.order_by("campaign__title", "stakeholder__name"):
+    for endorsement in queryset.order_by(
+        "campaign__title",
+        "stakeholder__first_name",
+        "stakeholder__last_name",
+    ):
         data["endorsements"].append(
             {
                 "id": endorsement.id,

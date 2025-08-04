@@ -111,6 +111,13 @@ class Endorsement(models.Model):
         help_text="When the terms were accepted",
     )
 
+    # Organization authorization
+    org_authorized = models.BooleanField(
+        default=False,
+        help_text="Whether the stakeholder is authorized to endorse on behalf "
+        "of their organization",
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         help_text="When this endorsement was created",

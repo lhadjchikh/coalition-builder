@@ -17,11 +17,12 @@ export interface EndorsementFormRef {
 const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
   ({ campaign, onEndorsementSubmitted, onFormInteraction }, ref) => {
     const [stakeholder, setStakeholder] = useState<
-      Omit<Stakeholder, 'id' | 'created_at' | 'updated_at' | 'type'> & {
+      Omit<Stakeholder, 'id' | 'created_at' | 'updated_at' | 'type' | 'name'> & {
         type: Stakeholder['type'] | '';
       }
     >({
-      name: '',
+      first_name: '',
+      last_name: '',
       organization: '',
       role: '',
       email: '',
@@ -36,6 +37,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
     const [statement, setStatement] = useState<string>('');
     const [publicDisplay, setPublicDisplay] = useState<boolean>(true);
     const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
+    const [orgAuthorized, setOrgAuthorized] = useState<boolean>(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<boolean>(false);
@@ -49,19 +51,19 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
       confirm_email: '',
     });
     const formRef = useRef<HTMLFormElement>(null);
-    const nameInputRef = useRef<HTMLInputElement>(null);
+    const firstNameInputRef = useRef<HTMLInputElement>(null);
 
     // Expose methods to parent component
     useImperativeHandle(
       ref,
       () => ({
         scrollToFirstField: () => {
-          if (nameInputRef.current) {
-            nameInputRef.current.scrollIntoView({
+          if (firstNameInputRef.current) {
+            firstNameInputRef.current.scrollIntoView({
               behavior: 'smooth',
               block: 'center',
             });
-            nameInputRef.current.focus();
+            firstNameInputRef.current.focus();
           }
         },
       }),
@@ -102,10 +104,14 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
       try {
         const endorsementData: EndorsementCreate = {
           campaign_id: campaign.id,
-          stakeholder: stakeholder as Omit<Stakeholder, 'id' | 'created_at' | 'updated_at'>,
+          stakeholder: stakeholder as Omit<
+            Stakeholder,
+            'id' | 'created_at' | 'updated_at' | 'name'
+          >,
           statement,
           public_display: publicDisplay,
           terms_accepted: termsAccepted,
+          org_authorized: orgAuthorized,
           form_metadata: {
             form_start_time: formStartTime,
             referrer: document.referrer || '',
@@ -126,7 +132,8 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
 
         // Reset form
         setStakeholder({
-          name: '',
+          first_name: '',
+          last_name: '',
           organization: '',
           role: '',
           email: '',
@@ -140,6 +147,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
         setStatement('');
         setPublicDisplay(true);
         setTermsAccepted(false);
+        setOrgAuthorized(false);
         setHoneypotFields({
           website: '',
           url: '',
@@ -330,29 +338,57 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           </div>
 
           <div className="form-group">
-            <label htmlFor="name">Name *</label>
+            <label htmlFor="first-name">First Name *</label>
             <input
-              id="name"
+              id="first-name"
               type="text"
-              value={stakeholder.name}
-              onChange={e => handleStakeholderChange('name', e.target.value)}
+              value={stakeholder.first_name}
+              onChange={e => handleStakeholderChange('first_name', e.target.value)}
               required
-              data-testid="name-input"
-              ref={nameInputRef}
+              data-testid="first-name-input"
+              ref={firstNameInputRef}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="organization">Organization *</label>
+            <label htmlFor="last-name">Last Name *</label>
+            <input
+              id="last-name"
+              type="text"
+              value={stakeholder.last_name}
+              onChange={e => handleStakeholderChange('last_name', e.target.value)}
+              required
+              data-testid="last-name-input"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="organization">Organization</label>
             <input
               id="organization"
               type="text"
               value={stakeholder.organization}
               onChange={e => handleStakeholderChange('organization', e.target.value)}
-              required
+              placeholder="Leave blank if endorsing as an individual"
               data-testid="organization-input"
             />
           </div>
+
+          {stakeholder.organization && (
+            <div className="form-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={orgAuthorized}
+                  onChange={e => setOrgAuthorized(e.target.checked)}
+                  required={!!stakeholder.organization}
+                  aria-required={!!stakeholder.organization}
+                  data-testid="org-authorized-checkbox"
+                />
+                I am authorized to endorse on behalf of this organization *
+              </label>
+            </div>
+          )}
 
           <div className="form-group">
             <label htmlFor="role">Role/Title</label>

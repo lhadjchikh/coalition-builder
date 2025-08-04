@@ -26,7 +26,9 @@ export interface Campaign {
 export interface Endorser {
   id: number;
   name: string;
-  organization: string;
+  first_name: string;
+  last_name: string;
+  organization?: string;
   role?: string;
   email: string;
   street_address?: string;
@@ -68,8 +70,10 @@ export interface Legislator {
 // Stakeholder type definition (for endorsements)
 export interface Stakeholder {
   id?: number;
-  name: string;
-  organization: string;
+  name?: string; // Computed property for backward compatibility
+  first_name: string;
+  last_name: string;
+  organization?: string;
   role?: string;
   email: string;
   street_address: string;
@@ -117,10 +121,11 @@ export interface SpamPreventionMetadata {
 // For creating new endorsements
 export interface EndorsementCreate {
   campaign_id: number;
-  stakeholder: Omit<Stakeholder, "id" | "created_at" | "updated_at">;
+  stakeholder: Omit<Stakeholder, "id" | "created_at" | "updated_at" | "name">;
   statement?: string;
   public_display: boolean;
   terms_accepted: boolean;
+  org_authorized: boolean;
   form_metadata?: SpamPreventionMetadata; // For spam prevention
 }
 

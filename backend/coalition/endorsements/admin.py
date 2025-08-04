@@ -47,6 +47,7 @@ class EndorsementAdmin(admin.ModelAdmin):
         "verified_at",
         "terms_accepted",
         "terms_accepted_at",
+        "org_authorized",
         "created_at",
         "updated_at",
         "verification_link",
@@ -88,11 +89,12 @@ class EndorsementAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "Terms Acceptance",
+            "Terms & Authorization",
             {
                 "fields": (
                     "terms_accepted",
                     "terms_accepted_at",
+                    "org_authorized",
                 ),
                 "classes": ("collapse",),
             },

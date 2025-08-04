@@ -36,7 +36,9 @@ class Stakeholder(models.Model):
     )
     organization = models.CharField(
         max_length=200,
-        help_text="Organization or company name (can be same as name for individuals)",
+        blank=True,
+        help_text="Organization or company name (leave blank for individuals "
+        "not representing an organization)",
     )
     role = models.CharField(
         max_length=100,
@@ -172,4 +174,6 @@ class Stakeholder(models.Model):
         db_table = "stakeholder"
 
     def __str__(self) -> str:
-        return f"{self.organization} – {self.name}"
+        if self.organization:
+            return f"{self.organization} – {self.name}"
+        return self.name
