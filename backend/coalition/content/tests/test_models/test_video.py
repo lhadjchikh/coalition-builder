@@ -149,12 +149,12 @@ class VideoModelTest(TestCase):
 
         video = Video.objects.create(**data)
 
-        # Title, alt_text, author, license should be plain text (HTML entities escaped)
-        # The HTMLSanitizer.sanitize_plain_text method escapes HTML tags
-        assert video.title == "&lt;script&gt;alert('xss')&lt;/script&gt;Test Video"
-        assert video.alt_text == "&lt;b&gt;Bold&lt;/b&gt; alt text"
-        assert video.author == "&lt;em&gt;Test&lt;/em&gt; Author"
-        assert video.license == "CC &lt;script&gt;alert('xss')&lt;/script&gt; BY"
+        # Title, alt_text, author, license should be plain text (HTML tags stripped)
+        # The HTMLSanitizer.sanitize_plain_text method strips HTML tags
+        assert video.title == "alert('xss')Test Video"
+        assert video.alt_text == "Bold alt text"
+        assert video.author == "Test Author"
+        assert video.license == "CC alert('xss') BY"
 
         # Description can have some HTML but not scripts
         assert "<script>" not in video.description

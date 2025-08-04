@@ -252,3 +252,38 @@ class HTMLSanitizationTest(TestCase):
         assert ".highlight { background: yellow; }" in block.content
         assert 'style="text-align: center;"' in block.content
         assert 'style="padding: 5px;"' in block.content
+
+    def test_sanitize_plain_text_edge_cases(self) -> None:
+        """Test that sanitize_plain_text handles edge cases correctly."""
+        # Test mathematical comparisons
+        result = HTMLSanitizer.sanitize_plain_text("5 < 10 and 10 > 5")
+        assert result == "5 < 10 and 10 > 5"
+
+        # Test malformed HTML
+        result = HTMLSanitizer.sanitize_plain_text("a<bd")
+        assert result == "a<bd"
+
+        # Test mixed content
+        result = HTMLSanitizer.sanitize_plain_text("text < 5 > text")
+        assert result == "text < 5 > text"
+
+        # Test email-like pattern with angle brackets
+        # Note: bleach interprets <domain> as an HTML tag, which is correct behavior
+        result = HTMLSanitizer.sanitize_plain_text("email@<domain>.com")
+        assert result == "email@.com"
+
+        # Test proper HTML removal
+        result = HTMLSanitizer.sanitize_plain_text("normal <b>bold</b> text")
+        assert result == "normal bold text"
+
+        # Test nested tags
+        result = HTMLSanitizer.sanitize_plain_text("<div><p>nested</p></div>")
+        assert result == "nested"
+
+        # Test self-closing tags
+        result = HTMLSanitizer.sanitize_plain_text("before<br/>after")
+        assert result == "beforeafter"
+
+        # Test HTML entities in input
+        result = HTMLSanitizer.sanitize_plain_text("&lt;tag&gt; & &amp; test")
+        assert result == "<tag> & & test"

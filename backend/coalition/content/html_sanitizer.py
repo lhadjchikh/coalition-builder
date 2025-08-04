@@ -447,16 +447,16 @@ class HTMLSanitizer:
         if not text:
             return ""
 
-        # Use a simple regex to remove HTML tags while preserving content
-        # This avoids bleach's HTML entity escaping behavior
-        import re
         from html import unescape
 
-        # Remove HTML/XML tags
-        cleaned = re.sub(r"<[^>]+>", "", text)
+        # Use bleach to properly parse and strip HTML tags
+        # This handles malformed HTML better than regex
+        cleaned = bleach.clean(text, tags=[], strip=True)
 
         # Decode HTML entities to get proper characters
         # This converts &amp; to &, &lt; to <, etc.
+        # We do this after bleach to preserve characters like < and >
+        # in non-HTML contexts (e.g., "5 < 10")
         cleaned = unescape(cleaned)
 
         # Trim whitespace
