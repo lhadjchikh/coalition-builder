@@ -7,6 +7,8 @@ interface ImageWithCreditProps {
   author?: string;
   license?: string;
   sourceUrl?: string;
+  caption?: string;
+  captionDisplay?: "below" | "overlay" | "tooltip" | "none";
   creditDisplay?: "caption" | "overlay" | "tooltip" | "none";
   className?: string;
   imgClassName?: string;
@@ -19,37 +21,48 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
   author,
   license,
   sourceUrl,
+  caption,
+  captionDisplay,
   creditDisplay = "caption",
   className = "",
   imgClassName = "",
 }) => {
-  // Build credit text
-  const buildCreditText = (): string => {
-    const parts: string[] = [];
+  // Use caption if provided, otherwise build credit text from individual fields
+  const creditText =
+    caption?.trim() ||
+    (() => {
+      const parts: string[] = [];
 
-    if (title?.trim()) {
-      parts.push(`"${title.trim()}"`);
-    }
+      if (title?.trim()) {
+        parts.push(`"${title.trim()}"`);
+      }
 
-    if (author?.trim()) {
-      parts.push(`by ${author.trim()}`);
-    }
+      if (author?.trim()) {
+        parts.push(`by ${author.trim()}`);
+      }
 
-    if (license?.trim()) {
-      parts.push(`is licensed under ${license.trim()}`);
-    }
+      if (license?.trim()) {
+        parts.push(`is licensed under ${license.trim()}`);
+      }
 
-    return parts.join(" ");
-  };
+      return parts.join(" ");
+    })();
 
-  const creditText = buildCreditText();
+  // Determine which display mode to use
+  const displayMode = caption ? captionDisplay || "below" : creditDisplay;
   const hasCredit = creditText.length > 0;
 
   // Render credit based on display mode
   const renderCredit = () => {
-    if (!hasCredit || creditDisplay === "none") return null;
+    if (!hasCredit || displayMode === "none") return null;
 
-    const creditElement = (
+    // For custom caption, render as HTML
+    const creditElement = caption ? (
+      <span
+        className="text-xs text-gray-600"
+        dangerouslySetInnerHTML={{ __html: creditText }}
+      />
+    ) : (
       <span className="text-xs text-gray-600">
         {sourceUrl ? (
           <a
@@ -66,14 +79,17 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
       </span>
     );
 
-    switch (creditDisplay) {
+    switch (displayMode) {
       case "caption":
+      case "below":
         return <div className="mt-1 text-right">{creditElement}</div>;
 
       case "overlay":
         return (
           <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-xs">
-            {sourceUrl ? (
+            {caption ? (
+              <span dangerouslySetInnerHTML={{ __html: creditText }} />
+            ) : sourceUrl ? (
               <a
                 href={sourceUrl}
                 target="_blank"
@@ -93,7 +109,9 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
           <div className="group">
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               <div className="bg-gray-800 text-white px-2 py-1 rounded text-xs whitespace-nowrap">
-                {sourceUrl ? (
+                {caption ? (
+                  <span dangerouslySetInnerHTML={{ __html: creditText }} />
+                ) : sourceUrl ? (
                   <a
                     href={sourceUrl}
                     target="_blank"
@@ -117,7 +135,7 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
 
   // Container classes based on display mode
   const containerClasses = [
-    creditDisplay === "overlay" || creditDisplay === "tooltip"
+    displayMode === "overlay" || displayMode === "tooltip"
       ? "relative inline-block"
       : "",
     className,

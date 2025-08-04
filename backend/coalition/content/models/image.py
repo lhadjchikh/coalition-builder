@@ -57,6 +57,29 @@ class Image(models.Model):
         help_text="Source URL where the image was obtained",
     )
 
+    # Caption fields
+    caption = models.TextField(
+        blank=True,
+        help_text=(
+            "Custom caption/credit text for the image. "
+            "Can contain HTML including links."
+        ),
+    )
+
+    CAPTION_DISPLAY_CHOICES = [
+        ("below", "Below Image"),
+        ("overlay", "Overlay on Image"),
+        ("tooltip", "Tooltip on Hover"),
+        ("none", "Hide Caption"),
+    ]
+
+    caption_display = models.CharField(
+        max_length=20,
+        choices=CAPTION_DISPLAY_CHOICES,
+        default="none",
+        help_text="How to display the caption/credit",
+    )
+
     # Image type categorization
     IMAGE_TYPES = [
         ("general", "General Image"),
@@ -126,5 +149,9 @@ class Image(models.Model):
         # Sanitize description (can have some HTML)
         if self.description:
             self.description = HTMLSanitizer.sanitize(self.description)
+
+        # Sanitize caption (can have HTML including links)
+        if self.caption:
+            self.caption = HTMLSanitizer.sanitize(self.caption)
 
         super().save(*args, **kwargs)

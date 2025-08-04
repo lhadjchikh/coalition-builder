@@ -15,6 +15,8 @@ interface ContentBlockData {
   image_author?: string;
   image_license?: string;
   image_source_url?: string;
+  image_caption?: string;
+  image_caption_display?: "below" | "overlay" | "tooltip" | "none";
   layout_option?: string;
   vertical_alignment?: string;
   css_classes?: string;
@@ -134,6 +136,8 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
                   author={block.image_author}
                   license={block.image_license}
                   sourceUrl={block.image_source_url}
+                  caption={block.image_caption}
+                  captionDisplay={block.image_caption_display}
                   creditDisplay="caption"
                   imgClassName="rounded-2xl shadow-soft max-w-full h-auto mx-auto"
                   className="w-full"
@@ -213,6 +217,8 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
                   author={block.image_author}
                   license={block.image_license}
                   sourceUrl={block.image_source_url}
+                  caption={block.image_caption}
+                  captionDisplay={block.image_caption_display}
                   creditDisplay="caption"
                   imgClassName="rounded-2xl shadow-soft w-full h-auto"
                   className="w-full"

@@ -15,6 +15,8 @@ interface Campaign {
   image_author?: string;
   image_license?: string;
   image_source_url?: string;
+  image_caption?: string;
+  image_caption_display?: "below" | "overlay" | "tooltip" | "none";
   allow_endorsements?: boolean;
   active?: boolean;
 }
@@ -148,6 +150,8 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
                       author={campaign.image_author}
                       license={campaign.image_license}
                       sourceUrl={campaign.image_source_url}
+                      caption={campaign.image_caption}
+                      captionDisplay={campaign.image_caption_display}
                       creditDisplay="overlay"
                       imgClassName="w-full h-full object-cover"
                       className="w-full h-full"
