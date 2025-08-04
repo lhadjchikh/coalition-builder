@@ -325,6 +325,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
               onChange={e => handleStakeholderChange('type', e.target.value as Stakeholder['type'])}
               required
               data-testid="type-select"
+              aria-describedby="type-help"
             >
               <option value="" disabled>
                 Select endorser type
@@ -335,6 +336,9 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
                 </option>
               ))}
             </select>
+            <span id="type-help" className="label-helper">
+              Choose the category that best describes you or your organization
+            </span>
           </div>
 
           <div className="form-group">

@@ -236,7 +236,7 @@ describe('EndorsementForm', () => {
 
     expect(firstNameInput).toBeRequired();
     expect(lastNameInput).toBeRequired();
-    expect(organizationInput).toBeRequired();
+    expect(organizationInput).not.toBeRequired(); // Organization is optional
     expect(emailInput).toBeRequired();
     expect(streetAddressInput).toBeRequired();
     expect(cityInput).toBeRequired();
