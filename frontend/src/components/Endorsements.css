@@ -205,6 +205,46 @@
   cursor: pointer;
 }
 
+/* Radio button styles */
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+legend.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+  font-size: 1rem;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.radio-label {
+  display: flex;
+  align-items: flex-start;
+  font-weight: normal;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.radio-label input[type='radio'] {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  margin-right: 0.75rem;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
 .submit-button {
   background: linear-gradient(
     135deg,

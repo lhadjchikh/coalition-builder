@@ -169,7 +169,7 @@ describe('EndorsementForm', () => {
       // Fill out required fields
       fireEvent.change(screen.getByTestId('type-select'), { target: { value: 'individual' } });
       fireEvent.change(screen.getByTestId('first-name-input'), { target: { value: 'John' } });
-    fireEvent.change(screen.getByTestId('last-name-input'), { target: { value: 'Doe' } });
+      fireEvent.change(screen.getByTestId('last-name-input'), { target: { value: 'Doe' } });
       fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Test Org' } });
       fireEvent.change(screen.getByTestId('email-input'), { target: { value: 'john@test.com' } });
       fireEvent.change(screen.getByTestId('street-address-input'), {
@@ -383,7 +383,6 @@ describe('EndorsementForm', () => {
 
       // Mock the name input specifically after render
       const firstNameInput = screen.getByTestId('first-name-input');
-    const lastNameInput = screen.getByTestId('last-name-input');
       firstNameInput.scrollIntoView = mockScrollIntoView;
       firstNameInput.focus = mockFocus;
 
@@ -402,7 +401,6 @@ describe('EndorsementForm', () => {
       render(<TestRefComponent onFormInteraction={mockOnFormInteraction} />);
 
       const firstNameInput = screen.getByTestId('first-name-input');
-    const lastNameInput = screen.getByTestId('last-name-input');
 
       // Simulate form focus
       fireEvent.focus(firstNameInput);
@@ -415,7 +413,6 @@ describe('EndorsementForm', () => {
       render(<TestRefComponent onFormInteraction={mockOnFormInteraction} />);
 
       const firstNameInput = screen.getByTestId('first-name-input');
-    const lastNameInput = screen.getByTestId('last-name-input');
 
       // First focus the form
       fireEvent.focus(firstNameInput);
@@ -432,7 +429,6 @@ describe('EndorsementForm', () => {
       render(<TestRefComponent onFormInteraction={mockOnFormInteraction} />);
 
       const firstNameInput = screen.getByTestId('first-name-input');
-    const lastNameInput = screen.getByTestId('last-name-input');
       const organizationInput = screen.getByTestId('organization-input');
 
       // Focus the name field
@@ -505,7 +501,7 @@ describe('EndorsementForm', () => {
       render(<EndorsementForm campaign={mockCampaign} />);
 
       const firstNameInput = screen.getByTestId('first-name-input');
-    const lastNameInput = screen.getByTestId('last-name-input');
+      const lastNameInput = screen.getByTestId('last-name-input');
 
       // These should not throw errors
       fireEvent.focus(firstNameInput);
@@ -520,9 +516,99 @@ describe('EndorsementForm', () => {
       render(<EndorsementForm campaign={mockCampaign} />);
 
       expect(screen.getByTestId('first-name-input')).toBeInTheDocument();
-    expect(screen.getByTestId('last-name-input')).toBeInTheDocument();
+      expect(screen.getByTestId('last-name-input')).toBeInTheDocument();
       expect(screen.getByTestId('organization-input')).toBeInTheDocument();
       expect(screen.getByTestId('submit-button')).toBeInTheDocument();
+    });
+  });
+
+  describe('organization endorsement type', () => {
+    it('should show radio buttons when organization is filled', () => {
+      render(<EndorsementForm campaign={mockCampaign} />);
+
+      // Initially, no radio buttons should be visible
+      expect(screen.queryByTestId('org-behalf-radio')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('org-individual-radio')).not.toBeInTheDocument();
+
+      // Fill in organization
+      fireEvent.change(screen.getByTestId('organization-input'), {
+        target: { value: 'Test Company' },
+      });
+
+      // Radio buttons should appear
+      expect(screen.getByTestId('org-behalf-radio')).toBeInTheDocument();
+      expect(screen.getByTestId('org-individual-radio')).toBeInTheDocument();
+
+      // Check the text content
+      expect(screen.getByText(/I am endorsing on behalf of this organization/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/I am endorsing as an individual.*affiliated with this organization/)
+      ).toBeInTheDocument();
+    });
+
+    it('should hide radio buttons when organization is cleared', () => {
+      render(<EndorsementForm campaign={mockCampaign} />);
+
+      // Fill in organization
+      fireEvent.change(screen.getByTestId('organization-input'), {
+        target: { value: 'Test Company' },
+      });
+
+      // Radio buttons should appear
+      expect(screen.getByTestId('org-behalf-radio')).toBeInTheDocument();
+
+      // Clear organization
+      fireEvent.change(screen.getByTestId('organization-input'), {
+        target: { value: '' },
+      });
+
+      // Radio buttons should disappear
+      expect(screen.queryByTestId('org-behalf-radio')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('org-individual-radio')).not.toBeInTheDocument();
+    });
+
+    it('should default to individual endorsement when organization is present', () => {
+      render(<EndorsementForm campaign={mockCampaign} />);
+
+      // Fill in organization
+      fireEvent.change(screen.getByTestId('organization-input'), {
+        target: { value: 'Test Company' },
+      });
+
+      // Individual radio should be checked by default
+      const individualRadio = screen.getByTestId('org-individual-radio') as HTMLInputElement;
+      const behalfRadio = screen.getByTestId('org-behalf-radio') as HTMLInputElement;
+
+      expect(individualRadio.checked).toBe(true);
+      expect(behalfRadio.checked).toBe(false);
+    });
+
+    it('should allow switching between endorsement types', () => {
+      render(<EndorsementForm campaign={mockCampaign} />);
+
+      // Fill in organization
+      fireEvent.change(screen.getByTestId('organization-input'), {
+        target: { value: 'Test Company' },
+      });
+
+      const individualRadio = screen.getByTestId('org-individual-radio') as HTMLInputElement;
+      const behalfRadio = screen.getByTestId('org-behalf-radio') as HTMLInputElement;
+
+      // Initially individual is selected
+      expect(individualRadio.checked).toBe(true);
+      expect(behalfRadio.checked).toBe(false);
+
+      // Click on behalf radio
+      fireEvent.click(behalfRadio);
+
+      expect(individualRadio.checked).toBe(false);
+      expect(behalfRadio.checked).toBe(true);
+
+      // Click back on individual radio
+      fireEvent.click(individualRadio);
+
+      expect(individualRadio.checked).toBe(true);
+      expect(behalfRadio.checked).toBe(false);
     });
   });
 });

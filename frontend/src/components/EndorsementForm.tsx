@@ -93,6 +93,11 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
         ...prev,
         [field]: value,
       }));
+
+      // Reset org authorization when organization is cleared
+      if (field === 'organization' && !value) {
+        setOrgAuthorized(false);
+      }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -171,8 +176,10 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
       { value: 'waterman', label: 'Waterman' },
       { value: 'business', label: 'Business' },
       { value: 'nonprofit', label: 'Nonprofit' },
+      { value: 'scientist', label: 'Scientist' },
+      { value: 'healthcare', label: 'Health care professional' },
+      { value: 'government', label: 'Government official' },
       { value: 'individual', label: 'Individual' },
-      { value: 'government', label: 'Government' },
       { value: 'other', label: 'Other' },
     ];
 
@@ -373,24 +380,42 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
               type="text"
               value={stakeholder.organization}
               onChange={e => handleStakeholderChange('organization', e.target.value)}
-              placeholder="Leave blank if endorsing as an individual"
               data-testid="organization-input"
             />
           </div>
 
           {stakeholder.organization && (
             <div className="form-group">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={orgAuthorized}
-                  onChange={e => setOrgAuthorized(e.target.checked)}
-                  required={!!stakeholder.organization}
-                  aria-required={!!stakeholder.organization}
-                  data-testid="org-authorized-checkbox"
-                />
-                I am authorized to endorse on behalf of this organization *
-              </label>
+              <fieldset>
+                <legend className="form-label">How are you endorsing? *</legend>
+                <div className="radio-group">
+                  <label className="radio-label">
+                    <input
+                      type="radio"
+                      name="endorsement-type"
+                      value="behalf"
+                      checked={orgAuthorized === true}
+                      onChange={() => setOrgAuthorized(true)}
+                      required
+                      data-testid="org-behalf-radio"
+                    />
+                    I am endorsing on behalf of this organization and am authorized to do so
+                  </label>
+                  <label className="radio-label">
+                    <input
+                      type="radio"
+                      name="endorsement-type"
+                      value="individual"
+                      checked={orgAuthorized === false}
+                      onChange={() => setOrgAuthorized(false)}
+                      required
+                      data-testid="org-individual-radio"
+                    />
+                    I am endorsing as an individual (affiliated with this organization but not
+                    endorsing on their behalf)
+                  </label>
+                </div>
+              </fieldset>
             </div>
           )}
 

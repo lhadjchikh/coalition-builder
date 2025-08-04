@@ -361,14 +361,6 @@ def create_endorsement(
         _validate_and_prepare_endorsement_data(request, data)
     )
 
-    # Validate organization authorization
-    if stakeholder_data.get("organization") and not data.org_authorized:
-        raise HttpError(
-            400,
-            "Organization authorization must be confirmed when endorsing on behalf "
-            "of an organization",
-        )
-
     # Perform comprehensive spam checks
     _perform_spam_checks(
         request,

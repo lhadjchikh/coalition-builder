@@ -20,8 +20,10 @@ class Stakeholder(models.Model):
         ("waterman", "Waterman"),
         ("business", "Business"),
         ("nonprofit", "Nonprofit"),
-        ("individual", "Individual"),
+        ("scientist", "Scientist"),
+        ("healthcare", "Health care professional"),
         ("government", "Government"),
+        ("individual", "Individual"),
         ("other", "Other"),
     ]
 

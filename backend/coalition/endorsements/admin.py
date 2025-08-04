@@ -15,6 +15,7 @@ class EndorsementAdmin(admin.ModelAdmin):
     list_display = (
         "stakeholder_name",
         "stakeholder_organization",
+        "endorsement_type",
         "campaign",
         "status_badge",
         "email_verified_badge",
@@ -130,6 +131,16 @@ class EndorsementAdmin(admin.ModelAdmin):
 
     stakeholder_organization.short_description = "Organization"
     stakeholder_organization.admin_order_field = "stakeholder__organization"
+
+    def endorsement_type(self, obj: Endorsement) -> str:
+        if not obj.stakeholder.organization:
+            return "Individual"
+        elif obj.org_authorized:
+            return f"On behalf of {obj.stakeholder.organization}"
+        else:
+            return f"Individual (affiliated with {obj.stakeholder.organization})"
+
+    endorsement_type.short_description = "Endorsement Type"
 
     def status_badge(self, obj: Endorsement) -> str:
         colors = {
