@@ -24,6 +24,11 @@ class PolicyCampaignOut(ModelSchema):
     # Add computed fields for image data
     image_url: str | None = None
     image_alt_text: str | None = None
+    image_author: str | None = None
+    image_license: str | None = None
+    image_source_url: str | None = None
+    image_caption: str | None = None
+    image_caption_display: str | None = None
 
     class Meta:
         model = PolicyCampaign
@@ -41,6 +46,41 @@ class PolicyCampaignOut(ModelSchema):
         """Get the image alt text if an image is associated."""
         if obj.image:
             return obj.image.alt_text
+        return None
+
+    @staticmethod
+    def resolve_image_author(obj: PolicyCampaign) -> str | None:
+        """Get the image author if an image is associated."""
+        if obj.image:
+            return obj.image.author
+        return None
+
+    @staticmethod
+    def resolve_image_license(obj: PolicyCampaign) -> str | None:
+        """Get the image license if an image is associated."""
+        if obj.image:
+            return obj.image.license
+        return None
+
+    @staticmethod
+    def resolve_image_source_url(obj: PolicyCampaign) -> str | None:
+        """Get the image source URL if an image is associated."""
+        if obj.image:
+            return obj.image.source_url
+        return None
+
+    @staticmethod
+    def resolve_image_caption(obj: PolicyCampaign) -> str | None:
+        """Get the image caption if an image is associated."""
+        if obj.image:
+            return obj.image.caption
+        return None
+
+    @staticmethod
+    def resolve_image_caption_display(obj: PolicyCampaign) -> str | None:
+        """Get the image caption display setting if an image is associated."""
+        if obj.image:
+            return obj.image.caption_display
         return None
 
 
@@ -135,6 +175,8 @@ class ContentBlockOut(ModelSchema):
     image_author: str
     image_license: str
     image_source_url: str
+    image_caption: str
+    image_caption_display: str
 
     class Meta:
         model = ContentBlock

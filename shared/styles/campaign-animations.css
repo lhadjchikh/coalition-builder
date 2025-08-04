@@ -1,0 +1,55 @@
+/* Campaign Card Animations */
+
+/* Initial state - scale down and invisible */
+.campaign-card-animate {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Visible state - scale to normal and fade in */
+.campaign-card-animate.campaign-card-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Hover state - lift up slightly */
+.campaign-card-animate.campaign-card-visible:hover {
+  transform: translateY(-4px) scale(1);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Focus state - same as hover for keyboard navigation */
+.campaign-card-animate.campaign-card-visible:focus {
+  transform: translateY(-4px) scale(1);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  outline: 2px solid var(--theme-primary, #3b82f6);
+  outline-offset: 2px;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .campaign-card-animate,
+  .campaign-card-animate.campaign-card-visible,
+  .campaign-card-animate.campaign-card-visible:hover,
+  .campaign-card-animate.campaign-card-visible:focus {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Keep focus outline for accessibility */
+  .campaign-card-animate.campaign-card-visible:focus {
+    outline: 2px solid var(--theme-primary, #3b82f6);
+    outline-offset: 2px;
+  }
+}
+
+/* Mobile optimizations - faster animations */
+@media (max-width: 768px) {
+  .campaign-card-animate {
+    transition-duration: 0.3s;
+  }
+}

@@ -92,8 +92,8 @@ class HTMLSanitizationTest(TestCase):
         assert "Click2" in campaign.description
         assert "VB" in campaign.description
 
-    def test_campaign_plain_text_fields_escaped(self) -> None:
-        """Test that plain text fields have all HTML escaped."""
+    def test_campaign_plain_text_fields_stripped(self) -> None:
+        """Test that plain text fields have HTML tags removed."""
         campaign = PolicyCampaign.objects.create(
             name="test-plain-text",
             title="Test Campaign",
@@ -101,9 +101,9 @@ class HTMLSanitizationTest(TestCase):
             endorsement_statement="<b>Bold</b> statement",
         )
 
-        # All HTML should be escaped in plain text fields
-        assert "&lt;script&gt;" in campaign.summary
-        assert "&lt;b&gt;" in campaign.endorsement_statement
+        # HTML tags should be stripped but content preserved
+        assert "alert('xss')Normal text" in campaign.summary
+        assert "Bold statement" in campaign.endorsement_statement
         assert "<script>" not in campaign.summary
         assert "<b>" not in campaign.endorsement_statement
 
@@ -123,8 +123,9 @@ class HTMLSanitizationTest(TestCase):
         assert "bad()" in html_block.content  # Content is preserved
         assert "<h2>Title</h2>" in html_block.content
         assert "<p>Content</p>" in html_block.content
-        # Title should be escaped
-        assert "&lt;script&gt;" in html_block.title
+        # Title should have tags stripped but content preserved
+        assert "evilTest Block" in html_block.title
+        assert "<script>" not in html_block.title
 
     def test_allowed_html_preserved(self) -> None:
         """Test that allowed HTML tags and attributes are preserved."""
@@ -172,8 +173,8 @@ class HTMLSanitizationTest(TestCase):
             cta_content='<a href="javascript:void(0)">Click</a>',
         )
 
-        # Plain text fields should be escaped
-        assert "&lt;script&gt;" in homepage.hero_subtitle
+        # Plain text fields should have tags stripped but content preserved
+        assert "alert('xss')Subtitle" in homepage.hero_subtitle
         assert "<script>" not in homepage.hero_subtitle
 
         # HTML fields should be sanitized
@@ -189,7 +190,7 @@ class HTMLSanitizationTest(TestCase):
         # Test sanitize_plain_text method with None and empty string
         assert HTMLSanitizer.sanitize_plain_text(None) == ""
         assert HTMLSanitizer.sanitize_plain_text("") == ""
-        assert HTMLSanitizer.sanitize_plain_text("   ") == "   "  # Whitespace preserved
+        assert HTMLSanitizer.sanitize_plain_text("   ") == ""  # Whitespace is trimmed
 
     def test_html_sanitizer_edge_cases(self) -> None:
         """Test additional edge cases for HTML sanitizer."""
@@ -199,10 +200,90 @@ class HTMLSanitizationTest(TestCase):
 
         # Test plain text with HTML-like content
         result = HTMLSanitizer.sanitize_plain_text("<not>really</html>")
-        assert result == "&lt;not&gt;really&lt;/html&gt;"
+        assert result == "really"  # Tags stripped, content preserved
 
         # Test with mixed content
         result = HTMLSanitizer.sanitize("<p>Good</p><script>bad()</script>")
         assert "<p>Good</p>" in result
         assert "<script>" not in result
         assert "bad()" in result  # Content preserved, tag removed
+
+    def test_style_tags_and_inline_styles_allowed(self) -> None:
+        """Test that style tags and inline styles are preserved."""
+        # Test style tag
+        html_with_style = """
+            <style type="text/css">
+                .custom-class { color: red; }
+                p { margin: 10px; }
+            </style>
+            <p class="custom-class">Styled paragraph</p>
+        """
+        result = HTMLSanitizer.sanitize(html_with_style)
+        assert "<style" in result
+        assert 'type="text/css"' in result
+        assert ".custom-class { color: red; }" in result
+        assert "p { margin: 10px; }" in result
+
+        # Test inline styles
+        html_with_inline = """
+            <p style="color: blue; font-size: 16px;">Blue text</p>
+            <div style="background-color: #f0f0f0; padding: 20px;">
+                <span style="font-weight: bold;">Bold span</span>
+            </div>
+        """
+        result = HTMLSanitizer.sanitize(html_with_inline)
+        assert 'style="color: blue; font-size: 16px;"' in result
+        assert 'style="background-color: #f0f0f0; padding: 20px;"' in result
+        assert 'style="font-weight: bold;"' in result
+
+        # Test ContentBlock with style
+        from coalition.content.models import ContentBlock
+
+        block = ContentBlock.objects.create(
+            page_type="homepage",
+            block_type="custom_html",
+            content="""
+                <style>.highlight { background: yellow; }</style>
+                <p style="text-align: center;">Centered text</p>
+                <span class="highlight" style="padding: 5px;">Highlighted</span>
+            """,
+        )
+        assert "<style>" in block.content
+        assert ".highlight { background: yellow; }" in block.content
+        assert 'style="text-align: center;"' in block.content
+        assert 'style="padding: 5px;"' in block.content
+
+    def test_sanitize_plain_text_edge_cases(self) -> None:
+        """Test that sanitize_plain_text handles edge cases correctly."""
+        # Test mathematical comparisons
+        result = HTMLSanitizer.sanitize_plain_text("5 < 10 and 10 > 5")
+        assert result == "5 < 10 and 10 > 5"
+
+        # Test malformed HTML
+        result = HTMLSanitizer.sanitize_plain_text("a<bd")
+        assert result == "a<bd"
+
+        # Test mixed content
+        result = HTMLSanitizer.sanitize_plain_text("text < 5 > text")
+        assert result == "text < 5 > text"
+
+        # Test email-like pattern with angle brackets
+        # Note: bleach interprets <domain> as an HTML tag, which is correct behavior
+        result = HTMLSanitizer.sanitize_plain_text("email@<domain>.com")
+        assert result == "email@.com"
+
+        # Test proper HTML removal
+        result = HTMLSanitizer.sanitize_plain_text("normal <b>bold</b> text")
+        assert result == "normal bold text"
+
+        # Test nested tags
+        result = HTMLSanitizer.sanitize_plain_text("<div><p>nested</p></div>")
+        assert result == "nested"
+
+        # Test self-closing tags
+        result = HTMLSanitizer.sanitize_plain_text("before<br/>after")
+        assert result == "beforeafter"
+
+        # Test HTML entities in input
+        result = HTMLSanitizer.sanitize_plain_text("&lt;tag&gt; & &amp; test")
+        assert result == "<tag> & & test"

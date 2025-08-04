@@ -34,6 +34,7 @@ class ImageAdminTest(TestCase):
         expected_fields = (
             "title",
             "image_type",
+            "has_caption",
             "author",
             "license",
             "uploaded_by",
@@ -58,7 +59,7 @@ class ImageAdminTest(TestCase):
 
     def test_fieldsets_configuration(self) -> None:
         """Test that fieldsets are properly configured."""
-        assert len(self.admin.fieldsets) == 3
+        assert len(self.admin.fieldsets) == 4
 
         # Test image information fieldset
         assert self.admin.fieldsets[0][0] == "Image Information"
@@ -70,9 +71,14 @@ class ImageAdminTest(TestCase):
         assert "author" in self.admin.fieldsets[1][1]["fields"]
         assert "license" in self.admin.fieldsets[1][1]["fields"]
 
+        # Test caption fieldset
+        assert self.admin.fieldsets[2][0] == "Caption"
+        assert "caption" in self.admin.fieldsets[2][1]["fields"]
+        assert "caption_display" in self.admin.fieldsets[2][1]["fields"]
+
         # Test metadata fieldset
-        assert self.admin.fieldsets[2][0] == "Metadata"
-        assert "collapse" in self.admin.fieldsets[2][1].get("classes", ())
+        assert self.admin.fieldsets[3][0] == "Metadata"
+        assert "collapse" in self.admin.fieldsets[3][1].get("classes", ())
 
     def test_save_model_sets_uploaded_by_on_create(self) -> None:
         """Test that save_model sets uploaded_by on creation."""

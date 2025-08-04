@@ -140,7 +140,7 @@ class EndorsementModelTest(TestCase):
         assert endorsements.first() == endorsement
 
     def test_statement_html_sanitization(self) -> None:
-        """Test that HTML in statements is escaped for security"""
+        """Test that HTML in statements is stripped for security"""
         # Test script tag removal
         malicious_statement = 'I support this <script>alert("xss")</script> policy!'
         endorsement = Endorsement.objects.create(
@@ -149,14 +149,14 @@ class EndorsementModelTest(TestCase):
             statement=malicious_statement,
         )
 
-        # HTML should be escaped
-        assert "&lt;script&gt;" in endorsement.statement
+        # HTML tags should be stripped
+        assert endorsement.statement == 'I support this alert("xss") policy!'
         assert "<script>" not in endorsement.statement
         assert "I support this" in endorsement.statement
         assert "policy!" in endorsement.statement
 
     def test_statement_dangerous_attributes_sanitization(self) -> None:
-        """Test that dangerous HTML attributes are escaped in statements"""
+        """Test that dangerous HTML attributes are stripped in statements"""
         dangerous_statement = 'I support <a href="javascript:alert(1)">this</a> policy!'
         endorsement = Endorsement.objects.create(
             stakeholder=self.stakeholder,
@@ -164,12 +164,13 @@ class EndorsementModelTest(TestCase):
             statement=dangerous_statement,
         )
 
-        # HTML should be escaped (not executed)
-        assert "&lt;a" in endorsement.statement  # HTML should be escaped
-        assert "&gt;" in endorsement.statement  # Tags should be escaped
+        # HTML tags should be stripped, content preserved
+        assert endorsement.statement == "I support this policy!"
+        assert "<a" not in endorsement.statement  # HTML tags stripped
+        assert "javascript:" not in endorsement.statement  # Dangerous content removed
         assert "this" in endorsement.statement  # Content preserved
         assert "policy!" in endorsement.statement
-        # The dangerous content is escaped, making it safe
+        # The dangerous content is removed, making it safe
         assert "<script>" not in endorsement.statement  # No executable HTML
 
     def test_statement_empty_or_none_handling(self) -> None:

@@ -14,6 +14,7 @@ class ImageAdmin(admin.ModelAdmin):
     list_display = (
         "title",
         "image_type",
+        "has_caption",
         "author",
         "license",
         "uploaded_by",
@@ -47,6 +48,20 @@ class ImageAdmin(admin.ModelAdmin):
             },
         ),
         (
+            "Caption",
+            {
+                "fields": (
+                    "caption",
+                    "caption_display",
+                ),
+                "description": (
+                    "Custom caption/credit text for the image. When provided, "
+                    "this will be used instead of assembling credit from the "
+                    "attribution fields above. HTML is allowed, including links."
+                ),
+            },
+        ),
+        (
             "Metadata",
             {
                 "fields": ("uploaded_by", "created_at", "updated_at"),
@@ -54,6 +69,13 @@ class ImageAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+    def has_caption(self, obj: Image) -> bool:
+        """Check if the image has a custom caption."""
+        return bool(obj.caption)
+
+    has_caption.boolean = True
+    has_caption.short_description = "Has Caption"
 
     def save_model(
         self,

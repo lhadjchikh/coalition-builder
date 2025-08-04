@@ -198,6 +198,16 @@ class ContentBlock(models.Model):
         """Return the source URL of the image, or empty string if no image."""
         return self.image.source_url if self.image else ""
 
+    @property
+    def image_caption(self) -> str:
+        """Return the caption of the image, or empty string if no image."""
+        return self.image.caption if self.image else ""
+
+    @property
+    def image_caption_display(self) -> str:
+        """Return the caption display setting of the image, or 'below' if no image."""
+        return self.image.caption_display if self.image else "below"
+
     def save(self, *args: "Any", **kwargs: "Any") -> None:
         """Sanitize content based on block type before saving."""
         if self.content:

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface ImageWithCreditProps {
   src: string;
@@ -7,10 +7,30 @@ interface ImageWithCreditProps {
   author?: string;
   license?: string;
   sourceUrl?: string;
-  creditDisplay?: 'caption' | 'overlay' | 'tooltip' | 'none';
+  caption?: string;
+  captionDisplay?: "below" | "overlay" | "tooltip" | "none";
+  creditDisplay?: "caption" | "overlay" | "tooltip" | "none";
   className?: string;
   imgClassName?: string;
 }
+
+// Helper function to determine display mode
+const getDisplayMode = (
+  captionDisplay: string | undefined,
+  caption: string | undefined,
+  creditDisplay: string,
+): string => {
+  // If captionDisplay is explicitly set, use it regardless of whether there's a caption
+  if (captionDisplay !== undefined) {
+    return captionDisplay;
+  }
+  // If there's a caption but no explicit display mode, default to "below"
+  if (caption) {
+    return "below";
+  }
+  // Otherwise use the creditDisplay setting
+  return creditDisplay;
+};
 
 const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
   src,
@@ -19,37 +39,48 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
   author,
   license,
   sourceUrl,
-  creditDisplay = 'caption',
-  className = '',
-  imgClassName = '',
+  caption,
+  captionDisplay,
+  creditDisplay = "caption",
+  className = "",
+  imgClassName = "",
 }) => {
-  // Build credit text
-  const buildCreditText = (): string => {
-    const parts: string[] = [];
+  // Use caption if provided, otherwise build credit text from individual fields
+  const creditText =
+    caption?.trim() ||
+    (() => {
+      const parts: string[] = [];
 
-    if (title?.trim()) {
-      parts.push(`"${title.trim()}"`);
-    }
+      if (title?.trim()) {
+        parts.push(`"${title.trim()}"`);
+      }
 
-    if (author?.trim()) {
-      parts.push(`by ${author.trim()}`);
-    }
+      if (author?.trim()) {
+        parts.push(`by ${author.trim()}`);
+      }
 
-    if (license?.trim()) {
-      parts.push(`is licensed under ${license.trim()}`);
-    }
+      if (license?.trim()) {
+        parts.push(`is licensed under ${license.trim()}`);
+      }
 
-    return parts.join(' ');
-  };
+      return parts.join(" ");
+    })();
 
-  const creditText = buildCreditText();
+  // Determine which display mode to use
+  const displayMode = getDisplayMode(captionDisplay, caption, creditDisplay);
   const hasCredit = creditText.length > 0;
 
   // Render credit based on display mode
   const renderCredit = () => {
-    if (!hasCredit || creditDisplay === 'none') return null;
+    if (!hasCredit || displayMode === "none") return null;
 
-    const creditElement = (
+    // For custom caption, render as HTML
+    const creditElement = caption ? (
+      <span
+        className="text-xs text-gray-600"
+        dangerouslySetInnerHTML={{ __html: creditText }}
+      />
+    ) : (
       <span className="text-xs text-gray-600">
         {sourceUrl ? (
           <a
@@ -66,14 +97,17 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
       </span>
     );
 
-    switch (creditDisplay) {
-      case 'caption':
+    switch (displayMode) {
+      case "caption":
+      case "below":
         return <div className="mt-1 text-right">{creditElement}</div>;
 
-      case 'overlay':
+      case "overlay":
         return (
           <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-xs">
-            {sourceUrl ? (
+            {caption ? (
+              <span dangerouslySetInnerHTML={{ __html: creditText }} />
+            ) : sourceUrl ? (
               <a
                 href={sourceUrl}
                 target="_blank"
@@ -88,12 +122,14 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
           </div>
         );
 
-      case 'tooltip':
+      case "tooltip":
         return (
           <div className="group">
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               <div className="bg-gray-800 text-white px-2 py-1 rounded text-xs whitespace-nowrap">
-                {sourceUrl ? (
+                {caption ? (
+                  <span dangerouslySetInnerHTML={{ __html: creditText }} />
+                ) : sourceUrl ? (
                   <a
                     href={sourceUrl}
                     target="_blank"
@@ -117,11 +153,13 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
 
   // Container classes based on display mode
   const containerClasses = [
-    creditDisplay === 'overlay' || creditDisplay === 'tooltip' ? 'relative inline-block' : '',
+    displayMode === "overlay" || displayMode === "tooltip"
+      ? "relative inline-block"
+      : "",
     className,
   ]
     .filter(Boolean)
-    .join(' ');
+    .join(" ");
 
   return (
     <div className={containerClasses}>

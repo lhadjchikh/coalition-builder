@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "@shared/styles/content-animations.css";
+import "@shared/styles/campaign-animations.css";
 import StyledComponentsRegistry from "../lib/registry";
 import SSRNavbar from "../components/SSRNavbar";
 import SSRFooter from "../components/SSRFooter";

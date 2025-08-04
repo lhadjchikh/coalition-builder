@@ -90,6 +90,8 @@ class HTMLSanitizer:
         "stop",
         "animate",
         "animateTransform",
+        # Style tag for custom CSS
+        "style",
     ]
 
     # Allowed attributes for specific tags
@@ -297,8 +299,10 @@ class HTMLSanitizer:
             "fill",
             "class",
         ],
+        # Style tag attributes
+        "style": ["type"],
         # General styling (limited)
-        "*": ["class"],
+        "*": ["class", "style"],
     }
 
     # Allowed URL schemes for links
@@ -319,12 +323,103 @@ class HTMLSanitizer:
         if not html:
             return ""
 
-        # Clean the HTML
+        # Import CSS sanitizer
+        from bleach.css_sanitizer import CSSSanitizer
+
+        # Create CSS sanitizer that allows common CSS properties
+        css_sanitizer = CSSSanitizer(
+            allowed_css_properties=[
+                # Text styling
+                "color",
+                "background-color",
+                "font-size",
+                "font-weight",
+                "font-style",
+                "font-family",
+                "text-align",
+                "text-decoration",
+                "line-height",
+                "letter-spacing",
+                "text-transform",
+                "text-indent",
+                # Box model
+                "margin",
+                "margin-top",
+                "margin-right",
+                "margin-bottom",
+                "margin-left",
+                "padding",
+                "padding-top",
+                "padding-right",
+                "padding-bottom",
+                "padding-left",
+                "border",
+                "border-width",
+                "border-style",
+                "border-color",
+                "border-top",
+                "border-right",
+                "border-bottom",
+                "border-left",
+                "border-radius",
+                "width",
+                "height",
+                "max-width",
+                "max-height",
+                "min-width",
+                "min-height",
+                # Display and positioning
+                "display",
+                "position",
+                "top",
+                "right",
+                "bottom",
+                "left",
+                "float",
+                "clear",
+                "overflow",
+                "z-index",
+                "visibility",
+                # Flexbox
+                "flex",
+                "flex-direction",
+                "flex-wrap",
+                "justify-content",
+                "align-items",
+                "align-content",
+                "flex-grow",
+                "flex-shrink",
+                "flex-basis",
+                "align-self",
+                # Grid
+                "grid-template-columns",
+                "grid-template-rows",
+                "grid-gap",
+                "gap",
+                "grid-column",
+                "grid-row",
+                # Other
+                "opacity",
+                "background",
+                "background-image",
+                "background-size",
+                "background-position",
+                "background-repeat",
+                "box-shadow",
+                "text-shadow",
+                "transform",
+                "transition",
+                "cursor",
+            ],
+        )
+
+        # Clean the HTML with CSS sanitizer
         cleaned = bleach.clean(
             html,
             tags=cls.ALLOWED_TAGS,
             attributes=cls.ALLOWED_ATTRIBUTES,
             protocols=cls.ALLOWED_PROTOCOLS,
+            css_sanitizer=css_sanitizer,
             strip=strip,
             strip_comments=True,
         )
@@ -340,18 +435,29 @@ class HTMLSanitizer:
     @classmethod
     def sanitize_plain_text(cls, text: str | None) -> str:
         """
-        Sanitize plain text by escaping all HTML entities.
-        Use this for fields that should never contain HTML.
+        Sanitize plain text by removing any HTML tags but preserving the text content.
+        Use this for fields that should never contain HTML markup.
 
         Args:
             text: Plain text to sanitize
 
         Returns:
-            Text with all HTML escaped
+            Text with HTML tags removed but content preserved
         """
         if not text:
             return ""
 
-        # This escapes ALL HTML, converting < to &lt; etc
-        # Use strip=False to escape tags rather than remove them
-        return bleach.clean(text, tags=[], strip=False)
+        from html import unescape
+
+        # Use bleach to properly parse and strip HTML tags
+        # This handles malformed HTML better than regex
+        cleaned = bleach.clean(text, tags=[], strip=True)
+
+        # Decode HTML entities to get proper characters
+        # This converts &amp; to &, &lt; to <, etc.
+        # We do this after bleach to preserve characters like < and >
+        # in non-HTML contexts (e.g., "5 < 10")
+        cleaned = unescape(cleaned)
+
+        # Trim whitespace
+        return cleaned.strip()

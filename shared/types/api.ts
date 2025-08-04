@@ -12,6 +12,9 @@ export interface Campaign {
   description?: string;
   image_url?: string;
   image_alt_text?: string;
+  image_author?: string;
+  image_license?: string;
+  image_source_url?: string;
   endorsement_statement?: string;
   allow_endorsements?: boolean;
   endorsement_form_instructions?: string;
