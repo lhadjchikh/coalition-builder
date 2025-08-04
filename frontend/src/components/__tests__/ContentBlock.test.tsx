@@ -228,15 +228,18 @@ describe('ContentBlock', () => {
         block_type: 'text_image',
         content: '<p>Test content</p>',
         image_url: 'https://example.com/image.jpg',
+        image_alt_text: 'Test image',
         layout_option: 'reversed',
       };
       render(<ContentBlock block={block} />);
 
       const textDiv = screen.getByText('Test content').parentElement?.parentElement;
-      const imageDiv = screen.getByRole('img').parentElement;
+      // The image is inside ImageWithCredit component, which is wrapped in a div with the order class
+      const image = screen.getByAltText('Test image');
+      const imageWrapper = image.closest('div.lg\\:order-1');
 
       expect(textDiv).toHaveClass('lg:order-2');
-      expect(imageDiv).toHaveClass('lg:order-1');
+      expect(imageWrapper).toBeInTheDocument();
     });
 
     it('should apply stacked layout when layout_option is stacked', () => {
@@ -260,15 +263,18 @@ describe('ContentBlock', () => {
         block_type: 'text_image',
         content: '<p>Test content</p>',
         image_url: 'https://example.com/image.jpg',
+        image_alt_text: 'Test image',
         layout_option: 'stacked_reversed',
       };
       render(<ContentBlock block={block} />);
 
       const textDiv = screen.getByText('Test content').parentElement?.parentElement;
-      const imageDiv = screen.getByRole('img').parentElement;
+      // The image is inside ImageWithCredit component, which is wrapped in a div with the order class
+      const image = screen.getByAltText('Test image');
+      const imageWrapper = image.closest('div.order-1');
 
       expect(textDiv).toHaveClass('order-2');
-      expect(imageDiv).toHaveClass('order-1');
+      expect(imageWrapper).toBeInTheDocument();
     });
   });
 
