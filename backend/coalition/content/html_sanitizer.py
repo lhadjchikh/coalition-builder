@@ -90,6 +90,8 @@ class HTMLSanitizer:
         "stop",
         "animate",
         "animateTransform",
+        # Style tag for custom CSS
+        "style",
     ]
 
     # Allowed attributes for specific tags
@@ -297,8 +299,10 @@ class HTMLSanitizer:
             "fill",
             "class",
         ],
+        # Style tag attributes
+        "style": ["type"],
         # General styling (limited)
-        "*": ["class"],
+        "*": ["class", "style"],
     }
 
     # Allowed URL schemes for links
@@ -319,12 +323,103 @@ class HTMLSanitizer:
         if not html:
             return ""
 
-        # Clean the HTML
+        # Import CSS sanitizer
+        from bleach.css_sanitizer import CSSSanitizer
+
+        # Create CSS sanitizer that allows common CSS properties
+        css_sanitizer = CSSSanitizer(
+            allowed_css_properties=[
+                # Text styling
+                "color",
+                "background-color",
+                "font-size",
+                "font-weight",
+                "font-style",
+                "font-family",
+                "text-align",
+                "text-decoration",
+                "line-height",
+                "letter-spacing",
+                "text-transform",
+                "text-indent",
+                # Box model
+                "margin",
+                "margin-top",
+                "margin-right",
+                "margin-bottom",
+                "margin-left",
+                "padding",
+                "padding-top",
+                "padding-right",
+                "padding-bottom",
+                "padding-left",
+                "border",
+                "border-width",
+                "border-style",
+                "border-color",
+                "border-top",
+                "border-right",
+                "border-bottom",
+                "border-left",
+                "border-radius",
+                "width",
+                "height",
+                "max-width",
+                "max-height",
+                "min-width",
+                "min-height",
+                # Display and positioning
+                "display",
+                "position",
+                "top",
+                "right",
+                "bottom",
+                "left",
+                "float",
+                "clear",
+                "overflow",
+                "z-index",
+                "visibility",
+                # Flexbox
+                "flex",
+                "flex-direction",
+                "flex-wrap",
+                "justify-content",
+                "align-items",
+                "align-content",
+                "flex-grow",
+                "flex-shrink",
+                "flex-basis",
+                "align-self",
+                # Grid
+                "grid-template-columns",
+                "grid-template-rows",
+                "grid-gap",
+                "gap",
+                "grid-column",
+                "grid-row",
+                # Other
+                "opacity",
+                "background",
+                "background-image",
+                "background-size",
+                "background-position",
+                "background-repeat",
+                "box-shadow",
+                "text-shadow",
+                "transform",
+                "transition",
+                "cursor",
+            ],
+        )
+
+        # Clean the HTML with CSS sanitizer
         cleaned = bleach.clean(
             html,
             tags=cls.ALLOWED_TAGS,
             attributes=cls.ALLOWED_ATTRIBUTES,
             protocols=cls.ALLOWED_PROTOCOLS,
+            css_sanitizer=css_sanitizer,
             strip=strip,
             strip_comments=True,
         )

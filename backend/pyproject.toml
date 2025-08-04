@@ -35,6 +35,7 @@ pillow = "^11.0.0"
 gdal = "3.10.3"
 requests = "^2.32.4"
 django-tinymce = "^4.1.0"
+tinycss2 = "^1.4.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"

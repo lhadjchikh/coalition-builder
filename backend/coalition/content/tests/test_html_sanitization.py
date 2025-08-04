@@ -207,3 +207,48 @@ class HTMLSanitizationTest(TestCase):
         assert "<p>Good</p>" in result
         assert "<script>" not in result
         assert "bad()" in result  # Content preserved, tag removed
+
+    def test_style_tags_and_inline_styles_allowed(self) -> None:
+        """Test that style tags and inline styles are preserved."""
+        # Test style tag
+        html_with_style = """
+            <style type="text/css">
+                .custom-class { color: red; }
+                p { margin: 10px; }
+            </style>
+            <p class="custom-class">Styled paragraph</p>
+        """
+        result = HTMLSanitizer.sanitize(html_with_style)
+        assert "<style" in result
+        assert 'type="text/css"' in result
+        assert ".custom-class { color: red; }" in result
+        assert "p { margin: 10px; }" in result
+
+        # Test inline styles
+        html_with_inline = """
+            <p style="color: blue; font-size: 16px;">Blue text</p>
+            <div style="background-color: #f0f0f0; padding: 20px;">
+                <span style="font-weight: bold;">Bold span</span>
+            </div>
+        """
+        result = HTMLSanitizer.sanitize(html_with_inline)
+        assert 'style="color: blue; font-size: 16px;"' in result
+        assert 'style="background-color: #f0f0f0; padding: 20px;"' in result
+        assert 'style="font-weight: bold;"' in result
+
+        # Test ContentBlock with style
+        from coalition.content.models import ContentBlock
+
+        block = ContentBlock.objects.create(
+            page_type="homepage",
+            block_type="custom_html",
+            content="""
+                <style>.highlight { background: yellow; }</style>
+                <p style="text-align: center;">Centered text</p>
+                <span class="highlight" style="padding: 5px;">Highlighted</span>
+            """,
+        )
+        assert "<style>" in block.content
+        assert ".highlight { background: yellow; }" in block.content
+        assert 'style="text-align: center;"' in block.content
+        assert 'style="padding: 5px;"' in block.content
