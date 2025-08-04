@@ -47,9 +47,21 @@ class ContentBlockAdmin(admin.ModelAdmin):
                     "css_classes",
                     "background_color",
                 ),
-                "classes": ("collapse",),
                 "description": (
                     "Layout and alignment options only apply to Text + Image blocks"
+                ),
+            },
+        ),
+        (
+            "Animation",
+            {
+                "fields": (
+                    "animation_type",
+                    "animation_delay",
+                ),
+                "classes": ("collapse",),
+                "description": (
+                    "Animation effects when the content block enters the viewport"
                 ),
             },
         ),
