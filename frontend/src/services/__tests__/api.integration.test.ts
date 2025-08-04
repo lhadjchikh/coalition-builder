@@ -60,7 +60,8 @@ describe('API Client Production Integration', () => {
           id: 1,
           stakeholder: {
             id: 1,
-            name: 'John Doe',
+            first_name: 'John',
+            last_name: 'Doe',
             organization: 'Test Org',
             email: 'john@example.com',
             street_address: '123 Main St',

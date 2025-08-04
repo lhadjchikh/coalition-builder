@@ -16,7 +16,8 @@ describe('EndorsementsList', () => {
       id: 1,
       stakeholder: {
         id: 1,
-        name: 'John Doe',
+        first_name: 'John',
+        last_name: 'Doe',
         organization: 'Test Organization',
         role: 'Manager',
         email: 'john@test.com',
@@ -44,7 +45,8 @@ describe('EndorsementsList', () => {
       id: 2,
       stakeholder: {
         id: 2,
-        name: 'Jane Smith',
+        first_name: 'Jane',
+        last_name: 'Smith',
         organization: 'Green Farms Coalition',
         role: 'Director',
         email: 'jane@greenfarms.org',
@@ -253,7 +255,8 @@ describe('EndorsementsList', () => {
           id: 3,
           stakeholder: {
             id: 3,
-            name: 'New Endorser',
+            first_name: 'New',
+            last_name: 'Endorser',
             organization: 'New Org',
             email: 'new@test.com',
             street_address: '789 Pine St',

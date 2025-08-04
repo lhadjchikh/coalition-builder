@@ -40,7 +40,8 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
     jest.spyOn(API, 'getEndorsers').mockResolvedValue([
       {
         id: 1,
-        name: 'Test Endorser',
+        first_name: 'Test',
+        last_name: 'Endorser',
         organization: 'Test Organization',
         email: 'test@example.org',
         state: 'MD',

@@ -35,7 +35,8 @@ describe('EndorsementForm', () => {
     expect(screen.getByText('"I support this test campaign"')).toBeInTheDocument();
     expect(screen.getByText('Please fill out all fields')).toBeInTheDocument();
 
-    expect(screen.getByTestId('name-input')).toBeInTheDocument();
+    expect(screen.getByTestId('first-name-input')).toBeInTheDocument();
+    expect(screen.getByTestId('last-name-input')).toBeInTheDocument();
     expect(screen.getByTestId('organization-input')).toBeInTheDocument();
     expect(screen.getByTestId('email-input')).toBeInTheDocument();
     expect(screen.getByTestId('street-address-input')).toBeInTheDocument();
@@ -63,7 +64,8 @@ describe('EndorsementForm', () => {
     expect(
       screen.getByText('This campaign is not currently accepting endorsements.')
     ).toBeInTheDocument();
-    expect(screen.queryByTestId('name-input')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('first-name-input')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('last-name-input')).not.toBeInTheDocument();
   });
 
   it('submits form with valid data', async () => {
@@ -71,7 +73,8 @@ describe('EndorsementForm', () => {
       id: 1,
       stakeholder: {
         id: 1,
-        name: 'John Doe',
+        first_name: 'John',
+        last_name: 'Doe',
         organization: 'Test Org',
         role: 'Manager',
         email: 'john@test.com',
@@ -99,7 +102,8 @@ describe('EndorsementForm', () => {
 
     // Fill out the form
     fireEvent.change(screen.getByTestId('type-select'), { target: { value: 'business' } });
-    fireEvent.change(screen.getByTestId('name-input'), { target: { value: 'John Doe' } });
+    fireEvent.change(screen.getByTestId('first-name-input'), { target: { value: 'John' } });
+    fireEvent.change(screen.getByTestId('last-name-input'), { target: { value: 'Doe' } });
     fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Test Org' } });
     fireEvent.change(screen.getByTestId('role-input'), { target: { value: 'Manager' } });
     fireEvent.change(screen.getByTestId('email-input'), { target: { value: 'john@test.com' } });
@@ -164,7 +168,8 @@ describe('EndorsementForm', () => {
 
       // Fill out required fields
       fireEvent.change(screen.getByTestId('type-select'), { target: { value: 'individual' } });
-      fireEvent.change(screen.getByTestId('name-input'), { target: { value: 'John Doe' } });
+      fireEvent.change(screen.getByTestId('first-name-input'), { target: { value: 'John' } });
+    fireEvent.change(screen.getByTestId('last-name-input'), { target: { value: 'Doe' } });
       fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Test Org' } });
       fireEvent.change(screen.getByTestId('email-input'), { target: { value: 'john@test.com' } });
       fireEvent.change(screen.getByTestId('street-address-input'), {
@@ -220,7 +225,8 @@ describe('EndorsementForm', () => {
   it('validates required fields', () => {
     render(<EndorsementForm campaign={mockCampaign} />);
 
-    const nameInput = screen.getByTestId('name-input');
+    const firstNameInput = screen.getByTestId('first-name-input');
+    const lastNameInput = screen.getByTestId('last-name-input');
     const organizationInput = screen.getByTestId('organization-input');
     const emailInput = screen.getByTestId('email-input');
     const streetAddressInput = screen.getByTestId('street-address-input');
@@ -228,7 +234,8 @@ describe('EndorsementForm', () => {
     const stateSelect = screen.getByTestId('state-select');
     const zipCodeInput = screen.getByTestId('zip-code-input');
 
-    expect(nameInput).toBeRequired();
+    expect(firstNameInput).toBeRequired();
+    expect(lastNameInput).toBeRequired();
     expect(organizationInput).toBeRequired();
     expect(emailInput).toBeRequired();
     expect(streetAddressInput).toBeRequired();
@@ -276,7 +283,8 @@ describe('EndorsementForm', () => {
 
       // Fill out required fields
       fireEvent.change(screen.getByTestId('type-select'), { target: { value: 'individual' } });
-      fireEvent.change(screen.getByTestId('name-input'), { target: { value: 'Bot User' } });
+      fireEvent.change(screen.getByTestId('first-name-input'), { target: { value: 'Bot' } });
+      fireEvent.change(screen.getByTestId('last-name-input'), { target: { value: 'User' } });
       fireEvent.change(screen.getByTestId('organization-input'), { target: { value: 'Bot Org' } });
       fireEvent.change(screen.getByTestId('email-input'), { target: { value: 'bot@spam.com' } });
       fireEvent.change(screen.getByTestId('street-address-input'), {
@@ -374,9 +382,10 @@ describe('EndorsementForm', () => {
       render(<TestRefComponent />);
 
       // Mock the name input specifically after render
-      const nameInput = screen.getByTestId('name-input');
-      nameInput.scrollIntoView = mockScrollIntoView;
-      nameInput.focus = mockFocus;
+      const firstNameInput = screen.getByTestId('first-name-input');
+    const lastNameInput = screen.getByTestId('last-name-input');
+      firstNameInput.scrollIntoView = mockScrollIntoView;
+      firstNameInput.focus = mockFocus;
 
       const scrollButton = screen.getByTestId('scroll-trigger');
       fireEvent.click(scrollButton);
@@ -392,10 +401,11 @@ describe('EndorsementForm', () => {
       const mockOnFormInteraction = jest.fn();
       render(<TestRefComponent onFormInteraction={mockOnFormInteraction} />);
 
-      const nameInput = screen.getByTestId('name-input');
+      const firstNameInput = screen.getByTestId('first-name-input');
+    const lastNameInput = screen.getByTestId('last-name-input');
 
       // Simulate form focus
-      fireEvent.focus(nameInput);
+      fireEvent.focus(firstNameInput);
 
       expect(mockOnFormInteraction).toHaveBeenCalledWith(true);
     });
@@ -404,14 +414,15 @@ describe('EndorsementForm', () => {
       const mockOnFormInteraction = jest.fn();
       render(<TestRefComponent onFormInteraction={mockOnFormInteraction} />);
 
-      const nameInput = screen.getByTestId('name-input');
+      const firstNameInput = screen.getByTestId('first-name-input');
+    const lastNameInput = screen.getByTestId('last-name-input');
 
       // First focus the form
-      fireEvent.focus(nameInput);
+      fireEvent.focus(firstNameInput);
       expect(mockOnFormInteraction).toHaveBeenCalledWith(true);
 
       // Then blur the form (focus moves completely outside)
-      fireEvent.blur(nameInput, { relatedTarget: null });
+      fireEvent.blur(firstNameInput, { relatedTarget: null });
 
       expect(mockOnFormInteraction).toHaveBeenCalledWith(false);
     });
@@ -420,17 +431,18 @@ describe('EndorsementForm', () => {
       const mockOnFormInteraction = jest.fn();
       render(<TestRefComponent onFormInteraction={mockOnFormInteraction} />);
 
-      const nameInput = screen.getByTestId('name-input');
+      const firstNameInput = screen.getByTestId('first-name-input');
+    const lastNameInput = screen.getByTestId('last-name-input');
       const organizationInput = screen.getByTestId('organization-input');
 
       // Focus the name field
-      fireEvent.focus(nameInput);
+      fireEvent.focus(firstNameInput);
       expect(mockOnFormInteraction).toHaveBeenCalledWith(true);
 
       mockOnFormInteraction.mockClear();
 
       // Move focus to organization field (within the same form)
-      fireEvent.blur(nameInput, { relatedTarget: organizationInput });
+      fireEvent.blur(firstNameInput, { relatedTarget: organizationInput });
 
       // Should not call onFormInteraction(false) since focus stayed within form
       expect(mockOnFormInteraction).not.toHaveBeenCalledWith(false);
@@ -443,8 +455,11 @@ describe('EndorsementForm', () => {
       render(<TestRefComponent onFormInteraction={mockOnFormInteraction} />);
 
       // Fill out all required form fields
-      fireEvent.change(screen.getByTestId('name-input'), {
-        target: { value: 'John Doe' },
+      fireEvent.change(screen.getByTestId('first-name-input'), {
+        target: { value: 'John' },
+      });
+      fireEvent.change(screen.getByTestId('last-name-input'), {
+        target: { value: 'Doe' },
       });
       fireEvent.change(screen.getByTestId('organization-input'), {
         target: { value: 'Test Org' },
@@ -489,20 +504,23 @@ describe('EndorsementForm', () => {
       // This test ensures the component doesn't crash when callback is undefined
       render(<EndorsementForm campaign={mockCampaign} />);
 
-      const nameInput = screen.getByTestId('name-input');
+      const firstNameInput = screen.getByTestId('first-name-input');
+    const lastNameInput = screen.getByTestId('last-name-input');
 
       // These should not throw errors
-      fireEvent.focus(nameInput);
-      fireEvent.blur(nameInput);
+      fireEvent.focus(firstNameInput);
+      fireEvent.blur(firstNameInput);
 
-      expect(nameInput).toBeInTheDocument();
+      expect(firstNameInput).toBeInTheDocument();
+      expect(lastNameInput).toBeInTheDocument();
     });
 
     it('should maintain form functionality when ref is not provided', () => {
       // Test that form works normally without ref
       render(<EndorsementForm campaign={mockCampaign} />);
 
-      expect(screen.getByTestId('name-input')).toBeInTheDocument();
+      expect(screen.getByTestId('first-name-input')).toBeInTheDocument();
+    expect(screen.getByTestId('last-name-input')).toBeInTheDocument();
       expect(screen.getByTestId('organization-input')).toBeInTheDocument();
       expect(screen.getByTestId('submit-button')).toBeInTheDocument();
     });

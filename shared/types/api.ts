@@ -25,7 +25,7 @@ export interface Campaign {
 // Endorser type definition (matches StakeholderOut schema)
 export interface Endorser {
   id: number;
-  name: string;
+  name?: string; // Computed property for backward compatibility
   first_name: string;
   last_name: string;
   organization?: string;
