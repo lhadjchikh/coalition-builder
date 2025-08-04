@@ -170,6 +170,7 @@ files = [
 ]
 
 [package.dependencies]
+tinycss2 = {version = ">=1.1.0,<1.5", optional = true, markers = "extra == \"css\""}
 webencodings = "*"
 
 [package.extras]
@@ -2218,4 +2219,4 @@ brotli = ["brotli"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.13"
-content-hash = "b117d9879e39609b744a23394fa3238c3f9aea75510fc8dcf7fc7a2d6d2b0c5e"
+content-hash = "15b463921753ee8790b5c53902a53a34f6c3df8ce0afb03c4aec7c80eac3c044"

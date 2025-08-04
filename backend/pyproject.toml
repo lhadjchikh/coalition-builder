@@ -26,7 +26,7 @@ akismet = "^24.11.0"
 email-validator = "^2.1.1"
 django-ratelimit = "^4.1.0"
 redis = "^5.2.0"
-bleach = "^6.2.0"
+bleach = {extras = ["css"], version = "^6.2.0"}
 geopy = "^2.4.1"
 django-extensions = "^4.1"
 django-lockdown = "^5.0.0"
@@ -35,7 +35,6 @@ pillow = "^11.0.0"
 gdal = "3.10.3"
 requests = "^2.32.4"
 django-tinymce = "^4.1.0"
-tinycss2 = "^1.4.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
