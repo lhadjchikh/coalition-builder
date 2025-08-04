@@ -47,7 +47,8 @@ class EndorsementAPITest(TestCase):
 
         # Create test stakeholder
         self.stakeholder = Stakeholder.objects.create(
-            name="Jane Smith",
+            first_name="Jane",
+            last_name="Smith",
             organization="Green Farms Coalition",
             role="Director",
             email="jane@greenfarms.org",
@@ -92,7 +93,8 @@ class EndorsementAPITest(TestCase):
         expected = "We fully support this important initiative"
         assert endorsement_data["statement"] == expected
         assert endorsement_data["public_display"]
-        assert endorsement_data["stakeholder"]["name"] == "Jane Smith"
+        assert endorsement_data["stakeholder"]["first_name"] == "Jane"
+        assert endorsement_data["stakeholder"]["last_name"] == "Smith"
         assert endorsement_data["campaign"]["title"] == "Test Campaign"
 
     def test_list_campaign_endorsements(self) -> None:
@@ -121,7 +123,8 @@ class EndorsementAPITest(TestCase):
         endorsement_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": "Bob Johnson",
+                "first_name": "Bob",
+                "last_name": "Johnson",
                 "organization": "Johnson Family Farm",
                 "role": "Owner",
                 "email": "bob@johnsonfarm.com",
@@ -148,7 +151,8 @@ class EndorsementAPITest(TestCase):
 
         # Verify stakeholder was created
         stakeholder = Stakeholder.objects.get(email="bob@johnsonfarm.com")
-        assert stakeholder.name == "Bob Johnson"
+        assert stakeholder.first_name == "Bob"
+        assert stakeholder.last_name == "Johnson"
         assert stakeholder.type == "farmer"
 
         # Verify endorsement was created
@@ -166,7 +170,8 @@ class EndorsementAPITest(TestCase):
         endorsement_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": "Jane Smith",  # Exact match
+                "first_name": "Jane",
+                "last_name": "Smith",  # Exact match
                 "organization": "Green Farms Coalition",  # Exact match
                 "role": "Director",  # Exact match
                 "email": "jane@greenfarms.org",  # Same email as existing stakeholder
@@ -193,7 +198,8 @@ class EndorsementAPITest(TestCase):
 
         # Verify stakeholder info was NOT changed (security requirement)
         stakeholder = Stakeholder.objects.get(email="jane@greenfarms.org")
-        assert stakeholder.name == "Jane Smith"  # Original data preserved
+        assert stakeholder.first_name == "Jane"
+        assert stakeholder.last_name == "Smith"  # Original data preserved
         assert (
             stakeholder.organization == "Green Farms Coalition"
         )  # Original data preserved
@@ -211,7 +217,8 @@ class EndorsementAPITest(TestCase):
         endorsement_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": "Test User",
+                "first_name": "Test",
+                "last_name": "User",
                 "organization": "Test Org",
                 "email": "test@example.com",
                 "street_address": "123 Test St",
@@ -239,7 +246,8 @@ class EndorsementAPITest(TestCase):
         endorsement_data = {
             "campaign_id": 99999,  # Non-existent campaign
             "stakeholder": {
-                "name": "Test User",
+                "first_name": "Test",
+                "last_name": "User",
                 "organization": "Test Org",
                 "email": "test@example.com",
                 "street_address": "123 Test St",
@@ -265,7 +273,8 @@ class EndorsementAPITest(TestCase):
         endorsement_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": self.stakeholder.name,
+                "first_name": self.stakeholder.first_name,
+                "last_name": self.stakeholder.last_name,
                 "organization": self.stakeholder.organization,
                 "role": self.stakeholder.role,
                 "email": self.stakeholder.email,
@@ -314,7 +323,8 @@ class EndorsementAPITest(TestCase):
 
         # Create private endorsement (also approved and verified)
         private_stakeholder = Stakeholder.objects.create(
-            name="Private Person",
+            first_name="Private",
+            last_name="Person",
             organization="Private Org",
             email="private@example.com",
             state="CA",
@@ -336,7 +346,8 @@ class EndorsementAPITest(TestCase):
 
         # Should only return the public endorsement (private one excluded)
         assert len(data) == 1
-        assert data[0]["stakeholder"]["name"] == "Jane Smith"
+        assert data[0]["stakeholder"]["first_name"] == "Jane"
+        assert data[0]["stakeholder"]["last_name"] == "Smith"
 
     def test_transaction_rollback_on_endorsement_error(self) -> None:
         """Test stakeholder creation rollback if endorsement creation fails"""
@@ -346,7 +357,8 @@ class EndorsementAPITest(TestCase):
         endorsement_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": "New Stakeholder",
+                "first_name": "New",
+                "last_name": "Stakeholder",
                 "organization": "New Organization",
                 "role": "Manager",
                 "email": "new@example.com",
@@ -401,7 +413,8 @@ class EndorsementAPIEnhancedTest(TestCase):
         )
 
         self.stakeholder = Stakeholder.objects.create(
-            name="Test User",
+            first_name="Test",
+            last_name="User",
             organization="Test Org",
             email="test@example.com",
             state="MD",
@@ -629,7 +642,8 @@ class EndorsementAPIEnhancedTest(TestCase):
         """Test CSV export sanitizes dangerous formula characters"""
         # Create stakeholder with potentially dangerous CSV data
         malicious_stakeholder = Stakeholder.objects.create(
-            name="=cmd|' /C calc'!A0",  # Excel formula injection attempt
+            first_name="=cmd|'",
+            last_name="/C calc'!A0",  # Excel formula injection attempt
             organization="@SUM(1+1)*cmd|' /C calc'!A0",  # Another injection attempt
             email="evil@example.com",
             state="CA",
@@ -691,7 +705,8 @@ class EndorsementAPIEnhancedTest(TestCase):
 
         data = response.json()
         assert len(data["endorsements"]) == 1
-        assert data["endorsements"][0]["stakeholder"]["name"] == "Test User"
+        assert data["endorsements"][0]["stakeholder"]["first_name"] == "Test"
+        assert data["endorsements"][0]["stakeholder"]["last_name"] == "User"
 
     def test_export_endorsements_json_unauthorized(self) -> None:
         """Test JSON export endpoint returns 403 for non-admin users"""
@@ -713,7 +728,8 @@ class EndorsementAPIEnhancedTest(TestCase):
 
         # Create another pending endorsement
         stakeholder2 = Stakeholder.objects.create(
-            name="Another User",
+            first_name="Another",
+            last_name="User",
             organization="Another Org",
             email="another@example.com",
             state="CA",
@@ -812,7 +828,8 @@ class TermsAcceptanceIntegrationTest(TestCase):
         endorsement_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": "John Doe",
+                "first_name": "John",
+                "last_name": "Doe",
                 "organization": "Test Org",
                 "role": "Manager",
                 "email": "john@test.com",
@@ -862,7 +879,8 @@ class TermsAcceptanceIntegrationTest(TestCase):
         endorsement_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": "Jane Doe",
+                "first_name": "Jane",
+                "last_name": "Doe",
                 "organization": "Test Org 2",
                 "role": "Director",
                 "email": "jane@test.com",
@@ -903,7 +921,8 @@ class TermsAcceptanceIntegrationTest(TestCase):
         endorsement_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": "Bob Smith",
+                "first_name": "Bob",
+                "last_name": "Smith",
                 "organization": "Test Org 3",
                 "email": "bob@test.com",
                 "street_address": "789 Test Way",
@@ -939,7 +958,8 @@ class TermsAcceptanceIntegrationTest(TestCase):
         """Test TermsAcceptance creation when using existing stakeholder"""
         # Create an existing stakeholder
         existing_stakeholder = Stakeholder.objects.create(
-            name="Existing User",
+            first_name="Existing",
+            last_name="User",
             organization="Existing Org",
             email="existing@test.com",
             street_address="456 Existing St",
@@ -952,7 +972,8 @@ class TermsAcceptanceIntegrationTest(TestCase):
         endorsement_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": "Existing User",  # Exact match for security
+                "first_name": "Existing",
+                "last_name": "User",  # Exact match for security
                 "organization": "Existing Org",
                 "email": "existing@test.com",
                 "street_address": "456 Existing St",

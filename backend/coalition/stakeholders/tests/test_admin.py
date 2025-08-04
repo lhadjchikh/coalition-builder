@@ -25,7 +25,8 @@ class StakeholderAdminTest(TestCase):
         )
 
         self.stakeholder = Stakeholder.objects.create(
-            name="Test Stakeholder",
+            first_name="Test",
+            last_name="Stakeholder",
             organization="Test Organization",
             role="Director",
             email="test@example.com",
@@ -46,7 +47,8 @@ class StakeholderAdminTest(TestCase):
 
         # Test creating a new stakeholder
         new_stakeholder = Stakeholder(
-            name="New Stakeholder",
+            first_name="New",
+            last_name="Stakeholder",
             organization="New Organization",
             email="new@example.com",
             type="individual",
@@ -60,10 +62,12 @@ class StakeholderAdminTest(TestCase):
         assert new_stakeholder.id is not None
 
         # Test updating existing stakeholder
-        self.stakeholder.name = "Updated Stakeholder"
+        self.stakeholder.first_name = "Updated"
+        self.stakeholder.last_name = "Stakeholder"
         self.admin.save_model(request, self.stakeholder, None, change=True)
         self.stakeholder.refresh_from_db()
-        assert self.stakeholder.name == "Updated Stakeholder"
+        assert self.stakeholder.first_name == "Updated"
+        assert self.stakeholder.last_name == "Stakeholder"
 
     def test_endorsement_count_method(self) -> None:
         """Test endorsement_count admin method"""
@@ -77,7 +81,7 @@ class StakeholderAdminTest(TestCase):
             all_fieldset_fields.extend(fieldset[1]["fields"])
 
         # Required fields that should be in admin
-        required_fields = ["name", "email", "type", "state"]
+        required_fields = ["first_name", "last_name", "email", "type", "state"]
         for field in required_fields:
             assert field in all_fieldset_fields
 
@@ -142,7 +146,8 @@ class StakeholderAdminTest(TestCase):
         """Test that search fields are properly configured"""
         search_fields = self.admin.search_fields
         expected_search_fields = [
-            "name",
+            "first_name",
+            "last_name",
             "organization",
             "email",
             "city",

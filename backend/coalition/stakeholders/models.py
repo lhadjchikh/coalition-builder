@@ -25,9 +25,14 @@ class Stakeholder(models.Model):
         ("other", "Other"),
     ]
 
-    name = models.CharField(
-        max_length=200,
-        help_text="Full name of the individual or primary contact person",
+    # Name fields - separate first and last name
+    first_name = models.CharField(
+        max_length=100,
+        help_text="First name of the individual or primary contact person",
+    )
+    last_name = models.CharField(
+        max_length=100,
+        help_text="Last name of the individual or primary contact person",
     )
     organization = models.CharField(
         max_length=200,
@@ -126,6 +131,17 @@ class Stakeholder(models.Model):
         if self.zip_code:
             self.zip_code = self.zip_code.strip()
         super().save(*args, **kwargs)
+
+    @property
+    def name(self) -> str:
+        """Return full name from first and last name"""
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}"
+        elif self.first_name:
+            return self.first_name
+        elif self.last_name:
+            return self.last_name
+        return ""
 
     @property
     def full_address(self) -> str:

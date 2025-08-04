@@ -1,7 +1,7 @@
 {{ organization_name }}
 Your Endorsement Has Been Approved!
 
-Hello {{ stakeholder.name }},
+Hello {{ stakeholder.first_name }},
 
 Great news! Your endorsement for "{{ campaign.title }}" has been approved and is now publicly displayed.
 

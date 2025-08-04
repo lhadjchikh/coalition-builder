@@ -362,7 +362,8 @@ class SpamPreventionMetadata(Schema):
 class StakeholderCreateSchema(Schema):
     """Input schema for creating stakeholder records with validation."""
 
-    name: str = Field(max_length=200, description="Stakeholder full name")
+    first_name: str = Field(max_length=100, description="First name")
+    last_name: str = Field(max_length=100, description="Last name")
     organization: str = Field(max_length=200, description="Organization name")
     role: str = Field(default="", max_length=100, description="Role/title")
     email: str = Field(max_length=254, description="Email address")

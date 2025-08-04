@@ -1,7 +1,7 @@
 {{ organization_name }}
 Verify Your Endorsement
 
-Hello {{ stakeholder.name }},
+Hello {{ stakeholder.first_name }},
 
 Thank you for endorsing "{{ campaign.title }}"! To complete your endorsement, please verify your email address by visiting the link below.
 

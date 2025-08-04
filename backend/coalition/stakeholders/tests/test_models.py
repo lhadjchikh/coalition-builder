@@ -11,7 +11,8 @@ class TestStakeholderModel(TestCase):
     def test_stakeholder_creation_with_address(self) -> None:
         """Test creating a stakeholder with full address information"""
         stakeholder = Stakeholder.objects.create(
-            name="John Doe",
+            first_name="John",
+            last_name="Doe",
             organization="Test Org",
             email="john@example.com",
             street_address="123 Main St",
@@ -32,7 +33,8 @@ class TestStakeholderModel(TestCase):
     def test_stakeholder_normalization(self) -> None:
         """Test that email and state are normalized on save"""
         stakeholder = Stakeholder.objects.create(
-            name="Jane Doe",
+            first_name="Jane",
+            last_name="Doe",
             organization="Test Org",
             email="JANE@EXAMPLE.COM",
             street_address="456 Oak Ave",
@@ -51,7 +53,8 @@ class TestStakeholderModel(TestCase):
         # All stakeholders have location now
         point = Point(-76.6122, 39.2904)  # Baltimore coordinates
         stakeholder = Stakeholder(
-            name="Location Test",
+            first_name="Location",
+            last_name="Test",
             organization="Test Org",
             email="location@example.com",
             street_address="123 Main St",
@@ -90,7 +93,8 @@ class TestStakeholderModel(TestCase):
 
         # Create stakeholder with districts
         stakeholder = Stakeholder.objects.create(
-            name="District Test",
+            first_name="District",
+            last_name="Test",
             organization="Test Org",
             email="district@example.com",
             street_address="789 Pine St",
@@ -112,7 +116,8 @@ class TestStakeholderModel(TestCase):
         """Test various full_address property scenarios"""
         # Full address (all fields required now)
         s1 = Stakeholder(
-            name="Test User",
+            first_name="Test",
+            last_name="User",
             organization="Test Org",
             email="test@example.com",
             street_address="123 Main St",

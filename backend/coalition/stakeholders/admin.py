@@ -6,7 +6,7 @@ from .models import Stakeholder
 @admin.register(Stakeholder)
 class StakeholderAdmin(admin.ModelAdmin):
     list_display = (
-        "name",
+        "get_full_name",
         "organization",
         "type",
         "city",
@@ -17,7 +17,15 @@ class StakeholderAdmin(admin.ModelAdmin):
         "created_at",
     )
     list_filter = ("type", "state", "email_updates", "created_at")
-    search_fields = ("name", "organization", "email", "city", "county", "zip_code")
+    search_fields = (
+        "first_name",
+        "last_name",
+        "organization",
+        "email",
+        "city",
+        "county",
+        "zip_code",
+    )
     ordering = ("-created_at",)
     readonly_fields = (
         "location",
@@ -33,7 +41,8 @@ class StakeholderAdmin(admin.ModelAdmin):
             "Contact Information",
             {
                 "fields": (
-                    "name",
+                    "first_name",
+                    "last_name",
                     "organization",
                     "role",
                     "email",
@@ -73,6 +82,13 @@ class StakeholderAdmin(admin.ModelAdmin):
             {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},
         ),
     )
+
+    def get_full_name(self, obj: Stakeholder) -> str:
+        """Display full name from first and last name"""
+        return obj.name
+
+    get_full_name.short_description = "Name"
+    get_full_name.admin_order_field = "first_name"  # Allow sorting
 
     def endorsement_count(self, obj: Stakeholder) -> int:
         """Display count of endorsements"""

@@ -32,7 +32,8 @@ class EndorsementAdmin(admin.ModelAdmin):
         "stakeholder__state",
     )
     search_fields = (
-        "stakeholder__name",
+        "stakeholder__first_name",
+        "stakeholder__last_name",
         "stakeholder__organization",
         "stakeholder__email",
         "campaign__title",
@@ -120,7 +121,7 @@ class EndorsementAdmin(admin.ModelAdmin):
         return obj.stakeholder.name
 
     stakeholder_name.short_description = "Name"
-    stakeholder_name.admin_order_field = "stakeholder__name"
+    stakeholder_name.admin_order_field = "stakeholder__last_name"
 
     def stakeholder_organization(self, obj: Endorsement) -> str:
         return obj.stakeholder.organization

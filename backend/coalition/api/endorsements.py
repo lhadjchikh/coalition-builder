@@ -59,7 +59,9 @@ def _validate_stakeholder_data_match(
     Raises HttpError if data doesn't match to prevent unauthorized overwriting.
     """
     data_matches = (
-        existing_stakeholder.name.lower() == submitted_data["name"].lower()
+        existing_stakeholder.first_name.lower() == submitted_data["first_name"].lower()
+        and existing_stakeholder.last_name.lower()
+        == submitted_data["last_name"].lower()
         and existing_stakeholder.organization.lower()
         == submitted_data["organization"].lower()
         and (existing_stakeholder.role or "").lower()
@@ -103,7 +105,8 @@ def _get_or_create_stakeholder(
     stakeholder, created = Stakeholder.objects.get_or_create(
         email__iexact=stakeholder_data["email"],  # Case-insensitive lookup
         defaults={
-            "name": stakeholder_data["name"],
+            "first_name": stakeholder_data["first_name"],
+            "last_name": stakeholder_data["last_name"],
             "organization": stakeholder_data["organization"],
             "role": stakeholder_data.get("role"),
             "email": stakeholder_data["email"].lower(),  # Normalized in save()
@@ -193,7 +196,8 @@ def _validate_and_prepare_endorsement_data(
 
     # Prepare stakeholder data for spam checks
     stakeholder_data = {
-        "name": data.stakeholder.name,
+        "first_name": data.stakeholder.first_name,
+        "last_name": data.stakeholder.last_name,
         "organization": data.stakeholder.organization,
         "role": data.stakeholder.role,
         "email": data.stakeholder.email,

@@ -10,7 +10,7 @@ Public Display: {% if endorsement.public_display %}Yes{% else %}No{% endif %}
 Submitted: {{ endorsement.created_at|date:"F j, Y g:i A" }}
 
 Stakeholder Information:
-Name: {{ stakeholder.name }}
+Name: {{ stakeholder.first_name }} {{ stakeholder.last_name }}
 Organization: {{ stakeholder.organization }}
 {% if stakeholder.role %}Role: {{ stakeholder.role }}{% endif %}
 Email: {{ stakeholder.email }}
