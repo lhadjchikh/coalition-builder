@@ -51,19 +51,19 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
       confirm_email: '',
     });
     const formRef = useRef<HTMLFormElement>(null);
-    const firstNameInputRef = useRef<HTMLInputElement>(null);
+    const typeSelectRef = useRef<HTMLSelectElement>(null);
 
     // Expose methods to parent component
     useImperativeHandle(
       ref,
       () => ({
         scrollToFirstField: () => {
-          if (firstNameInputRef.current) {
-            firstNameInputRef.current.scrollIntoView({
+          if (typeSelectRef.current) {
+            typeSelectRef.current.scrollIntoView({
               behavior: 'smooth',
               block: 'center',
             });
-            firstNameInputRef.current.focus();
+            typeSelectRef.current.focus();
           }
         },
       }),
@@ -328,6 +328,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
             <label htmlFor="type">Endorser type *</label>
             <select
               id="type"
+              ref={typeSelectRef}
               value={stakeholder.type}
               onChange={e => handleStakeholderChange('type', e.target.value as Stakeholder['type'])}
               required
@@ -357,7 +358,6 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
               onChange={e => handleStakeholderChange('first_name', e.target.value)}
               required
               data-testid="first-name-input"
-              ref={firstNameInputRef}
             />
           </div>
 

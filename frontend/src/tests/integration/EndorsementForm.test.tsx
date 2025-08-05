@@ -380,16 +380,16 @@ describe('EndorsementForm', () => {
       expect(mockOnScrollToField).toHaveBeenCalledTimes(1);
     });
 
-    it('should scroll to and focus the name input field when scrollToFirstField is called', () => {
+    it('should scroll to and focus the type select field when scrollToFirstField is called', () => {
       const mockScrollIntoView = jest.fn();
       const mockFocus = jest.fn();
 
       render(<TestRefComponent />);
 
-      // Mock the name input specifically after render
-      const firstNameInput = screen.getByTestId('first-name-input');
-      firstNameInput.scrollIntoView = mockScrollIntoView;
-      firstNameInput.focus = mockFocus;
+      // Mock the type select specifically after render
+      const typeSelect = screen.getByTestId('type-select');
+      typeSelect.scrollIntoView = mockScrollIntoView;
+      typeSelect.focus = mockFocus;
 
       const scrollButton = screen.getByTestId('scroll-trigger');
       fireEvent.click(scrollButton);
