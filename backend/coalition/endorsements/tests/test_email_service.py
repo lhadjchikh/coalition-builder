@@ -21,7 +21,8 @@ class EndorsementEmailServiceTest(TestCase):
 
     def setUp(self) -> None:
         self.stakeholder = Stakeholder.objects.create(
-            name="Test User",
+            first_name="Test",
+            last_name="User",
             organization="Test Org",
             email="test@example.com",
             state="MD",

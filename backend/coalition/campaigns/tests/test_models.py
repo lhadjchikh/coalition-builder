@@ -88,7 +88,8 @@ class PolicyCampaignModelTest(TestCase):
 
         # Create stakeholder and endorsement
         stakeholder = Stakeholder.objects.create(
-            name="Test Supporter",
+            first_name="Test",
+            last_name="Supporter",
             organization="Test Organization",
             email="supporter@test.org",
             state="MD",

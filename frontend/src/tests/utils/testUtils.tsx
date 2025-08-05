@@ -86,7 +86,8 @@ export const createMockCampaign = (overrides: Partial<Campaign> = {}): Campaign 
 
 export const createMockEndorser = (overrides: Partial<Endorser> = {}): Endorser => ({
   id: 1,
-  name: 'John Doe',
+  first_name: 'John',
+  last_name: 'Doe',
   organization: 'Test Organization',
   email: 'john@example.com',
   street_address: '123 Main St',

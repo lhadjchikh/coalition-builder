@@ -96,6 +96,7 @@ class StakeholderOut(ModelSchema):
     state_senate_district_abbrev: str | None = None
     state_house_district_name: str | None = None
     state_house_district_abbrev: str | None = None
+    name: str  # Computed property from model
 
     class Meta:
         model = Stakeholder
@@ -133,6 +134,10 @@ class StakeholderOut(ModelSchema):
     def resolve_state_house_district_abbrev(obj: "Stakeholder") -> str | None:
         return obj.state_house_district.abbrev if obj.state_house_district else None
 
+    @staticmethod
+    def resolve_name(obj: "Stakeholder") -> str:
+        return obj.name
+
 
 class EndorsementOut(ModelSchema):
     """Response schema for Endorsement model with nested data."""
@@ -146,6 +151,7 @@ class EndorsementOut(ModelSchema):
             "verification_token",
             "verification_sent_at",
             "admin_notes",
+            "display_publicly",  # Redundant for public API - only show approved
         ]
 
 
@@ -362,8 +368,13 @@ class SpamPreventionMetadata(Schema):
 class StakeholderCreateSchema(Schema):
     """Input schema for creating stakeholder records with validation."""
 
-    name: str = Field(max_length=200, description="Stakeholder full name")
-    organization: str = Field(max_length=200, description="Organization name")
+    first_name: str = Field(max_length=100, description="First name")
+    last_name: str = Field(max_length=100, description="Last name")
+    organization: str = Field(
+        default="",
+        max_length=200,
+        description="Organization name (optional)",
+    )
     role: str = Field(default="", max_length=100, description="Role/title")
     email: str = Field(max_length=254, description="Email address")
 
@@ -418,10 +429,18 @@ class EndorsementCreateSchema(Schema):
     terms_accepted: bool = Field(
         description="Whether the user has accepted the terms of use",
     )
+    org_authorized: bool = Field(
+        default=False,
+        description="Whether the stakeholder is authorized to endorse on behalf "
+        "of their organization",
+    )
     # Structured spam prevention fields with validation
     form_metadata: SpamPreventionMetadata = Field(
         description="Spam prevention metadata with validation",
     )
+
+    # Organization authorization validation is done in the API endpoint
+    # because we need to check the stakeholder data after deserialization
 
 
 class EndorsementVerifySchema(Schema):

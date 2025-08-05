@@ -41,7 +41,8 @@ def create_test_data() -> int:
         # Create a test stakeholder if none exists
         if not Stakeholder.objects.exists():
             stakeholder = Stakeholder.objects.create(
-                name="Test Stakeholder",
+                first_name="Test",
+                last_name="Stakeholder",
                 organization="Test Organization",
                 role="Test Role",
                 email="test@example.com",
@@ -58,6 +59,9 @@ def create_test_data() -> int:
                     campaign=campaign,
                     statement="Test endorsement statement",
                     public_display=True,
+                    email_verified=True,
+                    status="approved",
+                    display_publicly=True,
                 )
                 print("Created test endorsement")
 

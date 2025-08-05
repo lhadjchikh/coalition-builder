@@ -61,7 +61,7 @@
 
     <div class="stakeholder-info">
         <h4>Stakeholder Information:</h4>
-        <p><strong>Name:</strong> {{ stakeholder.name }}</p>
+        <p><strong>Name:</strong> {{ stakeholder.first_name }} {{ stakeholder.last_name }}</p>
         <p><strong>Organization:</strong> {{ stakeholder.organization }}</p>
         {% if stakeholder.role %}<p><strong>Role:</strong> {{ stakeholder.role }}</p>{% endif %}
         <p><strong>Email:</strong> {{ stakeholder.email }}</p>

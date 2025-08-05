@@ -180,7 +180,8 @@ describe('API Service', () => {
     const mockEndorsers: Endorser[] = [
       {
         id: 1,
-        name: 'John Doe',
+        first_name: 'John',
+        last_name: 'Doe',
         organization: 'Test Org',
         email: 'john@example.com',
         state: 'CA',
@@ -251,7 +252,8 @@ describe('API Service', () => {
         id: 1,
         stakeholder: {
           id: 1,
-          name: 'John Doe',
+          first_name: 'John',
+          last_name: 'Doe',
           organization: 'Test Org',
           email: 'john@example.com',
           street_address: '123 Main St',
@@ -303,7 +305,8 @@ describe('API Service', () => {
         id: 1,
         stakeholder: {
           id: 1,
-          name: 'John Doe',
+          first_name: 'John',
+          last_name: 'Doe',
           organization: 'Test Org',
           email: 'john@example.com',
           street_address: '123 Main St',
@@ -369,7 +372,8 @@ describe('API Service', () => {
     const mockEndorsementData: EndorsementCreate = {
       campaign_id: 1,
       stakeholder: {
-        name: 'John Doe',
+        first_name: 'John',
+        last_name: 'Doe',
         organization: 'Test Org',
         email: 'john@example.com',
         street_address: '123 Main St',
@@ -381,13 +385,15 @@ describe('API Service', () => {
       statement: 'I support this campaign',
       public_display: true,
       terms_accepted: true,
+      org_authorized: true,
     };
 
     const mockCreatedEndorsement: Endorsement = {
       id: 1,
       stakeholder: {
         id: 1,
-        name: 'John Doe',
+        first_name: 'John',
+        last_name: 'Doe',
         organization: 'Test Org',
         email: 'john@example.com',
         street_address: '123 Main St',
@@ -783,7 +789,8 @@ describe('API Service', () => {
       const endorsementData: EndorsementCreate = {
         campaign_id: 1,
         stakeholder: {
-          name: 'John Doe',
+          first_name: 'John',
+          last_name: 'Doe',
           organization: 'Test Org',
           email: 'john@example.com',
           street_address: '123 Main St',
@@ -795,6 +802,7 @@ describe('API Service', () => {
         statement: 'I support this campaign',
         public_display: true,
         terms_accepted: true,
+        org_authorized: true,
       };
 
       await expect(API.createEndorsement(endorsementData)).rejects.toThrow('Creation failed');

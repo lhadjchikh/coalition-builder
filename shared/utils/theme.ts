@@ -105,16 +105,19 @@ export function generateCSSVariables(theme: Theme | null): string {
       --theme-primary: ${currentTheme.primary_color};
       --theme-primary-light: ${lightenColor(currentTheme.primary_color, 0.1)};
       --theme-primary-dark: ${darkenColor(currentTheme.primary_color, 0.1)};
+      --theme-primary-darker: ${darkenColor(currentTheme.primary_color, 0.3)};
       --theme-primary-rgb: ${primaryRgbValue};
       
       --theme-secondary: ${currentTheme.secondary_color};
       --theme-secondary-light: ${lightenColor(currentTheme.secondary_color, 0.1)};
       --theme-secondary-dark: ${darkenColor(currentTheme.secondary_color, 0.1)};
+      --theme-secondary-darker: ${darkenColor(currentTheme.secondary_color, 0.3)};
       --theme-secondary-rgb: ${secondaryRgbValue};
       
       --theme-accent: ${currentTheme.accent_color};
       --theme-accent-light: ${lightenColor(currentTheme.accent_color, 0.1)};
       --theme-accent-dark: ${darkenColor(currentTheme.accent_color, 0.1)};
+      --theme-accent-darker: ${darkenColor(currentTheme.accent_color, 0.3)};
       --theme-accent-rgb: ${accentRgbValue};
       
       --theme-bg: ${currentTheme.background_color};

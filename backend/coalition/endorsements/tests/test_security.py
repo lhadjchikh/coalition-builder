@@ -30,7 +30,8 @@ class SecurityVulnerabilityTests(TestCase):
 
         # Create existing stakeholder
         self.existing_stakeholder = Stakeholder.objects.create(
-            name="John Doe",
+            first_name="John",
+            last_name="Doe",
             organization="Acme Corp",
             role="CEO",
             email="john@acme.com",
@@ -74,7 +75,8 @@ class SecurityVulnerabilityTests(TestCase):
             {
                 "campaign_id": campaign2.id,
                 "stakeholder": {
-                    "name": "John Doe",  # Exact match
+                    "first_name": "John",  # Exact match
+                    "last_name": "Doe",  # Exact match
                     "organization": "Acme Corp",  # Exact match
                     "role": "CEO",  # Exact match
                     "email": "john@acme.com",
@@ -88,6 +90,7 @@ class SecurityVulnerabilityTests(TestCase):
                 "statement": "Updated statement",
                 "public_display": True,
                 "terms_accepted": True,
+                "org_authorized": True,
                 "form_metadata": get_valid_form_metadata(),
             },
             content_type="application/json",
@@ -104,7 +107,8 @@ class SecurityVulnerabilityTests(TestCase):
             {
                 "campaign_id": self.campaign.id,
                 "stakeholder": {
-                    "name": "Jane Smith",  # Different name - should be blocked
+                    "first_name": "Jane",  # Different name - should be blocked
+                    "last_name": "Smith",  # Different name - should be blocked
                     "organization": "Acme Corp",
                     "role": "CEO",
                     "email": "john@acme.com",  # Same email
@@ -118,6 +122,7 @@ class SecurityVulnerabilityTests(TestCase):
                 "statement": "Malicious update",
                 "public_display": True,
                 "terms_accepted": True,
+                "org_authorized": True,
                 "form_metadata": get_valid_form_metadata(),
             },
             content_type="application/json",
@@ -135,7 +140,8 @@ class SecurityVulnerabilityTests(TestCase):
             {
                 "campaign_id": self.campaign.id,
                 "stakeholder": {
-                    "name": "John Doe",
+                    "first_name": "John",
+                    "last_name": "Doe",
                     "organization": "Acme Corp",
                     "role": "CEO",
                     "email": "john@acme.com",
@@ -149,6 +155,7 @@ class SecurityVulnerabilityTests(TestCase):
                 "statement": "Attempting to change verified endorsement",
                 "public_display": False,
                 "terms_accepted": True,
+                "org_authorized": True,
                 "form_metadata": get_valid_form_metadata(),
             },
             content_type="application/json",

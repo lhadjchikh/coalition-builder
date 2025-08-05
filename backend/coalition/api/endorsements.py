@@ -59,9 +59,11 @@ def _validate_stakeholder_data_match(
     Raises HttpError if data doesn't match to prevent unauthorized overwriting.
     """
     data_matches = (
-        existing_stakeholder.name.lower() == submitted_data["name"].lower()
-        and existing_stakeholder.organization.lower()
-        == submitted_data["organization"].lower()
+        existing_stakeholder.first_name.lower() == submitted_data["first_name"].lower()
+        and existing_stakeholder.last_name.lower()
+        == submitted_data["last_name"].lower()
+        and (existing_stakeholder.organization or "").lower()
+        == (submitted_data.get("organization") or "").lower()
         and (existing_stakeholder.role or "").lower()
         == (submitted_data.get("role") or "").lower()
         and existing_stakeholder.state.upper() == submitted_data["state"].upper()
@@ -103,8 +105,9 @@ def _get_or_create_stakeholder(
     stakeholder, created = Stakeholder.objects.get_or_create(
         email__iexact=stakeholder_data["email"],  # Case-insensitive lookup
         defaults={
-            "name": stakeholder_data["name"],
-            "organization": stakeholder_data["organization"],
+            "first_name": stakeholder_data["first_name"],
+            "last_name": stakeholder_data["last_name"],
+            "organization": stakeholder_data.get("organization", ""),
             "role": stakeholder_data.get("role"),
             "email": stakeholder_data["email"].lower(),  # Normalized in save()
             "street_address": stakeholder_data.get("street_address", ""),
@@ -193,7 +196,8 @@ def _validate_and_prepare_endorsement_data(
 
     # Prepare stakeholder data for spam checks
     stakeholder_data = {
-        "name": data.stakeholder.name,
+        "first_name": data.stakeholder.first_name,
+        "last_name": data.stakeholder.last_name,
         "organization": data.stakeholder.organization,
         "role": data.stakeholder.role,
         "email": data.stakeholder.email,
@@ -257,6 +261,7 @@ def _create_endorsement_with_emails(
     statement: str,
     public_display: bool,
     terms_accepted: bool,
+    org_authorized: bool,
     ip_address: str,
     request: HttpRequest,
 ) -> Endorsement:
@@ -288,6 +293,7 @@ def _create_endorsement_with_emails(
             "status": "pending",  # Start as pending verification
             "terms_accepted": terms_accepted,
             "terms_accepted_at": timezone.now() if terms_accepted else None,
+            "org_authorized": org_authorized,
         },
     )
 
@@ -330,17 +336,28 @@ def list_endorsements(
     request: HttpRequest,
     campaign_id: int = None,
 ) -> list[Endorsement]:
-    """List all approved public endorsements, optionally filtered by campaign"""
+    """List all publicly displayed endorsements in reverse chronological order
+
+    Only returns endorsements that have:
+    - User consent for public display
+    - Verified email address
+    - Admin approval (approved status)
+    - Admin selection for public display
+
+    Results are ordered by creation date, newest first.
+    """
     queryset = Endorsement.objects.select_related("stakeholder", "campaign").filter(
         status="approved",
         public_display=True,
         email_verified=True,
+        display_publicly=True,  # Admin approved for display
     )
 
     # Filter by campaign if campaign_id is provided
     if campaign_id is not None:
         queryset = queryset.filter(campaign_id=campaign_id)
 
+    # Order by created_at descending (newest first)
     return list(queryset.order_by("-created_at").all())
 
 
@@ -372,6 +389,7 @@ def create_endorsement(
                 data.statement,
                 data.public_display,
                 data.terms_accepted,
+                data.org_authorized,
                 ip_address,
                 request,
             )
@@ -609,7 +627,11 @@ def export_endorsements_csv(
     )
 
     # Write data rows with CSV injection protection
-    for endorsement in queryset.order_by("campaign__title", "stakeholder__name"):
+    for endorsement in queryset.order_by(
+        "campaign__title",
+        "stakeholder__first_name",
+        "stakeholder__last_name",
+    ):
         writer.writerow(
             [
                 sanitize_csv_field(endorsement.campaign.title),
@@ -701,7 +723,11 @@ def export_endorsements_json(
         "endorsements": [],
     }
 
-    for endorsement in queryset.order_by("campaign__title", "stakeholder__name"):
+    for endorsement in queryset.order_by(
+        "campaign__title",
+        "stakeholder__first_name",
+        "stakeholder__last_name",
+    ):
         data["endorsements"].append(
             {
                 "id": endorsement.id,
@@ -712,7 +738,8 @@ def export_endorsements_json(
                 },
                 "stakeholder": {
                     "id": endorsement.stakeholder.id,
-                    "name": endorsement.stakeholder.name,
+                    "first_name": endorsement.stakeholder.first_name,
+                    "last_name": endorsement.stakeholder.last_name,
                     "organization": endorsement.stakeholder.organization,
                     "role": endorsement.stakeholder.role,
                     "email": endorsement.stakeholder.email,

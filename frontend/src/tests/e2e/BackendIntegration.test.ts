@@ -40,7 +40,8 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
     jest.spyOn(API, 'getEndorsers').mockResolvedValue([
       {
         id: 1,
-        name: 'Test Endorser',
+        first_name: 'Test',
+        last_name: 'Endorser',
         organization: 'Test Organization',
         email: 'test@example.org',
         state: 'MD',
@@ -109,7 +110,8 @@ const shouldSkip = process.env.SKIP_E2E === 'true';
     // Verify endorser structure
     const endorser = endorsers![0];
     expect(endorser).toHaveProperty('id');
-    expect(endorser).toHaveProperty('name');
+    expect(endorser).toHaveProperty('first_name');
+    expect(endorser).toHaveProperty('last_name');
     expect(endorser).toHaveProperty('organization');
     expect(endorser).toHaveProperty('email');
     expect(endorser).toHaveProperty('state');

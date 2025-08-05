@@ -89,7 +89,9 @@ const EndorsementsList: React.FC<EndorsementsListProps> = ({
             data-testid={`endorsement-${endorsement.id}`}
           >
             <div className="endorsement-header">
-              <h4 className="stakeholder-name">{endorsement.stakeholder.name}</h4>
+              <h4 className="stakeholder-name">
+                {endorsement.stakeholder.first_name} {endorsement.stakeholder.last_name}
+              </h4>
               <div className="stakeholder-info">
                 {endorsement.stakeholder.role && (
                   <span className="role">{endorsement.stakeholder.role}, </span>

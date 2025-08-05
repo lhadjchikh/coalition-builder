@@ -17,11 +17,12 @@ export interface EndorsementFormRef {
 const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
   ({ campaign, onEndorsementSubmitted, onFormInteraction }, ref) => {
     const [stakeholder, setStakeholder] = useState<
-      Omit<Stakeholder, 'id' | 'created_at' | 'updated_at' | 'type'> & {
+      Omit<Stakeholder, 'id' | 'created_at' | 'updated_at' | 'type' | 'name'> & {
         type: Stakeholder['type'] | '';
       }
     >({
-      name: '',
+      first_name: '',
+      last_name: '',
       organization: '',
       role: '',
       email: '',
@@ -36,6 +37,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
     const [statement, setStatement] = useState<string>('');
     const [publicDisplay, setPublicDisplay] = useState<boolean>(true);
     const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
+    const [orgAuthorized, setOrgAuthorized] = useState<boolean>(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<boolean>(false);
@@ -49,19 +51,19 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
       confirm_email: '',
     });
     const formRef = useRef<HTMLFormElement>(null);
-    const nameInputRef = useRef<HTMLInputElement>(null);
+    const typeSelectRef = useRef<HTMLSelectElement>(null);
 
     // Expose methods to parent component
     useImperativeHandle(
       ref,
       () => ({
         scrollToFirstField: () => {
-          if (nameInputRef.current) {
-            nameInputRef.current.scrollIntoView({
+          if (typeSelectRef.current) {
+            typeSelectRef.current.scrollIntoView({
               behavior: 'smooth',
               block: 'center',
             });
-            nameInputRef.current.focus();
+            typeSelectRef.current.focus();
           }
         },
       }),
@@ -91,6 +93,11 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
         ...prev,
         [field]: value,
       }));
+
+      // Reset org authorization when organization is cleared
+      if (field === 'organization' && !value) {
+        setOrgAuthorized(false);
+      }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -102,10 +109,14 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
       try {
         const endorsementData: EndorsementCreate = {
           campaign_id: campaign.id,
-          stakeholder: stakeholder as Omit<Stakeholder, 'id' | 'created_at' | 'updated_at'>,
+          stakeholder: stakeholder as Omit<
+            Stakeholder,
+            'id' | 'created_at' | 'updated_at' | 'name'
+          >,
           statement,
           public_display: publicDisplay,
           terms_accepted: termsAccepted,
+          org_authorized: orgAuthorized,
           form_metadata: {
             form_start_time: formStartTime,
             referrer: document.referrer || '',
@@ -126,7 +137,8 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
 
         // Reset form
         setStakeholder({
-          name: '',
+          first_name: '',
+          last_name: '',
           organization: '',
           role: '',
           email: '',
@@ -140,6 +152,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
         setStatement('');
         setPublicDisplay(true);
         setTermsAccepted(false);
+        setOrgAuthorized(false);
         setHoneypotFields({
           website: '',
           url: '',
@@ -163,8 +176,10 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
       { value: 'waterman', label: 'Waterman' },
       { value: 'business', label: 'Business' },
       { value: 'nonprofit', label: 'Nonprofit' },
+      { value: 'scientist', label: 'Scientist' },
+      { value: 'healthcare', label: 'Health care professional' },
+      { value: 'government', label: 'Government official' },
       { value: 'individual', label: 'Individual' },
-      { value: 'government', label: 'Government' },
       { value: 'other', label: 'Other' },
     ];
 
@@ -230,7 +245,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
     }
 
     return (
-      <div className="endorsement-form" data-testid="endorsement-form">
+      <div className="endorsement-form" data-testid="endorsement-form" id="endorse">
         <h3>Endorse This Campaign</h3>
 
         {campaign.endorsement_statement && (
@@ -313,10 +328,12 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
             <label htmlFor="type">Endorser type *</label>
             <select
               id="type"
+              ref={typeSelectRef}
               value={stakeholder.type}
               onChange={e => handleStakeholderChange('type', e.target.value as Stakeholder['type'])}
               required
               data-testid="type-select"
+              aria-describedby="type-help"
             >
               <option value="" disabled>
                 Select endorser type
@@ -327,32 +344,80 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
                 </option>
               ))}
             </select>
+            <span id="type-help" className="label-helper">
+              Choose the category that best describes you or your organization
+            </span>
           </div>
 
           <div className="form-group">
-            <label htmlFor="name">Name *</label>
+            <label htmlFor="first-name">First Name *</label>
             <input
-              id="name"
+              id="first-name"
               type="text"
-              value={stakeholder.name}
-              onChange={e => handleStakeholderChange('name', e.target.value)}
+              value={stakeholder.first_name}
+              onChange={e => handleStakeholderChange('first_name', e.target.value)}
               required
-              data-testid="name-input"
-              ref={nameInputRef}
+              data-testid="first-name-input"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="organization">Organization *</label>
+            <label htmlFor="last-name">Last Name *</label>
+            <input
+              id="last-name"
+              type="text"
+              value={stakeholder.last_name}
+              onChange={e => handleStakeholderChange('last_name', e.target.value)}
+              required
+              data-testid="last-name-input"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="organization">Organization</label>
             <input
               id="organization"
               type="text"
               value={stakeholder.organization}
               onChange={e => handleStakeholderChange('organization', e.target.value)}
-              required
               data-testid="organization-input"
             />
           </div>
+
+          {stakeholder.organization && (
+            <div className="form-group">
+              <fieldset>
+                <legend className="form-label">How are you endorsing? *</legend>
+                <div className="radio-group">
+                  <label className="radio-label">
+                    <input
+                      type="radio"
+                      name="endorsement-type"
+                      value="behalf"
+                      checked={orgAuthorized === true}
+                      onChange={() => setOrgAuthorized(true)}
+                      required
+                      data-testid="org-behalf-radio"
+                    />
+                    I am endorsing on behalf of this organization and am authorized to do so
+                  </label>
+                  <label className="radio-label">
+                    <input
+                      type="radio"
+                      name="endorsement-type"
+                      value="individual"
+                      checked={orgAuthorized === false}
+                      onChange={() => setOrgAuthorized(false)}
+                      required
+                      data-testid="org-individual-radio"
+                    />
+                    I am endorsing as an individual (affiliated with this organization but not
+                    endorsing on their behalf)
+                  </label>
+                </div>
+              </fieldset>
+            </div>
+          )}
 
           <div className="form-group">
             <label htmlFor="role">Role/Title</label>
@@ -447,9 +512,8 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
             <label htmlFor="statement">
               Your Voice Matters - Share Your Story
               <span className="label-helper">
-                Help us advocate for this policy by sharing why it matters to you. Your words may be
-                featured on our website (if you allow public display) and used when we speak with
-                legislators to show real constituent support.
+                Help us advocate for this policy by sharing why it matters to you. Your story helps
+                us demonstrate real constituent support when we speak with legislators.
               </span>
             </label>
             <textarea
@@ -457,7 +521,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
               value={statement}
               onChange={e => setStatement(e.target.value)}
               rows={6}
-              placeholder="Tell us why you support this campaign - your personal story, how this policy would impact you or your community, or what change you hope to see (optional)"
+              placeholder="Tell us why you support this campaign — your personal story, how this policy would impact you or your community, or what change you hope to see (optional)"
               data-testid="statement-textarea"
             />
           </div>
@@ -470,7 +534,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
                 onChange={e => setPublicDisplay(e.target.checked)}
                 data-testid="public-display-checkbox"
               />
-              Display my endorsement and story publicly on the website
+              I consent to potentially having my endorsement displayed publicly
             </label>
           </div>
 

@@ -111,6 +111,19 @@ class Endorsement(models.Model):
         help_text="When the terms were accepted",
     )
 
+    # Organization authorization
+    org_authorized = models.BooleanField(
+        default=False,
+        help_text="Whether the stakeholder is authorized to endorse on behalf "
+        "of their organization",
+    )
+
+    # Admin display approval
+    display_publicly = models.BooleanField(
+        default=False,
+        help_text="Whether admin has approved this endorsement for public display",
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         help_text="When this endorsement was created",
@@ -146,7 +159,12 @@ class Endorsement(models.Model):
     @property
     def should_display_publicly(self) -> bool:
         """Check if endorsement should be displayed publicly"""
-        return self.public_display and self.email_verified and self.status == "approved"
+        return (
+            self.public_display  # User consent
+            and self.email_verified  # Email verified
+            and self.status == "approved"  # Admin approved
+            and self.display_publicly  # Admin selected for display
+        )
 
     def approve(self, user: User | None = None) -> None:
         """Approve endorsement for public display"""

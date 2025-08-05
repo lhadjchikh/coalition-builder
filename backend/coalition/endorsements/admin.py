@@ -15,10 +15,12 @@ class EndorsementAdmin(admin.ModelAdmin):
     list_display = (
         "stakeholder_name",
         "stakeholder_organization",
+        "endorsement_type",
         "campaign",
         "status_badge",
         "email_verified_badge",
         "public_display",
+        "display_publicly",
         "created_at",
         "reviewed_by",
     )
@@ -26,13 +28,15 @@ class EndorsementAdmin(admin.ModelAdmin):
         "status",
         "email_verified",
         "public_display",
+        "display_publicly",
         "created_at",
         "campaign",
         "stakeholder__type",
         "stakeholder__state",
     )
     search_fields = (
-        "stakeholder__name",
+        "stakeholder__first_name",
+        "stakeholder__last_name",
         "stakeholder__organization",
         "stakeholder__email",
         "campaign__title",
@@ -46,6 +50,7 @@ class EndorsementAdmin(admin.ModelAdmin):
         "verified_at",
         "terms_accepted",
         "terms_accepted_at",
+        "org_authorized",
         "created_at",
         "updated_at",
         "verification_link",
@@ -80,6 +85,7 @@ class EndorsementAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "status",
+                    "display_publicly",
                     "admin_notes",
                     "reviewed_by",
                     "reviewed_at",
@@ -87,11 +93,12 @@ class EndorsementAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "Terms Acceptance",
+            "Terms & Authorization",
             {
                 "fields": (
                     "terms_accepted",
                     "terms_accepted_at",
+                    "org_authorized",
                 ),
                 "classes": ("collapse",),
             },
@@ -114,19 +121,31 @@ class EndorsementAdmin(admin.ModelAdmin):
         "mark_verified",
         "send_verification_emails",
         "send_approval_notifications",
+        "approve_for_display",
+        "remove_from_display",
     ]
 
     def stakeholder_name(self, obj: Endorsement) -> str:
         return obj.stakeholder.name
 
     stakeholder_name.short_description = "Name"
-    stakeholder_name.admin_order_field = "stakeholder__name"
+    stakeholder_name.admin_order_field = "stakeholder__last_name"
 
     def stakeholder_organization(self, obj: Endorsement) -> str:
         return obj.stakeholder.organization
 
     stakeholder_organization.short_description = "Organization"
     stakeholder_organization.admin_order_field = "stakeholder__organization"
+
+    def endorsement_type(self, obj: Endorsement) -> str:
+        if not obj.stakeholder.organization:
+            return "Individual"
+        elif obj.org_authorized:
+            return f"On behalf of {obj.stakeholder.organization}"
+        else:
+            return f"Individual (affiliated with {obj.stakeholder.organization})"
+
+    endorsement_type.short_description = "Endorsement Type"
 
     def status_badge(self, obj: Endorsement) -> str:
         colors = {
@@ -257,6 +276,37 @@ class EndorsementAdmin(admin.ModelAdmin):
         )
 
     send_approval_notifications.short_description = "Send approval notifications"
+
+    def approve_for_display(
+        self,
+        request: HttpRequest,
+        queryset: QuerySet[Endorsement],
+    ) -> None:
+        # Only approve endorsements that meet all requirements
+        count = queryset.filter(
+            status="approved",
+            email_verified=True,
+            public_display=True,
+        ).update(display_publicly=True)
+
+        self.message_user(
+            request,
+            f"Successfully approved {count} endorsement(s) for public display.",
+        )
+
+    approve_for_display.short_description = "Approve for public display"
+
+    def remove_from_display(
+        self,
+        request: HttpRequest,
+        queryset: QuerySet[Endorsement],
+    ) -> None:
+        count = queryset.update(display_publicly=False)
+
+        self.message_user(
+            request,
+            f"Successfully removed {count} endorsement(s) from public display.",
+        )
 
     def save_model(
         self,

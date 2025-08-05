@@ -68,7 +68,8 @@ class TestSpatialQueryUtils(TestCase):
 
         # Create test stakeholders
         self.stakeholder_inside = Stakeholder.objects.create(
-            name="Inside Stakeholder",
+            first_name="Inside",
+            last_name="Stakeholder",
             organization="Test Org",
             email="inside@example.com",
             street_address="123 Main St",
@@ -83,7 +84,8 @@ class TestSpatialQueryUtils(TestCase):
         )
 
         self.stakeholder_outside = Stakeholder.objects.create(
-            name="Outside Stakeholder",
+            first_name="Outside",
+            last_name="Stakeholder",
             organization="Test Org",
             email="outside@example.com",
             street_address="456 Oak Ave",
@@ -206,7 +208,8 @@ class TestSpatialQueryUtils(TestCase):
         """Test getting stakeholders with location but no district assignment"""
         # Create stakeholder with location but no congressional district
         unassigned = Stakeholder.objects.create(
-            name="Unassigned Stakeholder",
+            first_name="Unassigned",
+            last_name="Stakeholder",
             organization="Test Org",
             email="unassigned@example.com",
             street_address="789 Pine St",

@@ -66,7 +66,8 @@ class TermsAcceptanceAdmin(admin.ModelAdmin):
     ]
     list_filter = ["accepted_at", "legal_document__document_type"]
     search_fields = [
-        "endorsement__stakeholder__name",
+        "endorsement__stakeholder__first_name",
+        "endorsement__stakeholder__last_name",
         "endorsement__stakeholder__email",
         "endorsement__stakeholder__organization",
         "legal_document__title",

@@ -18,6 +18,7 @@ module.exports = {
         "theme-accent": "var(--theme-accent, #f59e0b)",
         "theme-accent-light": "var(--theme-accent-light, #fbbf24)",
         "theme-accent-dark": "var(--theme-accent-dark, #d97706)",
+        "theme-accent-darker": "var(--theme-accent-darker, #92400e)",
 
         // Background colors
         "theme-bg": "var(--theme-bg, #ffffff)",
