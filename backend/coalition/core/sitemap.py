@@ -2,7 +2,6 @@
 
 from datetime import datetime
 
-from django.conf import settings
 from django.contrib.sitemaps import Sitemap
 from django.db.models import QuerySet
 from django.urls import reverse

@@ -13,6 +13,14 @@ import { withSuppressedErrors } from '../../tests/utils/testUtils';
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
+// Helper to match Headers objects in tests
+const expectHeaders = (headers: any) => {
+  // Check if it's a Headers instance with the correct Content-Type
+  expect(headers).toBeInstanceOf(Headers);
+  expect(headers.get('Content-Type')).toBe('application/json');
+  return true;
+};
+
 // Helper to create mock response with headers
 const createMockResponse = (
   body: any,
@@ -121,13 +129,15 @@ describe('API Service', () => {
 
       const campaigns = await API.getCampaigns();
       expect(campaigns).toEqual(mockCampaigns);
-      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/campaigns/'), {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'same-origin',
-        signal: expect.any(AbortSignal),
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl('/api/campaigns/'),
+        expect.objectContaining({
+          headers: expect.any(Headers),
+          credentials: 'same-origin',
+          signal: expect.any(AbortSignal),
+        })
+      );
+      expectHeaders(mockFetch.mock.calls[0][1].headers);
     });
 
     it('should handle HTTP error responses', async () => {
@@ -166,13 +176,15 @@ describe('API Service', () => {
 
       await API.getCampaigns();
       // The actual client uses the base URL from instantiation time, not runtime
-      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/campaigns/'), {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'same-origin',
-        signal: expect.any(AbortSignal),
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl('/api/campaigns/'),
+        expect.objectContaining({
+          headers: expect.any(Headers),
+          credentials: 'same-origin',
+          signal: expect.any(AbortSignal),
+        })
+      );
+      expectHeaders(mockFetch.mock.calls[0][1].headers);
     });
   });
 
@@ -194,13 +206,15 @@ describe('API Service', () => {
 
       const endorsers = await API.getEndorsers();
       expect(endorsers).toEqual(mockEndorsers);
-      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsers/'), {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'same-origin',
-        signal: expect.any(AbortSignal),
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl('/api/endorsers/'),
+        expect.objectContaining({
+          headers: expect.any(Headers),
+          credentials: 'same-origin',
+          signal: expect.any(AbortSignal),
+        })
+      );
+      expectHeaders(mockFetch.mock.calls[0][1].headers);
     });
 
     it('should handle HTTP error responses', async () => {
@@ -228,13 +242,15 @@ describe('API Service', () => {
 
       const legislators = await API.getLegislators();
       expect(legislators).toEqual(mockLegislators);
-      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/legislators/'), {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'same-origin',
-        signal: expect.any(AbortSignal),
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl('/api/legislators/'),
+        expect.objectContaining({
+          headers: expect.any(Headers),
+          credentials: 'same-origin',
+          signal: expect.any(AbortSignal),
+        })
+      );
+      expectHeaders(mockFetch.mock.calls[0][1].headers);
     });
 
     it('should handle HTTP error responses', async () => {
@@ -281,13 +297,15 @@ describe('API Service', () => {
 
       const endorsements = await API.getEndorsements();
       expect(endorsements).toEqual(mockEndorsements);
-      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/'), {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'same-origin',
-        signal: expect.any(AbortSignal),
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl('/api/endorsements/'),
+        expect.objectContaining({
+          headers: expect.any(Headers),
+          credentials: 'same-origin',
+          signal: expect.any(AbortSignal),
+        })
+      );
+      expectHeaders(mockFetch.mock.calls[0][1].headers);
     });
 
     it('should handle HTTP error responses', async () => {
@@ -334,13 +352,15 @@ describe('API Service', () => {
 
       const endorsements = await API.getCampaignEndorsements(1);
       expect(endorsements).toEqual(mockEndorsements);
-      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/?campaign_id=1'), {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'same-origin',
-        signal: expect.any(AbortSignal),
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl('/api/endorsements/?campaign_id=1'),
+        expect.objectContaining({
+          headers: expect.any(Headers),
+          credentials: 'same-origin',
+          signal: expect.any(AbortSignal),
+        })
+      );
+      expectHeaders(mockFetch.mock.calls[0][1].headers);
     });
 
     it('should handle HTTP error responses', async () => {
@@ -358,13 +378,15 @@ describe('API Service', () => {
       mockFetch.mockResolvedValueOnce(createMockResponse(mockEndorsements));
 
       await API.getCampaignEndorsements(1);
-      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/?campaign_id=1'), {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'same-origin',
-        signal: expect.any(AbortSignal),
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl('/api/endorsements/?campaign_id=1'),
+        expect.objectContaining({
+          headers: expect.any(Headers),
+          credentials: 'same-origin',
+          signal: expect.any(AbortSignal),
+        })
+      );
+      expectHeaders(mockFetch.mock.calls[0][1].headers);
     });
   });
 
@@ -415,20 +437,40 @@ describe('API Service', () => {
       created_at: '2023-01-01T00:00:00Z',
     };
 
+    beforeEach(() => {
+      // Mock document.cookie to provide CSRF token
+      // This avoids the need for the API to fetch the token
+      Object.defineProperty(document, 'cookie', {
+        writable: true,
+        value: 'csrftoken=test-csrf-token',
+      });
+    });
+
     it('should create endorsement successfully', async () => {
       mockFetch.mockResolvedValueOnce(createMockResponse(mockCreatedEndorsement));
 
       const endorsement = await API.createEndorsement(mockEndorsementData);
       expect(endorsement).toEqual(mockCreatedEndorsement);
-      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/endorsements/'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(mockEndorsementData),
-        credentials: 'same-origin',
-        signal: expect.any(AbortSignal),
-      });
+
+      // Should have made 1 call (POST request, CSRF token from cookie)
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+
+      // Check the POST request
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl('/api/endorsements/'),
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify(mockEndorsementData),
+          credentials: 'same-origin',
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      // Check headers
+      const headers = mockFetch.mock.calls[0][1].headers;
+      expect(headers).toBeInstanceOf(Headers);
+      expect(headers.get('Content-Type')).toBe('application/json');
+      expect(headers.get('X-CSRFToken')).toBe('test-csrf-token');
     });
 
     it('should handle HTTP error responses with error details', async () => {
@@ -480,13 +522,15 @@ describe('API Service', () => {
 
       const campaign = await API.getCampaignById(1);
       expect(campaign).toEqual(mockCampaign);
-      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/campaigns/1/'), {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'same-origin',
-        signal: expect.any(AbortSignal),
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl('/api/campaigns/1/'),
+        expect.objectContaining({
+          headers: expect.any(Headers),
+          credentials: 'same-origin',
+          signal: expect.any(AbortSignal),
+        })
+      );
+      expectHeaders(mockFetch.mock.calls[0][1].headers);
     });
 
     it('should handle HTTP error responses', async () => {
@@ -515,14 +559,13 @@ describe('API Service', () => {
       expect(campaign).toEqual(mockCampaign);
       expect(mockFetch).toHaveBeenCalledWith(
         getExpectedUrl('/api/campaigns/by-name/test-campaign/'),
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
+        expect.objectContaining({
+          headers: expect.any(Headers),
           credentials: 'same-origin',
           signal: expect.any(AbortSignal),
-        }
+        })
       );
+      expectHeaders(mockFetch.mock.calls[0][1].headers);
     });
 
     it('should handle HTTP error responses', async () => {
@@ -568,13 +611,18 @@ describe('API Service', () => {
 
       const homepage = await API.getHomepage();
       expect(homepage).toEqual(mockHomepage);
-      expect(mockFetch).toHaveBeenCalledWith(getExpectedUrl('/api/homepage/'), {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'same-origin',
-        signal: expect.any(AbortSignal),
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl('/api/homepage/'),
+        expect.objectContaining({
+          headers: expect.any(Headers),
+          credentials: 'same-origin',
+          signal: expect.any(AbortSignal),
+        })
+      );
+
+      // Verify headers separately
+      const callArgs = mockFetch.mock.calls[0][1];
+      expectHeaders(callArgs.headers);
     });
 
     it('should handle HTTP error responses', async () => {
