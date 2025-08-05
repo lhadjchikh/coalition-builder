@@ -18,10 +18,12 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
 
 from coalition.api.api import api
 from coalition.content.views import active_theme_css, theme_css
+from coalition.core.sitemap import sitemaps
 from coalition.core.views import health_check, home, robots_txt
 
 urlpatterns = [
@@ -29,6 +31,12 @@ urlpatterns = [
     path("api/", api.urls),
     path("health/", health_check, name="health_check"),
     path("robots.txt", robots_txt, name="robots_txt"),
+    path(
+        "sitemap.xml",
+        sitemap,
+        {"sitemaps": sitemaps},
+        name="django.contrib.sitemaps.views.sitemap",
+    ),
     path("theme.css", active_theme_css, name="active_theme_css"),
     path("theme/<int:theme_id>.css", theme_css, name="theme_css"),
     path("tinymce/", include("tinymce.urls")),

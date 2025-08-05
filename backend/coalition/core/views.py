@@ -232,8 +232,27 @@ def home(request: HttpRequest) -> HttpResponse:
 
 @require_GET
 def robots_txt(request: HttpRequest) -> HttpResponse:
-    """Serve the robots.txt file to prevent search engine indexing"""
-    return HttpResponse("User-agent: *\nDisallow: /\n", content_type="text/plain")
+    """Serve the robots.txt file for search engine instructions"""
+    # Allow search engines to index public content
+    # Block admin, API endpoints, and private areas
+    robots_content = """User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /static/
+Disallow: /media/
+Disallow: /health/
+
+# Sitemap location
+Sitemap: {}/sitemap.xml
+
+# Crawl delay to be respectful
+Crawl-delay: 1
+""".format(
+        settings.SITE_URL.rstrip("/"),
+    )
+
+    return HttpResponse(robots_content, content_type="text/plain")
 
 
 @require_http_methods(["GET", "HEAD"])

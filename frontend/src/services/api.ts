@@ -29,17 +29,17 @@ const getBaseUrl = (): string => {
 // Helper function to get CSRF token from cookies
 function getCsrfTokenFromCookie(): string | null {
   if (typeof document === 'undefined') return null;
-  
+
   const name = 'csrftoken';
   const cookies = document.cookie.split(';');
-  
+
   for (const cookie of cookies) {
     const trimmed = cookie.trim();
     if (trimmed.startsWith(name + '=')) {
       return decodeURIComponent(trimmed.substring(name.length + 1));
     }
   }
-  
+
   return null;
 }
 
@@ -141,7 +141,7 @@ class FrontendApiClient extends BaseApiClient {
 
       // Prepare headers
       const headers = new Headers(this.defaultHeaders);
-      
+
       // Add CSRF token for state-changing requests
       const method = options?.method?.toUpperCase() || 'GET';
       if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
@@ -151,7 +151,7 @@ class FrontendApiClient extends BaseApiClient {
           headers.set('X-CSRFToken', this.csrfToken);
         }
       }
-      
+
       // Merge with any headers from options
       if (options?.headers) {
         const optionHeaders = new Headers(options.headers);
