@@ -105,6 +105,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   const [isFormActive, setIsFormActive] = useState<boolean>(false);
   const endorsementSectionRef = useRef<HTMLElement>(null);
   const endorsementFormRef = useRef<any>(null);
+  const aboutSectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     // Skip fetching if we already have initial campaign data
@@ -178,16 +179,16 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   };
 
   useEffect(() => {
-    const SCROLL_THRESHOLD = 200;
-    const VIEWPORT_RATIO = 0.8;
-
     const handleScroll = () => {
-      if (endorsementSectionRef.current) {
-        const rect = endorsementSectionRef.current.getBoundingClientRect();
-        // Show sticky CTA when user has scrolled down and endorsement section is not at the top
+      if (aboutSectionRef.current && endorsementSectionRef.current) {
+        const aboutRect = aboutSectionRef.current.getBoundingClientRect();
+        const endorsementRect =
+          endorsementSectionRef.current.getBoundingClientRect();
+
+        // Show sticky CTA when the About section reaches the top of the viewport
+        // and hide it when the endorsement section is in view
         const shouldShow =
-          window.scrollY > SCROLL_THRESHOLD &&
-          rect.top < window.innerHeight * VIEWPORT_RATIO;
+          aboutRect.top <= 0 && endorsementRect.top > window.innerHeight * 0.8;
         setShowStickyCard(shouldShow);
       }
     };
@@ -283,7 +284,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
 
       {/* Sticky Endorsement CTA */}
       {campaign.allow_endorsements && showStickyCard && !isFormActive && (
-        <div className="fixed top-0 left-0 right-0 bg-theme-accent text-white z-50 shadow-lg">
+        <div className="fixed top-0 left-0 right-0 bg-theme-accent-dark text-white z-50 shadow-lg">
           <div className="max-w-7xl mx-auto container-padding">
             <div className="flex items-center justify-between h-20">
               <span className="text-lg font-medium">
@@ -441,6 +442,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             className="mb-12"
             role="region"
             aria-labelledby="campaign-description-heading"
+            ref={aboutSectionRef}
           >
             <div className="max-w-prose-container">
               <h2

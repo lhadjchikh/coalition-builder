@@ -76,6 +76,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
     root.style.setProperty('--theme-primary', themeData.primary_color);
     root.style.setProperty('--theme-primary-light', lightenColor(themeData.primary_color, 0.1));
     root.style.setProperty('--theme-primary-dark', darkenColor(themeData.primary_color, 0.1));
+    root.style.setProperty('--theme-primary-darker', darkenColor(themeData.primary_color, 0.3));
     const primaryRgb = hexToRgb(themeData.primary_color);
     if (primaryRgb) {
       root.style.setProperty(
@@ -88,6 +89,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
     root.style.setProperty('--theme-secondary', themeData.secondary_color);
     root.style.setProperty('--theme-secondary-light', lightenColor(themeData.secondary_color, 0.1));
     root.style.setProperty('--theme-secondary-dark', darkenColor(themeData.secondary_color, 0.1));
+    root.style.setProperty('--theme-secondary-darker', darkenColor(themeData.secondary_color, 0.3));
     const secondaryRgb = hexToRgb(themeData.secondary_color);
     if (secondaryRgb) {
       root.style.setProperty(
@@ -100,8 +102,9 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
     root.style.setProperty('--theme-accent', themeData.accent_color);
 
     // Set derived accent colors
+    root.style.setProperty('--theme-accent-light', lightenColor(themeData.accent_color, 0.1));
     root.style.setProperty('--theme-accent-dark', darkenColor(themeData.accent_color, 0.1));
-    root.style.setProperty('--theme-accent-darker', darkenColor(themeData.accent_color, 0.2));
+    root.style.setProperty('--theme-accent-darker', darkenColor(themeData.accent_color, 0.3));
 
     // Set RGB values for accent color
     const accentRgb = hexToRgb(themeData.accent_color);

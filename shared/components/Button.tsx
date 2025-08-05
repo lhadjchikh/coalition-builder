@@ -5,6 +5,7 @@ type ButtonVariant =
   | "secondary"
   | "accent"
   | "accent-inverted"
+  | "accent-on-dark"
   | "outline"
   | "ghost";
 type ButtonSize = "sm" | "md" | "lg";
@@ -31,7 +32,9 @@ const getVariantClasses = (variant: ButtonVariant): string => {
     case "accent":
       return "bg-theme-accent text-white hover:bg-theme-accent-dark shadow-soft hover:shadow-lg";
     case "accent-inverted":
-      return "bg-white text-theme-accent hover:bg-gray-50 shadow-soft hover:shadow-lg";
+      return "bg-white text-theme-accent-darker hover:bg-gray-50 shadow-soft hover:shadow-lg";
+    case "accent-on-dark":
+      return "bg-white/10 text-white hover:bg-white/20 border border-white/20 shadow-soft hover:shadow-lg";
     case "outline":
       return "bg-transparent border-2 border-theme-primary text-theme-primary hover:bg-theme-primary hover:text-white hover:shadow-md";
     case "ghost":
