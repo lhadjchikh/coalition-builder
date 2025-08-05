@@ -3,44 +3,6 @@
 from django.db import migrations, models
 
 
-def split_name_to_first_last(apps, schema_editor):
-    """Split existing name field into first_name and last_name."""
-    Stakeholder = apps.get_model("stakeholders", "Stakeholder")
-
-    for stakeholder in Stakeholder.objects.all():
-        if stakeholder.name:
-            # Split the name intelligently
-            name_parts = stakeholder.name.strip().split(" ", 1)
-            if len(name_parts) >= 2:
-                stakeholder.first_name = name_parts[0]
-                stakeholder.last_name = name_parts[1]
-            else:
-                # If only one word, put it in first_name
-                stakeholder.first_name = name_parts[0]
-                stakeholder.last_name = ""
-        else:
-            # If no name, use empty strings
-            stakeholder.first_name = ""
-            stakeholder.last_name = ""
-
-        stakeholder.save()
-
-
-def combine_first_last_to_name(apps, schema_editor):
-    """Reverse migration: combine first_name and last_name back to name."""
-    Stakeholder = apps.get_model("stakeholders", "Stakeholder")
-
-    for stakeholder in Stakeholder.objects.all():
-        name_parts = []
-        if stakeholder.first_name:
-            name_parts.append(stakeholder.first_name)
-        if stakeholder.last_name:
-            name_parts.append(stakeholder.last_name)
-
-        stakeholder.name = " ".join(name_parts)
-        stakeholder.save()
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -48,7 +10,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # First, add the new fields with defaults
+        # Add the new fields
         migrations.AddField(
             model_name="stakeholder",
             name="first_name",
@@ -66,11 +28,6 @@ class Migration(migrations.Migration):
                 help_text="Last name of the individual or primary contact person",
                 max_length=100,
             ),
-        ),
-        # Run the data migration
-        migrations.RunPython(
-            split_name_to_first_last,
-            reverse_code=combine_first_last_to_name,
         ),
         # Remove the old name field
         migrations.RemoveField(

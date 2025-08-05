@@ -174,3 +174,187 @@ class EndorsementAdminTest(TestCase):
 
         assert self.endorsement.reviewed_by == self.user
         assert self.endorsement.reviewed_at is not None
+
+    def test_endorsement_type_method(self) -> None:
+        """Test endorsement_type admin method with different scenarios"""
+        # Test individual without organization
+        self.stakeholder.organization = ""
+        self.stakeholder.save()
+        result = self.admin.endorsement_type(self.endorsement)
+        assert result == "Individual"
+
+        # Test individual with organization affiliation
+        self.stakeholder.organization = "Test Org"
+        self.stakeholder.save()
+        self.endorsement.org_authorized = False
+        self.endorsement.save()
+        result = self.admin.endorsement_type(self.endorsement)
+        assert result == "Individual (affiliated with Test Org)"
+
+        # Test organization endorsement
+        self.endorsement.org_authorized = True
+        self.endorsement.save()
+        result = self.admin.endorsement_type(self.endorsement)
+        assert result == "On behalf of Test Org"
+
+    def test_verification_link_no_token(self) -> None:
+        """Test verification_link when no token exists"""
+        # Create a new endorsement without saving to avoid token generation
+        endorsement = Endorsement(
+            stakeholder=self.stakeholder,
+            campaign=self.campaign,
+            verification_token=None,
+        )
+        result = self.admin.verification_link(endorsement)
+        assert result == "No token generated"
+
+    def test_approve_endorsements_already_approved(self) -> None:
+        """Test approve_endorsements skips already approved endorsements"""
+        request = HttpRequest()
+        request.user = self.user
+        request._messages = Mock()
+
+        # Set endorsement as already approved
+        self.endorsement.status = "approved"
+        self.endorsement.save()
+
+        queryset = Endorsement.objects.filter(id=self.endorsement.id)
+
+        with (
+            patch.object(
+                EndorsementEmailService,
+                "send_confirmation_email",
+            ) as mock_email,
+            patch.object(self.admin, "message_user") as mock_message,
+        ):
+            self.admin.approve_endorsements(request, queryset)
+
+        # Should not send email for already approved endorsement
+        mock_email.assert_not_called()
+        mock_message.assert_called_once_with(
+            request,
+            "Successfully approved 0 endorsement(s) and sent notifications.",
+        )
+
+    def test_reject_endorsements_already_rejected(self) -> None:
+        """Test reject_endorsements skips already rejected endorsements"""
+        request = HttpRequest()
+        request.user = self.user
+        request._messages = Mock()
+
+        # Set endorsement as already rejected
+        self.endorsement.status = "rejected"
+        self.endorsement.save()
+
+        queryset = Endorsement.objects.filter(id=self.endorsement.id)
+
+        with patch.object(self.admin, "message_user") as mock_message:
+            self.admin.reject_endorsements(request, queryset)
+
+        mock_message.assert_called_once_with(
+            request,
+            "Successfully rejected 0 endorsement(s).",
+        )
+
+    def test_mark_verified_already_verified(self) -> None:
+        """Test mark_verified skips already verified endorsements"""
+        request = HttpRequest()
+        request.user = self.user
+        request._messages = Mock()
+
+        # Set endorsement as already verified
+        self.endorsement.email_verified = True
+        self.endorsement.save()
+
+        queryset = Endorsement.objects.filter(id=self.endorsement.id)
+
+        with patch.object(self.admin, "message_user") as mock_message:
+            self.admin.mark_verified(request, queryset)
+
+        mock_message.assert_called_once_with(
+            request,
+            "Successfully marked 0 endorsement(s) as email verified.",
+        )
+
+    def test_send_approval_notifications_action(self) -> None:
+        """Test send_approval_notifications admin action"""
+        request = HttpRequest()
+        request.user = self.user
+        request._messages = Mock()
+
+        # Set endorsement as approved
+        self.endorsement.status = "approved"
+        self.endorsement.save()
+
+        queryset = Endorsement.objects.filter(id=self.endorsement.id)
+
+        with patch.object(
+            EndorsementEmailService,
+            "send_confirmation_email",
+        ) as mock_email:
+            mock_email.return_value = True
+            with patch.object(self.admin, "message_user") as mock_message:
+                self.admin.send_approval_notifications(request, queryset)
+
+        mock_email.assert_called_once_with(self.endorsement)
+        mock_message.assert_called_once()
+
+    def test_approve_for_display_action(self) -> None:
+        """Test approve_for_display admin action"""
+        request = HttpRequest()
+        request.user = self.user
+        request._messages = Mock()
+
+        # Set up endorsement to meet all requirements
+        self.endorsement.status = "approved"
+        self.endorsement.email_verified = True
+        self.endorsement.public_display = True
+        self.endorsement.display_publicly = False
+        self.endorsement.save()
+
+        queryset = Endorsement.objects.filter(id=self.endorsement.id)
+
+        with patch.object(self.admin, "message_user") as mock_message:
+            self.admin.approve_for_display(request, queryset)
+
+        self.endorsement.refresh_from_db()
+        assert self.endorsement.display_publicly is True
+        mock_message.assert_called_once()
+
+    def test_remove_from_display_action(self) -> None:
+        """Test remove_from_display admin action"""
+        request = HttpRequest()
+        request.user = self.user
+        request._messages = Mock()
+
+        self.endorsement.display_publicly = True
+        self.endorsement.save()
+
+        queryset = Endorsement.objects.filter(id=self.endorsement.id)
+
+        with patch.object(self.admin, "message_user") as mock_message:
+            self.admin.remove_from_display(request, queryset)
+
+        self.endorsement.refresh_from_db()
+        assert self.endorsement.display_publicly is False
+        mock_message.assert_called_once()
+
+    def test_save_model_without_status_change(self) -> None:
+        """Test save_model when status is not changed"""
+        request = HttpRequest()
+        request.user = self.user
+
+        # Mock form without status in changed_data
+        form = Mock()
+        form.changed_data = ["statement"]
+
+        # Clear any existing reviewed fields
+        self.endorsement.reviewed_by = None
+        self.endorsement.reviewed_at = None
+        self.endorsement.save()
+
+        self.admin.save_model(request, self.endorsement, form, change=True)
+
+        # Should not set reviewed fields when status wasn't changed
+        assert self.endorsement.reviewed_by is None
+        assert self.endorsement.reviewed_at is None
