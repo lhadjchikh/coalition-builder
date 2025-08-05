@@ -44,7 +44,8 @@ class FormMetadataSecurityTests(TestCase):
         base_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": "Test User",
+                "first_name": "Test",
+                "last_name": "User",
                 "organization": "Test Org",
                 "email": "test@example.com",
                 "street_address": "123 Test St",
@@ -82,7 +83,8 @@ class FormMetadataSecurityTests(TestCase):
         base_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": "Test User",
+                "first_name": "Test",
+                "last_name": "User",
                 "organization": "Test Org",
                 "email": "test@example.com",
                 "street_address": "123 Test St",
@@ -118,7 +120,8 @@ class FormMetadataSecurityTests(TestCase):
         base_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": "Test User",
+                "first_name": "Test",
+                "last_name": "User",
                 "organization": "Test Org",
                 "email": "test@example.com",
                 "street_address": "123 Test St",
@@ -154,7 +157,8 @@ class FormMetadataSecurityTests(TestCase):
         base_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": "Sarah Johnson",
+                "first_name": "Sarah",
+                "last_name": "Johnson",
                 "organization": "Johnson Consulting",
                 "email": "sarah@johnsonconsulting.com",
                 "street_address": "456 Consulting Way",
@@ -165,6 +169,7 @@ class FormMetadataSecurityTests(TestCase):
             },
             "statement": "This initiative aligns with our company values and goals.",
             "terms_accepted": True,
+            "org_authorized": True,
             "form_metadata": {
                 "form_start_time": (timezone.now() - timedelta(minutes=2)).isoformat(),
                 "website": "",
@@ -196,7 +201,8 @@ class FormMetadataSecurityTests(TestCase):
         base_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": "Michael Brown",
+                "first_name": "Michael",
+                "last_name": "Brown",
                 "organization": "Green Farms Coalition",
                 "email": "michael@greenfarms.org",
                 "street_address": "789 Green Street",
@@ -239,7 +245,8 @@ class FormMetadataSecurityTests(TestCase):
         base_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
-                "name": "John Smith",
+                "first_name": "John",
+                "last_name": "Smith",
                 "organization": "Smith Industries",
                 "email": "john.smith@smithindustries.com",
                 "street_address": "123 Business Blvd",
@@ -252,6 +259,7 @@ class FormMetadataSecurityTests(TestCase):
                 "I strongly support this important initiative for our community."
             ),
             "terms_accepted": True,
+            "org_authorized": True,
             "form_metadata": {
                 "form_start_time": (timezone.now() - timedelta(minutes=2)).isoformat(),
                 "website": "",

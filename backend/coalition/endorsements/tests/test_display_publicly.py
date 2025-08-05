@@ -23,7 +23,7 @@ class DisplayPubliclyTest(TestCase):
 
         # Create test stakeholder
         self.stakeholder = Stakeholder.objects.create(
-            first_name="John",
+            first_name="Test",
             last_name="Doe",
             email="john@example.com",
             street_address="123 Main St",

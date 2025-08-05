@@ -206,7 +206,8 @@ class TermsAcceptanceTest(TestCase):
 
     def setUp(self) -> None:
         self.stakeholder = Stakeholder.objects.create(
-            name="Test Stakeholder",
+            first_name="Test",
+            last_name="Stakeholder",
             email="stakeholder@example.com",
             type="individual",
             state="MD",
@@ -283,7 +284,8 @@ class TermsAcceptanceTest(TestCase):
 
         # Create another stakeholder and campaign for second acceptance
         stakeholder2 = Stakeholder.objects.create(
-            name="Test Stakeholder 2",
+            first_name="Test",
+            last_name="Stakeholder 2",
             email="stakeholder2@example.com",
             type="individual",
             state="VA",
@@ -357,7 +359,8 @@ class TermsAcceptanceTest(TestCase):
 
         # Create another stakeholder and campaign for second acceptance
         stakeholder2 = Stakeholder.objects.create(
-            name="Test Stakeholder 2",
+            first_name="Test",
+            last_name="Stakeholder 2",
             email="stakeholder2@example.com",
             type="individual",
             state="VA",

@@ -331,7 +331,7 @@ class EndorsementAPITest(TestCase):
 
         # Create private endorsement (also approved and verified)
         private_stakeholder = Stakeholder.objects.create(
-            first_name="Private",
+            first_name="Test",
             last_name="Person",
             organization="Private Org",
             email="private@example.com",
@@ -653,8 +653,8 @@ class EndorsementAPIEnhancedTest(TestCase):
         """Test CSV export sanitizes dangerous formula characters"""
         # Create stakeholder with potentially dangerous CSV data
         malicious_stakeholder = Stakeholder.objects.create(
-            first_name="=cmd|'",
-            last_name="/C calc'!A0",  # Excel formula injection attempt
+            first_name="=cmd|' /C calc'!A0",  # Excel formula injection attempt
+            last_name="User",
             organization="@SUM(1+1)*cmd|' /C calc'!A0",  # Another injection attempt
             email="evil@example.com",
             state="CA",
@@ -741,7 +741,7 @@ class EndorsementAPIEnhancedTest(TestCase):
 
         # Create another pending endorsement
         stakeholder2 = Stakeholder.objects.create(
-            first_name="Another",
+            first_name="Test",
             last_name="User",
             organization="Another Org",
             email="another@example.com",
@@ -907,6 +907,7 @@ class TermsAcceptanceIntegrationTest(TestCase):
             "statement": "I support this campaign",
             "public_display": True,
             "terms_accepted": False,  # Should not create TermsAcceptance
+            "org_authorized": True,
             "form_metadata": get_valid_form_metadata(),
         }
 

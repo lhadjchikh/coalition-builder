@@ -79,8 +79,8 @@ class OrgAuthorizationTest(TestCase):
         endorsement = Endorsement.objects.get(stakeholder=stakeholder)
         assert not endorsement.org_authorized
 
-    def test_organization_endorsement_requires_authorization(self) -> None:
-        """Test that organization endorsements require authorization"""
+    def test_organization_affiliation_without_authorization(self) -> None:
+        """Test that users can show organization affiliation without authorization"""
         endorsement_data = {
             "campaign_id": self.campaign.id,
             "stakeholder": {
@@ -95,10 +95,10 @@ class OrgAuthorizationTest(TestCase):
                 "zip_code": "23220",
                 "type": "business",
             },
-            "statement": "Our company supports this initiative",
+            "statement": "I personally support this initiative",
             "public_display": True,
             "terms_accepted": True,
-            "org_authorized": False,  # Not authorized - should fail
+            "org_authorized": False,  # Personal endorsement, just showing affiliation
             "form_metadata": get_valid_form_metadata(),
         }
 
@@ -108,9 +108,12 @@ class OrgAuthorizationTest(TestCase):
             content_type="application/json",
         )
 
-        assert response.status_code == 400
-        data = response.json()
-        assert "Organization authorization must be confirmed" in str(data)
+        assert response.status_code == 200
+
+        # Verify the endorsement was created with org_authorized=False
+        endorsement = Endorsement.objects.get(stakeholder__email="jane@greenenergy.com")
+        assert endorsement.org_authorized is False
+        assert endorsement.stakeholder.organization == "Green Energy Corp"
 
     def test_organization_endorsement_with_authorization_succeeds(self) -> None:
         """Test that authorized organization endorsements succeed"""

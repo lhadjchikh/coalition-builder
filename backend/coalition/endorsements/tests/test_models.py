@@ -15,7 +15,8 @@ class EndorsementModelTest(TestCase):
     def setUp(self) -> None:
         # Create a stakeholder
         self.stakeholder = Stakeholder.objects.create(
-            name="Test Farmer",
+            first_name="Test",
+            last_name="Farmer",
             organization="Test Farm",
             email="test@farm.com",
             state="MD",
@@ -179,7 +180,8 @@ class EndorsementModelTest(TestCase):
 
         # Create another stakeholder to avoid unique constraint
         stakeholder2 = Stakeholder.objects.create(
-            name="Jane Smith",
+            first_name="Jane",
+            last_name="Smith",
             organization="Test Org 2",
             email="jane@example.com",
             state="CA",

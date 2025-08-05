@@ -18,7 +18,8 @@ class TestGeocodingService(TestCase):
 
         # Create a sample stakeholder with complete address
         self.sample_stakeholder = Stakeholder.objects.create(
-            name="Test User",
+            first_name="Test",
+            last_name="User",
             organization="Test Org",
             email="test@example.com",
             street_address="100 Congress Ave",

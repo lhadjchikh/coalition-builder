@@ -11,7 +11,7 @@ class TestStakeholderModel(TestCase):
     def test_stakeholder_creation_with_address(self) -> None:
         """Test creating a stakeholder with full address information"""
         stakeholder = Stakeholder.objects.create(
-            first_name="John",
+            first_name="Test",
             last_name="Doe",
             organization="Test Org",
             email="john@example.com",
@@ -33,7 +33,7 @@ class TestStakeholderModel(TestCase):
     def test_stakeholder_normalization(self) -> None:
         """Test that email and state are normalized on save"""
         stakeholder = Stakeholder.objects.create(
-            first_name="Jane",
+            first_name="Test",
             last_name="Doe",
             organization="Test Org",
             email="JANE@EXAMPLE.COM",
@@ -93,7 +93,7 @@ class TestStakeholderModel(TestCase):
 
         # Create stakeholder with districts
         stakeholder = Stakeholder.objects.create(
-            first_name="District",
+            first_name="Test",
             last_name="Test",
             organization="Test Org",
             email="district@example.com",

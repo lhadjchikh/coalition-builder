@@ -96,6 +96,7 @@ class StakeholderOut(ModelSchema):
     state_senate_district_abbrev: str | None = None
     state_house_district_name: str | None = None
     state_house_district_abbrev: str | None = None
+    name: str  # Computed property from model
 
     class Meta:
         model = Stakeholder
@@ -132,6 +133,10 @@ class StakeholderOut(ModelSchema):
     @staticmethod
     def resolve_state_house_district_abbrev(obj: "Stakeholder") -> str | None:
         return obj.state_house_district.abbrev if obj.state_house_district else None
+
+    @staticmethod
+    def resolve_name(obj: "Stakeholder") -> str:
+        return obj.name
 
 
 class EndorsementOut(ModelSchema):

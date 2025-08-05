@@ -738,7 +738,8 @@ def export_endorsements_json(
                 },
                 "stakeholder": {
                     "id": endorsement.stakeholder.id,
-                    "name": endorsement.stakeholder.name,
+                    "first_name": endorsement.stakeholder.first_name,
+                    "last_name": endorsement.stakeholder.last_name,
                     "organization": endorsement.stakeholder.organization,
                     "role": endorsement.stakeholder.role,
                     "email": endorsement.stakeholder.email,
