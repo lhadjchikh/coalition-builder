@@ -56,7 +56,7 @@ describe('Frontend API Client CSRF Handling', () => {
 
     it('should handle cookie with spaces and semicolons correctly', async () => {
       // Set multiple cookies with spaces
-      document.cookie = 'sessionid=123; csrftoken=token-with-spaces; other=value';
+      document.cookie = 'sessionid=123; Secure; csrftoken=token-with-spaces; Secure; other=value';
 
       // Mock successful API response
       (global.fetch as jest.Mock).mockResolvedValueOnce({
