@@ -118,9 +118,7 @@ export function WebPageStructuredData({
     "@id": url,
     isPartOf: {
       "@type": "WebSite",
-      url:
-        process.env.NEXT_PUBLIC_SITE_URL ||
-        url.split("/").slice(0, 3).join("/"),
+      url: process.env.NEXT_PUBLIC_SITE_URL || new URL(url).origin,
     },
   };
 

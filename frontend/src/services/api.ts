@@ -160,8 +160,11 @@ class FrontendApiClient extends BaseApiClient {
         });
       }
 
+      // Remove headers from options to avoid duplication since we've already merged them
+      const { headers: _, ...optionsWithoutHeaders } = options || {};
+
       const response = await fetch(url, {
-        ...options,
+        ...optionsWithoutHeaders,
         headers,
         credentials: 'same-origin',
         signal: controller.signal,

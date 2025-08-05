@@ -2,6 +2,7 @@
 
 from datetime import datetime
 
+from django.conf import settings
 from django.contrib.sitemaps import Sitemap
 from django.db.models import QuerySet
 from django.urls import reverse
@@ -9,6 +10,15 @@ from django.utils import timezone
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.content.models import ContentBlock
+
+# Constants for sitemap configuration
+# ContentBlock identifiers that should not be indexed
+# Note: The actual /privacy and /terms pages are handled separately via Legal app
+EXCLUDED_CONTENT_IDENTIFIERS = ["privacy-policy", "terms-of-service"]
+
+# Use application start time as lastmod for static pages
+# This prevents unnecessary recrawling by search engines
+STATIC_PAGES_LASTMOD = timezone.now()
 
 
 class StaticViewSitemap(Sitemap):
@@ -29,7 +39,7 @@ class StaticViewSitemap(Sitemap):
 
     def lastmod(self, item: str) -> datetime:  # noqa: ARG002
         """Return last modification date."""
-        return timezone.now()
+        return STATIC_PAGES_LASTMOD
 
 
 class CampaignSitemap(Sitemap):
@@ -65,8 +75,7 @@ class ContentPageSitemap(Sitemap):
             block_type="page",
             active=True,
         ).exclude(
-            # These are usually noindex
-            identifier__in=["privacy-policy", "terms-of-service"],
+            identifier__in=EXCLUDED_CONTENT_IDENTIFIERS,
         )
 
     def lastmod(self, obj: ContentBlock) -> datetime:
