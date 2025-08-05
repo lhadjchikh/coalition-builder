@@ -26,16 +26,100 @@ const getBaseUrl = (): string => {
   return '';
 };
 
+// Helper function to get CSRF token from cookies
+function getCsrfTokenFromCookie(): string | null {
+  if (typeof document === 'undefined') return null;
+  
+  const name = 'csrftoken';
+  const cookies = document.cookie.split(';');
+  
+  for (const cookie of cookies) {
+    const trimmed = cookie.trim();
+    if (trimmed.startsWith(name + '=')) {
+      return decodeURIComponent(trimmed.substring(name.length + 1));
+    }
+  }
+  
+  return null;
+}
+
 class FrontendApiClient extends BaseApiClient {
   private maxRetries = 3;
   private retryDelay = 1000; // 1 second
+  private csrfToken: string | null = null;
+  private csrfTokenPromise: Promise<string | null> | null = null;
 
   constructor() {
     super({ baseURL: getBaseUrl() });
+    // Fetch CSRF token on initialization
+    this.fetchCsrfToken();
+  }
+
+  private async fetchCsrfToken(): Promise<string | null> {
+    // If already fetching, return the existing promise
+    if (this.csrfTokenPromise) {
+      return this.csrfTokenPromise;
+    }
+
+    // First try to get from cookie
+    const cookieToken = getCsrfTokenFromCookie();
+    if (cookieToken) {
+      this.csrfToken = cookieToken;
+      return cookieToken;
+    }
+
+    // If no cookie (cookies disabled or first load), fetch from endpoint
+    this.csrfTokenPromise = fetch(`${this.baseURL}/api/csrf-token/`, {
+      credentials: 'same-origin',
+    })
+      .then(response => response.json())
+      .then(data => {
+        this.csrfToken = data.csrf_token;
+        return data.csrf_token;
+      })
+      .catch(error => {
+        console.error('Failed to fetch CSRF token:', error);
+        return null;
+      })
+      .finally(() => {
+        this.csrfTokenPromise = null;
+      });
+
+    return this.csrfTokenPromise;
   }
 
   protected async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     return this.requestWithRetry<T>(endpoint, options);
+  }
+
+  // Public HTTP methods for testing and general use
+  async get<T>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint, { method: 'GET' });
+  }
+
+  async post<T>(endpoint: string, data?: any): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'POST',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  async put<T>(endpoint: string, data?: any): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'PUT',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  async patch<T>(endpoint: string, data?: any): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'PATCH',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  async delete<T>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint, { method: 'DELETE' });
   }
 
   private async requestWithRetry<T>(
@@ -55,11 +139,32 @@ class FrontendApiClient extends BaseApiClient {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
+      // Prepare headers
+      const headers = new Headers(this.defaultHeaders);
+      
+      // Add CSRF token for state-changing requests
+      const method = options?.method?.toUpperCase() || 'GET';
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+        // Ensure we have a CSRF token
+        await this.fetchCsrfToken();
+        if (this.csrfToken) {
+          headers.set('X-CSRFToken', this.csrfToken);
+        }
+      }
+      
+      // Merge with any headers from options
+      if (options?.headers) {
+        const optionHeaders = new Headers(options.headers);
+        optionHeaders.forEach((value, key) => {
+          headers.set(key, value);
+        });
+      }
+
       const response = await fetch(url, {
-        headers: this.defaultHeaders,
+        ...options,
+        headers,
         credentials: 'same-origin',
         signal: controller.signal,
-        ...options,
       });
 
       clearTimeout(timeoutId);
