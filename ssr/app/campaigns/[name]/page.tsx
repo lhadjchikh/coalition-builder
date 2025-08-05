@@ -23,7 +23,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
 
     const siteUrl =
       process.env.NEXT_PUBLIC_SITE_URL || "https://landandbay.org";
-    const campaignUrl = `${siteUrl}/campaigns/${campaign.url_name}`;
+    const campaignUrl = `${siteUrl}/campaigns/${campaign.name}`;
 
     // Return the CampaignDetail component with the full campaign data and structured data
     return (
@@ -33,7 +33,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
           description={campaign.summary}
           url={campaignUrl}
           datePublished={campaign.created_at}
-          dateModified={campaign.updated_at}
+          dateModified={campaign.created_at}
           author={process.env.ORGANIZATION_NAME || "Coalition Builder"}
           image={campaign.image_url}
         />
@@ -81,7 +81,7 @@ export async function generateMetadata({ params }: CampaignPageProps) {
     const campaign = await apiClient.getCampaignByName(resolvedParams.name);
     const siteUrl =
       process.env.NEXT_PUBLIC_SITE_URL || "https://landandbay.org";
-    const campaignUrl = `${siteUrl}/campaigns/${campaign.url_name}`;
+    const campaignUrl = `${siteUrl}/campaigns/${campaign.name}`;
 
     return {
       title: campaign.title,
@@ -103,7 +103,7 @@ export async function generateMetadata({ params }: CampaignPageProps) {
           : [],
         type: "article",
         publishedTime: campaign.created_at,
-        modifiedTime: campaign.updated_at,
+        modifiedTime: campaign.created_at,
       },
       twitter: {
         card: "summary_large_image",

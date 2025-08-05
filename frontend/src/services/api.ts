@@ -77,7 +77,7 @@ class FrontendApiClient extends BaseApiClient {
         this.csrfToken = data.csrf_token;
         return data.csrf_token;
       })
-      .catch(error => {
+      .catch((error: Error): null => {
         console.error('Failed to fetch CSRF token:', error);
         return null;
       })
