@@ -245,7 +245,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
     }
 
     return (
-      <div className="endorsement-form" data-testid="endorsement-form">
+      <div className="endorsement-form" data-testid="endorsement-form" id="endorse">
         <h3>Endorse This Campaign</h3>
 
         {campaign.endorsement_statement && (
