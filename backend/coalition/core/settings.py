@@ -100,7 +100,7 @@ if os.getenv("AWS_EXECUTION_ENV", "").startswith("AWS_ECS"):
             logging.error(f"Critical error fetching ECS metadata V4: {e}")
         except Timeout as e:
             logging.warning(f"Timeout fetching ECS metadata V4: {e}")
-        except (RequestException, KeyError, ValueError) as e:
+        except (RequestException, KeyError, ValueError, json.JSONDecodeError) as e:
             logging.warning(f"Could not fetch ECS metadata V4: {e}")
 
     elif metadata_uri:
@@ -115,7 +115,7 @@ if os.getenv("AWS_EXECUTION_ENV", "").startswith("AWS_ECS"):
             logging.error(f"Critical error fetching ECS metadata V3: {e}")
         except Timeout as e:
             logging.warning(f"Timeout fetching ECS metadata V3: {e}")
-        except (RequestException, KeyError, ValueError) as e:
+        except (RequestException, KeyError, ValueError, json.JSONDecodeError) as e:
             logging.warning(f"Could not fetch ECS metadata V3: {e}")
 
     # Try to get the public IP via AWS metadata service (if available)
@@ -156,8 +156,9 @@ if ecs_service_name := os.getenv("ECS_SERVICE_NAME"):
 # Convert set to list once at the end
 ALLOWED_HOSTS = list(allowed_hosts_set)
 
-# Log the allowed hosts for debugging (only in non-production or when DEBUG is on)
-if DEBUG or os.getenv("LOG_ALLOWED_HOSTS", "false").lower() in ("true", "1"):
+# Log the allowed hosts for debugging (only in development when DEBUG is on)
+if DEBUG:
+    # Only log in development to avoid exposing network topology
     logging.info(f"ALLOWED_HOSTS configured: {ALLOWED_HOSTS}")
 
 # CSRF Protection Configuration

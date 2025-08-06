@@ -56,8 +56,8 @@ class ECSHostValidationMiddleware:
                 # This is a valid IP address
                 x_forwarded_proto = request.META.get("HTTP_X_FORWARDED_PROTO", "http")
 
-                # Log this for debugging
-                logger.warning(
+                # Log this for debugging (use debug level to avoid exposing IPs in production)
+                logger.debug(
                     f"Request with IP Host header: {current_host}, "
                     f"Path: {request.path}, "
                     f"X-Forwarded-Proto: {x_forwarded_proto}",
@@ -66,7 +66,7 @@ class ECSHostValidationMiddleware:
                 # For API endpoints, we'll allow the request to proceed
                 # Django will validate against ALLOWED_HOSTS which now includes task IPs
                 if request.path.startswith("/api/"):
-                    logger.info(f"Allowing API request with IP host: {current_host}")
+                    logger.debug(f"Allowing API request with IP host: {current_host}")
             except ValueError:
                 # Not an IP address, proceed normally
                 pass
