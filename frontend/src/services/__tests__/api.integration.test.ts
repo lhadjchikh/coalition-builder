@@ -86,6 +86,7 @@ describe('API Client Production Integration', () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: new Headers({ 'content-type': 'application/json' }),
         json: async () => mockEndorsements,
       });
 
@@ -98,9 +99,15 @@ describe('API Client Production Integration', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         getExpectedUrl('/api/endorsements/?campaign_id=1'),
         expect.objectContaining({
-          headers: { 'Content-Type': 'application/json' },
+          headers: expect.any(Headers),
+          credentials: 'same-origin',
+          signal: expect.any(AbortSignal),
         })
       );
+      // Verify headers separately
+      const headers = mockFetch.mock.calls[0][1].headers;
+      expect(headers).toBeInstanceOf(Headers);
+      expect(headers.get('Content-Type')).toBe('application/json');
     });
 
     it('should handle network errors gracefully in production', async () => {
@@ -118,7 +125,9 @@ describe('API Client Production Integration', () => {
         expect(mockFetch).toHaveBeenCalledWith(
           getExpectedUrl('/api/endorsements/?campaign_id=1'),
           expect.objectContaining({
-            headers: { 'Content-Type': 'application/json' },
+            headers: expect.any(Headers),
+            credentials: 'same-origin',
+            signal: expect.any(AbortSignal),
           })
         );
       });
@@ -147,6 +156,7 @@ describe('API Client Production Integration', () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: new Headers({ 'content-type': 'application/json' }),
         json: async () => mockCampaigns,
       });
 
@@ -156,9 +166,15 @@ describe('API Client Production Integration', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         getExpectedUrl('/api/campaigns/'),
         expect.objectContaining({
-          headers: { 'Content-Type': 'application/json' },
+          headers: expect.any(Headers),
+          credentials: 'same-origin',
+          signal: expect.any(AbortSignal),
         })
       );
+      // Verify headers separately
+      const headers = mockFetch.mock.calls[0][1].headers;
+      expect(headers).toBeInstanceOf(Headers);
+      expect(headers.get('Content-Type')).toBe('application/json');
     });
 
     it('should handle CORS errors appropriately in production', async () => {
@@ -193,6 +209,7 @@ describe('API Client Production Integration', () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: new Headers({ 'content-type': 'application/json' }),
         json: async () => mockCampaigns,
       });
 
@@ -202,9 +219,15 @@ describe('API Client Production Integration', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         getExpectedUrl('/api/campaigns/'),
         expect.objectContaining({
-          headers: { 'Content-Type': 'application/json' },
+          headers: expect.any(Headers),
+          credentials: 'same-origin',
+          signal: expect.any(AbortSignal),
         })
       );
+      // Verify headers separately
+      const headers = mockFetch.mock.calls[0][1].headers;
+      expect(headers).toBeInstanceOf(Headers);
+      expect(headers.get('Content-Type')).toBe('application/json');
     });
   });
 
@@ -224,6 +247,7 @@ describe('API Client Production Integration', () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: new Headers({ 'content-type': 'application/json' }),
         json: async () => [],
       });
 
@@ -233,9 +257,15 @@ describe('API Client Production Integration', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         getExpectedUrl('/api/endorsements/?campaign_id=1'),
         expect.objectContaining({
-          headers: { 'Content-Type': 'application/json' },
+          headers: expect.any(Headers),
+          credentials: 'same-origin',
+          signal: expect.any(AbortSignal),
         })
       );
+      // Verify headers separately
+      const headers = mockFetch.mock.calls[0][1].headers;
+      expect(headers).toBeInstanceOf(Headers);
+      expect(headers.get('Content-Type')).toBe('application/json');
     });
 
     it('should work consistently across different deployment contexts', async () => {
@@ -243,6 +273,7 @@ describe('API Client Production Integration', () => {
       // should use relative paths for nginx to handle routing
       mockFetch.mockResolvedValueOnce({
         ok: true,
+        headers: new Headers({ 'content-type': 'application/json' }),
         json: async () => [],
       });
 
@@ -251,9 +282,15 @@ describe('API Client Production Integration', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         getExpectedUrl('/api/endorsements/?campaign_id=1'),
         expect.objectContaining({
-          headers: { 'Content-Type': 'application/json' },
+          headers: expect.any(Headers),
+          credentials: 'same-origin',
+          signal: expect.any(AbortSignal),
         })
       );
+      // Verify headers separately
+      const headers = mockFetch.mock.calls[0][1].headers;
+      expect(headers).toBeInstanceOf(Headers);
+      expect(headers.get('Content-Type')).toBe('application/json');
     });
   });
 });
