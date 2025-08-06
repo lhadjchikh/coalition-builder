@@ -279,7 +279,16 @@ class CoreViewsTest(TestCase):
         response = robots_txt(request)
 
         assert response.status_code == 200
-        assert response.content.decode() == "User-agent: *\nDisallow: /\n"
+        content = response.content.decode()
+
+        # Check that robots.txt contains expected directives
+        assert "User-agent: *" in content
+        assert "Allow: /" in content  # Allow indexing of public content
+        assert "Disallow: /admin/" in content  # Block admin
+        assert "Disallow: /api/" in content  # Block API
+        assert "Sitemap:" in content  # Contains sitemap reference
+        assert "Crawl-delay: 1" in content  # Respectful crawl delay
+
         assert response["Content-Type"] == "text/plain"
 
     @patch("coalition.core.views.connection")

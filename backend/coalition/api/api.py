@@ -1,4 +1,5 @@
 from django.http import HttpRequest, JsonResponse
+from django.middleware.csrf import get_token
 from ninja import NinjaAPI
 
 from coalition.core.views import health_check as health_check_view
@@ -33,3 +34,9 @@ def api_health_check(request: HttpRequest) -> JsonResponse:
     """Health check endpoint for API monitoring and external tools"""
     # Re-use the Django view health check function
     return health_check_view(request)
+
+
+@api.get("/csrf-token/", tags=["Auth"])
+def get_csrf_token(request: HttpRequest) -> dict:
+    """Get CSRF token for API requests"""
+    return {"csrf_token": get_token(request)}
