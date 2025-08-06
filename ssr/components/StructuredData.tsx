@@ -118,7 +118,15 @@ export function WebPageStructuredData({
     "@id": url,
     isPartOf: {
       "@type": "WebSite",
-      url: process.env.NEXT_PUBLIC_SITE_URL || new URL(url).origin,
+      url: (() => {
+        if (process.env.NEXT_PUBLIC_SITE_URL)
+          return process.env.NEXT_PUBLIC_SITE_URL;
+        try {
+          return new URL(url).origin;
+        } catch {
+          return "";
+        }
+      })(),
     },
   };
 

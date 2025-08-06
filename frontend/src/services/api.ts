@@ -51,11 +51,18 @@ class FrontendApiClient extends BaseApiClient {
 
   constructor() {
     super({ baseURL: getBaseUrl() });
-    // Fetch CSRF token on initialization
-    this.fetchCsrfToken();
+    // Only fetch CSRF token on initialization in browser context
+    if (typeof window !== 'undefined' && typeof fetch !== 'undefined') {
+      this.fetchCsrfToken();
+    }
   }
 
   private async fetchCsrfToken(): Promise<string | null> {
+    // Guard against SSR context
+    if (typeof window === 'undefined' || typeof fetch === 'undefined') {
+      return null;
+    }
+
     // If already fetching, return the existing promise
     if (this.csrfTokenPromise) {
       return this.csrfTokenPromise;

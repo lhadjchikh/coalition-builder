@@ -193,9 +193,17 @@ describe("CampaignPage", () => {
         params: Promise.resolve({ name: "test-campaign" }),
       });
 
-      expect(metadata).toEqual({
+      expect(metadata).toMatchObject({
         title: "Test Campaign",
         description: "Test campaign summary",
+        openGraph: expect.objectContaining({
+          title: "Test Campaign",
+          description: "Test campaign summary",
+        }),
+        twitter: expect.objectContaining({
+          title: "Test Campaign",
+          description: "Test campaign summary",
+        }),
       });
       expect(apiClient.getCampaignByName).toHaveBeenCalledWith("test-campaign");
       expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
@@ -211,8 +219,9 @@ describe("CampaignPage", () => {
           params: Promise.resolve({ name: "non-existent-campaign" }),
         });
 
-        expect(metadata).toEqual({
+        expect(metadata).toMatchObject({
           title: "Campaign Not Found",
+          robots: "noindex, nofollow",
         });
         expect(apiClient.getCampaignByName).toHaveBeenCalledWith(
           "non-existent-campaign",
@@ -231,8 +240,9 @@ describe("CampaignPage", () => {
           params: Promise.resolve({ name: "test-campaign" }),
         });
 
-        expect(metadata).toEqual({
+        expect(metadata).toMatchObject({
           title: "Campaign Not Found",
+          robots: "noindex, nofollow",
         });
         expect(apiClient.getCampaignByName).toHaveBeenCalledWith(
           "test-campaign",
