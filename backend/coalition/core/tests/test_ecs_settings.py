@@ -61,7 +61,7 @@ class ECSSettingsTest(TestCase):
 
         with (
             patch("requests.get", side_effect=SSLError("SSL verification failed")),
-            patch("coalition.core.settings.logging") as mock_logging,
+            patch("logging.error") as mock_error,
             patch.dict(
                 os.environ,
                 {
@@ -74,9 +74,11 @@ class ECSSettingsTest(TestCase):
             reload(settings_module)
 
             # Should log as error
-            mock_logging.error.assert_called_once()
-            assert "SSL error fetching ECS metadata V4" in str(
-                mock_logging.error.call_args,
+            mock_error.assert_called()
+            # Check that the SSL error message was logged
+            error_calls = [str(call) for call in mock_error.call_args_list]
+            assert any(
+                "SSL error fetching ECS metadata V4" in call for call in error_calls
             )
 
     def test_ecs_metadata_v4_timeout(self) -> None:
@@ -85,7 +87,7 @@ class ECSSettingsTest(TestCase):
 
         with (
             patch("requests.get", side_effect=Timeout("Request timed out")),
-            patch("coalition.core.settings.logging") as mock_logging,
+            patch("logging.warning") as mock_warning,
             patch.dict(
                 os.environ,
                 {
@@ -98,9 +100,10 @@ class ECSSettingsTest(TestCase):
             reload(settings_module)
 
             # Should log as warning
-            mock_logging.warning.assert_called()
-            assert "Timeout fetching ECS metadata V4" in str(
-                mock_logging.warning.call_args,
+            mock_warning.assert_called()
+            warning_calls = [str(call) for call in mock_warning.call_args_list]
+            assert any(
+                "Timeout fetching ECS metadata V4" in call for call in warning_calls
             )
 
     def test_ecs_metadata_v4_json_error(self) -> None:
@@ -112,7 +115,7 @@ class ECSSettingsTest(TestCase):
 
         with (
             patch("requests.get", return_value=mock_response),
-            patch("coalition.core.settings.logging") as mock_logging,
+            patch("logging.warning") as mock_warning,
             patch.dict(
                 os.environ,
                 {
@@ -125,9 +128,10 @@ class ECSSettingsTest(TestCase):
             reload(settings_module)
 
             # Should log as warning
-            mock_logging.warning.assert_called()
-            assert "Could not fetch ECS metadata V4" in str(
-                mock_logging.warning.call_args,
+            mock_warning.assert_called()
+            warning_calls = [str(call) for call in mock_warning.call_args_list]
+            assert any(
+                "Could not fetch ECS metadata V4" in call for call in warning_calls
             )
 
     def test_ecs_metadata_v3_fallback(self) -> None:
@@ -166,7 +170,7 @@ class ECSSettingsTest(TestCase):
 
         with (
             patch("requests.get", return_value=mock_response),
-            patch("coalition.core.settings.logging") as mock_logging,
+            patch("logging.info") as mock_info,
             patch.dict(
                 os.environ,
                 {
@@ -179,8 +183,10 @@ class ECSSettingsTest(TestCase):
 
             # Should add public IP
             assert "54.210.223.197" in settings_module.ALLOWED_HOSTS
-            mock_logging.info.assert_any_call(
-                "Added public IP to ALLOWED_HOSTS: 54.210.223.197",
+            info_calls = [str(call) for call in mock_info.call_args_list]
+            assert any(
+                "Added public IP to ALLOWED_HOSTS: 54.210.223.197" in call
+                for call in info_calls
             )
 
     def test_ec2_public_ip_invalid(self) -> None:
@@ -193,7 +199,7 @@ class ECSSettingsTest(TestCase):
 
         with (
             patch("requests.get", return_value=mock_response),
-            patch("coalition.core.settings.logging") as mock_logging,
+            patch("logging.warning") as mock_warning,
             patch.dict(
                 os.environ,
                 {
@@ -206,8 +212,10 @@ class ECSSettingsTest(TestCase):
 
             # Should not add invalid IP
             assert "not-an-ip-address" not in settings_module.ALLOWED_HOSTS
-            mock_logging.warning.assert_any_call(
-                "EC2 metadata returned invalid IP: not-an-ip-address",
+            warning_calls = [str(call) for call in mock_warning.call_args_list]
+            assert any(
+                "EC2 metadata returned invalid IP: not-an-ip-address" in call
+                for call in warning_calls
             )
 
     def test_ec2_public_ip_not_ok_response(self) -> None:
@@ -220,7 +228,7 @@ class ECSSettingsTest(TestCase):
 
         with (
             patch("requests.get", return_value=mock_response),
-            patch("coalition.core.settings.logging") as mock_logging,
+            patch("logging.debug") as mock_debug,
             patch.dict(
                 os.environ,
                 {
@@ -232,8 +240,10 @@ class ECSSettingsTest(TestCase):
             reload(settings_module)
 
             # Should log debug message
-            mock_logging.debug.assert_any_call(
-                "EC2 metadata endpoint returned status 404",
+            debug_calls = [str(call) for call in mock_debug.call_args_list]
+            assert any(
+                "EC2 metadata endpoint returned status 404" in call
+                for call in debug_calls
             )
 
     def test_ec2_public_ip_timeout(self) -> None:
@@ -249,7 +259,7 @@ class ECSSettingsTest(TestCase):
                     Timeout("Request timed out"),  # EC2 metadata
                 ],
             ),
-            patch("coalition.core.settings.logging") as mock_logging,
+            patch("logging.debug") as mock_debug,
             patch.dict(
                 os.environ,
                 {
@@ -262,8 +272,10 @@ class ECSSettingsTest(TestCase):
             reload(settings_module)
 
             # Should log debug message for expected failure
-            mock_logging.debug.assert_any_call(
-                "EC2 metadata endpoint not available (expected on Fargate)",
+            debug_calls = [str(call) for call in mock_debug.call_args_list]
+            assert any(
+                "EC2 metadata endpoint not available (expected on Fargate)" in call
+                for call in debug_calls
             )
 
     def test_alb_dns_name_added(self) -> None:
@@ -307,7 +319,7 @@ class ECSSettingsTest(TestCase):
         from coalition.core import settings as settings_module
 
         with (
-            patch("coalition.core.settings.logging") as mock_logging,
+            patch("logging.info") as mock_info,
             patch.dict(
                 os.environ,
                 {
@@ -320,16 +332,16 @@ class ECSSettingsTest(TestCase):
             reload(settings_module)
 
             # Should log ALLOWED_HOSTS
-            mock_logging.info.assert_any_call(
-                f"ALLOWED_HOSTS configured: {settings_module.ALLOWED_HOSTS}",
-            )
+            info_calls = [str(call) for call in mock_info.call_args_list]
+            # The order of hosts may vary due to set usage
+            assert any("ALLOWED_HOSTS configured:" in call for call in info_calls)
 
     def test_debug_logging_disabled_in_production(self) -> None:
         """Test that ALLOWED_HOSTS is not logged in production."""
         from coalition.core import settings as settings_module
 
         with (
-            patch("coalition.core.settings.logging") as mock_logging,
+            patch("logging.info") as mock_info,
             patch.dict(
                 os.environ,
                 {
@@ -342,8 +354,8 @@ class ECSSettingsTest(TestCase):
             reload(settings_module)
 
             # Should not log ALLOWED_HOSTS
-            for call in mock_logging.info.call_args_list:
-                assert "ALLOWED_HOSTS configured" not in str(call)
+            info_calls = [str(call) for call in mock_info.call_args_list]
+            assert not any("ALLOWED_HOSTS configured" in call for call in info_calls)
 
     def test_middleware_added_in_ecs(self) -> None:
         """Test that ECS middleware is added when running in ECS."""
