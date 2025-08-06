@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, act, RenderOptions } from '@testing-library/react';
 import { ThemeProvider } from 'styled-components';
-import { defaultTheme } from '../../styles/theme';
+import { defaultTheme } from '@styles/theme';
 import {
   Campaign,
   Endorser,
@@ -11,7 +11,7 @@ import {
   ContentBlock,
   Theme,
   Stakeholder,
-} from '../../types';
+} from '@app-types/index';
 
 // Utility function to wait for all async operations to complete
 export const waitForAsyncUpdates = async () => {

@@ -1,13 +1,13 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import EndorsementsList from '../../components/EndorsementsList';
-import { Endorsement } from '../../types';
-import API from '../../services/api';
-import { withSuppressedErrors } from '../utils/testUtils';
+import EndorsementsList from '@components/EndorsementsList';
+import { Endorsement } from '@app-types/index';
+import API from '@services/api';
+import { withSuppressedErrors } from '@tests/utils/testUtils';
 
 // Mock the API
-jest.mock('../../services/api');
+jest.mock('@services/api');
 const mockAPI = API as jest.Mocked<typeof API>;
 
 describe('EndorsementsList', () => {

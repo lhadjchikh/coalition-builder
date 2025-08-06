@@ -22,6 +22,16 @@ module.exports = (env, argv) => {
       extensions: ['.tsx', '.ts', '.jsx', '.js'],
       alias: {
         '@shared': path.resolve(__dirname, '../shared'),
+        '@': path.resolve(__dirname, 'src'),
+        '@components': path.resolve(__dirname, 'src/components'),
+        '@contexts': path.resolve(__dirname, 'src/contexts'),
+        '@hooks': path.resolve(__dirname, 'src/hooks'),
+        '@pages': path.resolve(__dirname, 'src/pages'),
+        '@services': path.resolve(__dirname, 'src/services'),
+        '@styles': path.resolve(__dirname, 'src/styles'),
+        '@tests': path.resolve(__dirname, 'src/tests'),
+        '@app-types': path.resolve(__dirname, 'src/types'),
+        '@utils': path.resolve(__dirname, 'src/utils'),
         // Ensure React dependencies are resolved from frontend's node_modules
         'react': path.resolve(__dirname, 'node_modules/react'),
         'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),

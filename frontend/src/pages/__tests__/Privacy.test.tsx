@@ -1,11 +1,11 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import Privacy from '../Privacy';
-import API from '../../services/api';
+import Privacy from '@pages/Privacy';
+import API from '@services/api';
 
 // Mock the API
-jest.mock('../../services/api');
+jest.mock('@services/api');
 
 // Mock the shared components
 jest.mock('@shared/components/Navbar', () => ({
@@ -18,7 +18,7 @@ jest.mock('@shared/components/Footer', () => ({
   default: jest.fn(() => <footer data-testid="footer">Footer</footer>),
 }));
 
-jest.mock('../../components/LinkWrapper', () => ({
+jest.mock('@components/LinkWrapper', () => ({
   __esModule: true,
   default: jest.fn(({ children, ...props }) => <a {...props}>{children}</a>),
 }));

@@ -1,8 +1,8 @@
 import React from 'react';
 import { renderHook } from '@testing-library/react';
 import { ThemeProvider } from 'styled-components';
-import { useStyledTheme } from '../useStyledTheme';
-import { StyledTheme, defaultTheme } from '../../styles/theme';
+import { useStyledTheme } from '@hooks/useStyledTheme';
+import { StyledTheme, defaultTheme } from '@styles/theme';
 
 // Mock polished functions
 jest.mock('polished', () => ({

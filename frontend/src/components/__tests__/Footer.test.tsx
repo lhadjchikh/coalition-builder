@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { BrowserRouter, MemoryRouter, useLocation, Routes, Route } from 'react-router-dom';
 import Footer from '@shared/components/Footer';
 import { HomePage } from '@shared/types';
-import LinkWrapper from '../LinkWrapper';
+import LinkWrapper from '@components/LinkWrapper';
 
 // Mock data
 const mockHomepage: HomePage = {

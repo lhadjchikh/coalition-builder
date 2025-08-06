@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import GrowthIcon from '../GrowthIcon';
+import GrowthIcon from '@components/GrowthIcon';
 
 describe('GrowthIcon', () => {
   it('renders seed icon with correct attributes', () => {

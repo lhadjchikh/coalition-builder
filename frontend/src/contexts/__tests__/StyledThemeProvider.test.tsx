@@ -1,12 +1,12 @@
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { EnhancedThemeProvider } from '../StyledThemeProvider';
-import { useTheme } from '../ThemeContext';
-import { Theme } from '../../types';
+import { EnhancedThemeProvider } from '@contexts/StyledThemeProvider';
+import { useTheme } from '@contexts/ThemeContext';
+import { Theme } from '@app-types/index';
 
 // Mock the ThemeContext
-jest.mock('../ThemeContext');
+jest.mock('@contexts/ThemeContext');
 const mockUseTheme = useTheme as jest.MockedFunction<typeof useTheme>;
 
 // Mock polished functions

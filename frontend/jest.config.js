@@ -15,6 +15,16 @@ export default {
     // Mock vanilla-cookieconsent module
     '^vanilla-cookieconsent$': '<rootDir>/src/__mocks__/vanilla-cookieconsent.js',
     '@shared/(.*)': '<rootDir>/../shared/$1',
+    '@/(.*)': '<rootDir>/src/$1',
+    '@components/(.*)': '<rootDir>/src/components/$1',
+    '@contexts/(.*)': '<rootDir>/src/contexts/$1',
+    '@hooks/(.*)': '<rootDir>/src/hooks/$1',
+    '@pages/(.*)': '<rootDir>/src/pages/$1',
+    '@services/(.*)': '<rootDir>/src/services/$1',
+    '@styles/(.*)': '<rootDir>/src/styles/$1',
+    '@tests/(.*)': '<rootDir>/src/tests/$1',
+    '@app-types/(.*)': '<rootDir>/src/types/$1',
+    '@utils/(.*)': '<rootDir>/src/utils/$1',
     // Map React modules to frontend's node_modules when imported from shared
     '^react$': '<rootDir>/node_modules/react',
     '^react/(.*)$': '<rootDir>/node_modules/react/$1',

@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import ContentBlock from '@shared/components/ContentBlock';
-import { ContentBlock as ContentBlockType } from '../../types';
+import { ContentBlock as ContentBlockType } from '@app-types/index';
 
 const baseContentBlock: ContentBlockType = {
   id: 1,

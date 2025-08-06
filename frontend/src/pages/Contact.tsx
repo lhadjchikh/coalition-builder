@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { HomePage } from '../types';
-import { ContentBlock } from '../services/api';
+import { HomePage } from '@app-types/index';
+import { ContentBlock } from '@services/api';
 import ContactPage from '@shared/components/ContactPage';
 import ContentBlockComponent from '@shared/components/ContentBlock';
 import Navbar from '@shared/components/Navbar';
 import Footer from '@shared/components/Footer';
 import { Link, useLocation } from 'react-router-dom';
 import { DEFAULT_NAV_ITEMS } from '@shared/types';
-import API from '../services/api';
+import API from '@services/api';
 
 const Contact: React.FC = () => {
   const [homepage, setHomepage] = useState<HomePage | null>(null);

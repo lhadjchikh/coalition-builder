@@ -1,4 +1,4 @@
-import { Theme as DatabaseTheme } from '../types';
+import { Theme as DatabaseTheme } from '@app-types/index';
 
 // Styled-components theme interface
 export interface StyledTheme {

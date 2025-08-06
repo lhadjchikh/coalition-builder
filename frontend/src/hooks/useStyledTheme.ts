@@ -1,6 +1,6 @@
 import { useTheme as useStyledComponentsTheme } from 'styled-components';
 import { lighten, darken, transparentize, rgba } from 'polished';
-import { StyledTheme } from '../styles/theme';
+import { StyledTheme } from '@styles/theme';
 
 // Enhanced theme hook with polished utilities
 export const useStyledTheme = () => {

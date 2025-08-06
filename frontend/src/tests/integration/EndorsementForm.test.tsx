@@ -1,13 +1,13 @@
 import React, { useRef } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import EndorsementForm, { EndorsementFormRef } from '../../components/EndorsementForm';
-import { Campaign } from '../../types';
-import API from '../../services/api';
-import { withSuppressedErrors } from '../utils/testUtils';
+import EndorsementForm, { EndorsementFormRef } from '@components/EndorsementForm';
+import { Campaign } from '@app-types/index';
+import API from '@services/api';
+import { withSuppressedErrors } from '@tests/utils/testUtils';
 
 // Mock the API
-jest.mock('../../services/api');
+jest.mock('@services/api');
 const mockAPI = API as jest.Mocked<typeof API>;
 
 describe('EndorsementForm', () => {

@@ -1,5 +1,5 @@
-import API from '../api';
-import { withSuppressedErrors } from '../../tests/utils/testUtils';
+import API from '@services/api';
+import { withSuppressedErrors } from '@tests/utils/testUtils';
 
 // Mock fetch globally
 const mockFetch = jest.fn();

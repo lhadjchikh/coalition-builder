@@ -1,4 +1,4 @@
-import API, { getBaseUrl } from '../api';
+import API, { getBaseUrl } from '@services/api';
 import {
   Campaign,
   Endorser,
@@ -6,8 +6,8 @@ import {
   Endorsement,
   EndorsementCreate,
   HomePage,
-} from '../../types';
-import { withSuppressedErrors } from '../../tests/utils/testUtils';
+} from '@app-types/index';
+import { withSuppressedErrors } from '@tests/utils/testUtils';
 
 // Mock fetch globally
 const mockFetch = jest.fn();

@@ -1,11 +1,11 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import Campaigns from '../Campaigns';
-import API from '../../services/api';
+import Campaigns from '@pages/Campaigns';
+import API from '@services/api';
 
 // Mock the API module
-jest.mock('../../services/api');
+jest.mock('@services/api');
 
 // Mock the shared components
 jest.mock('@shared/components/CampaignsPage', () => ({

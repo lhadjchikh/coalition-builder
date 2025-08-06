@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Campaign } from '../types';
+import { Campaign } from '@app-types/index';
 import { HomePage as HomePageType, ContentBlock } from '@shared/types/api';
 import HomePage from '@shared/components/HomePage';
 import HeroSection from '@shared/components/HeroSection';
@@ -10,8 +10,8 @@ import Footer from '@shared/components/Footer';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getFallbackHomepage } from '@shared/utils/homepage-data';
 import { DEFAULT_NAV_ITEMS } from '@shared/types';
-import API from '../services/api';
-import LinkWrapper from '../components/LinkWrapper';
+import API from '@services/api';
+import LinkWrapper from '@components/LinkWrapper';
 
 const Home: React.FC = () => {
   const [homepage, setHomepage] = useState<HomePageType | null>(null);

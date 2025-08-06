@@ -3,9 +3,9 @@
  * These tests verify the NetworkError fix works correctly.
  */
 
-import API from '../api';
-import { Campaign, Endorsement } from '../../types';
-import { withSuppressedErrors } from '../../tests/utils/testUtils';
+import API from '@services/api';
+import { Campaign, Endorsement } from '@app-types/index';
+import { withSuppressedErrors } from '@tests/utils/testUtils';
 
 // Mock fetch globally
 const mockFetch = jest.fn();

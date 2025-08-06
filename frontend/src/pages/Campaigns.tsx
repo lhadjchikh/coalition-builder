@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { HomePage, Campaign } from '../types';
-import { ContentBlock } from '../services/api';
+import { HomePage, Campaign } from '@app-types/index';
+import { ContentBlock } from '@services/api';
 import CampaignsPage from '@shared/components/CampaignsPage';
 import ContentBlockComponent from '@shared/components/ContentBlock';
 import Navbar from '@shared/components/Navbar';
 import Footer from '@shared/components/Footer';
 import { Link, useLocation } from 'react-router-dom';
 import { DEFAULT_NAV_ITEMS } from '@shared/types';
-import API from '../services/api';
+import API from '@services/api';
 import { useNavigate } from 'react-router-dom';
 
 const Campaigns: React.FC = () => {

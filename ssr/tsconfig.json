@@ -18,7 +18,16 @@
       "@frontend/types": ["./frontend/src/types/index.ts"],
       "@frontend/components/*": ["./frontend/src/components/*"],
       "@frontend/contexts/*": ["./frontend/src/contexts/*"],
-      "@shared/*": ["./shared/*"]
+      "@shared/*": ["./shared/*"],
+      "@components/*": ["../frontend/src/components/*"],
+      "@contexts/*": ["../frontend/src/contexts/*"],
+      "@hooks/*": ["../frontend/src/hooks/*"],
+      "@pages/*": ["../frontend/src/pages/*"],
+      "@services/*": ["../frontend/src/services/*"],
+      "@styles/*": ["../frontend/src/styles/*"],
+      "@tests/*": ["../frontend/src/tests/*"],
+      "@app-types/*": ["../frontend/src/types/*"],
+      "@utils/*": ["../frontend/src/utils/*"]
     },
     "typeRoots": ["./node_modules/@types"],
     "types": ["node", "react", "react-dom"],

@@ -12,7 +12,7 @@
  */
 
 import { act } from '@testing-library/react';
-import API from '../../services/api';
+import API from '@services/api';
 
 // These tests should run in CI with a real backend
 // They run if SKIP_E2E is not 'true'

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { ThemeStyles } from '../ThemeStyles';
+import { ThemeStyles } from '@components/ThemeStyles';
 import { Theme } from '@shared/utils/theme';
 
 // Mock the generateCSSVariables function

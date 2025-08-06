@@ -2,13 +2,13 @@ import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import CampaignDetail from '@shared/components/CampaignDetail';
-import API from '../../services/api';
+import API from '@services/api';
 import analytics from '@shared/services/analytics';
-import { Campaign } from '../../types';
-import { withSuppressedErrors } from '../../tests/utils/testUtils';
+import { Campaign } from '@app-types/index';
+import { withSuppressedErrors } from '@tests/utils/testUtils';
 
 // Mock the API service
-jest.mock('../../services/api');
+jest.mock('@services/api');
 const mockAPI = API as jest.Mocked<typeof API>;
 
 // Mock the analytics service
@@ -17,7 +17,7 @@ const mockAnalytics = analytics as jest.Mocked<typeof analytics>;
 
 // Mock child components
 const mockScrollToFirstField = jest.fn();
-jest.mock('../EndorsementForm', () => {
+jest.mock('@components/EndorsementForm', () => {
   return {
     __esModule: true,
     default: React.forwardRef<
@@ -52,7 +52,7 @@ jest.mock('../EndorsementForm', () => {
   };
 });
 
-jest.mock('../EndorsementsList', () => {
+jest.mock('@components/EndorsementsList', () => {
   return {
     __esModule: true,
     default: function MockEndorsementsList({
@@ -84,10 +84,10 @@ jest.mock('../EndorsementsList', () => {
 });
 
 // Mock CSS import
-jest.mock('../Endorsements.css', () => ({}));
+jest.mock('@components/Endorsements.css', () => ({}));
 
 // Mock GrowthIcon component
-jest.mock('../GrowthIcon', () => {
+jest.mock('@components/GrowthIcon', () => {
   return function MockGrowthIcon({
     stage,
     size,

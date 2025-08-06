@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, waitFor, act } from '@testing-library/react';
-import { ThemeProvider, useTheme } from '../ThemeContext';
+import { ThemeProvider, useTheme } from '@contexts/ThemeContext';
 import { Theme } from '@shared/utils/theme';
 
 // Mock the loadGoogleFonts function

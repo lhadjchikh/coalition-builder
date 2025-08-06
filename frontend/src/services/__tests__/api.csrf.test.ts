@@ -2,7 +2,7 @@
  * Tests for CSRF token handling in the frontend API client
  */
 
-import { frontendApiClient } from '../api';
+import { frontendApiClient } from '@services/api';
 
 // Mock fetch globally
 global.fetch = jest.fn();

@@ -1,11 +1,11 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import App from '../../App';
-import API from '../../services/api';
-import { withSuppressedErrors } from '../utils/testUtils';
+import App from '@/App';
+import API from '@services/api';
+import { withSuppressedErrors } from '@tests/utils/testUtils';
 
 // Mock the API module
-jest.mock('../../services/api', () => ({
+jest.mock('@services/api', () => ({
   __esModule: true,
   default: {
     getCampaigns: jest.fn(),

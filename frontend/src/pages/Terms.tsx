@@ -4,8 +4,8 @@ import Navbar from '@shared/components/Navbar';
 import Footer from '@shared/components/Footer';
 import { useLocation } from 'react-router-dom';
 import { DEFAULT_NAV_ITEMS } from '@shared/types';
-import API from '../services/api';
-import LinkWrapper from '../components/LinkWrapper';
+import API from '@services/api';
+import LinkWrapper from '@components/LinkWrapper';
 
 const Terms: React.FC = () => {
   const [document, setDocument] = useState<LegalDocumentResponse | null>(null);
