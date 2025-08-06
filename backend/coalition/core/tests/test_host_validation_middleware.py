@@ -63,12 +63,12 @@ class ECSHostValidationMiddlewareTest(TestCase):
 
             # Should log the IP address detection
             mock_logger.debug.assert_any_call(
-                "Request with IP Host header: 192.168.1.1, "
+                "Request with IP-based Host header detected. "
                 "Path: /api/endpoint, "
                 "X-Forwarded-Proto: https",
             )
             mock_logger.debug.assert_any_call(
-                "Allowing API request with IP host: 192.168.1.1",
+                "Allowing API request with IP-based host",
             )
 
     def test_ip_address_detection_with_port(self) -> None:
@@ -84,7 +84,7 @@ class ECSHostValidationMiddlewareTest(TestCase):
 
             # Should handle port correctly
             mock_logger.debug.assert_any_call(
-                "Request with IP Host header: 192.168.1.1:8000, "
+                "Request with IP-based Host header detected. "
                 "Path: /api/endpoint, "
                 "X-Forwarded-Proto: http",
             )
@@ -101,7 +101,7 @@ class ECSHostValidationMiddlewareTest(TestCase):
 
             # Should detect IPv6 address
             mock_logger.debug.assert_any_call(
-                "Request with IP Host header: [2001:db8::1], "
+                "Request with IP-based Host header detected. "
                 "Path: /api/endpoint, "
                 "X-Forwarded-Proto: http",
             )
@@ -118,7 +118,7 @@ class ECSHostValidationMiddlewareTest(TestCase):
 
             # Should detect IPv6 address
             mock_logger.debug.assert_any_call(
-                "Request with IP Host header: 2001:db8::1, "
+                "Request with IP-based Host header detected. "
                 "Path: /api/endpoint, "
                 "X-Forwarded-Proto: http",
             )
@@ -163,7 +163,7 @@ class ECSHostValidationMiddlewareTest(TestCase):
 
             # Should log IP detection but not the "allowing" message
             mock_logger.debug.assert_called_once_with(
-                "Request with IP Host header: 192.168.1.1, "
+                "Request with IP-based Host header detected. "
                 "Path: /admin/login, "
                 "X-Forwarded-Proto: http",
             )
@@ -192,7 +192,7 @@ class ECSHostValidationMiddlewareTest(TestCase):
 
             # Should use default 'http' for X-Forwarded-Proto
             mock_logger.debug.assert_any_call(
-                "Request with IP Host header: 10.0.0.1, "
+                "Request with IP-based Host header detected. "
                 "Path: /api/endpoint, "
                 "X-Forwarded-Proto: http",
             )

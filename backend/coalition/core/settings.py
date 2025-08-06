@@ -96,6 +96,9 @@ if os.getenv("AWS_EXECUTION_ENV", "").startswith("AWS_ECS"):
 
         except SSLError as e:
             # SSL verification errors might indicate security issues
+            # Note: We don't raise here because metadata fetching is optional
+            # The app can function without these IPs in ALLOWED_HOSTS
+            # AWS metadata endpoints use HTTP (not HTTPS) on link-local addresses
             logging.error(f"SSL error fetching ECS metadata V4: {e}")
         except RequestsConnectionError as e:
             # Connection errors are expected in some environments
@@ -114,6 +117,9 @@ if os.getenv("AWS_EXECUTION_ENV", "").startswith("AWS_ECS"):
                         allowed_hosts_set.add(ipv4)
         except SSLError as e:
             # SSL verification errors might indicate security issues
+            # Note: We don't raise here because metadata fetching is optional
+            # The app can function without these IPs in ALLOWED_HOSTS
+            # AWS metadata endpoints use HTTP (not HTTPS) on link-local addresses
             logging.error(f"SSL error fetching ECS metadata V3: {e}")
         except RequestsConnectionError as e:
             # Connection errors are expected in some environments
