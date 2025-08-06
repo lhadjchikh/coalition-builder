@@ -50,17 +50,22 @@ class ECSHostValidationMiddleware:
             # Handle IPv6 addresses in brackets (e.g., "[2001:db8::1]:8000")
             if current_host.startswith("[") and "]" in current_host:
                 # IPv6 address with optional port
-                bracket_end = current_host.index("]")
+                bracket_end = current_host.find("]")
                 host_without_port = current_host[1:bracket_end]
             else:
-                # IPv4 address or plain IPv6, remove port if present
-                # For IPv4: "192.168.1.1:8000" -> "192.168.1.1"
-                # For plain IPv6 without port, no colon splitting needed
-                if ":" in current_host and not current_host.count(":") > 1:
-                    # IPv4 with port
+                # Determine if this is IPv4 or IPv6 based on colon count
+                colon_count = current_host.count(":")
+
+                if colon_count == 0:
+                    # No colons - IPv4 without port or hostname
+                    host_without_port = current_host
+                elif colon_count == 1:
+                    # Single colon - IPv4 with port (e.g., "192.168.1.1:8000")
                     host_without_port = current_host.split(":")[0]
                 else:
-                    # IPv6 without port or IPv4 without port
+                    # Multiple colons - IPv6 address
+                    # IPv6 addresses without brackets rarely have ports appended
+                    # but if they do, it's ambiguous - treat whole string as address
                     host_without_port = current_host
 
             try:

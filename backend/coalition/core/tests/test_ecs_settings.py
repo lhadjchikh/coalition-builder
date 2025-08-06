@@ -75,7 +75,7 @@ class ECSSettingsTest(TestCase):
 
             # Should log as error
             mock_logging.error.assert_called_once()
-            assert "Critical error fetching ECS metadata V4" in str(
+            assert "SSL error fetching ECS metadata V4" in str(
                 mock_logging.error.call_args,
             )
 

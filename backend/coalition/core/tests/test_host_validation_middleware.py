@@ -27,11 +27,11 @@ class ECSHostValidationMiddlewareTest(TestCase):
                 self.request.path = path
                 self.request.META["HTTP_HOST"] = "192.168.1.1"
 
-                response = self.middleware(self.request)
+                self.middleware(self.request)
 
                 # Should call get_response without modifying host
                 self.get_response.assert_called_with(self.request)
-                self.assertEqual(self.request.META["HTTP_HOST"], "192.168.1.1")
+                assert self.request.META["HTTP_HOST"] == "192.168.1.1"
 
     def test_x_forwarded_host_used_when_present(self) -> None:
         """Test that X-Forwarded-Host header is used when present."""
@@ -42,10 +42,10 @@ class ECSHostValidationMiddlewareTest(TestCase):
         }
 
         with patch("coalition.core.middleware.host_validation.logger") as mock_logger:
-            response = self.middleware(self.request)
+            self.middleware(self.request)
 
             # Should update HTTP_HOST with forwarded value
-            self.assertEqual(self.request.META["HTTP_HOST"], "example.com")
+            assert self.request.META["HTTP_HOST"] == "example.com"
             mock_logger.debug.assert_called_once_with(
                 "Using X-Forwarded-Host: example.com",
             )
@@ -59,7 +59,7 @@ class ECSHostValidationMiddlewareTest(TestCase):
         }
 
         with patch("coalition.core.middleware.host_validation.logger") as mock_logger:
-            response = self.middleware(self.request)
+            self.middleware(self.request)
 
             # Should log the IP address detection
             mock_logger.debug.assert_any_call(
@@ -80,7 +80,7 @@ class ECSHostValidationMiddlewareTest(TestCase):
         }
 
         with patch("coalition.core.middleware.host_validation.logger") as mock_logger:
-            response = self.middleware(self.request)
+            self.middleware(self.request)
 
             # Should handle port correctly
             mock_logger.debug.assert_any_call(
@@ -90,18 +90,35 @@ class ECSHostValidationMiddlewareTest(TestCase):
             )
 
     def test_ipv6_address_detection(self) -> None:
-        """Test IPv6 address detection."""
+        """Test IPv6 address detection with brackets."""
         self.request.path = "/api/endpoint"
         self.request.META = {
             "HTTP_HOST": "[2001:db8::1]",  # IPv6 in brackets
         }
 
         with patch("coalition.core.middleware.host_validation.logger") as mock_logger:
-            response = self.middleware(self.request)
+            self.middleware(self.request)
 
             # Should detect IPv6 address
             mock_logger.debug.assert_any_call(
                 "Request with IP Host header: [2001:db8::1], "
+                "Path: /api/endpoint, "
+                "X-Forwarded-Proto: http",
+            )
+
+    def test_ipv6_address_without_brackets(self) -> None:
+        """Test IPv6 address detection without brackets."""
+        self.request.path = "/api/endpoint"
+        self.request.META = {
+            "HTTP_HOST": "2001:db8::1",  # IPv6 without brackets
+        }
+
+        with patch("coalition.core.middleware.host_validation.logger") as mock_logger:
+            self.middleware(self.request)
+
+            # Should detect IPv6 address
+            mock_logger.debug.assert_any_call(
+                "Request with IP Host header: 2001:db8::1, "
                 "Path: /api/endpoint, "
                 "X-Forwarded-Proto: http",
             )
@@ -114,7 +131,7 @@ class ECSHostValidationMiddlewareTest(TestCase):
         }
 
         with patch("coalition.core.middleware.host_validation.logger") as mock_logger:
-            response = self.middleware(self.request)
+            self.middleware(self.request)
 
             # Should not log as IP address
             mock_logger.debug.assert_not_called()
@@ -128,9 +145,9 @@ class ECSHostValidationMiddlewareTest(TestCase):
         }
 
         with patch("coalition.core.middleware.host_validation.logger") as mock_logger:
-            response = self.middleware(self.request)
+            self.middleware(self.request)
 
-            # Should not log as IP address (fixed from original flawed logic)
+            # Should not log as IP address - hostname starting with digit is not an IP
             mock_logger.debug.assert_not_called()
             mock_logger.warning.assert_not_called()
 
@@ -142,7 +159,7 @@ class ECSHostValidationMiddlewareTest(TestCase):
         }
 
         with patch("coalition.core.middleware.host_validation.logger") as mock_logger:
-            response = self.middleware(self.request)
+            self.middleware(self.request)
 
             # Should log IP detection but not the "allowing" message
             mock_logger.debug.assert_called_once_with(
@@ -157,7 +174,7 @@ class ECSHostValidationMiddlewareTest(TestCase):
         self.request.META = {}
 
         with patch("coalition.core.middleware.host_validation.logger") as mock_logger:
-            response = self.middleware(self.request)
+            self.middleware(self.request)
 
             # Should handle gracefully without logging
             mock_logger.debug.assert_not_called()
@@ -171,7 +188,7 @@ class ECSHostValidationMiddlewareTest(TestCase):
         }
 
         with patch("coalition.core.middleware.host_validation.logger") as mock_logger:
-            response = self.middleware(self.request)
+            self.middleware(self.request)
 
             # Should use default 'http' for X-Forwarded-Proto
             mock_logger.debug.assert_any_call(

@@ -94,10 +94,12 @@ if os.getenv("AWS_EXECUTION_ENV", "").startswith("AWS_ECS"):
                         allowed_hosts_set.add(ipv4)
                     # Note: Public IPs aren't in metadata, but we handle them below
 
-        except (SSLError, RequestsConnectionError) as e:
-            # Critical network errors - log as error but don't fail startup
-            # ECS tasks can still function without metadata
-            logging.error(f"Critical error fetching ECS metadata V4: {e}")
+        except SSLError as e:
+            # SSL verification errors might indicate security issues
+            logging.error(f"SSL error fetching ECS metadata V4: {e}")
+        except RequestsConnectionError as e:
+            # Connection errors are expected in some environments
+            logging.error(f"Connection error fetching ECS metadata V4: {e}")
         except Timeout as e:
             logging.warning(f"Timeout fetching ECS metadata V4: {e}")
         except (RequestException, KeyError, ValueError, json.JSONDecodeError) as e:
@@ -110,9 +112,12 @@ if os.getenv("AWS_EXECUTION_ENV", "").startswith("AWS_ECS"):
                 for network in networks:
                     for ipv4 in network.get("IPv4Addresses", []):
                         allowed_hosts_set.add(ipv4)
-        except (SSLError, RequestsConnectionError) as e:
-            # Critical network errors - log as error but don't fail startup
-            logging.error(f"Critical error fetching ECS metadata V3: {e}")
+        except SSLError as e:
+            # SSL verification errors might indicate security issues
+            logging.error(f"SSL error fetching ECS metadata V3: {e}")
+        except RequestsConnectionError as e:
+            # Connection errors are expected in some environments
+            logging.error(f"Connection error fetching ECS metadata V3: {e}")
         except Timeout as e:
             logging.warning(f"Timeout fetching ECS metadata V3: {e}")
         except (RequestException, KeyError, ValueError, json.JSONDecodeError) as e:
