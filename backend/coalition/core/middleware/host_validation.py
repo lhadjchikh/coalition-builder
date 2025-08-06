@@ -4,6 +4,7 @@ Middleware for secure host validation in AWS ECS/ALB environments.
 This middleware allows ALB health checks while maintaining Host header security.
 """
 
+import ipaddress
 import logging
 from collections.abc import Callable
 
@@ -44,23 +45,31 @@ class ECSHostValidationMiddleware:
         if forwarded_host:
             request.META["HTTP_HOST"] = forwarded_host
             logger.debug(f"Using X-Forwarded-Host: {forwarded_host}")
-        # If the current host looks like an IP address, try to get the real host
-        elif current_host and "." in current_host and current_host[0].isdigit():
-            # This is likely an IP address
-            # Check if we have X-Forwarded-For or other headers that might help
-            x_forwarded_proto = request.META.get("HTTP_X_FORWARDED_PROTO", "http")
+        # Check if the current host is a valid IP address
+        elif current_host:
+            # Remove port if present (e.g., "192.168.1.1:8000" -> "192.168.1.1")
+            host_without_port = current_host.split(":")[0]
+            try:
+                # Validate if it's an IP address
+                ipaddress.ip_address(host_without_port)
 
-            # Log this for debugging
-            logger.warning(
-                f"Request with IP Host header: {current_host}, "
-                f"Path: {request.path}, "
-                f"X-Forwarded-Proto: {x_forwarded_proto}",
-            )
+                # This is a valid IP address
+                x_forwarded_proto = request.META.get("HTTP_X_FORWARDED_PROTO", "http")
 
-            # For API endpoints, we'll allow the request to proceed
-            # Django will validate against ALLOWED_HOSTS which now includes task IPs
-            if request.path.startswith("/api/"):
-                logger.info(f"Allowing API request with IP host: {current_host}")
+                # Log this for debugging
+                logger.warning(
+                    f"Request with IP Host header: {current_host}, "
+                    f"Path: {request.path}, "
+                    f"X-Forwarded-Proto: {x_forwarded_proto}",
+                )
+
+                # For API endpoints, we'll allow the request to proceed
+                # Django will validate against ALLOWED_HOSTS which now includes task IPs
+                if request.path.startswith("/api/"):
+                    logger.info(f"Allowing API request with IP host: {current_host}")
+            except ValueError:
+                # Not an IP address, proceed normally
+                pass
 
         # Proceed with normal Django processing
         return self.get_response(request)

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import ipaddress
 import json
 import logging
 import os
@@ -19,6 +20,14 @@ from urllib.parse import quote
 
 import dj_database_url
 import requests
+from requests.exceptions import (
+    ConnectionError as RequestsConnectionError,
+)
+from requests.exceptions import (
+    RequestException,
+    SSLError,
+    Timeout,
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -85,7 +94,13 @@ if os.getenv("AWS_EXECUTION_ENV", "").startswith("AWS_ECS"):
                         allowed_hosts_set.add(ipv4)
                     # Note: Public IPs aren't in metadata, but we handle them below
 
-        except (requests.RequestException, KeyError, ValueError) as e:
+        except (SSLError, RequestsConnectionError) as e:
+            # Critical network errors - log as error but don't fail startup
+            # ECS tasks can still function without metadata
+            logging.error(f"Critical error fetching ECS metadata V4: {e}")
+        except Timeout as e:
+            logging.warning(f"Timeout fetching ECS metadata V4: {e}")
+        except (RequestException, KeyError, ValueError) as e:
             logging.warning(f"Could not fetch ECS metadata V4: {e}")
 
     elif metadata_uri:
@@ -95,21 +110,39 @@ if os.getenv("AWS_EXECUTION_ENV", "").startswith("AWS_ECS"):
                 for network in networks:
                     for ipv4 in network.get("IPv4Addresses", []):
                         allowed_hosts_set.add(ipv4)
-        except (requests.RequestException, KeyError, ValueError) as e:
-            logging.warning(f"Could not fetch ECS metadata: {e}")
+        except (SSLError, RequestsConnectionError) as e:
+            # Critical network errors - log as error but don't fail startup
+            logging.error(f"Critical error fetching ECS metadata V3: {e}")
+        except Timeout as e:
+            logging.warning(f"Timeout fetching ECS metadata V3: {e}")
+        except (RequestException, KeyError, ValueError) as e:
+            logging.warning(f"Could not fetch ECS metadata V3: {e}")
 
     # Try to get the public IP via AWS metadata service (if available)
     try:
         # This works on EC2 instances, might not work on Fargate
-        public_ip = requests.get(
-            "http://169.254.169.254/latest/meta-data/public-ipv4", timeout=1,
-        ).text
-        if public_ip:
-            allowed_hosts_set.add(public_ip)
-            logging.info(f"Added public IP to ALLOWED_HOSTS: {public_ip}")
-    except Exception:
-        # Fargate doesn't have EC2 metadata endpoint
-        pass
+        response = requests.get(
+            "http://169.254.169.254/latest/meta-data/public-ipv4",
+            timeout=1,
+        )
+        if response.ok:
+            public_ip = response.text.strip()
+            try:
+                # Validate that it's a valid IPv4 address
+                ipaddress.IPv4Address(public_ip)
+                allowed_hosts_set.add(public_ip)
+                logging.info(f"Added public IP to ALLOWED_HOSTS: {public_ip}")
+            except ipaddress.AddressValueError:
+                logging.warning(f"EC2 metadata returned invalid IP: {public_ip}")
+        else:
+            logging.debug(
+                f"EC2 metadata endpoint returned status {response.status_code}",
+            )
+    except (Timeout, RequestsConnectionError):
+        # Expected on Fargate or when EC2 metadata is disabled
+        logging.debug("EC2 metadata endpoint not available (expected on Fargate)")
+    except RequestException as e:
+        logging.warning(f"Error fetching EC2 public IP: {e}")
 
 # For production AWS environments, allow ALB DNS name
 if alb_dns := os.getenv("ALB_DNS_NAME"):
@@ -255,7 +288,8 @@ MIDDLEWARE = [
 if os.getenv("AWS_EXECUTION_ENV", "").startswith("AWS_ECS"):
     # Insert at the beginning to fix Host header before SecurityMiddleware
     MIDDLEWARE.insert(
-        0, "coalition.core.middleware.host_validation.ECSHostValidationMiddleware",
+        0,
+        "coalition.core.middleware.host_validation.ECSHostValidationMiddleware",
     )
 
 ROOT_URLCONF = "coalition.core.urls"
