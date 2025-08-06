@@ -81,6 +81,7 @@ class AllowedHostsConfigurationTest(TestCase):
             patch.dict(
                 os.environ,
                 {
+                    "AWS_EXECUTION_ENV": "AWS_ECS_FARGATE",
                     "ECS_CONTAINER_METADATA_URI": "http://169.254.170.2/v3",
                     "ALLOWED_HOSTS": "localhost,127.0.0.1",
                 },

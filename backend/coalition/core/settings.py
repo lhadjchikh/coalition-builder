@@ -10,7 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import ipaddress
 import json
+import logging
 import os
 import sys
 from pathlib import Path
@@ -18,6 +20,14 @@ from urllib.parse import quote
 
 import dj_database_url
 import requests
+from requests.exceptions import (
+    ConnectionError as RequestsConnectionError,
+)
+from requests.exceptions import (
+    RequestException,
+    SSLError,
+    Timeout,
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -59,17 +69,108 @@ if os.getenv("ENVIRONMENT", "local") in ("local", "docker", "development"):
     for host in internal_hosts:
         allowed_hosts_set.add(host)
 
-# For Elastic Container Service (ECS) deployments, get the internal IP
-# address from the EC2 instance's metadata and add it to ALLOWED_HOSTS.
-# This prevents health checks from failing due to disallowed host.
-# See: https://stackoverflow.com/a/58595305/1143466
-if metadata_uri := os.getenv("ECS_CONTAINER_METADATA_URI"):
-    container_metadata = requests.get(metadata_uri).json()
-    container_ip_address = container_metadata["Networks"][0]["IPv4Addresses"][0]
-    allowed_hosts_set.add(container_ip_address)
+# For ECS deployments, dynamically handle all possible hostnames
+if os.getenv("AWS_EXECUTION_ENV", "").startswith("AWS_ECS"):
+    # Add localhost variants for container-to-container communication
+    allowed_hosts_set.update(["localhost", "127.0.0.1", "app", "ssr"])
+
+    # IMPORTANT: In ECS behind ALB, requests may come with the ECS task's public IP
+    # as the Host header. We need to dynamically add these IPs.
+
+    # Try to get the public IP from ECS metadata
+    metadata_uri_v4 = os.getenv("ECS_CONTAINER_METADATA_URI_V4")
+    metadata_uri = os.getenv("ECS_CONTAINER_METADATA_URI")
+
+    if metadata_uri_v4:
+        try:
+            # Get task metadata
+            task_metadata = requests.get(f"{metadata_uri_v4}/task", timeout=1).json()
+
+            # Add all container IPs (both private and public if available)
+            for container in task_metadata.get("Containers", []):
+                for network in container.get("Networks", []):
+                    # Add private IPs
+                    for ipv4 in network.get("IPv4Addresses", []):
+                        allowed_hosts_set.add(ipv4)
+                    # Note: Public IPs aren't in metadata, but we handle them below
+
+        except SSLError as e:
+            # SSL verification errors might indicate security issues
+            # Note: We don't raise here because metadata fetching is optional
+            # The app can function without these IPs in ALLOWED_HOSTS
+            # AWS metadata endpoints use HTTP (not HTTPS) on link-local addresses
+            logging.error(f"SSL error fetching ECS metadata V4: {e}")
+        except RequestsConnectionError as e:
+            # Connection errors are expected in some environments
+            logging.error(f"Connection error fetching ECS metadata V4: {e}")
+        except Timeout as e:
+            logging.warning(f"Timeout fetching ECS metadata V4: {e}")
+        except (RequestException, KeyError, ValueError, json.JSONDecodeError) as e:
+            logging.warning(f"Could not fetch ECS metadata V4: {e}")
+
+    elif metadata_uri:
+        try:
+            container_metadata = requests.get(metadata_uri, timeout=1).json()
+            if networks := container_metadata.get("Networks"):
+                for network in networks:
+                    for ipv4 in network.get("IPv4Addresses", []):
+                        allowed_hosts_set.add(ipv4)
+        except SSLError as e:
+            # SSL verification errors might indicate security issues
+            # Note: We don't raise here because metadata fetching is optional
+            # The app can function without these IPs in ALLOWED_HOSTS
+            # AWS metadata endpoints use HTTP (not HTTPS) on link-local addresses
+            logging.error(f"SSL error fetching ECS metadata V3: {e}")
+        except RequestsConnectionError as e:
+            # Connection errors are expected in some environments
+            logging.error(f"Connection error fetching ECS metadata V3: {e}")
+        except Timeout as e:
+            logging.warning(f"Timeout fetching ECS metadata V3: {e}")
+        except (RequestException, KeyError, ValueError, json.JSONDecodeError) as e:
+            logging.warning(f"Could not fetch ECS metadata V3: {e}")
+
+    # Try to get the public IP via AWS metadata service (if available)
+    try:
+        # This works on EC2 instances, might not work on Fargate
+        response = requests.get(
+            "http://169.254.169.254/latest/meta-data/public-ipv4",
+            timeout=1,
+        )
+        if response.ok:
+            public_ip = response.text.strip()
+            try:
+                # Validate that it's a valid IPv4 address
+                ipaddress.IPv4Address(public_ip)
+                allowed_hosts_set.add(public_ip)
+                logging.info(f"Added public IP to ALLOWED_HOSTS: {public_ip}")
+            except ipaddress.AddressValueError:
+                logging.warning(f"EC2 metadata returned invalid IP: {public_ip}")
+        else:
+            logging.debug(
+                f"EC2 metadata endpoint returned status {response.status_code}",
+            )
+    except (Timeout, RequestsConnectionError):
+        # Expected on Fargate or when EC2 metadata is disabled
+        logging.debug("EC2 metadata endpoint not available (expected on Fargate)")
+    except RequestException as e:
+        logging.warning(f"Error fetching EC2 public IP: {e}")
+
+# For production AWS environments, allow ALB DNS name
+if alb_dns := os.getenv("ALB_DNS_NAME"):
+    allowed_hosts_set.add(alb_dns)
+
+# For ECS Service Discovery (if configured)
+if ecs_service_name := os.getenv("ECS_SERVICE_NAME"):
+    allowed_hosts_set.add(ecs_service_name)
+    allowed_hosts_set.add(f"{ecs_service_name}.local")
 
 # Convert set to list once at the end
 ALLOWED_HOSTS = list(allowed_hosts_set)
+
+# Log the allowed hosts for debugging (only in development when DEBUG is on)
+if DEBUG:
+    # Only log in development to avoid exposing network topology
+    logging.info(f"ALLOWED_HOSTS configured: {ALLOWED_HOSTS}")
 
 # CSRF Protection Configuration
 # Define trusted origins for CSRF token validation
@@ -179,6 +280,7 @@ LOGGING = {
     },
 }
 
+# Base middleware stack
 MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -193,6 +295,14 @@ MIDDLEWARE = [
     # but before any response compression that might change content
     "coalition.core.middleware.etag.ETagMiddleware",
 ]
+
+# Add ECS host validation middleware when running in AWS ECS
+if os.getenv("AWS_EXECUTION_ENV", "").startswith("AWS_ECS"):
+    # Insert at the beginning to fix Host header before SecurityMiddleware
+    MIDDLEWARE.insert(
+        0,
+        "coalition.core.middleware.host_validation.ECSHostValidationMiddleware",
+    )
 
 ROOT_URLCONF = "coalition.core.urls"
 
