@@ -58,11 +58,6 @@ class FrontendApiClient extends BaseApiClient {
   }
 
   private async fetchCsrfToken(): Promise<string | null> {
-    // Guard against SSR context
-    if (typeof window === 'undefined' || typeof fetch === 'undefined') {
-      return null;
-    }
-
     // If already fetching, return the existing promise
     if (this.csrfTokenPromise) {
       return this.csrfTokenPromise;
@@ -73,6 +68,11 @@ class FrontendApiClient extends BaseApiClient {
     if (cookieToken) {
       this.csrfToken = cookieToken;
       return cookieToken;
+    }
+
+    // Guard against SSR context where fetch might not be available
+    if (typeof window === 'undefined' || typeof fetch === 'undefined') {
+      return null;
     }
 
     // If no cookie (cookies disabled or first load), fetch from endpoint
