@@ -1069,3 +1069,53 @@ legend.form-label {
   border-radius: 2px;
   background-color: rgba(33, 150, 243, 0.1);
 }
+
+/* Success Message */
+.success-message {
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.success-message h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.success-message p {
+  margin: 0.5rem 0;
+}
+
+.share-endorsement-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #c3e6cb;
+}
+
+.share-cta {
+  font-weight: 500;
+  margin-bottom: 1rem;
+  color: #0f5132;
+}
+
+/* Error Message */
+.error-message {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+/* Endorsement Form Disabled */
+.endorsement-form-disabled {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}

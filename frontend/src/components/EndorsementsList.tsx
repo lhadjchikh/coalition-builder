@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import API from '../services/api';
-import { Endorsement } from '../types';
+import API from '@services/api';
+import { Endorsement } from '@app-types/index';
 import './Endorsements.css';
 
 interface EndorsementsListProps {

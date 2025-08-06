@@ -1,7 +1,8 @@
 import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
-import API from '../services/api';
+import API from '@services/api';
 import analytics from '@shared/services/analytics';
-import { Campaign, EndorsementCreate, Stakeholder } from '../types';
+import { Campaign, EndorsementCreate, Stakeholder } from '@app-types/index';
+import SocialShareButtons from './SocialShareButtonsWrapper';
 import './Endorsements.css';
 
 interface EndorsementFormProps {
@@ -263,7 +264,24 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
 
         {success && (
           <div className="success-message" data-testid="success-message">
-            <p>Thank you! Your endorsement has been submitted successfully.</p>
+            <h3>Thank you for your endorsement!</h3>
+            <p>Your endorsement has been submitted successfully and will be reviewed shortly.</p>
+
+            <div className="share-endorsement-section">
+              <p className="share-cta">Help amplify your support by sharing this campaign:</p>
+              <SocialShareButtons
+                url={`${window.location.origin}/campaigns/${campaign.name}`}
+                title={`I just endorsed ${campaign.title}!`}
+                description={`Join me in supporting this important initiative: ${campaign.summary || campaign.description}`}
+                hashtags={[
+                  'PolicyChange',
+                  'CivicEngagement',
+                  campaign.name?.replace(/-/g, '') || '',
+                ]}
+                campaignName={campaign.name}
+                showLabel={false}
+              />
+            </div>
           </div>
         )}
 
