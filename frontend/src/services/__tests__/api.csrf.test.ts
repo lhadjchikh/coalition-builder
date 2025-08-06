@@ -249,6 +249,49 @@ describe('Frontend API Client CSRF Handling', () => {
     });
   });
 
+  describe('Concurrent CSRF Token Fetching', () => {
+    it('should handle concurrent CSRF token requests', async () => {
+      document.cookie = '';
+
+      // Mock CSRF token endpoint to return after a delay
+      let resolveToken: (value: any) => void;
+      const tokenPromise = new Promise(resolve => {
+        resolveToken = resolve;
+      });
+
+      (global.fetch as jest.Mock).mockImplementation(url => {
+        if (url.includes('/api/csrf-token/')) {
+          return tokenPromise;
+        }
+        return Promise.resolve({
+          ok: true,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ data: 'test' }),
+        });
+      });
+
+      // Start two concurrent POST requests
+      const request1 = frontendApiClient.post('/api/test1/', { data: 1 });
+      const request2 = frontendApiClient.post('/api/test2/', { data: 2 });
+
+      // Resolve the CSRF token fetch
+      resolveToken!({
+        ok: true,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({ csrf_token: 'concurrent-token' }),
+      });
+
+      // Wait for both requests to complete
+      await Promise.all([request1, request2]);
+
+      // Should have fetched CSRF token only once
+      const csrfCalls = (global.fetch as jest.Mock).mock.calls.filter(call =>
+        call[0].includes('/api/csrf-token/')
+      );
+      expect(csrfCalls.length).toBe(1);
+    });
+  });
+
   describe('Integration Test - 403 Detection', () => {
     it('should detect 403 errors when CSRF token is missing', async () => {
       document.cookie = ''; // No CSRF token

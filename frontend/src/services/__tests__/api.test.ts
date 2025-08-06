@@ -894,4 +894,74 @@ describe('API Service', () => {
       );
     });
   });
+
+  describe('PATCH method', () => {
+    it('should support PATCH requests', async () => {
+      const mockData = { id: 1, name: 'Updated' };
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockData));
+
+      const result = await API.patch('/api/test/1/', { name: 'Updated' });
+
+      expect(result).toEqual(mockData);
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl('/api/test/1/'),
+        expect.objectContaining({
+          method: 'PATCH',
+          body: JSON.stringify({ name: 'Updated' }),
+          headers: expect.any(Headers),
+          credentials: 'same-origin',
+          signal: expect.any(AbortSignal),
+        })
+      );
+    });
+  });
+
+  describe('HTTP error handling', () => {
+    it('should handle non-JSON error responses', async () => {
+      await withSuppressedErrors(['HTTP error! status: 400'], async () => {
+        mockFetch.mockResolvedValueOnce({
+          ok: false,
+          status: 400,
+          headers: {
+            get: (name: string) => (name === 'content-type' ? 'text/html' : null),
+          },
+        });
+
+        await expect(API.getCampaigns()).rejects.toThrow('HTTP error! status: 400');
+      });
+    });
+  });
+
+  describe('SSR context handling', () => {
+    it('should handle SSR context where window is undefined', async () => {
+      // Save original window
+      const originalWindow = global.window;
+      const originalFetch = global.fetch;
+
+      // Simulate SSR context
+      delete (global as any).window;
+      delete (global as any).fetch;
+
+      // Import a fresh instance of the API client
+      jest.resetModules();
+      const { frontendApiClient: ssrApiClient } = require('../api');
+
+      // Try to make a POST request - should work but without CSRF token
+      global.fetch = mockFetch;
+      mockFetch.mockResolvedValueOnce(createMockResponse({ data: 'test' }));
+
+      await ssrApiClient.post('/api/test/', { data: 'test' });
+
+      // Should not attempt to fetch CSRF token
+      const csrfCalls = mockFetch.mock.calls.filter((call: any[]) =>
+        call[0].includes('/api/csrf-token/')
+      );
+      expect(csrfCalls.length).toBe(0);
+
+      // Restore window and fetch
+      global.window = originalWindow;
+      global.fetch = originalFetch;
+      jest.resetModules();
+    });
+  });
 });
