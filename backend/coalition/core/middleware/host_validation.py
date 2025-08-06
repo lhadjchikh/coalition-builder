@@ -47,8 +47,22 @@ class ECSHostValidationMiddleware:
             logger.debug(f"Using X-Forwarded-Host: {forwarded_host}")
         # Check if the current host is a valid IP address
         elif current_host:
-            # Remove port if present (e.g., "192.168.1.1:8000" -> "192.168.1.1")
-            host_without_port = current_host.split(":")[0]
+            # Handle IPv6 addresses in brackets (e.g., "[2001:db8::1]:8000")
+            if current_host.startswith("[") and "]" in current_host:
+                # IPv6 address with optional port
+                bracket_end = current_host.index("]")
+                host_without_port = current_host[1:bracket_end]
+            else:
+                # IPv4 address or plain IPv6, remove port if present
+                # For IPv4: "192.168.1.1:8000" -> "192.168.1.1"
+                # For plain IPv6 without port, no colon splitting needed
+                if ":" in current_host and not current_host.count(":") > 1:
+                    # IPv4 with port
+                    host_without_port = current_host.split(":")[0]
+                else:
+                    # IPv6 without port or IPv4 without port
+                    host_without_port = current_host
+
             try:
                 # Validate if it's an IP address
                 ipaddress.ip_address(host_without_port)
@@ -56,7 +70,7 @@ class ECSHostValidationMiddleware:
                 # This is a valid IP address
                 x_forwarded_proto = request.META.get("HTTP_X_FORWARDED_PROTO", "http")
 
-                # Log this for debugging (use debug level to avoid exposing IPs in production)
+                # Log for debugging (debug level to avoid exposing IPs in prod)
                 logger.debug(
                     f"Request with IP Host header: {current_host}, "
                     f"Path: {request.path}, "
