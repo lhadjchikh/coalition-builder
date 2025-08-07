@@ -52,51 +52,57 @@
 
 /* Platform-specific colors - icons with brand colors on white background */
 .share-facebook {
-  color: #1877f2;
+  background-color: #ffffff !important;
+  color: #1877f2 !important;
 }
 
 .share-facebook:hover {
-  background-color: #f0f2f5;
+  background-color: #f0f2f5 !important;
 }
 
 .share-linkedin {
-  color: #0a66c2;
+  background-color: #ffffff !important;
+  color: #0a66c2 !important;
 }
 
 .share-linkedin:hover {
-  background-color: #f3f8fc;
+  background-color: #f3f8fc !important;
 }
 
 .share-bluesky {
-  color: #00a8e8;
+  background-color: #ffffff !important;
+  color: #00a8e8 !important;
 }
 
 .share-bluesky:hover {
-  background-color: #f0f9ff;
+  background-color: #f0f9ff !important;
 }
 
 .share-twitter {
-  color: #000000;
+  background-color: #ffffff !important;
+  color: #000000 !important;
 }
 
 .share-twitter:hover {
-  background-color: #f7f7f7;
+  background-color: #f7f7f7 !important;
 }
 
 .share-email {
-  color: #ea4335;
+  background-color: #ffffff !important;
+  color: #ea4335 !important;
 }
 
 .share-email:hover {
-  background-color: #fef2f2;
+  background-color: #fef2f2 !important;
 }
 
 .share-copy {
-  color: #10b981;
+  background-color: #ffffff !important;
+  color: #10b981 !important;
 }
 
 .share-copy:hover {
-  background-color: #f0fdf4;
+  background-color: #f0fdf4 !important;
 }
 
 /* Mobile responsiveness */
