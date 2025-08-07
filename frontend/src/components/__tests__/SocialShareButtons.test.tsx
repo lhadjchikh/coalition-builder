@@ -9,6 +9,14 @@ jest.mock('@shared/services/analytics', () => ({
   trackEvent: jest.fn(),
 }));
 
+// Mock Font Awesome
+jest.mock('@fortawesome/react-fontawesome', () => ({
+  FontAwesomeIcon: ({ icon, size }: any) => {
+    const iconName = icon.iconName || 'icon';
+    return <span data-testid={`fa-icon-${iconName}`} data-size={size}>{iconName}</span>;
+  },
+}));
+
 // Mock window.open
 const mockOpen = jest.fn();
 window.open = mockOpen;

@@ -28,6 +28,23 @@ const nextConfig = {
         __dirname,
         "node_modules/vanilla-cookieconsent",
       ),
+      // Ensure Font Awesome packages resolve from SSR's node_modules
+      "@fortawesome/react-fontawesome": path.resolve(
+        __dirname,
+        "node_modules/@fortawesome/react-fontawesome",
+      ),
+      "@fortawesome/fontawesome-svg-core": path.resolve(
+        __dirname,
+        "node_modules/@fortawesome/fontawesome-svg-core",
+      ),
+      "@fortawesome/free-brands-svg-icons": path.resolve(
+        __dirname,
+        "node_modules/@fortawesome/free-brands-svg-icons",
+      ),
+      "@fortawesome/free-solid-svg-icons": path.resolve(
+        __dirname,
+        "node_modules/@fortawesome/free-solid-svg-icons",
+      ),
     };
 
     // Exclude styled components and related files from compilation to avoid build errors
