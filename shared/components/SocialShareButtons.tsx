@@ -9,7 +9,6 @@ import {
 import {
   faEnvelope,
   faLink,
-  faShare,
   faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import analytics from "@shared/services/analytics";
@@ -102,45 +101,11 @@ const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
     }
   };
 
-  // Try to use native Web Share API if available (mobile)
-  const handleNativeShare = async () => {
-    if (typeof navigator !== "undefined" && navigator.share) {
-      try {
-        await navigator.share({
-          title: title,
-          text: description,
-          url: url,
-        });
-        analytics.trackEvent({
-          action: "share_native",
-          category: "social_share",
-          label: campaignName || title,
-        });
-      } catch (err) {
-        // User cancelled or error occurred
-        console.log("Share cancelled or failed:", err);
-      }
-    }
-  };
-
   return (
     <div className={`social-share-buttons ${className}`}>
       {showLabel && <p className="share-label">Share this campaign:</p>}
 
       <div className="share-buttons-container">
-        {/* Native share button for mobile */}
-        {typeof navigator !== "undefined" && "share" in navigator && (
-          <button
-            className="share-button share-native"
-            onClick={handleNativeShare}
-            aria-label="Share"
-            title="Share"
-          >
-            <FontAwesomeIcon icon={faShare} size="lg" />
-            <span className="share-button-label">Share</span>
-          </button>
-        )}
-
         {/* Facebook */}
         <button
           className="share-button share-facebook"
