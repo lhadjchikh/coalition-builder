@@ -168,6 +168,7 @@ class FrontendApiClient extends BaseApiClient {
       }
 
       // Remove headers from options to avoid duplication since we've already merged them
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { headers: _, ...optionsWithoutHeaders } = options || {};
 
       const response = await fetch(url, {

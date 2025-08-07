@@ -352,7 +352,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         <header className="mb-8">
           {/* Only show title and summary in header if there's no hero image */}
           {!campaign.image_url && (
-            <div className="max-w-prose-container text-center mb-8">
+            <div className="text-center mb-8" style={{ maxWidth: '600px', margin: '0 auto 2rem auto' }}>
               <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl md:text-6xl mb-4">
                 {campaign.title}
               </h1>
@@ -360,7 +360,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             </div>
           )}
 
-          <div className="max-w-prose-container">
+          <div style={{ maxWidth: '600px', margin: '0 auto' }}>
             {/* Smart Social Proof Section */}
             {campaign.allow_endorsements &&
               endorsementCount >= SOCIAL_PROOF_THRESHOLD && (
@@ -406,77 +406,75 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             {campaign.allow_endorsements &&
               endorsementCount > 0 &&
               endorsementCount < SOCIAL_PROOF_THRESHOLD && (
-                <div className="bg-theme-primary/5 border border-theme-primary/20 rounded-lg p-6 mb-6">
-                  <div className="flex items-center gap-4">
-                    {GrowthIconComponent && (
-                      <div className="flex-shrink-0">
-                        <GrowthIconComponent
-                          stage="seedling"
-                          size="48px"
-                          color="#4caf50"
-                        />
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-theme-primary-dark mb-2">
-                        Join the Early Supporters
-                      </h3>
-                      <p className="text-theme-primary">
-                        Be among the founding voices advocating for this
-                        important initiative.
-                      </p>
+                <div className="endorsement-form" style={{ margin: '0 auto 2rem auto' }}>
+                  <h3 style={{ textAlign: 'center', marginTop: 0, marginBottom: '1.5rem' }}>Join the Early Supporters</h3>
+                  {GrowthIconComponent && (
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                      <GrowthIconComponent
+                        stage="seedling"
+                        size="48px"
+                        color="#4caf50"
+                      />
                     </div>
+                  )}
+                  <p style={{ textAlign: 'center', color: '#666', marginBottom: '2rem' }}>
+                    Be among the founding voices advocating for this
+                    important initiative.
+                  </p>
+                  <div style={{ textAlign: 'center' }}>
+                    <Button
+                      variant="accent"
+                      size="lg"
+                      onClick={scrollToEndorsementForm}
+                    >
+                      Join the Early Supporters
+                    </Button>
+                    <p style={{ color: '#666', marginTop: '0.5rem' }}>
+                      Join this growing movement in its early stages.
+                    </p>
                   </div>
                 </div>
               )}
 
-            {/* Endorsement CTA Section */}
-            {campaign.allow_endorsements && (
-              <div className="mb-8">
-                {endorsementCount === 0 && (
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-4">
-                    <div className="flex items-center gap-4">
-                      {GrowthIconComponent && (
-                        <div className="flex-shrink-0">
-                          <GrowthIconComponent
-                            stage="seed"
-                            size="48px"
-                            color="#4caf50"
-                          />
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                          Be the First to Show Support
-                        </h3>
-                        <p className="text-gray-700">
-                          Help launch this campaign by adding your voice to this
-                          important cause.
-                        </p>
-                      </div>
-                    </div>
+            {/* First Endorser CTA - when no endorsements yet */}
+            {campaign.allow_endorsements && endorsementCount === 0 && (
+              <div className="endorsement-form" style={{ margin: '0 auto 2rem auto' }}>
+                <h3 style={{ textAlign: 'center', marginTop: 0, marginBottom: '1.5rem' }}>Be the First to Show Support</h3>
+                {GrowthIconComponent && (
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                    <GrowthIconComponent
+                      stage="seed"
+                      size="48px"
+                      color="#4caf50"
+                    />
                   </div>
                 )}
-
-                <div className="text-center">
+                <p style={{ textAlign: 'center', color: '#666', marginBottom: '2rem' }}>
+                  Help launch this campaign by adding your voice to this
+                  important cause.
+                </p>
+                <div style={{ textAlign: 'center' }}>
                   <Button
                     variant="accent"
                     size="lg"
                     onClick={scrollToEndorsementForm}
                   >
-                    {endorsementCount === 0
-                      ? "Be the First to Endorse"
-                      : endorsementCount < SOCIAL_PROOF_THRESHOLD
-                        ? "Join the Early Supporters"
-                        : "Add Your Endorsement"}
+                    Be the First to Endorse
                   </Button>
-                  {endorsementCount > 0 &&
-                    endorsementCount < SOCIAL_PROOF_THRESHOLD && (
-                      <p className="text-gray-600 mt-2">
-                        Join this growing movement in its early stages.
-                      </p>
-                    )}
                 </div>
+              </div>
+            )}
+
+            {/* Regular CTA for 10+ endorsements */}
+            {campaign.allow_endorsements && endorsementCount >= SOCIAL_PROOF_THRESHOLD && (
+              <div className="text-center mb-8">
+                <Button
+                  variant="accent"
+                  size="lg"
+                  onClick={scrollToEndorsementForm}
+                >
+                  Add Your Endorsement
+                </Button>
               </div>
             )}
           </div>
@@ -488,19 +486,18 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             role="region"
             aria-labelledby="campaign-description-heading"
             ref={aboutSectionRef}
+            style={{ maxWidth: '600px', margin: '0 auto 3rem auto' }}
           >
-            <div className="max-w-prose-container">
-              <h2
-                id="campaign-description-heading"
-                className="text-3xl font-bold text-gray-900 mb-6"
-              >
-                About This Campaign
-              </h2>
-              <div
-                className="prose prose-lg text-gray-700"
-                dangerouslySetInnerHTML={{ __html: campaign.description }}
-              />
-            </div>
+            <h2
+              id="campaign-description-heading"
+              className="text-3xl font-bold text-gray-900 mb-6"
+            >
+              About This Campaign
+            </h2>
+            <div
+              className="prose prose-lg text-gray-700"
+              dangerouslySetInnerHTML={{ __html: campaign.description }}
+            />
           </section>
         )}
 

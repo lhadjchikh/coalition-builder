@@ -112,9 +112,7 @@ describe('Frontend API Client CSRF Handling', () => {
       document.cookie = '';
 
       // Mock implementation that handles CSRF token fetch and API calls
-      let callCount = 0;
       (global.fetch as jest.Mock).mockImplementation(url => {
-        callCount++;
         if (url.includes('/api/csrf-token/')) {
           return Promise.resolve({
             ok: true,
@@ -254,9 +252,9 @@ describe('Frontend API Client CSRF Handling', () => {
       document.cookie = '';
 
       // Mock CSRF token endpoint to return after a delay
-      let resolveToken: (value: any) => void;
+      let resolveToken: (_value: any) => void;
       const tokenPromise = new Promise(resolve => {
-        resolveToken = resolve;
+        resolveToken = resolve as (_value: any) => void;
       });
 
       (global.fetch as jest.Mock).mockImplementation(url => {

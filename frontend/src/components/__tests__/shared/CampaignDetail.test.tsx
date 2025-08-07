@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import CampaignDetail from "@shared/components/CampaignDetail";
 
@@ -17,8 +17,8 @@ jest.mock("@shared/components/SocialShareButtons", () => ({
     url,
     title,
     description,
-    hashtags,
-    campaignName,
+    _hashtags,
+    _campaignName,
     showLabel,
     className,
   }: any) => (

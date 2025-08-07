@@ -3,7 +3,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import CampaignDetail from '@pages/CampaignDetail';
 import API from '@services/api';
-import analytics from '@shared/services/analytics';
 
 // Mock API
 jest.mock('@services/api');
@@ -12,7 +11,7 @@ jest.mock('@shared/services/analytics');
 // Mock the shared components
 jest.mock('@shared/components/CampaignDetail', () => ({
   __esModule: true,
-  default: ({ campaignId, initialCampaign }: any) => (
+  default: ({ _campaignId, initialCampaign }: any) => (
     <div data-testid="campaign-detail-component">Campaign: {initialCampaign?.title}</div>
   ),
 }));
