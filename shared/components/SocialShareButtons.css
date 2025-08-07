@@ -47,26 +47,32 @@
 
 /* Platform-specific colors - icons with brand colors on white background */
 .share-button.share-facebook {
+  background-color: #ffffff;
   color: #1877f2;
 }
 
 .share-button.share-linkedin {
+  background-color: #ffffff;
   color: #0a66c2;
 }
 
 .share-button.share-bluesky {
+  background-color: #ffffff;
   color: #00a8e8;
 }
 
 .share-button.share-twitter {
+  background-color: #ffffff;
   color: #000000;
 }
 
 .share-button.share-email {
+  background-color: #ffffff;
   color: #ea4335;
 }
 
 .share-button.share-copy {
+  background-color: #ffffff;
   color: #10b981;
 }
 
