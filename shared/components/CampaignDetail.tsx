@@ -274,7 +274,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             className="w-full"
           />
           <div className="absolute inset-0 bg-black bg-opacity-40">
-            <div className="max-w-7xl mx-auto container-padding h-full flex items-center">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
               <div className="text-white max-w-prose-container">
                 <h1 className="text-4xl font-bold sm:text-5xl md:text-6xl mb-4">
                   {campaign.title}

@@ -510,9 +510,7 @@ legend.form-label {
 
 /* Campaign Detail Styles */
 .campaign-detail {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+  /* Removed constraints to allow full-width hero image */
 }
 
 .campaign-header {
@@ -813,7 +811,7 @@ legend.form-label {
 /* Mobile Responsive Design */
 @media (max-width: 768px) {
   .campaign-detail {
-    padding: 1rem;
+    /* Removed padding to allow full-width hero image */
   }
 
   .campaign-header h1 {
