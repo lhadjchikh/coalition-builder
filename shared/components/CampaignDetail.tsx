@@ -307,10 +307,18 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             </button>
             <h2 className="text-xl font-bold mb-4">Share this campaign</h2>
             <SocialShareButtons
-              url={typeof window !== 'undefined' ? `${window.location.origin}/campaigns/${campaign.name}` : ''}
+              url={
+                typeof window !== "undefined"
+                  ? `${window.location.origin}/campaigns/${campaign.name}`
+                  : ""
+              }
               title={campaign.title}
               description={campaign.summary || campaign.description}
-              hashtags={['PolicyChange', 'CivicEngagement', campaign.name?.replace(/-/g, '') || '']}
+              hashtags={[
+                "PolicyChange",
+                "CivicEngagement",
+                campaign.name?.replace(/-/g, "") || "",
+              ]}
               campaignName={campaign.name}
               showLabel={false}
               className="modal-share"

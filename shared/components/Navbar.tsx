@@ -224,8 +224,8 @@ const Navbar: React.FC<NavbarProps> = ({
               aria-label="Toggle navigation menu"
             >
               <span className="sr-only">Open main menu</span>
-              <FontAwesomeIcon 
-                icon={isMenuOpen ? faTimes : faBars} 
+              <FontAwesomeIcon
+                icon={isMenuOpen ? faTimes : faBars}
                 className="h-6 w-6"
               />
             </button>
