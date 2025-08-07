@@ -47,9 +47,9 @@ export default function CampaignDetailWrapper({
         />
 
         {/* Social Share Section */}
-        <div className="bg-gray-50 rounded-lg p-6 text-center mt-8">
-          <h3 className="text-xl font-semibold mb-2">Help Spread the Word</h3>
-          <p className="text-gray-600 mb-4">
+        <div className="endorsement-form" style={{ textAlign: 'center', maxWidth: '600px', margin: '2rem 0' }}>
+          <h3>Help Spread the Word</h3>
+          <p style={{ marginBottom: '1.5rem', color: '#666' }}>
             Share this campaign with your network to build support and momentum.
           </p>
           <SocialShareButtons
