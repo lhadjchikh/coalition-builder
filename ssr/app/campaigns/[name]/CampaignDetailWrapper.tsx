@@ -35,18 +35,19 @@ export default function CampaignDetailWrapper({
 
   return (
     <>
-      <CampaignDetail
-        campaignId={campaign.id}
-        initialCampaign={campaign}
-        apiClient={apiClient}
-        EndorsementFormComponent={EndorsementForm}
-        EndorsementsListComponent={EndorsementsList}
-        GrowthIconComponent={GrowthIcon}
-      />
+      <div className="campaign-detail">
+        <CampaignDetail
+          campaignId={campaign.id}
+          initialCampaign={campaign}
+          apiClient={apiClient}
+          EndorsementFormComponent={EndorsementForm}
+          EndorsementsListComponent={EndorsementsList}
+          GrowthIconComponent={GrowthIcon}
+          className=""
+        />
 
-      {/* Social Share Section */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-gray-50 rounded-lg p-6 text-center">
+        {/* Social Share Section */}
+        <div className="bg-gray-50 rounded-lg p-6 text-center mt-8">
           <h3 className="text-xl font-semibold mb-2">Help Spread the Word</h3>
           <p className="text-gray-600 mb-4">
             Share this campaign with your network to build support and momentum.
