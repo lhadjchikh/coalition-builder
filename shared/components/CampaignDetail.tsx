@@ -417,9 +417,16 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                       />
                     </div>
                   )}
-                  <p style={{ textAlign: 'center', color: '#666', marginBottom: '2rem' }}>
-                    Be among the founding voices advocating for this
-                    important initiative.
+                  <p style={{ 
+                    textAlign: 'center', 
+                    color: '#666', 
+                    marginBottom: '2rem',
+                    maxWidth: '90%',
+                    marginLeft: 'auto',
+                    marginRight: 'auto',
+                    textWrap: 'balance' as any
+                  }}>
+                    Be among the founding voices advocating for this important initiative.
                   </p>
                   <div style={{ textAlign: 'center' }}>
                     <Button
@@ -449,9 +456,16 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                     />
                   </div>
                 )}
-                <p style={{ textAlign: 'center', color: '#666', marginBottom: '2rem' }}>
-                  Help launch this campaign by adding your voice to this
-                  important cause.
+                <p style={{ 
+                  textAlign: 'center', 
+                  color: '#666', 
+                  marginBottom: '2rem',
+                  maxWidth: '90%',
+                  marginLeft: 'auto',
+                  marginRight: 'auto',
+                  textWrap: 'balance' as any
+                }}>
+                  Help launch this campaign by adding your voice to this important cause.
                 </p>
                 <div style={{ textAlign: 'center' }}>
                   <Button
