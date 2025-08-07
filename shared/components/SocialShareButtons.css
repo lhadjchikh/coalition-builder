@@ -51,58 +51,64 @@
 }
 
 /* Platform-specific colors - icons with brand colors on white background */
-.share-facebook {
-  background-color: #ffffff !important;
-  color: #1877f2 !important;
+.share-button.share-facebook {
+  background-color: #ffffff;
+  color: #1877f2;
 }
 
-.share-facebook:hover {
-  background-color: #f0f2f5 !important;
+.share-button.share-facebook:hover {
+  background-color: #f0f2f5;
+  color: #1877f2;
 }
 
-.share-linkedin {
-  background-color: #ffffff !important;
-  color: #0a66c2 !important;
+.share-button.share-linkedin {
+  background-color: #ffffff;
+  color: #0a66c2;
 }
 
-.share-linkedin:hover {
-  background-color: #f3f8fc !important;
+.share-button.share-linkedin:hover {
+  background-color: #f3f8fc;
+  color: #0a66c2;
 }
 
-.share-bluesky {
-  background-color: #ffffff !important;
-  color: #00a8e8 !important;
+.share-button.share-bluesky {
+  background-color: #ffffff;
+  color: #00a8e8;
 }
 
-.share-bluesky:hover {
-  background-color: #f0f9ff !important;
+.share-button.share-bluesky:hover {
+  background-color: #f0f9ff;
+  color: #00a8e8;
 }
 
-.share-twitter {
-  background-color: #ffffff !important;
-  color: #000000 !important;
+.share-button.share-twitter {
+  background-color: #ffffff;
+  color: #000000;
 }
 
-.share-twitter:hover {
-  background-color: #f7f7f7 !important;
+.share-button.share-twitter:hover {
+  background-color: #f7f7f7;
+  color: #000000;
 }
 
-.share-email {
-  background-color: #ffffff !important;
-  color: #ea4335 !important;
+.share-button.share-email {
+  background-color: #ffffff;
+  color: #ea4335;
 }
 
-.share-email:hover {
-  background-color: #fef2f2 !important;
+.share-button.share-email:hover {
+  background-color: #fef2f2;
+  color: #ea4335;
 }
 
-.share-copy {
-  background-color: #ffffff !important;
-  color: #10b981 !important;
+.share-button.share-copy {
+  background-color: #ffffff;
+  color: #10b981;
 }
 
-.share-copy:hover {
-  background-color: #f0fdf4 !important;
+.share-button.share-copy:hover {
+  background-color: #f0fdf4;
+  color: #10b981;
 }
 
 /* Mobile responsiveness */
