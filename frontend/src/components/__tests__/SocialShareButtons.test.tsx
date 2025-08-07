@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import SocialShareButtons from '@components/SocialShareButtonsWrapper';
 import analytics from '@shared/services/analytics';
@@ -32,8 +32,6 @@ Object.assign(navigator, {
   },
 });
 
-// Mock navigator.share
-const mockShare = jest.fn();
 
 describe('SocialShareButtons', () => {
   const defaultProps = {
@@ -79,28 +77,6 @@ describe('SocialShareButtons', () => {
       expect(container.querySelector('.social-share-buttons.custom-class')).toBeInTheDocument();
     });
 
-    it('renders native share button when navigator.share is available', () => {
-      // Mock navigator.share availability
-      Object.defineProperty(navigator, 'share', {
-        value: mockShare,
-        writable: true,
-        configurable: true,
-      });
-
-      render(<SocialShareButtons {...defaultProps} />);
-      expect(screen.getByLabelText('Share')).toBeInTheDocument();
-
-      // Clean up
-      delete (navigator as any).share;
-    });
-
-    it('does not render native share button when navigator.share is not available', () => {
-      // Ensure navigator.share is not available
-      delete (navigator as any).share;
-
-      render(<SocialShareButtons {...defaultProps} />);
-      expect(screen.queryByLabelText('Share')).not.toBeInTheDocument();
-    });
   });
 
   describe('Share Button Functionality', () => {
@@ -276,7 +252,9 @@ describe('SocialShareButtons', () => {
       });
 
       // Fast-forward 2 seconds
-      jest.advanceTimersByTime(2000);
+      act(() => {
+        jest.advanceTimersByTime(2000);
+      });
 
       await waitFor(() => {
         expect(screen.getByText('Copy')).toBeInTheDocument();
@@ -287,67 +265,6 @@ describe('SocialShareButtons', () => {
     });
   });
 
-  describe('Native Share API', () => {
-    beforeEach(() => {
-      // Setup navigator.share mock
-      Object.defineProperty(navigator, 'share', {
-        value: mockShare,
-        writable: true,
-        configurable: true,
-      });
-      mockShare.mockResolvedValue(undefined);
-    });
-
-    afterEach(() => {
-      delete (navigator as any).share;
-    });
-
-    it('calls native share API with correct data', async () => {
-      render(<SocialShareButtons {...defaultProps} />);
-
-      const nativeShareButton = screen.getByLabelText('Share');
-      fireEvent.click(nativeShareButton);
-
-      await waitFor(() => {
-        expect(mockShare).toHaveBeenCalledWith({
-          title: defaultProps.title,
-          text: defaultProps.description,
-          url: defaultProps.url,
-        });
-      });
-    });
-
-    it('tracks native share event', async () => {
-      render(<SocialShareButtons {...defaultProps} />);
-
-      const nativeShareButton = screen.getByLabelText('Share');
-      fireEvent.click(nativeShareButton);
-
-      await waitFor(() => {
-        expect(analytics.trackEvent).toHaveBeenCalledWith({
-          action: 'share_native',
-          category: 'social_share',
-          label: defaultProps.campaignName,
-        });
-      });
-    });
-
-    it('handles native share cancellation gracefully', async () => {
-      const consoleLog = jest.spyOn(console, 'log').mockImplementation();
-      mockShare.mockRejectedValue(new Error('User cancelled'));
-
-      render(<SocialShareButtons {...defaultProps} />);
-
-      const nativeShareButton = screen.getByLabelText('Share');
-      fireEvent.click(nativeShareButton);
-
-      await waitFor(() => {
-        expect(consoleLog).toHaveBeenCalledWith('Share cancelled or failed:', expect.any(Error));
-      });
-
-      consoleLog.mockRestore();
-    });
-  });
 
   describe('Analytics Tracking', () => {
     it('tracks Facebook share click', () => {

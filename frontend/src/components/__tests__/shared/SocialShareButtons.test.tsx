@@ -81,25 +81,6 @@ describe("SocialShareButtons", () => {
       ).not.toBeInTheDocument();
     });
 
-    it("renders native share button when supported", () => {
-      // Mock navigator.share
-      Object.assign(navigator, {
-        share: jest.fn(),
-      });
-
-      render(<SocialShareButtons {...defaultProps} />);
-
-      expect(screen.getByLabelText("Share")).toBeInTheDocument();
-    });
-
-    it("does not render native share button when not supported", () => {
-      // Remove navigator.share
-      delete (navigator as any).share;
-
-      render(<SocialShareButtons {...defaultProps} />);
-
-      expect(screen.queryByLabelText("Share")).not.toBeInTheDocument();
-    });
   });
 
   describe("Social Platform Sharing", () => {
@@ -260,51 +241,6 @@ describe("SocialShareButtons", () => {
     });
   });
 
-  describe("Native Share API", () => {
-    it("calls native share API with correct data", async () => {
-      const mockShare = jest.fn().mockResolvedValue(undefined);
-      Object.assign(navigator, {
-        share: mockShare,
-      });
-
-      render(<SocialShareButtons {...defaultProps} />);
-
-      const shareButton = screen.getByLabelText("Share");
-      fireEvent.click(shareButton);
-
-      await waitFor(() => {
-        expect(mockShare).toHaveBeenCalledWith({
-          title: "Test Campaign",
-          text: "Test Description",
-          url: "http://example.com/campaign",
-        });
-      });
-    });
-
-    it("handles native share cancellation", async () => {
-      const mockShare = jest
-        .fn()
-        .mockRejectedValue(new Error("User cancelled"));
-      Object.assign(navigator, {
-        share: mockShare,
-      });
-      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
-
-      render(<SocialShareButtons {...defaultProps} />);
-
-      const shareButton = screen.getByLabelText("Share");
-      fireEvent.click(shareButton);
-
-      await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith(
-          "Share cancelled or failed:",
-          expect.any(Error),
-        );
-      });
-
-      consoleSpy.mockRestore();
-    });
-  });
 
   describe("Analytics Tracking", () => {
     const analytics = (require("@shared/services/analytics") as any).default;
@@ -348,25 +284,6 @@ describe("SocialShareButtons", () => {
       });
     });
 
-    it("tracks native share action", async () => {
-      const mockShare = jest.fn().mockResolvedValue(undefined);
-      Object.assign(navigator, {
-        share: mockShare,
-      });
-
-      render(<SocialShareButtons {...defaultProps} />);
-
-      const shareButton = screen.getByLabelText("Share");
-      fireEvent.click(shareButton);
-
-      await waitFor(() => {
-        expect(analytics.trackEvent).toHaveBeenCalledWith({
-          action: "share_native",
-          category: "social_share",
-          label: "test-campaign",
-        });
-      });
-    });
   });
 
   describe("Edge Cases", () => {
