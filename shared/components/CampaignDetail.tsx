@@ -3,6 +3,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import Button from "./Button";
 import ImageWithCredit from "./ImageWithCredit";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faShare, faTimes } from "@fortawesome/free-solid-svg-icons";
+import SocialShareButtons from "./SocialShareButtons";
 
 // Generic interfaces that work with both frontend and SSR
 interface Campaign {
@@ -103,6 +106,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   const [endorsementCount, setEndorsementCount] = useState<number>(0);
   const [recentEndorsements, setRecentEndorsements] = useState<number>(0);
   const [isFormActive, setIsFormActive] = useState<boolean>(false);
+  const [showShareModal, setShowShareModal] = useState<boolean>(false);
   const endorsementSectionRef = useRef<HTMLElement>(null);
   const endorsementFormRef = useRef<any>(null);
   const aboutSectionRef = useRef<HTMLElement>(null);
@@ -278,6 +282,39 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                 <p className="text-xl">{campaign.summary}</p>
               </div>
             </div>
+          </div>
+          {/* Share Icon Overlay */}
+          <button
+            onClick={() => setShowShareModal(true)}
+            className="absolute top-4 right-4 bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-700 p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+            aria-label="Share this campaign"
+          >
+            <FontAwesomeIcon icon={faShare} className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative">
+            <button
+              onClick={() => setShowShareModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              aria-label="Close share modal"
+            >
+              <FontAwesomeIcon icon={faTimes} className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-bold mb-4">Share this campaign</h2>
+            <SocialShareButtons
+              url={typeof window !== 'undefined' ? `${window.location.origin}/campaigns/${campaign.name}` : ''}
+              title={campaign.title}
+              description={campaign.summary || campaign.description}
+              hashtags={['PolicyChange', 'CivicEngagement', campaign.name?.replace(/-/g, '') || '']}
+              campaignName={campaign.name}
+              showLabel={false}
+              className="modal-share"
+            />
           </div>
         </div>
       )}
