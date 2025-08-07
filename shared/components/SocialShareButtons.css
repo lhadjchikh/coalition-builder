@@ -31,11 +31,6 @@
   transition: all 0.2s ease;
 }
 
-.share-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .share-button:active {
   transform: translateY(0);
 }
@@ -52,63 +47,34 @@
 
 /* Platform-specific colors - icons with brand colors on white background */
 .share-button.share-facebook {
-  background-color: #ffffff;
-  color: #1877f2;
-}
-
-.share-button.share-facebook:hover {
-  background-color: #f0f2f5;
   color: #1877f2;
 }
 
 .share-button.share-linkedin {
-  background-color: #ffffff;
-  color: #0a66c2;
-}
-
-.share-button.share-linkedin:hover {
-  background-color: #f3f8fc;
   color: #0a66c2;
 }
 
 .share-button.share-bluesky {
-  background-color: #ffffff;
-  color: #00a8e8;
-}
-
-.share-button.share-bluesky:hover {
-  background-color: #f0f9ff;
   color: #00a8e8;
 }
 
 .share-button.share-twitter {
-  background-color: #ffffff;
-  color: #000000;
-}
-
-.share-button.share-twitter:hover {
-  background-color: #f7f7f7;
   color: #000000;
 }
 
 .share-button.share-email {
-  background-color: #ffffff;
-  color: #ea4335;
-}
-
-.share-button.share-email:hover {
-  background-color: #fef2f2;
   color: #ea4335;
 }
 
 .share-button.share-copy {
-  background-color: #ffffff;
   color: #10b981;
 }
 
-.share-button.share-copy:hover {
-  background-color: #f0fdf4;
-  color: #10b981;
+/* Consistent hover state for all buttons */
+.share-button:hover {
+  background-color: #f9fafb;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Mobile responsiveness */
