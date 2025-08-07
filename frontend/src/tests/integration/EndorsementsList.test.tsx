@@ -116,17 +116,19 @@ describe('EndorsementsList', () => {
     expect(screen.queryByTestId('endorsement-2')).not.toBeInTheDocument();
   });
 
-  it('shows no endorsements message when list is empty', async () => {
+  it('returns null when list is empty', async () => {
     mockAPI.getEndorsements.mockResolvedValue([]);
 
-    render(<EndorsementsList />);
+    const { container } = render(<EndorsementsList />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('no-endorsements')).toBeInTheDocument();
+      expect(screen.queryByTestId('endorsements-loading')).not.toBeInTheDocument();
     });
-    expect(
-      screen.getByText('No endorsements yet. Be the first to endorse this campaign!')
-    ).toBeInTheDocument();
+    
+    // Component should return null and render nothing
+    expect(container.firstChild).toBeNull();
+    expect(screen.queryByTestId('no-endorsements')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('endorsements-list')).not.toBeInTheDocument();
   });
 
   it('shows error message when fetching fails', async () => {
