@@ -50,7 +50,7 @@
   display: none;
 }
 
-/* Platform-specific colors - using brand colors for icons */
+/* Platform-specific colors - icons with brand colors on white background */
 .share-facebook {
   color: #1877f2;
 }
