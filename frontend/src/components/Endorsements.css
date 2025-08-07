@@ -10,7 +10,7 @@
 /* Endorsement Form Styles */
 .endorsement-form {
   max-width: 600px;
-  margin: 0 0 2rem 0;
+  margin: 0 auto 2rem auto;
   padding: 2.5rem;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
@@ -810,10 +810,16 @@ legend.form-label {
   grid-template-columns: 2fr 1fr;
 }
 
-/* Mobile Responsive Design */
+/* Mobile Responsive Design 
+ * Best practices for mobile text margins:
+ * - Minimum 16px (1rem) for basic usability
+ * - 20-24px (1.25-1.5rem) optimal for readability and preventing edge touches
+ * - Consider thumb reach zones (avoid content too close to edges)
+ * - Material Design recommends 16px, iOS HIG recommends 20px minimum
+ */
 @media (max-width: 768px) {
   .campaign-detail {
-    padding: 1rem;
+    padding: 1.25rem; /* 20px - optimal for mobile readability */
   }
 
   .campaign-header h1 {
@@ -857,7 +863,7 @@ legend.form-label {
   }
 
   .endorsement-form {
-    padding: 1.5rem;
+    padding: 1.5rem 1.25rem; /* Slightly less vertical, maintain good horizontal margins */
   }
 
   .endorsement-form h3 {
@@ -932,6 +938,11 @@ legend.form-label {
 }
 
 @media (max-width: 480px) {
+  /* Small mobile devices - maintain readable margins */
+  .campaign-detail {
+    padding: 1rem 1.25rem; /* 16px top/bottom, 20px left/right for thumb reach */
+  }
+  
   .campaign-header h1 {
     font-size: 1.75rem;
   }
@@ -946,7 +957,7 @@ legend.form-label {
   }
 
   .endorsement-form {
-    padding: 1rem;
+    padding: 1.25rem 1rem; /* Maintain readable horizontal margins on small screens */
   }
 
   .form-group input,

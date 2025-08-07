@@ -259,7 +259,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
     <div className={className} data-testid="campaign-detail">
       {/* Hero Image Section */}
       {campaign.image_url && (
-        <div className="relative">
+        <div className="relative mb-8">
           <ImageWithCredit
             src={campaign.image_url}
             alt={campaign.image_alt_text || `Hero image for ${campaign.title}`}
@@ -274,7 +274,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             className="w-full"
           />
           <div className="absolute inset-0 bg-black bg-opacity-40">
-            <div className="max-w-7xl mx-auto container-padding h-full flex items-center">
+            <div className="h-full flex items-center px-5 sm:px-8">
               <div className="text-white max-w-prose-container">
                 <h1 className="text-4xl font-bold sm:text-5xl md:text-6xl mb-4">
                   {campaign.title}
@@ -330,7 +330,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
       {/* Sticky Endorsement CTA */}
       {campaign.allow_endorsements && showStickyCard && !isFormActive && (
         <div className="fixed top-0 left-0 right-0 bg-theme-accent-dark text-white z-50 shadow-lg">
-          <div className="max-w-7xl mx-auto container-padding">
+          <div className="mx-auto px-5 sm:px-8" style={{ maxWidth: '1200px' }}>
             <div className="flex items-center justify-between h-20">
               <span className="text-lg font-medium">
                 Support this campaign!
@@ -348,7 +348,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto container-padding py-8">
+      <div className="py-8">
         <header className="mb-8">
           {/* Only show title and summary in header if there's no hero image */}
           {!campaign.image_url && (
