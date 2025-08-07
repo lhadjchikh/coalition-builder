@@ -70,11 +70,8 @@ const EndorsementsList: React.FC<EndorsementsListProps> = ({
   }
 
   if (endorsements.length === 0) {
-    return (
-      <div data-testid="no-endorsements" className="no-endorsements">
-        <p>No endorsements yet. Be the first to endorse this campaign!</p>
-      </div>
-    );
+    // Don't show anything if there are no public endorsements
+    return null;
   }
 
   return (
