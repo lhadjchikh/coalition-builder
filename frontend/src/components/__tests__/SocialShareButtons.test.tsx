@@ -13,7 +13,11 @@ jest.mock('@shared/services/analytics', () => ({
 jest.mock('@fortawesome/react-fontawesome', () => ({
   FontAwesomeIcon: ({ icon, size }: any) => {
     const iconName = icon.iconName || 'icon';
-    return <span data-testid={`fa-icon-${iconName}`} data-size={size}>{iconName}</span>;
+    return (
+      <span data-testid={`fa-icon-${iconName}`} data-size={size}>
+        {iconName}
+      </span>
+    );
   },
 }));
 
