@@ -1,0 +1,21 @@
+{
+  "name": "@coalition/shared",
+  "version": "1.0.0",
+  "description": "Shared components and utilities for Coalition Builder",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "peerDependencies": {
+    "@fortawesome/fontawesome-svg-core": "^7.0.0",
+    "@fortawesome/free-brands-svg-icons": "^7.0.0",
+    "@fortawesome/free-solid-svg-icons": "^7.0.0",
+    "@fortawesome/react-fontawesome": "^0.2.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

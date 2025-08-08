@@ -30,6 +30,14 @@ export default {
     '^react/(.*)$': '<rootDir>/node_modules/react/$1',
     '^react-dom$': '<rootDir>/node_modules/react-dom',
     '^react-dom/(.*)$': '<rootDir>/node_modules/react-dom/$1',
+    // Map FontAwesome modules to frontend's node_modules when imported from shared
+    '^@fortawesome/react-fontawesome$': '<rootDir>/node_modules/@fortawesome/react-fontawesome',
+    '^@fortawesome/fontawesome-svg-core$':
+      '<rootDir>/node_modules/@fortawesome/fontawesome-svg-core',
+    '^@fortawesome/free-solid-svg-icons$':
+      '<rootDir>/node_modules/@fortawesome/free-solid-svg-icons',
+    '^@fortawesome/free-brands-svg-icons$':
+      '<rootDir>/node_modules/@fortawesome/free-brands-svg-icons',
   },
   // Transform shared directory files
   transformIgnorePatterns: ['node_modules/(?!(react-router|react-router-dom)/)'],
