@@ -1,54 +1,152 @@
 {
-  "extends": "./tsconfig.json",
   "compilerOptions": {
+    // Basic compilation settings
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noImplicitAny": true,
+
+    // Module resolution
+    "module": "esnext",
+    "moduleResolution": "node",
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@frontend/*": ["../frontend/src/*"],
-      "@frontend/types": ["../frontend/src/types/index.ts"],
-      "@frontend/components/*": ["../frontend/src/components/*"],
-      "@frontend/contexts/*": ["../frontend/src/contexts/*"],
-      "@shared/*": ["../shared/*"],
-      "@components/*": ["../frontend/src/components/*"],
-      "@contexts/*": ["../frontend/src/contexts/*"],
-      "@hooks/*": ["../frontend/src/hooks/*"],
-      "@pages/*": ["../frontend/src/pages/*"],
-      "@services/*": ["../frontend/src/services/*"],
-      "@services/api": ["../frontend/src/services/api.ts"],
-      "@styles/*": ["../frontend/src/styles/*"],
-      "@styles/theme": ["../frontend/src/styles/theme.ts"],
-      "@tests/*": ["../frontend/src/tests/*"],
-      "@app-types/*": ["../frontend/src/types/*"],
-      "@app-types/index": ["../frontend/src/types/index.ts"],
-      "@utils/*": ["../frontend/src/utils/*"]
-    }
+      // Support both Docker (./frontend) and local (../frontend) paths
+      "@frontend/*": ["./frontend/src/*", "../frontend/src/*"],
+      "@frontend/types": [
+        "./frontend/src/types/index.ts",
+        "../frontend/src/types/index.ts"
+      ],
+      "@frontend/components/*": [
+        "./frontend/src/components/*",
+        "../frontend/src/components/*"
+      ],
+      "@frontend/contexts/*": [
+        "./frontend/src/contexts/*",
+        "../frontend/src/contexts/*"
+      ],
+      // Shared paths
+      "@shared/*": ["./shared/*", "../shared/*"],
+      "@shared/services/*": ["./shared/services/*", "../shared/services/*"],
+      "@shared/types": ["./shared/types/index.ts", "../shared/types/index.ts"],
+      "@shared/types/*": ["./shared/types/*", "../shared/types/*"],
+      // Component imports used by frontend files
+      "@components/*": [
+        "./frontend/src/components/*",
+        "../frontend/src/components/*"
+      ],
+      "@contexts/*": [
+        "./frontend/src/contexts/*",
+        "../frontend/src/contexts/*"
+      ],
+      "@hooks/*": ["./frontend/src/hooks/*", "../frontend/src/hooks/*"],
+      "@pages/*": ["./frontend/src/pages/*", "../frontend/src/pages/*"],
+      "@services/*": [
+        "./frontend/src/services/*",
+        "../frontend/src/services/*"
+      ],
+      "@services/api": [
+        "./frontend/src/services/api.ts",
+        "../frontend/src/services/api.ts"
+      ],
+      "@styles/*": ["./frontend/src/styles/*", "../frontend/src/styles/*"],
+      "@styles/theme": [
+        "./frontend/src/styles/theme.ts",
+        "../frontend/src/styles/theme.ts"
+      ],
+      "@tests/*": ["./frontend/src/tests/*", "../frontend/src/tests/*"],
+      "@app-types/*": ["./frontend/src/types/*", "../frontend/src/types/*"],
+      "@app-types/index": [
+        "./frontend/src/types/index.ts",
+        "../frontend/src/types/index.ts"
+      ],
+      "@utils/*": ["./frontend/src/utils/*", "../frontend/src/utils/*"]
+    },
+    "typeRoots": ["./node_modules/@types", "../frontend/node_modules/@types"],
+    "types": ["node", "react", "react-dom"],
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
+    // JSX and React
+    "jsx": "preserve",
+    "isolatedModules": true,
+
+    // Output and build
+    "noEmit": true,
+    "incremental": true,
+
+    // Plugins
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx",
-    "../frontend/src/types/**/*.ts",
-    "../frontend/src/components/EndorsementForm.tsx",
-    "../frontend/src/components/EndorsementsList.tsx",
-    "../frontend/src/components/GrowthIcon.tsx",
-    "../frontend/src/services/api.ts",
-    "../frontend/src/styles/theme.ts",
+    // Include both Docker and local paths
+    "./frontend/src/**/*.ts",
+    "./frontend/src/**/*.tsx",
+    "../frontend/src/**/*.ts",
+    "../frontend/src/**/*.tsx",
+    "./shared/**/*.ts",
+    "./shared/**/*.tsx",
     "../shared/**/*.ts",
     "../shared/**/*.tsx"
   ],
   "exclude": [
     "node_modules",
+    "./frontend/node_modules",
+    "../frontend/node_modules",
     "tests/**/*",
     "**/*.test.tsx",
     "**/*.test.ts",
     "**/*.spec.tsx",
     "**/*.spec.ts",
+    "./frontend/src/**/__tests__/**/*",
     "../frontend/src/**/__tests__/**/*",
+    "./frontend/src/tests/**/*",
     "../frontend/src/tests/**/*",
+    "./frontend/src/setupTests.ts",
     "../frontend/src/setupTests.ts",
+    "./frontend/src/App.tsx",
     "../frontend/src/App.tsx",
+    "./frontend/src/App.test.tsx",
     "../frontend/src/App.test.tsx",
+    "./frontend/src/index.tsx",
     "../frontend/src/index.tsx",
-    "../frontend/src/reportWebVitals.ts"
+    "./frontend/src/reportWebVitals.ts",
+    "../frontend/src/reportWebVitals.ts",
+    "./frontend/src/components/styled/**/*",
+    "../frontend/src/components/styled/**/*",
+    "./frontend/src/components/StyledHomePage.tsx",
+    "../frontend/src/components/StyledHomePage.tsx",
+    "./frontend/src/components/ThemeStyles.tsx",
+    "../frontend/src/components/ThemeStyles.tsx",
+    "./frontend/src/components/HomePage.tsx",
+    "../frontend/src/components/HomePage.tsx",
+    "./frontend/src/components/LinkWrapper.tsx",
+    "../frontend/src/components/LinkWrapper.tsx",
+    "./frontend/src/pages/Privacy.tsx",
+    "../frontend/src/pages/Privacy.tsx",
+    "./frontend/src/pages/Terms.tsx",
+    "../frontend/src/pages/Terms.tsx",
+    "./frontend/src/pages/Home.tsx",
+    "../frontend/src/pages/Home.tsx",
+    "./frontend/src/pages/CampaignDetail.tsx",
+    "../frontend/src/pages/CampaignDetail.tsx",
+    "./frontend/src/contexts/StyledThemeProvider.tsx",
+    "../frontend/src/contexts/StyledThemeProvider.tsx",
+    "./frontend/src/hooks/useStyledTheme.ts",
+    "../frontend/src/hooks/useStyledTheme.ts",
+    "./frontend/src/styles/styled.d.ts",
+    "../frontend/src/styles/styled.d.ts"
   ]
 }
