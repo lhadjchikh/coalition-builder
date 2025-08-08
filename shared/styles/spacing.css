@@ -140,7 +140,7 @@
 
 .card-modern:hover {
   box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
+  transform: scale(1.02);
 }
 
 @media (min-width: 768px) {

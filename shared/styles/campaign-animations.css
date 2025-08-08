@@ -13,18 +13,19 @@
   transform: scale(1);
 }
 
-/* Hover state - lift up slightly */
+/* Hover state - subtle scale up */
 .campaign-card-animate.campaign-card-visible:hover {
-  transform: translateY(-4px) scale(1);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
-/* Focus state - same as hover for keyboard navigation */
+/* Focus state - subtle ring effect using box-shadow */
 .campaign-card-animate.campaign-card-visible:focus {
-  transform: translateY(-4px) scale(1);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-  outline: 2px solid var(--theme-primary, #3b82f6);
-  outline-offset: 2px;
+  transform: scale(1.02);
+  box-shadow: 
+    0 8px 20px rgba(0, 0, 0, 0.12),
+    0 0 0 3px rgba(59, 130, 246, 0.15);
+  outline: none;
 }
 
 /* Reduce motion for accessibility */
@@ -40,10 +41,10 @@
     box-shadow: none !important;
   }
 
-  /* Keep focus outline for accessibility */
+  /* Keep subtle focus ring for accessibility */
   .campaign-card-animate.campaign-card-visible:focus {
-    outline: 2px solid var(--theme-primary, #3b82f6);
-    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    outline: none;
   }
 }
 
