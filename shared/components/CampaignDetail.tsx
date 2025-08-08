@@ -255,7 +255,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             className="w-full"
           />
           <div className="absolute inset-0 bg-black bg-opacity-40">
-            <div className="h-full flex items-center px-5 sm:px-8">
+            <div className="h-full flex items-center container-padding">
               <div className="text-white max-w-prose-container">
                 <h1 className="text-4xl font-bold sm:text-5xl md:text-6xl mb-4">
                   {campaign.title}
@@ -336,7 +336,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
       {/* Sticky Endorsement CTA */}
       {campaign.allow_endorsements && showStickyCard && !isFormActive && (
         <div className="fixed top-0 left-0 right-0 bg-theme-accent-dark text-white z-50 shadow-lg">
-          <div className="sticky-cta-container mx-auto px-5 sm:px-8">
+          <div className="sticky-cta-container mx-auto container-padding">
             <div className="flex items-center justify-between h-20">
               <span className="text-lg font-medium">
                 Support this campaign!

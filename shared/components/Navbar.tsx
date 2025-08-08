@@ -162,9 +162,9 @@ const Navbar: React.FC<NavbarProps> = ({
   return (
     <nav className={getNavbarClasses()}>
       <div className="max-w-7xl mx-auto container-padding">
-        <div className="flex items-center h-20">
+        <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Brand */}
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 min-w-0 mr-3 sm:mr-4 max-w-[calc(100%-56px)] sm:max-w-none">
             <LinkComponent
               to="/"
               href="/"
@@ -175,16 +175,16 @@ const Navbar: React.FC<NavbarProps> = ({
                 <img
                   src={logoUrl}
                   alt={logoAltText || `${organizationName} logo`}
-                  className="h-14 w-auto py-2"
+                  className="h-12 sm:h-14 lg:h-16 w-auto max-w-full object-contain"
                 />
               ) : (
-                organizationName
+                <span className="text-lg sm:text-xl truncate">{organizationName}</span>
               )}
             </LinkComponent>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:block ml-auto">
+          <div className="hidden md:block">
             <div className="flex items-baseline space-x-2">
               {navItems.map((item, index) => {
                 const isActive = isActiveLink(item.href);
@@ -216,17 +216,18 @@ const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden ml-auto">
+          <div className="md:hidden flex-shrink-0">
             <button
               onClick={toggleMenu}
-              className="bg-theme-primary inline-flex items-center justify-center p-3 rounded-xl text-white/80 hover:text-white hover:bg-white/10 focus-ring transition-all duration-300"
+              className="bg-theme-primary inline-flex items-center justify-center p-1.5 sm:p-3 rounded-lg sm:rounded-xl text-white/80 hover:text-white hover:bg-white/10 focus-ring transition-all duration-300 flex-shrink-0"
               aria-expanded={isMenuOpen}
               aria-label="Toggle navigation menu"
+              style={{ minWidth: '44px', minHeight: '44px' }}
             >
               <span className="sr-only">Open main menu</span>
               <FontAwesomeIcon
                 icon={isMenuOpen ? faTimes : faBars}
-                className="h-6 w-6"
+                className="h-5 w-5 sm:h-6 sm:w-6"
               />
             </button>
           </div>

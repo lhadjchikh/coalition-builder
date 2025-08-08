@@ -37,9 +37,9 @@ const Footer: React.FC<FooterProps> = ({
     <footer className={className || "bg-gray-900"}>
       <div className="max-w-7xl mx-auto section-spacing container-padding">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8 justify-items-center lg:justify-items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8 justify-items-center lg:justify-items-start">
           {/* Organization Info Column */}
-          <div className="col-span-2 lg:col-span-2">
+          <div className="col-span-1 sm:col-span-2 lg:col-span-2">
             {/* Logo or Organization Name */}
             <div className="flex flex-col items-center lg:items-start mb-4">
               {orgInfo.theme?.logo_url ? (
@@ -47,7 +47,7 @@ const Footer: React.FC<FooterProps> = ({
                   <img
                     src={orgInfo.theme.logo_url}
                     alt={orgInfo.theme.logo_alt_text || `${orgInfo.organization_name} logo`}
-                    className="h-12 w-auto"
+                    className="h-8 sm:h-10 lg:h-12 w-auto max-w-full object-contain"
                   />
                 </LinkComponent>
               ) : (
