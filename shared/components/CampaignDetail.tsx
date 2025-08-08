@@ -531,18 +531,20 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             </h2>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div>
-              {EndorsementsListComponent && (
-                <EndorsementsListComponent
-                  campaignId={campaign.id}
-                  refreshTrigger={refreshEndorsements}
-                  onCountUpdate={handleEndorsementCountUpdate}
-                />
-              )}
-            </div>
+          <div className={endorsementCount > 0 ? "grid grid-cols-1 lg:grid-cols-2 gap-8" : ""}>
+            {endorsementCount > 0 && (
+              <div>
+                {EndorsementsListComponent && (
+                  <EndorsementsListComponent
+                    campaignId={campaign.id}
+                    refreshTrigger={refreshEndorsements}
+                    onCountUpdate={handleEndorsementCountUpdate}
+                  />
+                )}
+              </div>
+            )}
 
-            <div>
+            <div className={endorsementCount === 0 ? "max-w-2xl mx-auto" : ""}>
               {EndorsementFormComponent && (
                 <EndorsementFormComponent
                   ref={endorsementFormRef}
