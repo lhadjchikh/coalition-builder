@@ -1,5 +1,6 @@
 .social-share-buttons {
   margin: 1.5rem 0;
+  width: 100%;
 }
 
 .share-label {
@@ -8,6 +9,7 @@
   color: #374151;
   margin-bottom: 0.75rem;
   text-align: center;
+  width: 100%;
 }
 
 .share-buttons-container {
@@ -134,9 +136,6 @@
   font-size: 0.75rem;
 }
 
-.social-share-buttons.compact .share-label {
-  text-align: center !important;
-}
 
 /* Inline variant for embedding in text */
 .social-share-buttons.inline {
