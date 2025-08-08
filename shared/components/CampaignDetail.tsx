@@ -287,26 +287,33 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             >
               <FontAwesomeIcon icon={faTimes} className="w-5 h-5" />
             </button>
-            
+
             {/* Icon */}
             <div className="flex justify-center mb-4">
-              <FontAwesomeIcon 
-                icon={faBullhorn} 
-                className="text-purple-600" 
-                style={{ fontSize: '48px' }}
+              <FontAwesomeIcon
+                icon={faBullhorn}
+                className="text-purple-600"
+                style={{ fontSize: "48px" }}
               />
             </div>
-            
+
             {/* Heading */}
-            <h2 className="text-2xl font-bold mb-3 text-center text-gray-900" style={{ textWrap: 'balance' as any }}>
+            <h2
+              className="text-2xl font-bold mb-3 text-center text-gray-900"
+              style={{ textWrap: "balance" as any }}
+            >
               Spread the Word
             </h2>
-            
+
             {/* Body text */}
-            <p className="text-gray-600 text-center mb-6" style={{ textWrap: 'balance' as any }}>
-              Help this campaign reach more people. Your share could inspire others to join this important cause.
+            <p
+              className="text-gray-600 text-center mb-6"
+              style={{ textWrap: "balance" as any }}
+            >
+              Help this campaign reach more people. Your share could inspire
+              others to join this important cause.
             </p>
-            
+
             <SocialShareButtons
               url={
                 typeof window !== "undefined"
@@ -324,9 +331,12 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
               showLabel={false}
               className="modal-share"
             />
-            
+
             {/* Footer text */}
-            <p className="text-gray-500 text-sm text-center mt-6 italic" style={{ textWrap: 'balance' as any }}>
+            <p
+              className="text-gray-500 text-sm text-center mt-6 italic"
+              style={{ textWrap: "balance" as any }}
+            >
               Every share helps build a stronger coalition
             </p>
           </div>

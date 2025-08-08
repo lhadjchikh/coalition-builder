@@ -22,7 +22,7 @@
 /* Focus state - subtle ring effect using box-shadow */
 .campaign-card-animate.campaign-card-visible:focus {
   transform: scale(1.02);
-  box-shadow: 
+  box-shadow:
     0 8px 20px rgba(0, 0, 0, 0.12),
     0 0 0 3px rgba(59, 130, 246, 0.15);
   outline: none;

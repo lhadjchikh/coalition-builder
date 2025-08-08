@@ -601,7 +601,10 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
                 'Submitting...'
               ) : (
                 <>
-                  <FontAwesomeIcon icon={faPaperPlane} style={{ fontSize: '1.2em', marginRight: '0.5rem', flexShrink: 0 }} />
+                  <FontAwesomeIcon
+                    icon={faPaperPlane}
+                    style={{ fontSize: '1.2em', marginRight: '0.5rem', flexShrink: 0 }}
+                  />
                   <span>Submit Endorsement</span>
                 </>
               )}

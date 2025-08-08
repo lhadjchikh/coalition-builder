@@ -178,7 +178,9 @@ const Navbar: React.FC<NavbarProps> = ({
                   className="h-12 sm:h-14 lg:h-16 w-auto max-w-full object-contain"
                 />
               ) : (
-                <span className="text-lg sm:text-xl truncate">{organizationName}</span>
+                <span className="text-lg sm:text-xl truncate">
+                  {organizationName}
+                </span>
               )}
             </LinkComponent>
           </div>
@@ -222,7 +224,7 @@ const Navbar: React.FC<NavbarProps> = ({
               className="bg-theme-primary inline-flex items-center justify-center p-1.5 sm:p-3 rounded-lg sm:rounded-xl text-white/80 hover:text-white hover:bg-white/10 focus-ring transition-all duration-300 flex-shrink-0"
               aria-expanded={isMenuOpen}
               aria-label="Toggle navigation menu"
-              style={{ minWidth: '44px', minHeight: '44px' }}
+              style={{ minWidth: "44px", minHeight: "44px" }}
             >
               <span className="sr-only">Open main menu</span>
               <FontAwesomeIcon

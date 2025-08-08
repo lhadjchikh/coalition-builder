@@ -105,35 +105,36 @@
     padding-left: var(--space-3); /* 12px for very small screens */
     padding-right: var(--space-3);
   }
-  
+
   /* Reduce section spacing on very small screens */
   .section-spacing {
     padding-top: var(--space-fluid-md);
     padding-bottom: var(--space-fluid-md);
   }
-  
+
   /* Optimize typography for very small screens */
   h1 {
     font-size: 1.75rem; /* 28px instead of default 36px+ */
     line-height: 1.2;
   }
-  
+
   h2 {
     font-size: 1.5rem; /* 24px */
     line-height: 1.3;
   }
-  
+
   /* Reduce gaps in grid layouts */
   .grid {
     gap: var(--space-3);
   }
-  
+
   /* Make buttons more touch-friendly */
-  button, .btn {
+  button,
+  .btn {
     min-height: 44px; /* iOS recommended touch target */
     padding: var(--space-3) var(--space-4);
   }
-  
+
   /* Navbar optimizations for very small screens */
   nav .container-padding {
     padding-left: var(--space-3); /* 12px */
