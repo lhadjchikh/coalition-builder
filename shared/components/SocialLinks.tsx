@@ -65,7 +65,7 @@ const SocialLinks: React.FC<SocialLinksProps> = ({
           href={link.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-gray-400 hover:text-gray-300 transition-colors duration-200"
+          className="text-gray-400 hover:text-gray-300 transition-all duration-300 transform hover:scale-110 inline-block"
           aria-label={`Follow us on ${link.name}`}
         >
           <FontAwesomeIcon icon={link.icon} size="lg" />
