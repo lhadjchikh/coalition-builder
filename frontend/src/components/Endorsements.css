@@ -100,6 +100,47 @@
   font-style: italic;
 }
 
+/* Endorsement count display for mature campaigns */
+.endorsement-count-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.endorsement-count-number {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #228B22;
+  line-height: 1;
+}
+
+.endorsement-count-label {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #4a5568;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.momentum-badge-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: -0.5rem 0 1rem 0;
+}
+
+.momentum-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: white;
+  padding: 0.375rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
 /* Header content container */
 .header-content-wrapper {
   max-width: 600px;

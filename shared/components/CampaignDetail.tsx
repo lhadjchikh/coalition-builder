@@ -317,6 +317,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                 onClick={scrollToEndorsementForm}
                 aria-label="Scroll to endorsement form"
               >
+                <FontAwesomeIcon icon={faHandHoldingHeart} className="mr-2" />
                 Endorse Now
               </Button>
             </div>
@@ -340,41 +341,49 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             {/* Smart Social Proof Section */}
             {campaign.allow_endorsements &&
               endorsementCount >= SOCIAL_PROOF_THRESHOLD && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    {GrowthIconComponent && (
-                      <div className="flex-shrink-0">
-                        <GrowthIconComponent
-                          stage="tree"
-                          size="48px"
-                          color="#4caf50"
-                        />
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <div className="text-2xl font-bold text-green-800">
-                        {endorsementCount}{" "}
-                        {endorsementCount === 1
-                          ? "Endorsement"
-                          : "Endorsements"}
-                      </div>
-                      <p className="text-green-700">
-                        Join {endorsementCount} supporters backing this campaign
-                      </p>
+                <div className="cta-card">
+                  {GrowthIconComponent && (
+                    <div className="cta-icon cta-icon--primary">
+                      <GrowthIconComponent
+                        stage="tree"
+                        size="64px"
+                        color="#228B22"
+                      />
                     </div>
+                  )}
+                  <div className="endorsement-count-display">
+                    <span className="endorsement-count-number">{endorsementCount}</span>
+                    <span className="endorsement-count-label">
+                      {endorsementCount === 1 ? "Supporter" : "Supporters"}
+                    </span>
                   </div>
+                  <h3 className="cta-heading cta-heading--primary">
+                    Join a Growing Movement
+                  </h3>
+                  <p className="cta-text">
+                    Add your voice to {endorsementCount} others who are championing this cause.
+                  </p>
                   {recentEndorsements > 0 &&
                     endorsementCount >= MOMENTUM_DISPLAY_THRESHOLD && (
-                      <div className="bg-yellow-100 border border-yellow-200 rounded px-3 py-1 inline-block">
-                        <span className="text-yellow-800 text-sm font-medium">
-                          ✨ {recentEndorsements} new{" "}
-                          {recentEndorsements === 1
-                            ? "endorsement"
-                            : "endorsements"}{" "}
-                          this week
+                      <div className="momentum-badge-wrapper">
+                        <span className="momentum-badge">
+                          ✨ {recentEndorsements} new this week
                         </span>
                       </div>
                     )}
+                  <div className="cta-button-wrapper">
+                    <Button
+                      variant="accent"
+                      size="lg"
+                      onClick={scrollToEndorsementForm}
+                    >
+                      <FontAwesomeIcon icon={faHandHoldingHeart} className="mr-2" />
+                      Add Your Endorsement
+                    </Button>
+                  </div>
+                  <p className="cta-footer-text">
+                    Together, we're building momentum for change.
+                  </p>
                 </div>
               )}
 
