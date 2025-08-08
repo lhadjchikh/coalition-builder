@@ -134,6 +134,10 @@
   font-size: 0.75rem;
 }
 
+.social-share-buttons.compact .share-label {
+  text-align: center !important;
+}
+
 /* Inline variant for embedding in text */
 .social-share-buttons.inline {
   display: inline-block;
