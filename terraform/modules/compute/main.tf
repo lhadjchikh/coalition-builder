@@ -372,7 +372,7 @@ resource "aws_ecs_task_definition" "app" {
     },
     # App Container (SSR-based frontend)
     {
-      name      = "app-frontend"
+      name      = "app"
       image     = "${aws_ecr_repository.app.repository_url}:latest"
       essential = true
       # Allocate remaining CPU and memory for app container (after Redis allocation)
@@ -384,7 +384,7 @@ resource "aws_ecs_task_definition" "app" {
           containerPort = var.container_port_app
           hostPort      = var.container_port_app
           protocol      = "tcp"
-          name          = "app-frontend"
+          name          = "app-http"
         }
       ]
       environment = concat(local.common_environment_variables, [
@@ -491,7 +491,7 @@ resource "aws_ecs_service" "app" {
   # Load balancer configuration for App (frontend)
   load_balancer {
     target_group_arn = var.app_target_group_arn
-    container_name   = "app-frontend"
+    container_name   = "app"
     container_port   = var.container_port_app
   }
 

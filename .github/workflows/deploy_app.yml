@@ -368,12 +368,12 @@ jobs:
       - name: Check for app container
         id: check_app_frontend
         run: |
-          # Use jq to properly parse JSON and check for app container (could be named 'app-frontend', 'frontend', or 'ssr')
-          if jq -e '.containerDefinitions[] | select(.name=="app-frontend" or .name=="frontend" or .name=="ssr")' task-definition.json > /dev/null 2>&1; then
+          # Use jq to properly parse JSON and check for app container (could be named 'app', 'frontend', or 'ssr')
+          if jq -e '.containerDefinitions[] | select(.name=="app" or .name=="frontend" or .name=="ssr")' task-definition.json > /dev/null 2>&1; then
             echo "has_app=true" >> $GITHUB_OUTPUT
             # Determine the actual container name
-            if jq -e '.containerDefinitions[] | select(.name=="app-frontend")' task-definition.json > /dev/null 2>&1; then
-              echo "container_name=app-frontend" >> $GITHUB_OUTPUT
+            if jq -e '.containerDefinitions[] | select(.name=="app")' task-definition.json > /dev/null 2>&1; then
+              echo "container_name=app" >> $GITHUB_OUTPUT
               echo "App container found in task definition"
             elif jq -e '.containerDefinitions[] | select(.name=="frontend")' task-definition.json > /dev/null 2>&1; then
               echo "container_name=frontend" >> $GITHUB_OUTPUT
