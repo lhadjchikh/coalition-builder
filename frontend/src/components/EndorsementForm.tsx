@@ -3,6 +3,8 @@ import API from '@services/api';
 import analytics from '@shared/services/analytics';
 import { Campaign, EndorsementCreate, Stakeholder } from '@app-types/index';
 import SocialShareButtons from './SocialShareButtonsWrapper';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import './Endorsements.css';
 
 interface EndorsementFormProps {
@@ -595,7 +597,14 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
               data-testid="submit-button"
               className="submit-button"
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Endorsement'}
+              {isSubmitting ? (
+                'Submitting...'
+              ) : (
+                <>
+                  <FontAwesomeIcon icon={faPaperPlane} className="mr-2" />
+                  Submit Endorsement
+                </>
+              )}
             </button>
           </div>
         </form>
