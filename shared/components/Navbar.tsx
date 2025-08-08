@@ -122,7 +122,7 @@ const Navbar: React.FC<NavbarProps> = ({
   // Build brand link classes
   const getBrandLinkClasses = () => {
     const baseClasses =
-      "flex items-center hover:opacity-80 transition-opacity duration-200";
+      "flex items-center transition-all duration-300 transform hover:scale-105";
 
     if (!logoUrl) {
       const textClasses = "text-xl font-bold";
