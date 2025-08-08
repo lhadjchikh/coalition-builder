@@ -47,16 +47,9 @@ export default function CampaignDetailWrapper({
         />
 
         {/* Social Share Section */}
-        <div className="endorsement-form" style={{ textAlign: 'center', margin: '2rem auto' }}>
-          <h3>Help Spread the Word</h3>
-          <p style={{ 
-            marginBottom: '1.5rem', 
-            color: '#666',
-            maxWidth: '90%',
-            marginLeft: 'auto',
-            marginRight: 'auto',
-            textWrap: 'balance' as any
-          }}>
+        <div className="cta-card cta-card--share">
+          <h3 className="cta-heading">Help Spread the Word</h3>
+          <p className="cta-text cta-text--compact">
             Share this campaign with your network to build support and momentum.
           </p>
           <SocialShareButtons

@@ -10,7 +10,7 @@
 /* Endorsement Form Styles */
 .endorsement-form {
   max-width: 600px;
-  margin: 0 auto 2rem auto;
+  margin: 0 auto 1rem auto;
   padding: 2.5rem;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
@@ -24,7 +24,100 @@
   font-size: 1.5rem;
   font-weight: 600;
   text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* CTA Card Styles - for call-to-action sections */
+.cta-card {
+  max-width: 600px;
+  margin: 0 auto 1rem auto;
+  padding: 2.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.cta-card--share {
   margin-bottom: 2rem;
+}
+
+.cta-heading {
+  margin: 0 0 0.75rem 0;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.cta-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.cta-text {
+  color: #666;
+  margin: 0 auto 1.5rem auto;
+  max-width: 90%;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.cta-text--compact {
+  margin-top: -0.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.cta-button-wrapper {
+  text-align: center;
+}
+
+.cta-supporting-text {
+  color: #666;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+/* Header content container */
+.header-content-wrapper {
+  max-width: 600px;
+  margin: 0 auto 2rem auto;
+  text-align: center;
+}
+
+/* About section wrapper */
+.about-section-wrapper {
+  max-width: 600px;
+  margin: 0 auto 3rem auto;
+}
+
+/* Sticky CTA container */
+.sticky-cta-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .sticky-cta-container {
+    padding: 0 2rem;
+  }
+}
+
+/* Content Container Styles */
+.content-section {
+  max-width: 600px;
+  margin: 0 auto 3rem auto;
+}
+
+.content-section--centered {
+  text-align: center;
+}
+
+.content-section--no-bottom {
+  margin-bottom: 0;
 }
 
 .endorsement-form .endorsement-statement {

@@ -61,30 +61,6 @@ interface CampaignDetailProps {
 const SOCIAL_PROOF_THRESHOLD = 10;
 const MOMENTUM_DISPLAY_THRESHOLD = 25;
 
-// Style constants for inline styles
-const SECTION_LAYOUT_STYLE: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: "2rem",
-};
-
-const ICON_CONTAINER_STYLE: React.CSSProperties = {
-  width: "4rem",
-  height: "4rem",
-  color: "#4caf50",
-  flexShrink: 0,
-  lineHeight: 1,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-};
-
-const TEXT_CONTENT_STYLE: React.CSSProperties = {
-  flex: 1,
-  textAlign: "left",
-};
-
 const CampaignDetail: React.FC<CampaignDetailProps> = ({
   campaignId,
   campaignName,
@@ -305,7 +281,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             >
               <FontAwesomeIcon icon={faTimes} className="w-5 h-5" />
             </button>
-            <h2 className="text-xl font-bold mb-4 text-center">Share this campaign</h2>
+            <h2 className="text-xl font-bold mb-3 text-center">Share this campaign</h2>
             <SocialShareButtons
               url={
                 typeof window !== "undefined"
@@ -330,7 +306,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
       {/* Sticky Endorsement CTA */}
       {campaign.allow_endorsements && showStickyCard && !isFormActive && (
         <div className="fixed top-0 left-0 right-0 bg-theme-accent-dark text-white z-50 shadow-lg">
-          <div className="mx-auto px-5 sm:px-8" style={{ maxWidth: '1200px' }}>
+          <div className="sticky-cta-container mx-auto px-5 sm:px-8">
             <div className="flex items-center justify-between h-20">
               <span className="text-lg font-medium">
                 Support this campaign!
@@ -352,7 +328,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         <header className="mb-8">
           {/* Only show title and summary in header if there's no hero image */}
           {!campaign.image_url && (
-            <div className="text-center mb-8" style={{ maxWidth: '600px', margin: '0 auto 2rem auto' }}>
+            <div className="header-content-wrapper text-center mb-8">
               <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl md:text-6xl mb-4">
                 {campaign.title}
               </h1>
@@ -360,7 +336,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             </div>
           )}
 
-          <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <div className="header-content-wrapper">
             {/* Smart Social Proof Section */}
             {campaign.allow_endorsements &&
               endorsementCount >= SOCIAL_PROOF_THRESHOLD && (
@@ -406,10 +382,10 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             {campaign.allow_endorsements &&
               endorsementCount > 0 &&
               endorsementCount < SOCIAL_PROOF_THRESHOLD && (
-                <div className="endorsement-form" style={{ margin: '0 auto 2rem auto' }}>
-                  <h3 style={{ textAlign: 'center', marginTop: 0, marginBottom: '1.5rem' }}>Join the Early Supporters</h3>
+                <div className="cta-card">
+                  <h3 className="cta-heading">Join the Early Supporters</h3>
                   {GrowthIconComponent && (
-                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                    <div className="cta-icon">
                       <GrowthIconComponent
                         stage="seedling"
                         size="48px"
@@ -417,18 +393,10 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                       />
                     </div>
                   )}
-                  <p style={{ 
-                    textAlign: 'center', 
-                    color: '#666', 
-                    marginBottom: '2rem',
-                    maxWidth: '90%',
-                    marginLeft: 'auto',
-                    marginRight: 'auto',
-                    textWrap: 'balance' as any
-                  }}>
+                  <p className="cta-text">
                     Be among the founding voices advocating for this important initiative.
                   </p>
-                  <div style={{ textAlign: 'center' }}>
+                  <div className="cta-button-wrapper">
                     <Button
                       variant="accent"
                       size="lg"
@@ -436,7 +404,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                     >
                       Join the Early Supporters
                     </Button>
-                    <p style={{ color: '#666', marginTop: '0.5rem' }}>
+                    <p className="cta-supporting-text">
                       Join this growing movement in its early stages.
                     </p>
                   </div>
@@ -445,10 +413,10 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
 
             {/* First Endorser CTA - when no endorsements yet */}
             {campaign.allow_endorsements && endorsementCount === 0 && (
-              <div className="endorsement-form" style={{ margin: '0 auto 2rem auto' }}>
-                <h3 style={{ textAlign: 'center', marginTop: 0, marginBottom: '1.5rem' }}>Be the First to Show Support</h3>
+              <div className="cta-card">
+                <h3 className="cta-heading">Be the First to Show Support</h3>
                 {GrowthIconComponent && (
-                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                  <div className="cta-icon">
                     <GrowthIconComponent
                       stage="seed"
                       size="48px"
@@ -456,18 +424,10 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                     />
                   </div>
                 )}
-                <p style={{ 
-                  textAlign: 'center', 
-                  color: '#666', 
-                  marginBottom: '2rem',
-                  maxWidth: '90%',
-                  marginLeft: 'auto',
-                  marginRight: 'auto',
-                  textWrap: 'balance' as any
-                }}>
+                <p className="cta-text">
                   Help launch this campaign by adding your voice to this important cause.
                 </p>
-                <div style={{ textAlign: 'center' }}>
+                <div className="cta-button-wrapper">
                   <Button
                     variant="accent"
                     size="lg"
@@ -500,7 +460,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             role="region"
             aria-labelledby="campaign-description-heading"
             ref={aboutSectionRef}
-            style={{ maxWidth: '600px', margin: '0 auto 3rem auto' }}
+            className="about-section-wrapper"
           >
             <h2
               id="campaign-description-heading"
@@ -516,7 +476,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         )}
 
         <section
-          className="mb-12"
+          className="mb-0"
           role="region"
           aria-labelledby="endorsements-heading"
           ref={endorsementSectionRef}
