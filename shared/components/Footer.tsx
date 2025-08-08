@@ -73,7 +73,7 @@ const Footer: React.FC<FooterProps> = ({
                 </LinkComponent>
                 <span className="text-gray-600">•</span>
                 <LinkComponent
-                  to="/admin"
+                  to="/admin/"
                   className="text-gray-400 hover:text-gray-300 transition-colors duration-200"
                 >
                   Admin Login
