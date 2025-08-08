@@ -390,7 +390,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                         icon={faHandHoldingHeart}
                         className="mr-2"
                       />
-                      Add Your Endorsement
+                      Add Your Support
                     </Button>
                   </div>
                   <p className="cta-footer-text">
@@ -466,7 +466,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                       icon={faHandHoldingHeart}
                       className="mr-2"
                     />
-                    Endorse the Campaign Now
+                    Endorse Now
                   </Button>
                 </div>
                 <p className="cta-footer-text">
