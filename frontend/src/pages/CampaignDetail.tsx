@@ -11,7 +11,7 @@ import Footer from '@shared/components/Footer';
 import { useLocation } from 'react-router-dom';
 import LinkWrapper from '@components/LinkWrapper';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShare, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faShare, faTimes, faBullhorn } from '@fortawesome/free-solid-svg-icons';
 
 const LinkWrapperComponent = LinkWrapper as any;
 import { DEFAULT_NAV_ITEMS } from '@shared/types';
@@ -131,9 +131,17 @@ const CampaignDetail: React.FC = () => {
 
         {/* Social Share Section */}
         <div className="cta-card cta-card--share">
-          <h3 className="cta-heading">Help Spread the Word</h3>
-          <p className="cta-text cta-text--compact">
-            Share this campaign with your network to build support and momentum.
+          <div className="cta-icon cta-icon--primary">
+            <FontAwesomeIcon 
+              icon={faBullhorn} 
+              style={{ fontSize: '56px', color: '#7C4DFF' }}
+            />
+          </div>
+          <h3 className="cta-heading cta-heading--primary">
+            Amplify This Campaign
+          </h3>
+          <p className="cta-text">
+            Share with your network to help build momentum for change.
           </p>
           <SocialShareButtons
             url={`${window.location.origin}/campaigns/${campaign.name}`}
@@ -143,6 +151,9 @@ const CampaignDetail: React.FC = () => {
             campaignName={campaign.name}
             showLabel={false}
           />
+          <p className="cta-footer-text">
+            Every share helps spread awareness and build support.
+          </p>
         </div>
       </div>
 

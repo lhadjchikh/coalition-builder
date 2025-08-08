@@ -7,7 +7,7 @@ import EndorsementsList from "@frontend/components/EndorsementsList";
 import GrowthIcon from "@frontend/components/GrowthIcon";
 import SocialShareButtons from "../../../components/SocialShareButtonsWrapper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShare, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faShare, faTimes, faBullhorn } from "@fortawesome/free-solid-svg-icons";
 import "@frontend/components/Endorsements.css";
 import "@frontend/App.css";
 import type { Campaign } from "@frontend/types";
@@ -48,9 +48,17 @@ export default function CampaignDetailWrapper({
 
         {/* Social Share Section */}
         <div className="cta-card cta-card--share">
-          <h3 className="cta-heading">Help Spread the Word</h3>
-          <p className="cta-text cta-text--compact">
-            Share this campaign with your network to build support and momentum.
+          <div className="cta-icon cta-icon--primary">
+            <FontAwesomeIcon 
+              icon={faBullhorn} 
+              style={{ fontSize: '56px', color: '#7C4DFF' }}
+            />
+          </div>
+          <h3 className="cta-heading cta-heading--primary">
+            Amplify This Campaign
+          </h3>
+          <p className="cta-text">
+            Share with your network to help build momentum for change.
           </p>
           <SocialShareButtons
             url={
@@ -68,6 +76,9 @@ export default function CampaignDetailWrapper({
             campaignName={campaign.name}
             showLabel={false}
           />
+          <p className="cta-footer-text">
+            Every share helps spread awareness and build support.
+          </p>
         </div>
       </div>
 
