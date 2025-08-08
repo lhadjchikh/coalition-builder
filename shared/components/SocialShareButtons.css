@@ -30,11 +30,11 @@
   border: none;
   border-radius: 0.375rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .share-button:active {
-  transform: translateY(0);
+  transform: scale(1.05);
 }
 
 .share-button svg {
@@ -85,8 +85,8 @@
 /* Consistent hover state for all buttons */
 .share-button:hover {
   background-color: #f9fafb;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
 }
 
 /* Mobile responsiveness */
