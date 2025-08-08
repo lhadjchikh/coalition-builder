@@ -49,6 +49,7 @@
   font-size: 1.5rem;
   font-weight: 600;
   text-align: center;
+  text-wrap: balance;
 }
 
 .cta-heading--primary {
@@ -56,6 +57,7 @@
   font-weight: 700;
   margin-bottom: 1rem;
   color: #1a1a1a;
+  text-wrap: balance;
 }
 
 .cta-icon {
@@ -98,6 +100,7 @@
   margin-bottom: 0;
   text-align: center;
   font-style: italic;
+  text-wrap: balance;
 }
 
 /* Endorsement count display for mature campaigns */
@@ -415,6 +418,8 @@ legend.form-label {
   text-transform: uppercase;
   letter-spacing: 1px;
   box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+  text-wrap: balance;
+  white-space: normal;
 }
 
 .submit-button:hover:not(:disabled) {
@@ -890,6 +895,7 @@ legend.form-label {
 .sticky-cta-text {
   font-weight: 600;
   font-size: 1rem;
+  text-wrap: balance;
 }
 
 .sticky-cta-button {
@@ -902,6 +908,8 @@ legend.form-label {
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 0.9rem;
+  text-wrap: balance;
+  white-space: normal;
 }
 
 .sticky-cta-button:hover {
