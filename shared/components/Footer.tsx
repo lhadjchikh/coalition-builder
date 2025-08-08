@@ -43,23 +43,28 @@ const Footer: React.FC<FooterProps> = ({
             {/* Logo or Organization Name */}
             <div className="flex flex-col items-center lg:items-start mb-4">
               {orgInfo.theme?.logo_url ? (
-                <LinkComponent to="/" className="mb-3 transition-all duration-300 transform hover:scale-105">
+                <LinkComponent
+                  to="/"
+                  className="mb-3 transition-all duration-300 transform hover:scale-105"
+                >
                   <img
                     src={orgInfo.theme.logo_url}
-                    alt={orgInfo.theme.logo_alt_text || `${orgInfo.organization_name} logo`}
+                    alt={
+                      orgInfo.theme.logo_alt_text ||
+                      `${orgInfo.organization_name} logo`
+                    }
                     className="h-8 sm:h-10 lg:h-12 w-auto max-w-full object-contain"
                   />
                 </LinkComponent>
               ) : (
-                <LinkComponent 
-                  to="/" 
+                <LinkComponent
+                  to="/"
                   className="text-2xl font-bold text-white hover:text-gray-200 transition-colors duration-200 no-underline"
                 >
                   {orgInfo.organization_name}
                 </LinkComponent>
               )}
             </div>
-
 
             {/* Social Links - Larger Icons */}
             {showSocialLinks && (
@@ -76,7 +81,9 @@ const Footer: React.FC<FooterProps> = ({
 
           {/* Site Navigation Column */}
           <div>
-            <h4 className="text-white font-semibold mb-4 text-center lg:text-left">Site Navigation</h4>
+            <h4 className="text-white font-semibold mb-4 text-center lg:text-left">
+              Site Navigation
+            </h4>
             <nav aria-label="Footer navigation">
               <ul className="space-y-2">
                 <li>
@@ -117,7 +124,9 @@ const Footer: React.FC<FooterProps> = ({
 
           {/* Support & Legal Column */}
           <div>
-            <h4 className="text-white font-semibold mb-4 text-center lg:text-left">Support & Legal</h4>
+            <h4 className="text-white font-semibold mb-4 text-center lg:text-left">
+              Support & Legal
+            </h4>
             {showLegalLinks && (
               <nav aria-label="Legal links">
                 <ul className="space-y-2">
@@ -154,16 +163,19 @@ const Footer: React.FC<FooterProps> = ({
         {/* Bottom Copyright Section */}
         <div className="pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-gray-400 text-sm">
-              © {currentYear} {orgInfo.organization_name}. All rights reserved.
+            <p className="text-gray-400 text-sm text-center md:text-left">
+              <span className="copyright-text">
+                © {currentYear} {orgInfo.organization_name}.
+              </span>{" "}
+              <span className="copyright-text">All rights reserved.</span>
             </p>
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 footer-attribution">
               Powered by{" "}
               <a
                 href="https://github.com/lhadjchikh/coalition-builder"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-gray-300 transition-colors duration-200"
+                className="text-gray-400 hover:text-gray-300 transition-colors duration-200 no-break"
               >
                 Coalition Builder
               </a>

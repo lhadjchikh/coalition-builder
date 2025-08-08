@@ -356,6 +356,97 @@ select,
   -ms-hyphens: none;
 }
 
+/* Global text wrapping improvements */
+body {
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  -ms-hyphens: auto;
+}
+
+/* Prevent breaking of common UI elements */
+button,
+.btn,
+a,
+.nav-item,
+.menu-item,
+nav a {
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
+/* Prevent breaking brand names and proper nouns */
+.brand-name,
+.proper-noun,
+.no-break {
+  word-break: keep-all;
+  white-space: nowrap;
+}
+
+/* Auto-protect common proper nouns and place names from breaking */
+:is(h1, h2, h3, .hero-title, .hero-subtitle, .h1, .h2, .h3) {
+  /* Use CSS hyphenation rules that respect proper nouns */
+  hyphens: manual;
+  -webkit-hyphens: manual;
+  -moz-hyphens: manual;
+  /* Prevent awkward breaks in titles */
+  text-wrap: balance;
+  word-spacing: 0.1em;
+  /* Additional protection for proper nouns */
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+/* Ensure proper text flow on very small screens */
+@media (max-width: 399px) {
+  /* Allow more aggressive text scaling for small screens */
+  p,
+  span,
+  div {
+    font-size: clamp(0.75rem, 3vw, 1rem);
+    line-height: 1.4;
+  }
+
+  /* But keep headings readable and prevent awkward breaks */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .h1,
+  .h2,
+  .h3 {
+    font-size: clamp(1.5rem, 6vw, 3rem);
+    line-height: 1.2;
+    /* More aggressive text balancing on small screens */
+    text-wrap: balance;
+    word-spacing: 0.05em;
+    /* Allow text to wrap more naturally */
+    white-space: normal;
+  }
+
+  /* Hero titles should be even larger */
+  h1.h1,
+  .hero-title {
+    font-size: clamp(1.75rem, 7vw, 4rem);
+    line-height: 1.1;
+  }
+}
+
+/* Footer utility classes */
+.footer-attribution {
+  font-size: clamp(0.625rem, 2.5vw, 0.875rem);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.copyright-text {
+  white-space: nowrap;
+}
+
 /* Modern selection styling */
 ::selection {
   background-color: var(--theme-primary, #2563eb);
