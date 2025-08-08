@@ -90,10 +90,15 @@ const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
             setTimeout(() => setCopySuccess(false), 2000);
           } else {
             // Inform user that copy failed - they can manually copy the URL
-            console.warn("Unable to copy to clipboard. Please copy the link manually.");
+            console.warn(
+              "Unable to copy to clipboard. Please copy the link manually.",
+            );
           }
         } catch (err) {
-          console.error("Failed to copy link. Browser may not support automatic copying:", err);
+          console.error(
+            "Failed to copy link. Browser may not support automatic copying:",
+            err,
+          );
           // Could show a user-friendly message here if needed
         } finally {
           document.body.removeChild(textArea);

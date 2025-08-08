@@ -25,11 +25,12 @@ const CampaignDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showFloatingShare, setShowFloatingShare] = useState(false);
-  
+
   // Safe share URL construction
-  const shareUrl = campaign && typeof window !== "undefined" && window.location
-    ? `${window.location.origin}/campaigns/${campaign.name}`
-    : "";
+  const shareUrl =
+    campaign && typeof window !== 'undefined' && window.location
+      ? `${window.location.origin}/campaigns/${campaign.name}`
+      : '';
 
   useEffect(() => {
     const fetchData = async () => {

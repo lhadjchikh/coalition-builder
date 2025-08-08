@@ -19,14 +19,6 @@ Object.defineProperty(window, 'location', {
   writable: true,
 });
 
-// Mock FontAwesome icons with proper names
-const mockIconMap: { [key: string]: string } = {
-  'fa-share': 'share',
-  'fa-times': 'times',
-  'fa-bullhorn': 'bullhorn',
-  'fa-hand-holding-heart': 'hand-holding-heart',
-};
-
 // Mock FontAwesome imports first
 jest.mock('@fortawesome/free-solid-svg-icons', () => ({
   faShare: { iconName: 'share', prefix: 'fas' },
