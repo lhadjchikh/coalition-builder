@@ -87,6 +87,17 @@ const Footer: React.FC<FooterProps> = ({
             <p className="text-gray-400 text-base">
               © {currentYear} {orgInfo.organization_name}. All rights reserved.
             </p>
+            <p className="text-gray-500 text-sm mt-2">
+              Powered by{" "}
+              <a
+                href="https://github.com/lhadjchikh/coalition-builder"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-gray-300 underline transition-colors duration-200"
+              >
+                Coalition Builder
+              </a>
+            </p>
           </div>
         </div>
       </div>
