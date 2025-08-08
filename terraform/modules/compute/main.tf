@@ -309,17 +309,17 @@ resource "aws_ecs_task_definition" "app" {
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   task_role_arn            = aws_iam_role.ecs_task_role.arn
 
-  container_definitions = var.enable_ssr ? jsonencode([
+  container_definitions = jsonencode([
     # Redis Cache Container (shared configuration)
     local.redis_container,
     # Django API Container
     {
-      name      = "app"
+      name      = "api"
       image     = "${aws_ecr_repository.api.repository_url}:latest"
       essential = true
       # Adjust CPU allocation for API container when Redis is present
-      cpu    = var.enable_ssr ? floor((var.task_cpu - var.redis_cpu) * 0.6) : (var.task_cpu - var.redis_cpu)                             # 60% of remaining CPU when SSR enabled
-      memory = var.enable_ssr ? floor((local.calculated_memory - var.redis_memory) * 0.6) : (local.calculated_memory - var.redis_memory) # 60% of remaining memory when SSR enabled
+      cpu    = floor((var.task_cpu - var.redis_cpu) * 0.6)               # 60% of remaining CPU
+      memory = floor((local.calculated_memory - var.redis_memory) * 0.6) # 60% of remaining memory
 
       portMappings = [
         {
@@ -370,21 +370,21 @@ resource "aws_ecs_task_definition" "app" {
         }
       ]
     },
-    # SSR Container
+    # App Container (SSR-based frontend)
     {
-      name      = "ssr"
-      image     = "${aws_ecr_repository.ssr.repository_url}:latest"
+      name      = "app-frontend"
+      image     = "${aws_ecr_repository.app.repository_url}:latest"
       essential = true
-      # Allocate remaining CPU and memory for SSR container (after Redis allocation)
+      # Allocate remaining CPU and memory for app container (after Redis allocation)
       cpu    = floor((var.task_cpu - var.redis_cpu) * 0.4)               # 40% of remaining CPU after Redis
       memory = floor((local.calculated_memory - var.redis_memory) * 0.4) # 40% of remaining memory after Redis
 
       portMappings = [
         {
-          containerPort = var.container_port_ssr
-          hostPort      = var.container_port_ssr
+          containerPort = var.container_port_app
+          hostPort      = var.container_port_app
           protocol      = "tcp"
-          name          = "ssr-app"
+          name          = "app-frontend"
         }
       ]
       environment = concat(local.common_environment_variables, [
@@ -402,7 +402,7 @@ resource "aws_ecs_task_definition" "app" {
         },
         {
           name  = "PORT"
-          value = tostring(var.container_port_ssr)
+          value = tostring(var.container_port_app)
         },
         {
           name  = "SITE_USERNAME"
@@ -430,73 +430,12 @@ resource "aws_ecs_task_definition" "app" {
         options = {
           "awslogs-group"         = aws_cloudwatch_log_group.ecs_logs.name
           "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "ssr"
+          "awslogs-stream-prefix" = "app"
         }
       }
       dependsOn = [
         {
-          containerName = "app"
-          condition     = "HEALTHY"
-        }
-      ]
-    }
-    ]) : jsonencode([
-    # Redis Cache Container (shared configuration)
-    local.redis_container,
-    # Django API Container only (when enable_ssr is false)
-    {
-      name      = "app"
-      image     = "${aws_ecr_repository.api.repository_url}:latest"
-      essential = true
-      # Use remaining CPU and memory after Redis allocation
-      cpu    = var.task_cpu - var.redis_cpu
-      memory = local.calculated_memory - var.redis_memory
-
-      portMappings = [
-        {
-          containerPort = var.container_port_api
-          hostPort      = var.container_port_api
-          protocol      = "tcp"
-          name          = "django-api"
-        }
-      ]
-      environment = concat(local.common_environment_variables, local.django_api_environment_variables)
-      secrets = concat([
-        {
-          name      = "SECRET_KEY",
-          valueFrom = var.secret_key_secret_arn
-        },
-        {
-          name      = "DATABASE_URL",
-          valueFrom = "${var.db_url_secret_arn}:url::"
-        }
-        ], [
-        {
-          name      = "SITE_PASSWORD",
-          valueFrom = "${var.site_password_secret_arn}:password::"
-        }
-      ])
-      healthCheck = {
-        command = [
-          "CMD-SHELL",
-          "curl -f http://localhost:${var.container_port_api}${var.health_check_path_api} || exit 1"
-        ],
-        interval    = 30,
-        timeout     = 10,
-        retries     = 5,
-        startPeriod = 30
-      }
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.ecs_logs.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "django"
-        }
-      }
-      dependsOn = [
-        {
-          containerName = "redis"
+          containerName = "api"
           condition     = "HEALTHY"
         }
       ]
@@ -508,9 +447,9 @@ resource "aws_ecs_task_definition" "app" {
   }
 }
 
-# SSR ECR repository - always created regardless of SSR being enabled
-resource "aws_ecr_repository" "ssr" {
-  name                 = "${var.prefix}-ssr"
+# App ECR repository (SSR-based Next.js frontend application)
+resource "aws_ecr_repository" "app" {
+  name                 = "${var.prefix}-app"
   image_tag_mutability = "IMMUTABLE"
 
   image_scanning_configuration {
@@ -522,7 +461,7 @@ resource "aws_ecr_repository" "ssr" {
   }
 
   tags = {
-    Name = "${var.prefix}-ssr"
+    Name = "${var.prefix}-app"
   }
 }
 
@@ -545,18 +484,15 @@ resource "aws_ecs_service" "app" {
   # Load balancer configuration for Django API
   load_balancer {
     target_group_arn = var.api_target_group_arn
-    container_name   = "app"
+    container_name   = "api"
     container_port   = var.container_port_api
   }
 
-  # Load balancer configuration for SSR (only if SSR is enabled and target group is provided)
-  dynamic "load_balancer" {
-    for_each = var.enable_ssr && var.ssr_target_group_arn != "" ? [1] : []
-    content {
-      target_group_arn = var.ssr_target_group_arn
-      container_name   = "ssr"
-      container_port   = 3000
-    }
+  # Load balancer configuration for App (frontend)
+  load_balancer {
+    target_group_arn = var.app_target_group_arn
+    container_name   = "app-frontend"
+    container_port   = var.container_port_app
   }
 
   # Enable deployment circuit breaker for safe deployments

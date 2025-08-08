@@ -122,7 +122,7 @@ module "compute" {
   app_security_group_id           = module.security.app_security_group_id
   bastion_security_group_id       = module.security.bastion_security_group_id
   api_target_group_arn            = module.loadbalancer.api_target_group_arn
-  ssr_target_group_arn            = module.loadbalancer.ssr_target_group_arn
+  app_target_group_arn            = module.loadbalancer.app_target_group_arn
   db_url_secret_arn               = module.secrets.db_url_secret_arn
   secret_key_secret_arn           = module.secrets.secret_key_secret_arn
   secrets_kms_key_arn             = module.secrets.secrets_kms_key_arn
@@ -130,9 +130,8 @@ module "compute" {
   bastion_public_key              = var.bastion_public_key
   create_new_key_pair             = var.create_new_key_pair
   container_port_api              = 8000
-  container_port_ssr              = 3000
+  container_port_app              = 3000
   domain_name                     = var.domain_name
-  enable_ssr                      = var.enable_ssr
   health_check_path_api           = var.health_check_path_api
   allowed_hosts                   = var.allowed_hosts
   alb_dns_name                    = module.loadbalancer.alb_dns_name
