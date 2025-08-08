@@ -51,7 +51,7 @@ services:
       - SECRET_KEY=${SECRET_KEY:-dev_secret_key_replace_in_production}
       - DATABASE_URL=postgis://${APP_DB_USERNAME:-coalition_app}:${APP_DB_PASSWORD:-app_password}@db:5432/${DB_NAME:-coalition}
       - CACHE_URL=${CACHE_URL:-redis://redis:6379/1}
-      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,api,nginx,ssr}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,api,nginx,frontend}
       - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS:-}
       - PYTHONPATH=/app
       # Site password protection settings
@@ -63,11 +63,11 @@ services:
     networks:
       - app-network
 
-  ssr:
-    image: coalition_ssr:latest
+  frontend:
+    image: coalition_frontend:latest
     build:
       context: .
-      dockerfile: Dockerfile.ssr
+      dockerfile: Dockerfile.frontend
     depends_on:
       - api
     environment:
@@ -97,7 +97,7 @@ services:
     image: nginx:alpine
     depends_on:
       - api
-      - ssr
+      - frontend
     ports:
       - "80:80"
     volumes:

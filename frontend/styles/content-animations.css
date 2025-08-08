@@ -1,0 +1,195 @@
+/* Content Block Animations - Shared styles for frontend and SSR */
+
+/* Base animation classes for different animation types */
+
+/* Fade In (default) */
+.content-block-fade-in {
+  opacity: 0;
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.content-block-fade-in.content-block-visible {
+  opacity: 1;
+}
+
+/* Slide Up */
+.content-block-slide-up {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.content-block-slide-up.content-block-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Slide from Left */
+.content-block-slide-left {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.content-block-slide-left.content-block-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Slide from Right */
+.content-block-slide-right {
+  opacity: 0;
+  transform: translateX(30px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.content-block-slide-right.content-block-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Scale In */
+.content-block-scale {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.content-block-scale.content-block-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Legacy support - map old animate class to slide-up */
+.content-block-animate {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.content-block-animate.content-block-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Text content animations - slide up and fade in */
+.content-block-animate .prose,
+.content-block-animate h3 {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: 0.2s;
+}
+
+.content-block-visible .prose,
+.content-block-visible h3 {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Image animations - scale and fade */
+.content-block-animate img {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: 0.3s;
+}
+
+.content-block-visible img {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Text/Image split layout animations */
+.content-block-animate .content-block-text {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: 0.2s;
+}
+
+.content-block-animate .content-block-image {
+  opacity: 0;
+  transform: translateX(30px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: 0.4s;
+}
+
+.content-block-visible .content-block-text,
+.content-block-visible .content-block-image {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Quote animations - fade and slight scale */
+.content-block-animate blockquote {
+  opacity: 0;
+  transform: scale(0.98);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: 0.2s;
+}
+
+.content-block-visible blockquote {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Stats grid animations - stagger effect */
+.content-block-animate .grid > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.content-block-animate .grid > *:nth-child(1) {
+  transition-delay: 0.2s;
+}
+.content-block-animate .grid > *:nth-child(2) {
+  transition-delay: 0.3s;
+}
+.content-block-animate .grid > *:nth-child(3) {
+  transition-delay: 0.4s;
+}
+.content-block-animate .grid > *:nth-child(4) {
+  transition-delay: 0.5s;
+}
+.content-block-animate .grid > *:nth-child(5) {
+  transition-delay: 0.6s;
+}
+.content-block-animate .grid > *:nth-child(6) {
+  transition-delay: 0.7s;
+}
+
+.content-block-visible .grid > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .content-block-animate,
+  .content-block-animate *,
+  .content-block-visible,
+  .content-block-visible * {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  /* Reduce transform distances on mobile */
+  .content-block-animate {
+    transform: translateY(20px);
+  }
+
+  .content-block-animate .content-block-text {
+    transform: translateX(-20px);
+  }
+
+  .content-block-animate .content-block-image {
+    transform: translateX(20px);
+  }
+}

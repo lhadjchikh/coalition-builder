@@ -1,0 +1,1272 @@
+/* Endorsements Section Heading */
+.endorsements-heading {
+  color: #333;
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+/* Endorsement Form Styles */
+.endorsement-form {
+  max-width: 600px;
+  margin: 0 auto 1rem auto;
+  padding: 2.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.endorsement-form h3 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* CTA Card Styles - for call-to-action sections */
+.cta-card {
+  max-width: 600px;
+  margin: 0 auto 5rem auto;
+  padding: 2.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.cta-card--share {
+  margin-bottom: 2rem;
+}
+
+.cta-heading {
+  margin: 0 0 0.75rem 0;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.cta-heading--primary {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #1a1a1a;
+}
+
+.cta-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.cta-icon--primary {
+  margin-bottom: 1.5rem;
+}
+
+.cta-text {
+  color: #666;
+  margin: 0 auto 1.5rem auto;
+  max-width: 90%;
+  text-align: center;
+}
+
+.cta-text--compact {
+  margin-top: -0.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.cta-button-wrapper {
+  text-align: center;
+}
+
+.cta-supporting-text {
+  color: #666;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.cta-footer-text {
+  color: #999;
+  font-size: 0.875rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0;
+  text-align: center;
+  font-style: italic;
+  text-wrap: balance;
+}
+
+/* Endorsement count display for mature campaigns */
+.endorsement-count-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.endorsement-count-number {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #228b22;
+  line-height: 1;
+}
+
+.endorsement-count-label {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #4a5568;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.momentum-badge-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: -0.5rem 0 1rem 0;
+}
+
+.momentum-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: white;
+  padding: 0.375rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+/* Header content container */
+.header-content-wrapper {
+  max-width: 600px;
+  margin: 0 auto 2rem auto;
+  text-align: center;
+}
+
+/* About section wrapper */
+.about-section-wrapper {
+  max-width: 600px;
+  margin: 0 auto 3rem auto;
+}
+
+/* Sticky CTA container */
+.sticky-cta-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .sticky-cta-container {
+    padding: 0 2rem;
+  }
+}
+
+/* Content Container Styles */
+.content-section {
+  max-width: 600px;
+  margin: 0 auto 3rem auto;
+}
+
+.content-section--centered {
+  text-align: center;
+}
+
+.content-section--no-bottom {
+  margin-bottom: 0;
+}
+
+.endorsement-form .endorsement-statement {
+  margin: 1.5rem 0;
+  background: none;
+  padding: 0;
+  border: none;
+}
+
+.endorsement-form .endorsement-statement h4 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.endorsement-form .endorsement-statement blockquote {
+  margin: 0;
+  padding: 1.25rem;
+  background-color: #f8f9fa;
+  border-left: 4px solid #6c757d;
+  border-radius: 0.25rem;
+  font-style: italic;
+  color: #495057;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  quotes: none;
+}
+
+.endorsement-form .endorsement-statement blockquote::before,
+.endorsement-form .endorsement-statement blockquote::after {
+  content: none;
+}
+
+.form-instructions {
+  margin: 1rem 0;
+}
+
+.address-info-message {
+  margin: 1.5rem 0;
+  padding: 1rem 1rem 1rem 3rem;
+  background-color: #e3f2fd;
+  border-radius: 8px;
+  border: 1px solid #bbdefb;
+  position: relative;
+}
+
+.address-info-message::before {
+  content: 'ⓘ';
+  position: absolute;
+  left: 1rem;
+  top: 1.1rem;
+  font-size: 1.2rem;
+  color: #2196f3;
+}
+
+.address-info-title {
+  margin: 0 0 0.5rem 0;
+  color: #0d47a1;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.address-info-message p {
+  margin: 0;
+  color: #1565c0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.address-info-message strong {
+  color: #0d47a1;
+  font-weight: 600;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.label-helper {
+  display: block;
+  font-weight: normal;
+  font-size: 0.875rem;
+  color: #666;
+  line-height: 1.4;
+  margin-top: 0.25rem;
+}
+
+.form-group input[type='text'],
+.form-group input[type='email'],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  background-color: #fff;
+}
+
+/* Custom select styling */
+.form-group select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1em;
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+.form-group select:hover {
+  border-color: #999;
+}
+
+/* Style select options */
+.form-group select option {
+  padding: 0.5rem;
+  background-color: #fff;
+  color: #333;
+}
+
+.form-group select option:hover {
+  background-color: #f5f5f5;
+}
+
+/* Disabled select styling */
+.form-group select:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-group input[type='text']:focus,
+.form-group input[type='email']:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.form-group textarea {
+  min-height: 120px;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.checkbox-label {
+  display: flex !important;
+  align-items: flex-start;
+  font-weight: normal !important;
+  cursor: pointer;
+}
+
+.checkbox-label input[type='checkbox'] {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+  margin-right: 0.75rem;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* Radio button styles */
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+legend.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+  font-size: 1rem;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.radio-label {
+  display: flex;
+  align-items: flex-start;
+  font-weight: normal;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.radio-label input[type='radio'] {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  margin-right: 0.75rem;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.submit-button {
+  background: var(--theme-accent, #f59e0b);
+  color: white;
+  padding: 1rem 2.5rem;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: var(--theme-accent-dark, #d97706);
+  transform: scale(1.03);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+
+.submit-button:active:not(:disabled) {
+  transform: scale(1.015);
+}
+
+.submit-button:disabled {
+  background: linear-gradient(135deg, #ccc, #bbb);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Primary themed button example */
+.btn-primary {
+  background: linear-gradient(
+    135deg,
+    var(--theme-primary, #2563eb),
+    var(--theme-primary-dark, #1d4ed8)
+  );
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(var(--theme-primary-rgb, 37, 99, 235), 0.2);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(
+    135deg,
+    var(--theme-primary-dark, #1d4ed8),
+    var(--theme-primary, #2563eb)
+  );
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(var(--theme-primary-rgb, 37, 99, 235), 0.3);
+}
+
+/* Secondary themed button example */
+.btn-secondary {
+  background: linear-gradient(
+    135deg,
+    var(--theme-secondary, #64748b),
+    var(--theme-secondary-dark, #475569)
+  );
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(var(--theme-secondary-rgb, 100, 116, 139), 0.2);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: linear-gradient(
+    135deg,
+    var(--theme-secondary-dark, #475569),
+    var(--theme-secondary, #64748b)
+  );
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(var(--theme-secondary-rgb, 100, 116, 139), 0.3);
+}
+
+/* Outline variant for primary */
+.btn-outline-primary {
+  background: transparent;
+  color: var(--theme-primary, #2563eb);
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--theme-primary, #2563eb);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-outline-primary:hover:not(:disabled) {
+  background: var(--theme-primary, #2563eb);
+  color: white;
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(var(--theme-primary-rgb, 37, 99, 235), 0.3);
+}
+
+.success-message {
+  padding: 1rem;
+  background-color: rgba(var(--theme-accent-rgb, 245, 158, 11), 0.1);
+  border: 1px solid var(--theme-accent);
+  border-radius: 4px;
+  color: var(--theme-accent-dark);
+  margin: 1rem 0;
+}
+
+.error-message {
+  padding: 1rem;
+  background-color: #ffebee;
+  border: 1px solid #f44336;
+  border-radius: 4px;
+  color: #c62828;
+  margin: 1rem 0;
+}
+
+.endorsement-form-disabled {
+  padding: 1.5rem;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+  color: #666;
+}
+
+/* Endorsements List Styles */
+.endorsements-list {
+  margin: 0 0 2rem 0;
+  padding-top: 2.5rem;
+}
+
+.endorsements-list h3 {
+  color: #333;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.endorsements-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.endorsement-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s;
+}
+
+.endorsement-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.endorsement-header {
+  margin-bottom: 1rem;
+}
+
+.stakeholder-name {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 1.25rem;
+}
+
+.stakeholder-info {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.role {
+  font-weight: 600;
+}
+
+.organization {
+  font-weight: 600;
+}
+
+.location {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.stakeholder-type {
+  display: inline-block;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.endorsement-list-statement {
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-left: 3px solid #2196f3;
+  border-radius: 4px;
+}
+
+.endorsement-list-statement blockquote {
+  margin: 0;
+  font-style: italic;
+  color: #555;
+  line-height: 1.5;
+}
+
+.endorsement-footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.endorsement-date {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.no-endorsements {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+/* Campaign Detail Styles */
+.campaign-detail {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.campaign-header {
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.campaign-header h1 {
+  color: #333;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.campaign-summary {
+  font-size: 1.25rem;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+/* Header CTA Button */
+.header-cta {
+  margin-top: 2rem;
+}
+
+.header-endorse-button {
+  background: linear-gradient(
+    135deg,
+    var(--theme-secondary, #64748b),
+    var(--theme-secondary-dark, #475569)
+  );
+  color: white;
+  padding: 1rem 2.5rem;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(var(--theme-secondary-rgb, 100, 116, 139), 0.3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.header-endorse-button:hover {
+  background: linear-gradient(
+    135deg,
+    var(--theme-secondary-dark, #475569),
+    var(--theme-secondary-darker, #334155)
+  );
+  transform: scale(1.03);
+  box-shadow: 0 6px 20px rgba(var(--theme-secondary-rgb, 100, 116, 139), 0.4);
+}
+
+.header-endorse-button:active {
+  transform: scale(1.01);
+}
+
+/* Social Proof Styles */
+.social-proof {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--theme-accent-rgb, 245, 158, 11), 0.1),
+    rgba(var(--theme-accent-rgb, 245, 158, 11), 0.05)
+  );
+  border-radius: 12px;
+  border: 2px solid var(--theme-accent);
+  text-align: center;
+}
+
+.endorsement-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.endorsement-count {
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--theme-accent-dark);
+  text-shadow: 2px 2px 4px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.1);
+}
+
+.endorsement-label {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--theme-accent);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.social-proof-text {
+  font-size: 1.1rem;
+  color: var(--theme-accent-dark);
+  font-weight: 500;
+  margin: 0;
+}
+
+.first-endorser-text {
+  margin-top: 1rem;
+  font-size: 1rem;
+  color: #666;
+  font-style: italic;
+}
+
+.early-supporter-text {
+  margin-top: 1rem;
+  font-size: 1rem;
+  color: #666;
+  font-style: italic;
+}
+
+/* Early Supporter Appeal */
+.early-supporter-appeal {
+  margin: 2rem 0;
+  padding: 2.5rem;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--theme-accent-rgb, 245, 158, 11), 0.1),
+    rgba(var(--theme-accent-rgb, 245, 158, 11), 0.05)
+  );
+  border: 2px solid var(--theme-accent);
+  border-radius: 12px;
+}
+
+.early-supporter-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.early-supporter-icon {
+  font-size: 4rem;
+  color: var(--theme-accent);
+  flex-shrink: 0;
+  line-height: 1;
+  text-shadow: 0 2px 4px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.3);
+}
+
+.early-supporter-text {
+  flex: 1;
+  text-align: left;
+}
+
+.early-supporter-text h3 {
+  margin: 0 0 0.75rem 0;
+  color: #2e7d32;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.early-supporter-text p {
+  margin: 0;
+  color: #388e3c;
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* First Endorser Appeal */
+.first-endorser-appeal {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: linear-gradient(135deg, #e3f2fd, #f1f8ff);
+  border: 2px solid #2196f3;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.first-endorser-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.first-endorser-icon {
+  font-size: 2.5rem;
+}
+
+.first-endorser-text h3 {
+  margin: 0 0 0.5rem 0;
+  color: #1976d2;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.first-endorser-text p {
+  margin: 0;
+  color: #1976d2;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+/* Momentum Indicator */
+.momentum-indicator {
+  margin-top: 1rem;
+}
+
+.momentum-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--theme-accent), var(--theme-accent-dark));
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.2);
+  transition: all 0.2s ease;
+}
+
+.momentum-badge:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.3);
+}
+
+/* Sticky CTA */
+.sticky-endorsement-cta {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  animation: slideInUp 0.3s ease-out;
+}
+
+.sticky-cta-content {
+  background: linear-gradient(135deg, #2196f3, #1976d2);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 50px;
+  box-shadow: 0 8px 25px rgba(33, 150, 243, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  backdrop-filter: blur(10px);
+}
+
+.sticky-cta-text {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.sticky-cta-button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sticky-cta-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.campaign-description {
+  margin-bottom: 3rem;
+}
+
+.campaign-description h2 {
+  color: #333;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.campaign-endorsements {
+  margin-top: 3rem;
+}
+
+.endorsements-container {
+  display: grid;
+  gap: 3rem;
+  grid-template-columns: 2fr 1fr;
+}
+
+/* Mobile Responsive Design 
+ * Best practices for mobile text margins:
+ * - Minimum 16px (1rem) for basic usability
+ * - 20-24px (1.25-1.5rem) optimal for readability and preventing edge touches
+ * - Consider thumb reach zones (avoid content too close to edges)
+ * - Material Design recommends 16px, iOS HIG recommends 20px minimum
+ */
+@media (max-width: 768px) {
+  .campaign-detail {
+    padding: 1.25rem; /* 20px - optimal for mobile readability */
+  }
+
+  .campaign-header h1 {
+    font-size: 2rem;
+  }
+
+  .campaign-summary {
+    font-size: 1.1rem;
+  }
+
+  .header-endorse-button {
+    font-size: 1rem;
+    padding: 0.75rem 2rem;
+  }
+
+  .endorsement-stats {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .endorsement-count {
+    font-size: 2.5rem;
+  }
+
+  .endorsement-label {
+    font-size: 1rem;
+  }
+
+  .social-proof {
+    margin: 1.5rem 0;
+    padding: 1rem;
+  }
+
+  .endorsements-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .endorsement-form-container {
+    order: -1;
+  }
+
+  .endorsement-form {
+    padding: 1.5rem 1.25rem; /* Slightly less vertical, maintain good horizontal margins */
+  }
+
+  .endorsement-form h3 {
+    font-size: 1.5rem;
+  }
+
+  .submit-button {
+    font-size: 1rem;
+    padding: 0.75rem 2rem;
+  }
+
+  .sticky-endorsement-cta {
+    bottom: 10px;
+    right: 10px;
+    left: 10px;
+    right: 10px;
+  }
+
+  .sticky-cta-content {
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .sticky-cta-text {
+    font-size: 0.9rem;
+  }
+
+  .sticky-cta-button {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .endorsements-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .early-supporter-appeal,
+  .first-endorser-appeal {
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+  }
+
+  .early-supporter-content,
+  .first-endorser-content {
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .early-supporter-text,
+  .first-endorser-text {
+    text-align: center;
+  }
+
+  .early-supporter-icon,
+  .first-endorser-icon {
+    font-size: 3.5rem;
+  }
+
+  .early-supporter-text h3,
+  .first-endorser-text h3 {
+    font-size: 1.4rem;
+  }
+
+  .early-supporter-text p,
+  .first-endorser-text p {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Small mobile devices - maintain readable margins */
+  .campaign-detail {
+    padding: 1rem 1.25rem; /* 16px top/bottom, 20px left/right for thumb reach */
+  }
+
+  .campaign-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .header-endorse-button {
+    font-size: 0.9rem;
+    padding: 0.6rem 1.5rem;
+  }
+
+  .endorsement-count {
+    font-size: 2rem;
+  }
+
+  .endorsement-form {
+    padding: 1.25rem 1rem; /* Maintain readable horizontal margins on small screens */
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .early-supporter-appeal,
+  .first-endorser-appeal {
+    margin: 1rem 0;
+    padding: 1rem;
+  }
+
+  .early-supporter-icon,
+  .first-endorser-icon {
+    font-size: 3rem;
+  }
+
+  .early-supporter-text h3,
+  .first-endorser-text h3 {
+    font-size: 1.2rem;
+  }
+
+  .early-supporter-text p,
+  .first-endorser-text p {
+    font-size: 1rem;
+  }
+}
+
+/* Campaign List Styles */
+.campaigns-grid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  margin-top: 1.5rem;
+}
+
+.campaign-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s;
+}
+
+.campaign-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.campaign-card h3 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.campaign-summary {
+  color: #666;
+  line-height: 1.5;
+  margin: 1rem 0;
+}
+
+.campaign-description {
+  color: #888;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 1rem 0;
+}
+
+.campaign-meta {
+  margin: 1rem 0;
+}
+
+.endorsements-allowed {
+  background-color: #e8f5e8;
+  color: #2e7d32;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.campaign-actions {
+  margin-top: 1.5rem;
+}
+
+.view-campaign-btn {
+  background-color: #2563eb;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-decoration: none;
+}
+
+.view-campaign-btn:hover {
+  background-color: #1d4ed8;
+  text-decoration: none;
+}
+
+/* Terms of Use Link Focus Styles */
+.checkbox-label a {
+  color: #2196f3;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.checkbox-label a:hover {
+  color: #1976d2;
+}
+
+.checkbox-label a:focus {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
+  border-radius: 2px;
+  background-color: rgba(33, 150, 243, 0.1);
+}
+
+/* Success Message */
+.success-message {
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.success-message h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.success-message p {
+  margin: 0.5rem 0;
+}
+
+.share-endorsement-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #c3e6cb;
+}
+
+.share-cta {
+  font-weight: 500;
+  margin-bottom: 1rem;
+  color: #0f5132;
+}
+
+/* Error Message */
+.error-message {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+/* Endorsement Form Disabled */
+.endorsement-form-disabled {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}

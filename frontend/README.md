@@ -1,12 +1,11 @@
-# Coalition Builder Frontend
+# Coalition Builder SSR
 
 [![Frontend Tests](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_frontend.yml/badge.svg)](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_frontend.yml)
 [![TypeScript Coverage](https://codecov.io/gh/lhadjchikh/coalition-builder/branch/main/graph/badge.svg?flag=javascript&token=VGUU4R6NR3)](https://codecov.io/gh/lhadjchikh/coalition-builder)
+[![Next.js 15](https://img.shields.io/badge/next.js-15-black.svg)](https://nextjs.org/)
 [![React 19](https://img.shields.io/badge/react-19-blue.svg)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/typescript-5.7-blue.svg)](https://www.typescriptlang.org/)
 
-This is the React frontend for Coalition Builder. It provides a user interface for managing
-policy campaigns, submitting endorsements, and viewing campaign supporters.
+This is the Next.js Server-Side Rendering (SSR) component for Coalition Builder. It provides SEO-optimized, server-rendered pages using React components from the frontend.
 
 ## 📚 Documentation
 
@@ -20,27 +19,37 @@ Quick links:
 
 ## Technology Stack
 
-- **React 19**: UI library
-- **TypeScript 5.7**: Type-safe JavaScript
-- **styled-components**: CSS-in-JS styling
-- **React Router**: Client-side routing
-- **Webpack**: Module bundler
-- **Jest & React Testing Library**: Testing framework
+- **Next.js 15**: React framework with SSR capabilities
+- **React 19**: UI library (shared with frontend)
+- **TypeScript**: Type-safe JavaScript
+- **styled-components**: CSS-in-JS styling (shared with frontend)
+- **Docker**: Containerized deployment
 - **npm**: Package management
 
 ## Project Structure
 
 ```
-frontend/
-├── src/
-│   ├── components/       # React components
-│   ├── services/         # API integration
-│   ├── types/            # TypeScript type definitions
-│   ├── utils/            # Utility functions
-│   ├── tests/            # Test suites
-│   └── index.tsx         # Application entry point
-├── public/               # Static assets
-├── build/                # Production build output
-├── package.json          # Dependencies and scripts
-└── tsconfig.json         # TypeScript configuration
+ssr/
+├── app/                     # Next.js App Router pages
+├── lib/
+│   ├── components/          # Local components and shared imports
+│   ├── contexts/            # React contexts
+│   ├── hooks/               # Custom React hooks
+│   └── styles/              # Styling utilities
+├── public/                  # Static assets
+├── next.config.js           # Next.js configuration
+├── package.json             # Dependencies and scripts
+├── tsconfig.json            # TypeScript configuration
+└── Dockerfile               # Container configuration
+```
+
+```
+
+## Key Features
+
+- **Server-Side Rendering**: Pre-renders pages for better SEO and performance
+- **Component Sharing**: Reuses React components from the frontend via TypeScript path mapping
+- **API Integration**: Fetches data from Django backend during server-side rendering
+- **Static Generation**: Supports both SSR and static site generation
+- **Docker Ready**: Containerized for deployment in AWS ECS
 ```
