@@ -278,17 +278,34 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
       {/* Share Modal */}
       {showShareModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 relative">
             <button
               onClick={() => setShowShareModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-all duration-300 transform hover:scale-110"
               aria-label="Close share modal"
             >
               <FontAwesomeIcon icon={faTimes} className="w-5 h-5" />
             </button>
-            <h2 className="text-xl font-bold mb-3 text-center">
-              Share this campaign
+            
+            {/* Icon */}
+            <div className="flex justify-center mb-4">
+              <FontAwesomeIcon 
+                icon={faShare} 
+                className="text-purple-600" 
+                style={{ fontSize: '48px' }}
+              />
+            </div>
+            
+            {/* Heading */}
+            <h2 className="text-2xl font-bold mb-3 text-center text-gray-900">
+              Amplify Your Impact
             </h2>
+            
+            {/* Body text */}
+            <p className="text-gray-600 text-center mb-6">
+              Share this campaign with your network to help build momentum for meaningful change.
+            </p>
+            
             <SocialShareButtons
               url={
                 typeof window !== "undefined"
@@ -306,6 +323,11 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
               showLabel={false}
               className="modal-share"
             />
+            
+            {/* Footer text */}
+            <p className="text-gray-500 text-sm text-center mt-6 italic">
+              Every share expands our collective voice
+            </p>
           </div>
         </div>
       )}
