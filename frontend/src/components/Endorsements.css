@@ -424,12 +424,12 @@ legend.form-label {
 
 .submit-button:hover:not(:disabled) {
   background: var(--theme-accent-dark, #d97706);
-  transform: translateY(-2px);
+  transform: scale(1.03);
   box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
 }
 
 .submit-button:active:not(:disabled) {
-  transform: translateY(0);
+  transform: scale(1.015);
 }
 
 .submit-button:disabled {
