@@ -66,7 +66,7 @@ export default function CampaignDetailWrapper({
           </p>
           <SocialShareButtons
             url={
-              typeof window !== "undefined"
+              typeof window !== "undefined" && window.location
                 ? `${window.location.origin}/campaigns/${campaign.name}`
                 : ""
             }
@@ -99,7 +99,7 @@ export default function CampaignDetailWrapper({
             </button>
             <SocialShareButtons
               url={
-                typeof window !== "undefined"
+                typeof window !== "undefined" && window.location
                   ? `${window.location.origin}/campaigns/${campaign.name}`
                   : ""
               }

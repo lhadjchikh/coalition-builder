@@ -25,6 +25,11 @@ const CampaignDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showFloatingShare, setShowFloatingShare] = useState(false);
+  
+  // Safe share URL construction
+  const shareUrl = campaign && typeof window !== "undefined" && window.location
+    ? `${window.location.origin}/campaigns/${campaign.name}`
+    : "";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -137,7 +142,7 @@ const CampaignDetail: React.FC = () => {
           <h3 className="cta-heading cta-heading--primary">Amplify This Campaign</h3>
           <p className="cta-text">Share with your network to help build momentum for change.</p>
           <SocialShareButtons
-            url={`${window.location.origin}/campaigns/${campaign.name}`}
+            url={shareUrl}
             title={campaign.title}
             description={campaign.summary || campaign.description}
             hashtags={['PolicyChange', 'CivicEngagement', campaign.name?.replace(/-/g, '') || '']}
@@ -160,7 +165,7 @@ const CampaignDetail: React.FC = () => {
               <FontAwesomeIcon icon={faTimes} className="w-5 h-5" />
             </button>
             <SocialShareButtons
-              url={`${window.location.origin}/campaigns/${campaign.name}`}
+              url={shareUrl}
               title={campaign.title}
               description={campaign.summary || campaign.description}
               hashtags={['PolicyChange', 'CivicEngagement', campaign.name?.replace(/-/g, '') || '']}

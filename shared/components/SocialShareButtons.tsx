@@ -83,11 +83,18 @@ const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
         textArea.focus();
         textArea.select();
         try {
-          document.execCommand("copy");
-          setCopySuccess(true);
-          setTimeout(() => setCopySuccess(false), 2000);
+          // Note: document.execCommand is deprecated but still needed for older browsers
+          const successful = document.execCommand("copy");
+          if (successful) {
+            setCopySuccess(true);
+            setTimeout(() => setCopySuccess(false), 2000);
+          } else {
+            // Inform user that copy failed - they can manually copy the URL
+            console.warn("Unable to copy to clipboard. Please copy the link manually.");
+          }
         } catch (err) {
-          console.error("Failed to copy link:", err);
+          console.error("Failed to copy link. Browser may not support automatic copying:", err);
+          // Could show a user-friendly message here if needed
         } finally {
           document.body.removeChild(textArea);
         }
