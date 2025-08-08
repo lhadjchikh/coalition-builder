@@ -156,7 +156,7 @@ const CampaignDetail: React.FC = () => {
       {/* Floating Share Button for Mobile */}
       <div className="md:hidden">
         {showFloatingShare ? (
-          <div className="fixed bottom-4 right-4 z-50 bg-white rounded-lg shadow-lg p-4 max-w-xs">
+          <div className="fixed bottom-4 right-4 z-50 bg-white rounded-lg shadow-lg p-4 max-w-xs text-center">
             <button
               onClick={() => setShowFloatingShare(false)}
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
