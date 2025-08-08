@@ -383,18 +383,20 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
               endorsementCount > 0 &&
               endorsementCount < SOCIAL_PROOF_THRESHOLD && (
                 <div className="cta-card">
-                  <h3 className="cta-heading">Join the Early Supporters</h3>
                   {GrowthIconComponent && (
-                    <div className="cta-icon">
+                    <div className="cta-icon cta-icon--primary">
                       <GrowthIconComponent
                         stage="seedling"
-                        size="48px"
-                        color="#4caf50"
+                        size="64px"
+                        color="#6B8E23"
                       />
                     </div>
                   )}
+                  <h3 className="cta-heading cta-heading--primary">
+                    Become a Founding Supporter
+                  </h3>
                   <p className="cta-text">
-                    Be among the founding voices advocating for this important initiative.
+                    Add your voice to help launch this vital initiative.
                   </p>
                   <div className="cta-button-wrapper">
                     <Button
@@ -402,12 +404,13 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                       size="lg"
                       onClick={scrollToEndorsementForm}
                     >
-                      Join the Early Supporters
+                      <FontAwesomeIcon icon={faHandHoldingHeart} className="mr-2" />
+                      Join the Founding Supporters
                     </Button>
-                    <p className="cta-supporting-text">
-                      Join this growing movement in its early stages.
-                    </p>
                   </div>
+                  <p className="cta-footer-text">
+                    Your early support helps this movement take root.
+                  </p>
                 </div>
               )}
 
