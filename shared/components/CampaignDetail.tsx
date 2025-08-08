@@ -305,7 +305,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             >
               <FontAwesomeIcon icon={faTimes} className="w-5 h-5" />
             </button>
-            <h2 className="text-xl font-bold mb-4">Share this campaign</h2>
+            <h2 className="text-xl font-bold mb-4 text-center">Share this campaign</h2>
             <SocialShareButtons
               url={
                 typeof window !== "undefined"
