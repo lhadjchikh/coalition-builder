@@ -14,9 +14,8 @@ permissions:
 env:
   FRONTEND_PATHS: |
     frontend/
-    shared/
+    Dockerfile.frontend
     .github/workflows/test_frontend.yml
-    .github/workflows/test_ssr.yml
     .github/workflows/check_frontend.yml
     .github/workflows/lint_typescript.yml
     .github/workflows/lint_prettier.yml
@@ -31,10 +30,7 @@ env:
     .github/workflows/check_backend.yml
     .github/workflows/lint_python.yml
 
-  SSR_PATHS: |
-    ssr/
-    Dockerfile.ssr
-    .github/workflows/test_ssr.yml
+  # SSR paths removed - now part of FRONTEND_PATHS
 
   TERRAFORM_PATHS: |
     terraform/
@@ -59,7 +55,6 @@ jobs:
     outputs:
       run_frontend: ${{ steps.changes.outputs.run_frontend }}
       run_backend: ${{ steps.changes.outputs.run_backend }}
-      run_ssr: ${{ steps.changes.outputs.run_ssr }}
       run_terraform: ${{ steps.changes.outputs.run_terraform }}
       run_fullstack: ${{ steps.changes.outputs.run_fullstack }}
       docs_only: ${{ steps.changes.outputs.docs_only }}
@@ -105,13 +100,12 @@ jobs:
           # Initialize flags
           RUN_FRONTEND=false
           RUN_BACKEND=false
-          RUN_SSR=false
           RUN_TERRAFORM=false
           RUN_FULLSTACK=false
           DOCS_ONLY=true
 
           # Build the complete fullstack paths by combining all component paths
-          FULLSTACK_PATHS="$FRONTEND_PATHS"$'\n'"$BACKEND_PATHS"$'\n'"$SSR_PATHS"$'\n'"$TERRAFORM_PATHS"$'\n'"$FULLSTACK_ONLY_PATHS"
+          FULLSTACK_PATHS="$FRONTEND_PATHS"$'\n'"$BACKEND_PATHS"$'\n'"$TERRAFORM_PATHS"$'\n'"$FULLSTACK_ONLY_PATHS"
 
           echo "Full stack paths include:"
           echo "$FULLSTACK_PATHS" | grep -v '^$' | sed 's/^/  - /'
@@ -168,11 +162,6 @@ jobs:
                 echo "  -> Backend tests required"
               fi
 
-              if matches_pattern "$file" "$SSR_PATHS"; then
-                RUN_SSR=true
-                RUN_FULLSTACK=true
-                echo "  -> SSR tests required"
-              fi
 
               if matches_pattern "$file" "$TERRAFORM_PATHS"; then
                 RUN_TERRAFORM=true
@@ -197,7 +186,6 @@ jobs:
           # Set outputs
           echo "run_frontend=$RUN_FRONTEND" >> $GITHUB_OUTPUT
           echo "run_backend=$RUN_BACKEND" >> $GITHUB_OUTPUT
-          echo "run_ssr=$RUN_SSR" >> $GITHUB_OUTPUT
           echo "run_terraform=$RUN_TERRAFORM" >> $GITHUB_OUTPUT
           echo "run_fullstack=$RUN_FULLSTACK" >> $GITHUB_OUTPUT
           echo "docs_only=$DOCS_ONLY" >> $GITHUB_OUTPUT
@@ -207,7 +195,6 @@ jobs:
           echo "  Documentation only: $DOCS_ONLY"
           echo "  Frontend tests: $RUN_FRONTEND"
           echo "  Backend tests: $RUN_BACKEND"
-          echo "  SSR tests: $RUN_SSR"
           echo "  Terraform tests: $RUN_TERRAFORM"
           echo "  Full stack tests: $RUN_FULLSTACK"
 
@@ -229,7 +216,7 @@ jobs:
     if: needs.analyze_changes.outputs.docs_only != 'true'
     steps:
       - name: Trigger Frontend Check (includes TypeScript lint + Prettier + Frontend/SSR tests)
-        if: needs.analyze_changes.outputs.run_frontend == 'true' || needs.analyze_changes.outputs.run_ssr == 'true'
+        if: needs.analyze_changes.outputs.run_frontend == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -300,7 +287,7 @@ jobs:
       - name: Record triggered tests
         run: |
           echo "Triggered tests summary:"
-          echo "Frontend Check (includes Frontend/SSR): ${{ needs.analyze_changes.outputs.run_frontend == 'true' || needs.analyze_changes.outputs.run_ssr == 'true' }}"
+          echo "Frontend Check: ${{ needs.analyze_changes.outputs.run_frontend == 'true' }}"
           echo "Backend Check (includes Backend): ${{ needs.analyze_changes.outputs.run_backend }}"
           echo "Terraform Check (includes Terraform): ${{ needs.analyze_changes.outputs.run_terraform }}"
           echo "Full Stack: ${{ needs.analyze_changes.outputs.run_fullstack }}"
@@ -316,7 +303,7 @@ jobs:
         with:
           script: |
             const requiredTests = [];
-            if ('${{ needs.analyze_changes.outputs.run_frontend }}' === 'true' || '${{ needs.analyze_changes.outputs.run_ssr }}' === 'true') {
+            if ('${{ needs.analyze_changes.outputs.run_frontend }}' === 'true') {
               requiredTests.push('Frontend Check');
             }
             if ('${{ needs.analyze_changes.outputs.run_backend }}' === 'true') {

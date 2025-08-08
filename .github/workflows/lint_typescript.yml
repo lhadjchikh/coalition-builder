@@ -19,101 +19,18 @@ jobs:
         with:
           node-version: "22.x"
           cache: "npm"
-          cache-dependency-path: |
-            frontend/package-lock.json
-            ssr/package-lock.json
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install frontend dependencies
         run: npm ci || npm ci --legacy-peer-deps
         working-directory: frontend
 
-      - name: Install SSR dependencies
-        run: npm ci || npm ci --legacy-peer-deps
-        working-directory: ssr
-
-      - name: Setup shared directory for TypeScript
-        run: |
-          # Create a minimal package.json in shared to help TypeScript resolve React types
-          cat > shared/package.json << 'EOF'
-          {
-            "name": "@coalition-builder/shared",
-            "version": "1.0.0",
-            "types": "index.d.ts",
-            "peerDependencies": {
-              "react": "*",
-              "@types/react": "*"
-            }
-          }
-          EOF
-
-          # Create a TypeScript declaration file to help with module resolution
-          cat > shared/index.d.ts << 'EOF'
-          /// <reference types="react" />
-          export * from './types';
-          export * from './components';
-          export * from './services';
-          export * from './utils';
-          EOF
+      # No longer need to setup shared directory since it's been consolidated
 
       - name: Run frontend TypeScript check
         run: |
-          # Create a temporary tsconfig that extends the existing one but adds typeRoots
-          cat > tsconfig.ci.json << 'EOF'
-          {
-            "extends": "./tsconfig.json",
-            "compilerOptions": {
-              "typeRoots": ["./node_modules/@types", "../shared/node_modules/@types"],
-              "types": ["react", "react-dom", "node"]
-            }
-          }
-          EOF
-
-          # Run typecheck with the CI config
-          npx tsc --project tsconfig.ci.json --noEmit
+          # Run typecheck with the standard config
+          npx tsc --noEmit
         working-directory: frontend
 
-      - name: Run SSR TypeScript check (TEMPORARILY DISABLED)
-        run: |
-          echo "SSR TypeScript check temporarily disabled due to module resolution issues"
-          # Will be re-enabled once module resolution is fixed for Docker environment
-          # # Create a temporary tsconfig for SSR that extends the existing one
-          # cat > tsconfig.ci.json << 'EOF'
-          # {
-          #   "extends": "./tsconfig.json",
-          #   "compilerOptions": {
-          #     "paths": {
-          #       "@/*": ["./*"],
-          #       "@frontend/*": ["../frontend/src/*"],
-          #       "@frontend/types": ["../frontend/src/types/index.ts"],
-          #       "@frontend/components/*": ["../frontend/src/components/*"],
-          #       "@frontend/contexts/*": ["../frontend/src/contexts/*"],
-          #       "@frontend/tests/*": ["../frontend/src/tests/*"],
-          #       "@shared/*": ["../shared/*"]
-          #     },
-          #     "typeRoots": ["./node_modules/@types", "../shared/node_modules/@types"],
-          #     "types": ["node", "react", "react-dom", "jest"]
-          #   },
-          #   "include": [
-          #     "next-env.d.ts",
-          #     ".next/types/**/*.ts",
-          #     "**/*.ts",
-          #     "**/*.tsx",
-          #     "../shared/**/*.ts",
-          #     "../shared/**/*.tsx"
-          #   ],
-          #   "exclude": [
-          #     "node_modules",
-          #     "../frontend/**/*"
-          #   ]
-          # }
-          # EOF
-          #
-          # # Run typecheck with the CI config
-          # npx tsc --project tsconfig.ci.json --noEmit
-        working-directory: ssr
 
-      - name: Cleanup temporary files
-        run: |
-          rm -f shared/package.json shared/index.d.ts
-          rm -f frontend/tsconfig.ci.json
-          rm -f ssr/tsconfig.ci.json

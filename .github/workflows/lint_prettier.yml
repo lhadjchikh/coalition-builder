@@ -18,8 +18,6 @@ on:
       - ".github/workflows/*.yaml"
       # Exclude paths covered by check_frontend
       - "!frontend/**"
-      - "!shared/**"
-      - "!ssr/**"
   pull_request:
     branches: [main]
     paths:
@@ -34,8 +32,6 @@ on:
       - ".github/workflows/*.yaml"
       # Exclude paths covered by check_frontend
       - "!frontend/**"
-      - "!shared/**"
-      - "!ssr/**"
   workflow_call: # Allow this workflow to be called by other workflows
 
 jobs:
