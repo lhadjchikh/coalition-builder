@@ -172,7 +172,7 @@ const CampaignDetail: React.FC = () => {
         ) : (
           <button
             onClick={() => setShowFloatingShare(true)}
-            className="fixed bottom-4 right-4 z-40 bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 transition-colors"
+            className="fixed bottom-4 right-4 z-40 bg-blue-600 text-white rounded-full w-14 h-14 shadow-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
             aria-label="Share this campaign"
           >
             <FontAwesomeIcon icon={faShare} className="w-6 h-6" />
