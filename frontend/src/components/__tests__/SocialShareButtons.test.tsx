@@ -32,7 +32,6 @@ Object.assign(navigator, {
   },
 });
 
-
 describe('SocialShareButtons', () => {
   const defaultProps = {
     url: 'https://example.com/campaign/test',
@@ -76,7 +75,6 @@ describe('SocialShareButtons', () => {
       );
       expect(container.querySelector('.social-share-buttons.custom-class')).toBeInTheDocument();
     });
-
   });
 
   describe('Share Button Functionality', () => {
@@ -264,7 +262,6 @@ describe('SocialShareButtons', () => {
       jest.useRealTimers();
     });
   });
-
 
   describe('Analytics Tracking', () => {
     it('tracks Facebook share click', () => {

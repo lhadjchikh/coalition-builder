@@ -4,7 +4,11 @@ import React, { useState, useEffect, useRef } from "react";
 import Button from "./Button";
 import ImageWithCredit from "./ImageWithCredit";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShare, faTimes, faHandHoldingHeart } from "@fortawesome/free-solid-svg-icons";
+import {
+  faShare,
+  faTimes,
+  faHandHoldingHeart,
+} from "@fortawesome/free-solid-svg-icons";
 import SocialShareButtons from "./SocialShareButtons";
 
 // Generic interfaces that work with both frontend and SSR
@@ -281,7 +285,9 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             >
               <FontAwesomeIcon icon={faTimes} className="w-5 h-5" />
             </button>
-            <h2 className="text-xl font-bold mb-3 text-center">Share this campaign</h2>
+            <h2 className="text-xl font-bold mb-3 text-center">
+              Share this campaign
+            </h2>
             <SocialShareButtons
               url={
                 typeof window !== "undefined"
@@ -352,7 +358,9 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                     </div>
                   )}
                   <div className="endorsement-count-display">
-                    <span className="endorsement-count-number">{endorsementCount}</span>
+                    <span className="endorsement-count-number">
+                      {endorsementCount}
+                    </span>
                     <span className="endorsement-count-label">
                       {endorsementCount === 1 ? "Supporter" : "Supporters"}
                     </span>
@@ -361,7 +369,8 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                     Join a Growing Movement
                   </h3>
                   <p className="cta-text">
-                    Add your voice to {endorsementCount} others who are championing this cause.
+                    Add your voice to {endorsementCount} others who are
+                    championing this cause.
                   </p>
                   {recentEndorsements > 0 &&
                     endorsementCount >= MOMENTUM_DISPLAY_THRESHOLD && (
@@ -377,7 +386,10 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                       size="lg"
                       onClick={scrollToEndorsementForm}
                     >
-                      <FontAwesomeIcon icon={faHandHoldingHeart} className="mr-2" />
+                      <FontAwesomeIcon
+                        icon={faHandHoldingHeart}
+                        className="mr-2"
+                      />
                       Add Your Endorsement
                     </Button>
                   </div>
@@ -413,7 +425,10 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                       size="lg"
                       onClick={scrollToEndorsementForm}
                     >
-                      <FontAwesomeIcon icon={faHandHoldingHeart} className="mr-2" />
+                      <FontAwesomeIcon
+                        icon={faHandHoldingHeart}
+                        className="mr-2"
+                      />
                       Join the Founding Supporters
                     </Button>
                   </div>
@@ -447,7 +462,10 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                     size="lg"
                     onClick={scrollToEndorsementForm}
                   >
-                    <FontAwesomeIcon icon={faHandHoldingHeart} className="mr-2" />
+                    <FontAwesomeIcon
+                      icon={faHandHoldingHeart}
+                      className="mr-2"
+                    />
                     Endorse the Campaign Now
                   </Button>
                 </div>
@@ -458,17 +476,18 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             )}
 
             {/* Regular CTA for 10+ endorsements */}
-            {campaign.allow_endorsements && endorsementCount >= SOCIAL_PROOF_THRESHOLD && (
-              <div className="text-center mb-8">
-                <Button
-                  variant="accent"
-                  size="lg"
-                  onClick={scrollToEndorsementForm}
-                >
-                  Add Your Endorsement
-                </Button>
-              </div>
-            )}
+            {campaign.allow_endorsements &&
+              endorsementCount >= SOCIAL_PROOF_THRESHOLD && (
+                <div className="text-center mb-8">
+                  <Button
+                    variant="accent"
+                    size="lg"
+                    onClick={scrollToEndorsementForm}
+                  >
+                    Add Your Endorsement
+                  </Button>
+                </div>
+              )}
           </div>
         </header>
 
@@ -480,9 +499,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             ref={aboutSectionRef}
           >
             <div className="prose prose-lg text-gray-700">
-              <h2 id="campaign-description-heading">
-                About This Campaign
-              </h2>
+              <h2 id="campaign-description-heading">About This Campaign</h2>
               <div dangerouslySetInnerHTML={{ __html: campaign.description }} />
             </div>
           </section>
@@ -504,7 +521,13 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             </h2>
           )}
 
-          <div className={endorsementCount > 0 ? "grid grid-cols-1 lg:grid-cols-2 gap-8" : ""}>
+          <div
+            className={
+              endorsementCount > 0
+                ? "grid grid-cols-1 lg:grid-cols-2 gap-8"
+                : ""
+            }
+          >
             {endorsementCount > 0 && (
               <div>
                 {EndorsementsListComponent && (

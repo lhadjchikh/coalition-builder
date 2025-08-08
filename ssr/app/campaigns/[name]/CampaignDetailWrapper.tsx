@@ -7,7 +7,11 @@ import EndorsementsList from "@frontend/components/EndorsementsList";
 import GrowthIcon from "@frontend/components/GrowthIcon";
 import SocialShareButtons from "../../../components/SocialShareButtonsWrapper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShare, faTimes, faBullhorn } from "@fortawesome/free-solid-svg-icons";
+import {
+  faShare,
+  faTimes,
+  faBullhorn,
+} from "@fortawesome/free-solid-svg-icons";
 import "@frontend/components/Endorsements.css";
 import "@frontend/App.css";
 import type { Campaign } from "@frontend/types";
@@ -49,9 +53,9 @@ export default function CampaignDetailWrapper({
         {/* Social Share Section */}
         <div className="cta-card cta-card--share">
           <div className="cta-icon cta-icon--primary">
-            <FontAwesomeIcon 
-              icon={faBullhorn} 
-              style={{ fontSize: '56px', color: '#7C4DFF' }}
+            <FontAwesomeIcon
+              icon={faBullhorn}
+              style={{ fontSize: "56px", color: "#7C4DFF" }}
             />
           </div>
           <h3 className="cta-heading cta-heading--primary">

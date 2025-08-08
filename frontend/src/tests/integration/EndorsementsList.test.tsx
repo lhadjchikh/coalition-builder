@@ -124,7 +124,7 @@ describe('EndorsementsList', () => {
     await waitFor(() => {
       expect(screen.queryByTestId('endorsements-loading')).not.toBeInTheDocument();
     });
-    
+
     // Component should return null and render nothing
     expect(container.firstChild).toBeNull();
     expect(screen.queryByTestId('no-endorsements')).not.toBeInTheDocument();

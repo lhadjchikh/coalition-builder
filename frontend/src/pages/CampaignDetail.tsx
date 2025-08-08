@@ -132,17 +132,10 @@ const CampaignDetail: React.FC = () => {
         {/* Social Share Section */}
         <div className="cta-card cta-card--share">
           <div className="cta-icon cta-icon--primary">
-            <FontAwesomeIcon 
-              icon={faBullhorn} 
-              style={{ fontSize: '56px', color: '#7C4DFF' }}
-            />
+            <FontAwesomeIcon icon={faBullhorn} style={{ fontSize: '56px', color: '#7C4DFF' }} />
           </div>
-          <h3 className="cta-heading cta-heading--primary">
-            Amplify This Campaign
-          </h3>
-          <p className="cta-text">
-            Share with your network to help build momentum for change.
-          </p>
+          <h3 className="cta-heading cta-heading--primary">Amplify This Campaign</h3>
+          <p className="cta-text">Share with your network to help build momentum for change.</p>
           <SocialShareButtons
             url={`${window.location.origin}/campaigns/${campaign.name}`}
             title={campaign.title}
@@ -151,9 +144,7 @@ const CampaignDetail: React.FC = () => {
             campaignName={campaign.name}
             showLabel={false}
           />
-          <p className="cta-footer-text">
-            Every share helps spread awareness and build support.
-          </p>
+          <p className="cta-footer-text">Every share helps spread awareness and build support.</p>
         </div>
       </div>
 

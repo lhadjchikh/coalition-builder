@@ -112,7 +112,7 @@
 .endorsement-count-number {
   font-size: 3rem;
   font-weight: 900;
-  color: #228B22;
+  color: #228b22;
   line-height: 1;
 }
 
@@ -408,7 +408,9 @@ legend.form-label {
   font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   width: 100%;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -1071,7 +1073,7 @@ legend.form-label {
   .campaign-detail {
     padding: 1rem 1.25rem; /* 16px top/bottom, 20px left/right for thumb reach */
   }
-  
+
   .campaign-header h1 {
     font-size: 1.75rem;
   }
