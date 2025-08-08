@@ -20,11 +20,13 @@ interface SocialLinksData {
 interface SocialLinksProps {
   orgInfo: SocialLinksData;
   className?: string;
+  iconSize?: "sm" | "lg" | "xl" | "2xl";
 }
 
 const SocialLinks: React.FC<SocialLinksProps> = ({
   orgInfo,
   className = "",
+  iconSize = "lg",
 }: SocialLinksProps) => {
   const socialLinks = [
     {
@@ -68,7 +70,7 @@ const SocialLinks: React.FC<SocialLinksProps> = ({
           className="text-gray-400 hover:text-gray-300 transition-all duration-300 transform hover:scale-110 inline-block"
           aria-label={`Follow us on ${link.name}`}
         >
-          <FontAwesomeIcon icon={link.icon} size="lg" />
+          <FontAwesomeIcon icon={link.icon} size={iconSize} />
         </a>
       ))}
     </div>
