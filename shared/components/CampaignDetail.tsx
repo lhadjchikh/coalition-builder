@@ -8,6 +8,7 @@ import {
   faShare,
   faTimes,
   faHandHoldingHeart,
+  faBullhorn,
 } from "@fortawesome/free-solid-svg-icons";
 import SocialShareButtons from "./SocialShareButtons";
 
@@ -290,7 +291,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             {/* Icon */}
             <div className="flex justify-center mb-4">
               <FontAwesomeIcon 
-                icon={faShare} 
+                icon={faBullhorn} 
                 className="text-purple-600" 
                 style={{ fontSize: '48px' }}
               />
@@ -298,12 +299,12 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             
             {/* Heading */}
             <h2 className="text-2xl font-bold mb-3 text-center text-gray-900">
-              Amplify Your Impact
+              Spread the Word
             </h2>
             
             {/* Body text */}
             <p className="text-gray-600 text-center mb-6">
-              Share this campaign with your network to help build momentum for meaningful change.
+              Help this campaign reach more people. Your share could inspire others to join this important cause.
             </p>
             
             <SocialShareButtons
@@ -326,7 +327,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             
             {/* Footer text */}
             <p className="text-gray-500 text-sm text-center mt-6 italic">
-              Every share expands our collective voice
+              Every share helps build a stronger coalition
             </p>
           </div>
         </div>
