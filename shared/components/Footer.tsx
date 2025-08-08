@@ -93,7 +93,7 @@ const Footer: React.FC<FooterProps> = ({
                 href="https://github.com/lhadjchikh/coalition-builder"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-gray-300 underline transition-colors duration-200"
+                className="text-gray-400 hover:text-gray-300 transition-colors duration-200"
               >
                 Coalition Builder
               </a>
