@@ -19,10 +19,25 @@ const nextConfig = {
       ? path.resolve(__dirname, "./shared")
       : path.resolve(__dirname, "../shared");
 
+    // Support both Docker (./frontend) and local (../frontend) paths
+    const frontendPath = fs.existsSync(path.resolve(__dirname, "./frontend"))
+      ? path.resolve(__dirname, "./frontend/src")
+      : path.resolve(__dirname, "../frontend/src");
+
     config.resolve.alias = {
       ...config.resolve.alias,
-      "@frontend": path.resolve(__dirname, "./frontend/src"),
+      "@frontend": frontendPath,
       "@shared": sharedPath,
+      // Add aliases for frontend imports
+      "@services": path.join(frontendPath, "services"),
+      "@app-types": path.join(frontendPath, "types"),
+      "@styles": path.join(frontendPath, "styles"),
+      "@components": path.join(frontendPath, "components"),
+      "@contexts": path.join(frontendPath, "contexts"),
+      "@hooks": path.join(frontendPath, "hooks"),
+      "@pages": path.join(frontendPath, "pages"),
+      "@tests": path.join(frontendPath, "tests"),
+      "@utils": path.join(frontendPath, "utils"),
       // Ensure vanilla-cookieconsent resolves from SSR's node_modules
       "vanilla-cookieconsent": path.resolve(
         __dirname,
@@ -53,15 +68,12 @@ const nextConfig = {
     config.module.rules.push({
       test: /\.(ts|tsx)$/,
       include: [
-        path.resolve(__dirname, "./frontend/src/components/styled"),
-        path.resolve(__dirname, "./frontend/src/components/StyledHomePage.tsx"),
-        path.resolve(__dirname, "./frontend/src/components/ThemeStyles.tsx"),
-        path.resolve(
-          __dirname,
-          "./frontend/src/contexts/StyledThemeProvider.tsx",
-        ),
-        path.resolve(__dirname, "./frontend/src/hooks/useStyledTheme.ts"),
-        path.resolve(__dirname, "./frontend/src/styles/styled.d.ts"),
+        path.join(frontendPath, "components/styled"),
+        path.join(frontendPath, "components/StyledHomePage.tsx"),
+        path.join(frontendPath, "components/ThemeStyles.tsx"),
+        path.join(frontendPath, "contexts/StyledThemeProvider.tsx"),
+        path.join(frontendPath, "hooks/useStyledTheme.ts"),
+        path.join(frontendPath, "styles/styled.d.ts"),
       ],
       loader: "null-loader",
     });

@@ -1,0 +1,54 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./*"],
+      "@frontend/*": ["../frontend/src/*"],
+      "@frontend/types": ["../frontend/src/types/index.ts"],
+      "@frontend/components/*": ["../frontend/src/components/*"],
+      "@frontend/contexts/*": ["../frontend/src/contexts/*"],
+      "@shared/*": ["../shared/*"],
+      "@components/*": ["../frontend/src/components/*"],
+      "@contexts/*": ["../frontend/src/contexts/*"],
+      "@hooks/*": ["../frontend/src/hooks/*"],
+      "@pages/*": ["../frontend/src/pages/*"],
+      "@services/*": ["../frontend/src/services/*"],
+      "@services/api": ["../frontend/src/services/api.ts"],
+      "@styles/*": ["../frontend/src/styles/*"],
+      "@styles/theme": ["../frontend/src/styles/theme.ts"],
+      "@tests/*": ["../frontend/src/tests/*"],
+      "@app-types/*": ["../frontend/src/types/*"],
+      "@app-types/index": ["../frontend/src/types/index.ts"],
+      "@utils/*": ["../frontend/src/utils/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "../frontend/src/types/**/*.ts",
+    "../frontend/src/components/EndorsementForm.tsx",
+    "../frontend/src/components/EndorsementsList.tsx",
+    "../frontend/src/components/GrowthIcon.tsx",
+    "../frontend/src/services/api.ts",
+    "../frontend/src/styles/theme.ts",
+    "../shared/**/*.ts",
+    "../shared/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "tests/**/*",
+    "**/*.test.tsx",
+    "**/*.test.ts",
+    "**/*.spec.tsx",
+    "**/*.spec.ts",
+    "../frontend/src/**/__tests__/**/*",
+    "../frontend/src/tests/**/*",
+    "../frontend/src/setupTests.ts",
+    "../frontend/src/App.tsx",
+    "../frontend/src/App.test.tsx",
+    "../frontend/src/index.tsx",
+    "../frontend/src/reportWebVitals.ts"
+  ]
+}
