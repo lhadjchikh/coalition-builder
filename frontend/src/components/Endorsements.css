@@ -339,11 +339,7 @@ legend.form-label {
 }
 
 .submit-button {
-  background: linear-gradient(
-    135deg,
-    var(--theme-accent, #f59e0b),
-    var(--theme-accent-dark, #d97706)
-  );
+  background: var(--theme-accent, #f59e0b);
   color: white;
   padding: 1rem 2.5rem;
   border: none;
@@ -351,38 +347,17 @@ legend.form-label {
   font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   width: 100%;
   text-transform: uppercase;
   letter-spacing: 1px;
-  box-shadow: 0 4px 15px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.3);
-  position: relative;
-  overflow: hidden;
-}
-
-.submit-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
-}
-
-.submit-button:hover::before {
-  left: 100%;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
 }
 
 .submit-button:hover:not(:disabled) {
-  background: linear-gradient(
-    135deg,
-    var(--theme-accent-dark, #d97706),
-    var(--theme-accent-darker, #b45309)
-  );
+  background: var(--theme-accent-dark, #d97706);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.4);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
 }
 
 .submit-button:active:not(:disabled) {
