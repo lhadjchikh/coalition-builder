@@ -125,7 +125,7 @@ const Navbar: React.FC<NavbarProps> = ({
       "flex items-center transition-all duration-300 transform hover:scale-105";
 
     if (!logoUrl) {
-      const textClasses = "text-xl font-bold";
+      const textClasses = "text-xl sm:text-2xl font-bold";
       const colorClasses =
         isHomepage && !scrolled ? "text-white drop-shadow-lg" : "text-white";
       return `${baseClasses} ${textClasses} ${colorClasses}`;
@@ -178,7 +178,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   className="h-12 sm:h-14 lg:h-16 w-auto max-w-full object-contain"
                 />
               ) : (
-                <span className="text-lg sm:text-xl truncate">
+                <span className="text-xl sm:text-2xl truncate">
                   {organizationName}
                 </span>
               )}

@@ -201,11 +201,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
       <div className="relative z-30 section-spacing-lg pt-40">
         <div className="relative max-w-7xl mx-auto container-padding">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className={`h1 ${textColorClass} font-theme-heading`}>
+            <h1
+              className={`h1 ${textColorClass} font-theme-heading text-balance`}
+            >
               {homepage.hero_title}
             </h1>
             {homepage.hero_subtitle && (
-              <p className={`lead ${textColorClass} mx-auto text-pretty`}>
+              <p className={`lead ${textColorClass} mx-auto text-balance`}>
                 {homepage.hero_subtitle}
               </p>
             )}

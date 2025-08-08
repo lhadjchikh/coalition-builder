@@ -44,10 +44,25 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
   headingText = "Policy Campaigns",
   className = "",
   cardClassName = "",
-  gridClassName = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8",
+  gridClassName,
 }) => {
   const [visibleCards, setVisibleCards] = useState<Set<number>>(new Set());
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+
+  // Dynamic grid class based on campaign count for better tablet layout
+  const getGridClassName = () => {
+    if (gridClassName) return gridClassName;
+
+    const campaignCount = campaigns.length;
+
+    if (campaignCount === 1) {
+      // Single card: center on all screen sizes with max width
+      return "grid grid-cols-1 gap-6 lg:gap-8 justify-items-center max-w-md mx-auto";
+    } else {
+      // Multiple cards: responsive grid
+      return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8";
+    }
+  };
 
   useEffect(() => {
     // Skip animation in SSR or if IntersectionObserver is not available
@@ -113,7 +128,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
           <p>No campaigns are currently available.</p>
         </div>
       ) : (
-        <div className={gridClassName}>
+        <div className={getGridClassName()}>
           {campaigns.map((campaign, index) => {
             const isVisible = visibleCards.has(campaign.id);
             const animationDelay = index * 100; // 100ms delay between each card
@@ -161,7 +176,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
                   </div>
                 )}
 
-                <div className="p-6 sm:p-8">
+                <div className="p-5 sm:p-6">
                   <h3 className="h4 text-theme-heading mb-3 break-normal">
                     {campaign.title}
                   </h3>
@@ -172,7 +187,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
 
                   {campaign.allow_endorsements && (
                     <div className="mb-4">
-                      <span className="inline-flex items-start text-green-600 font-medium bg-green-50 px-3 py-1 rounded-full text-xs sm:text-sm leading-tight">
+                      <span className="inline-flex items-start text-green-600 font-medium bg-green-50 px-2.5 py-1 rounded-full text-xs sm:text-sm leading-tight">
                         <FontAwesomeIcon
                           icon={faCheck}
                           className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 flex-shrink-0 mt-0.5"
@@ -185,7 +200,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
                   )}
 
                   <div className="flex items-center justify-between">
-                    <span className="text-theme-primary font-semibold group-hover:text-theme-primary-dark transition-colors">
+                    <span className="text-sm sm:text-base text-theme-primary font-semibold group-hover:text-theme-primary-dark transition-colors">
                       Learn More →
                     </span>
                   </div>
