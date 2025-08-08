@@ -456,22 +456,17 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
 
         {campaign.description && (
           <section
-            className="mb-12"
+            className="about-section-wrapper mb-12"
             role="region"
             aria-labelledby="campaign-description-heading"
             ref={aboutSectionRef}
-            className="about-section-wrapper"
           >
-            <h2
-              id="campaign-description-heading"
-              className="text-3xl font-bold text-gray-900 mb-6"
-            >
-              About This Campaign
-            </h2>
-            <div
-              className="prose prose-lg text-gray-700"
-              dangerouslySetInnerHTML={{ __html: campaign.description }}
-            />
+            <div className="prose prose-lg text-gray-700">
+              <h2 id="campaign-description-heading">
+                About This Campaign
+              </h2>
+              <div dangerouslySetInnerHTML={{ __html: campaign.description }} />
+            </div>
           </section>
         )}
 

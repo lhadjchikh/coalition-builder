@@ -30,7 +30,7 @@
 /* CTA Card Styles - for call-to-action sections */
 .cta-card {
   max-width: 600px;
-  margin: 0 auto 3rem auto;
+  margin: 0 auto 5rem auto;
   padding: 2.5rem;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
