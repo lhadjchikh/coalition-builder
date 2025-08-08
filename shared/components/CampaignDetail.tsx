@@ -325,7 +325,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                 aria-label="Scroll to endorsement form"
               >
                 <FontAwesomeIcon icon={faHandHoldingHeart} className="mr-2" />
-                Endorse This Campaign
+                Endorse Now
               </Button>
             </div>
           </div>
