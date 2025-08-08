@@ -298,12 +298,12 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             </div>
             
             {/* Heading */}
-            <h2 className="text-2xl font-bold mb-3 text-center text-gray-900">
+            <h2 className="text-2xl font-bold mb-3 text-center text-gray-900" style={{ textWrap: 'balance' as any }}>
               Spread the Word
             </h2>
             
             {/* Body text */}
-            <p className="text-gray-600 text-center mb-6">
+            <p className="text-gray-600 text-center mb-6" style={{ textWrap: 'balance' as any }}>
               Help this campaign reach more people. Your share could inspire others to join this important cause.
             </p>
             
@@ -326,7 +326,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             />
             
             {/* Footer text */}
-            <p className="text-gray-500 text-sm text-center mt-6 italic">
+            <p className="text-gray-500 text-sm text-center mt-6 italic" style={{ textWrap: 'balance' as any }}>
               Every share helps build a stronger coalition
             </p>
           </div>
