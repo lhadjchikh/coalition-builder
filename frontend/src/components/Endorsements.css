@@ -462,7 +462,7 @@ legend.form-label {
     var(--theme-primary-dark, #1d4ed8),
     var(--theme-primary, #2563eb)
   );
-  transform: translateY(-1px);
+  transform: scale(1.03);
   box-shadow: 0 4px 12px rgba(var(--theme-primary-rgb, 37, 99, 235), 0.3);
 }
 
@@ -489,7 +489,7 @@ legend.form-label {
     var(--theme-secondary-dark, #475569),
     var(--theme-secondary, #64748b)
   );
-  transform: translateY(-1px);
+  transform: scale(1.03);
   box-shadow: 0 4px 12px rgba(var(--theme-secondary-rgb, 100, 116, 139), 0.3);
 }
 
@@ -508,7 +508,7 @@ legend.form-label {
 .btn-outline-primary:hover:not(:disabled) {
   background: var(--theme-primary, #2563eb);
   color: white;
-  transform: translateY(-1px);
+  transform: scale(1.03);
   box-shadow: 0 4px 12px rgba(var(--theme-primary-rgb, 37, 99, 235), 0.3);
 }
 
@@ -699,12 +699,12 @@ legend.form-label {
     var(--theme-secondary-dark, #475569),
     var(--theme-secondary-darker, #334155)
   );
-  transform: translateY(-2px);
+  transform: scale(1.03);
   box-shadow: 0 6px 20px rgba(var(--theme-secondary-rgb, 100, 116, 139), 0.4);
 }
 
 .header-endorse-button:active {
-  transform: translateY(0);
+  transform: scale(1.01);
 }
 
 /* Social Proof Styles */
@@ -867,7 +867,7 @@ legend.form-label {
 }
 
 .momentum-badge:hover {
-  transform: translateY(-1px);
+  transform: scale(1.03);
   box-shadow: 0 4px 12px rgba(var(--theme-accent-rgb, 245, 158, 11), 0.3);
 }
 
