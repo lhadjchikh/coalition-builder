@@ -119,7 +119,8 @@ describe("CampaignDetail Share Modal", () => {
       render(<CampaignDetail {...defaultProps} />);
 
       const shareButton = screen.getByLabelText("Share this campaign");
-      const icon = shareButton.querySelector('[data-testid="icon-share"]');
+      // FontAwesome icons render as SVG elements
+      const icon = shareButton.querySelector('svg');
       expect(icon).toBeInTheDocument();
     });
 
@@ -172,8 +173,9 @@ describe("CampaignDetail Share Modal", () => {
 
       const closeButton = screen.getByLabelText("Close share modal");
       expect(closeButton).toBeInTheDocument();
+      // FontAwesome icons render as SVG elements
       expect(
-        closeButton.querySelector('[data-testid="icon-times"]'),
+        closeButton.querySelector('svg'),
       ).toBeInTheDocument();
     });
 

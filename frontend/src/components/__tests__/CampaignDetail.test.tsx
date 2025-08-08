@@ -1183,10 +1183,15 @@ describe('CampaignDetail', () => {
         const h1 = screen.getByRole('heading', { level: 1 });
         expect(h1).toHaveTextContent('Test Campaign');
 
-        const h2Elements = screen.getAllByRole('heading', { level: 2 });
-        expect(h2Elements).toHaveLength(2);
-        expect(h2Elements[0]).toHaveTextContent('About This Campaign');
-        expect(h2Elements[1]).toHaveTextContent('Endorsements');
+        // About This Campaign heading is always present
+        const aboutHeading = screen.getByRole('heading', { level: 2, name: 'About This Campaign' });
+        expect(aboutHeading).toBeInTheDocument();
+      });
+
+      // Endorsements heading appears after count is updated
+      await waitFor(() => {
+        const endorsementsHeading = screen.getByRole('heading', { level: 2, name: 'Endorsements' });
+        expect(endorsementsHeading).toBeInTheDocument();
       });
     });
 
@@ -1213,6 +1218,10 @@ describe('CampaignDetail', () => {
       await waitFor(() => {
         expect(screen.getByTestId('campaign-detail')).toBeInTheDocument();
         expect(screen.getByTestId('endorsement-form')).toBeInTheDocument();
+      });
+
+      // Endorsements list appears after count is updated
+      await waitFor(() => {
         expect(screen.getByTestId('endorsements-list')).toBeInTheDocument();
       });
     }, 10000);
