@@ -37,15 +37,15 @@ const Footer: React.FC<FooterProps> = ({
     <footer className={className || "bg-gray-900"}>
       <div className="max-w-7xl mx-auto section-spacing container-padding">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8 justify-items-center lg:justify-items-start">
-          {/* Organization Info Column */}
-          <div className="col-span-1 sm:col-span-2 lg:col-span-2">
-            {/* Logo or Organization Name */}
-            <div className="flex flex-col items-center lg:items-start mb-4">
+        <div className="grid grid-cols-1 gap-12 mb-8 justify-items-center lg:justify-items-start items-start">
+          {/* Logo and Social Links Section */}
+          <div className="w-full">
+            <div className="flex flex-col items-center lg:items-start">
+              {/* Logo - First */}
               {orgInfo.theme?.logo_url ? (
                 <LinkComponent
                   to="/"
-                  className="mb-3 transition-all duration-300 transform hover:scale-105"
+                  className="mb-2 transition-all duration-300 transform hover:scale-105"
                 >
                   <img
                     src={orgInfo.theme.logo_url}
@@ -53,110 +53,122 @@ const Footer: React.FC<FooterProps> = ({
                       orgInfo.theme.logo_alt_text ||
                       `${orgInfo.organization_name} logo`
                     }
-                    className="h-8 sm:h-10 lg:h-12 w-auto max-w-full object-contain"
+                    className="h-10 sm:h-12 lg:h-16 w-auto max-w-full object-contain"
                   />
                 </LinkComponent>
               ) : (
                 <LinkComponent
                   to="/"
-                  className="text-2xl font-bold text-white hover:text-gray-200 transition-colors duration-200 no-underline"
+                  className="text-2xl font-bold text-white hover:text-gray-200 transition-colors duration-200 no-underline mb-2"
                 >
                   {orgInfo.organization_name}
                 </LinkComponent>
               )}
+
+              {/* Tagline - Second */}
+              {orgInfo.tagline && (
+                <p className="text-gray-300 text-sm text-center lg:text-left mb-8 max-w-xs">
+                  {orgInfo.tagline}
+                </p>
+              )}
+
+              {/* Social Links - Third */}
+              {showSocialLinks && (
+                <>
+                  <h4 className="text-white font-semibold mb-3 text-center lg:text-left text-lg leading-none">
+                    Follow Us
+                  </h4>
+                  <SocialLinks
+                    orgInfo={orgInfo}
+                    className="flex gap-4 justify-center lg:justify-start"
+                    iconSize="2xl" // Make social icons larger
+                  />
+                </>
+              )}
             </div>
-
-            {/* Social Links - Larger Icons */}
-            {showSocialLinks && (
-              <div className="mb-6 text-center lg:text-left">
-                <h4 className="text-white font-semibold mb-4">Follow Us</h4>
-                <SocialLinks
-                  orgInfo={orgInfo}
-                  className="flex gap-4 justify-center lg:justify-start"
-                  iconSize="2xl" // Make social icons larger
-                />
-              </div>
-            )}
           </div>
 
-          {/* Site Navigation Column */}
-          <div>
-            <h4 className="text-white font-semibold mb-4 text-center lg:text-left">
-              Site Navigation
-            </h4>
-            <nav aria-label="Footer navigation">
-              <ul className="space-y-2">
-                <li>
-                  <LinkComponent
-                    to="/"
-                    className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline"
-                  >
-                    Home
-                  </LinkComponent>
-                </li>
-                <li>
-                  <LinkComponent
-                    to="/campaigns"
-                    className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline"
-                  >
-                    Campaigns
-                  </LinkComponent>
-                </li>
-                <li>
-                  <LinkComponent
-                    to="/about"
-                    className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline"
-                  >
-                    About
-                  </LinkComponent>
-                </li>
-                <li>
-                  <LinkComponent
-                    to="/contact"
-                    className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline"
-                  >
-                    Contact
-                  </LinkComponent>
-                </li>
-              </ul>
-            </nav>
-          </div>
-
-          {/* Support & Legal Column */}
-          <div>
-            <h4 className="text-white font-semibold mb-4 text-center lg:text-left">
-              Support & Legal
-            </h4>
-            {showLegalLinks && (
-              <nav aria-label="Legal links">
+          {/* Navigation Links Section - Side by side even on mobile */}
+          <div className="w-full flex justify-evenly">
+            {/* Site Navigation Column */}
+            <div>
+              <h4 className="text-white font-semibold mb-4 text-left leading-none">
+                Site Navigation
+              </h4>
+              <nav aria-label="Footer navigation">
                 <ul className="space-y-2">
                   <li>
                     <LinkComponent
-                      to="/terms"
+                      to="/"
                       className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline"
                     >
-                      Terms of Use
+                      Home
                     </LinkComponent>
                   </li>
                   <li>
                     <LinkComponent
-                      to="/privacy"
+                      to="/campaigns"
                       className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline"
                     >
-                      Privacy Policy
+                      Campaigns
                     </LinkComponent>
                   </li>
                   <li>
                     <LinkComponent
-                      to="/admin/"
+                      to="/about"
                       className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline"
                     >
-                      Admin Login
+                      About
+                    </LinkComponent>
+                  </li>
+                  <li>
+                    <LinkComponent
+                      to="/contact"
+                      className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline"
+                    >
+                      Contact
                     </LinkComponent>
                   </li>
                 </ul>
               </nav>
-            )}
+            </div>
+
+            {/* Support & Legal Column */}
+            <div>
+              <h4 className="text-white font-semibold mb-4 text-left leading-none">
+                Support & Legal
+              </h4>
+              {showLegalLinks && (
+                <nav aria-label="Legal links">
+                  <ul className="space-y-2">
+                    <li>
+                      <LinkComponent
+                        to="/terms"
+                        className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline"
+                      >
+                        Terms of Use
+                      </LinkComponent>
+                    </li>
+                    <li>
+                      <LinkComponent
+                        to="/privacy"
+                        className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline"
+                      >
+                        Privacy Policy
+                      </LinkComponent>
+                    </li>
+                    <li>
+                      <LinkComponent
+                        to="/admin/"
+                        className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline"
+                      >
+                        Admin Login
+                      </LinkComponent>
+                    </li>
+                  </ul>
+                </nav>
+              )}
+            </div>
           </div>
         </div>
 

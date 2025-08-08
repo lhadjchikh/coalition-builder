@@ -172,12 +172,14 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
 
                   {campaign.allow_endorsements && (
                     <div className="mb-4">
-                      <span className="inline-flex items-center text-green-600 text-sm font-medium bg-green-50 px-3 py-1 rounded-full">
+                      <span className="inline-flex items-start text-green-600 font-medium bg-green-50 px-3 py-1 rounded-full text-xs sm:text-sm leading-tight">
                         <FontAwesomeIcon
                           icon={faCheck}
-                          className="w-4 h-4 mr-1.5"
+                          className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 flex-shrink-0 mt-0.5"
                         />
-                        Accepting endorsements
+                        <span className="hyphens-none word-break-normal">
+                          Accepting endorsements
+                        </span>
                       </span>
                     </div>
                   )}
