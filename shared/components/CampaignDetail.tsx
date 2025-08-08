@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Button from "./Button";
 import ImageWithCredit from "./ImageWithCredit";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShare, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faShare, faTimes, faHandHoldingHeart } from "@fortawesome/free-solid-svg-icons";
 import SocialShareButtons from "./SocialShareButtons";
 
 // Generic interfaces that work with both frontend and SSR
@@ -414,18 +414,20 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             {/* First Endorser CTA - when no endorsements yet */}
             {campaign.allow_endorsements && endorsementCount === 0 && (
               <div className="cta-card">
-                <h3 className="cta-heading">Be the First to Show Support</h3>
                 {GrowthIconComponent && (
-                  <div className="cta-icon">
+                  <div className="cta-icon cta-icon--primary">
                     <GrowthIconComponent
                       stage="seed"
-                      size="48px"
-                      color="#4caf50"
+                      size="64px"
+                      color="#BB9678"
                     />
                   </div>
                 )}
+                <h3 className="cta-heading cta-heading--primary">
+                  Be the First to Support This Cause
+                </h3>
                 <p className="cta-text">
-                  Help launch this campaign by adding your voice to this important cause.
+                  Your voice can help launch this important campaign.
                 </p>
                 <div className="cta-button-wrapper">
                   <Button
@@ -433,9 +435,13 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                     size="lg"
                     onClick={scrollToEndorsementForm}
                   >
-                    Be the First to Endorse
+                    <FontAwesomeIcon icon={faHandHoldingHeart} className="mr-2" />
+                    Endorse the Campaign Now
                   </Button>
                 </div>
+                <p className="cta-footer-text">
+                  Be the first of many to make a difference.
+                </p>
               </div>
             )}
 
