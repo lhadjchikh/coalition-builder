@@ -267,7 +267,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
           {/* Share Icon Overlay */}
           <button
             onClick={() => setShowShareModal(true)}
-            className="absolute top-4 right-4 bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-700 px-4 py-2 rounded-full shadow-lg transition-all duration-200 hover:scale-105 flex items-center gap-2"
+            className="absolute top-4 right-4 bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-700 px-4 py-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110 flex items-center gap-2"
             aria-label="Share this campaign"
           >
             <FontAwesomeIcon icon={faShare} className="w-4 h-4" />
@@ -316,7 +316,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
 
             <SocialShareButtons
               url={
-                typeof window !== "undefined"
+                typeof window !== "undefined" && window.location
                   ? `${window.location.origin}/campaigns/${campaign.name}`
                   : ""
               }

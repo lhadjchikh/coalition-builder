@@ -120,11 +120,11 @@ describe('CampaignDetail Social Sharing Features', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Help Spread the Word')).toBeInTheDocument();
+        expect(screen.getByText('Amplify This Campaign')).toBeInTheDocument();
       });
 
       expect(
-        screen.getByText('Share this campaign with your network to build support and momentum.')
+        screen.getByText('Share with your network to help build momentum for change.')
       ).toBeInTheDocument();
       expect(screen.getByTestId('social-share-buttons')).toBeInTheDocument();
     });
@@ -322,7 +322,7 @@ describe('CampaignDetail Social Sharing Features', () => {
       });
 
       expect(screen.queryByTestId('social-share-buttons')).not.toBeInTheDocument();
-      expect(screen.queryByText('Help Spread the Word')).not.toBeInTheDocument();
+      expect(screen.queryByText('Amplify This Campaign')).not.toBeInTheDocument();
     });
 
     it('does not render share section when campaign is not found', async () => {
@@ -341,7 +341,7 @@ describe('CampaignDetail Social Sharing Features', () => {
       });
 
       expect(screen.queryByTestId('social-share-buttons')).not.toBeInTheDocument();
-      expect(screen.queryByText('Help Spread the Word')).not.toBeInTheDocument();
+      expect(screen.queryByText('Amplify This Campaign')).not.toBeInTheDocument();
     });
   });
 

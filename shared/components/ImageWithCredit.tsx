@@ -162,8 +162,8 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
     .join(" ");
 
   return (
-    <div className={containerClasses}>
-      <img src={src} alt={alt} className={imgClassName} />
+    <div className={containerClasses} data-testid="image-with-credit">
+      <img src={src} alt={alt} className={imgClassName} title={title} />
       {renderCredit()}
     </div>
   );

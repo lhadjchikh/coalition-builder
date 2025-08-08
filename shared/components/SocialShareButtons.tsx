@@ -160,7 +160,7 @@ const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
         {/* Copy Link */}
         <button
           className="share-button share-copy"
-          onClick={handleCopyLink}
+          onClick={() => handleShare("copy")}
           aria-label="Copy link"
           title={copySuccess ? "Copied!" : "Copy link"}
           data-copied={copySuccess.toString()}
