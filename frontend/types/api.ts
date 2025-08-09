@@ -25,7 +25,7 @@ export interface Campaign {
 // Endorser type definition (matches StakeholderOut schema)
 export interface Endorser {
   id: number;
-  name?: string; // Computed property for backward compatibility
+  name?: string;
   first_name: string;
   last_name: string;
   organization?: string;
@@ -67,10 +67,9 @@ export interface Legislator {
   is_senior?: boolean;
 }
 
-// Stakeholder type definition (for endorsements)
 export interface Stakeholder {
   id?: number;
-  name?: string; // Computed property for backward compatibility
+  name?: string;
   first_name: string;
   last_name: string;
   organization?: string;
@@ -108,17 +107,15 @@ export interface SpamPreventionMetadata {
   // Timing validation
   form_start_time?: string; // ISO timestamp when form was loaded
 
-  // Honeypot fields (should remain empty for legitimate users)
+  // Honeypot fields
   website?: string;
   url?: string;
   homepage?: string;
   confirm_email?: string;
 
-  // Additional metadata for spam detection
-  referrer?: string; // Page referrer for analytics
+  referrer?: string;
 }
 
-// For creating new endorsements
 export interface EndorsementCreate {
   campaign_id: number;
   stakeholder: Omit<Stakeholder, "id" | "created_at" | "updated_at" | "name">;
@@ -126,7 +123,7 @@ export interface EndorsementCreate {
   public_display: boolean;
   terms_accepted: boolean;
   org_authorized: boolean;
-  form_metadata?: SpamPreventionMetadata; // For spam prevention
+  form_metadata?: SpamPreventionMetadata;
 }
 
 // Theme and styling types
@@ -198,7 +195,7 @@ export interface ContentBlock {
   id: number;
   title?: string; // Made optional to match backend model
   block_type: string;
-  page_type: string; // Added to match the refactored backend model
+  page_type: string;
   content: string;
   image_url?: string;
   image_alt_text?: string;
@@ -227,7 +224,7 @@ export interface HomePage {
   // Hero section
   hero_title: string;
   hero_subtitle?: string;
-  hero_background_image_url?: string; // Changed to match backend property
+  hero_background_image_url?: string;
   hero_background_video_url?: string;
   hero_background_video_data?: Video;
 

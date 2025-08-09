@@ -5,8 +5,8 @@ import "../styles/Endorsements.css";
 
 interface EndorsementsListProps {
   campaignId?: number;
-  refreshTrigger?: number; // Used to refresh the list when new endorsements are added
-  onCountUpdate?: (count: number, recentCount?: number) => void; // Callback to update endorsement count
+  refreshTrigger?: number;
+  onCountUpdate?: (count: number, recentCount?: number) => void;
 }
 
 const EndorsementsList: React.FC<EndorsementsListProps> = ({
@@ -18,7 +18,6 @@ const EndorsementsList: React.FC<EndorsementsListProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Use ref to avoid stale closure issues with onCountUpdate
   const onCountUpdateRef = useRef(onCountUpdate);
   onCountUpdateRef.current = onCountUpdate;
 

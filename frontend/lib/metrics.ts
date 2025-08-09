@@ -30,7 +30,6 @@ export const metrics = {
     };
   },
 
-  // Get memory usage info
   getMemoryUsage() {
     const memUsage = process.memoryUsage();
     return {

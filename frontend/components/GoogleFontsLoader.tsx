@@ -11,11 +11,9 @@ const GoogleFontsLoader: React.FC<GoogleFontsLoaderProps> = ({
     return null;
   }
 
-  // Filter out empty strings and format font names using functional approach
   const fontFamilies = googleFonts
     .filter((font) => font && font.trim())
     .map((font) => {
-      // Replace spaces with + and add default weights
       const fontName = font.trim().replace(/ /g, "+");
       return `${fontName}:wght@400;500;600;700`;
     });
@@ -24,7 +22,6 @@ const GoogleFontsLoader: React.FC<GoogleFontsLoaderProps> = ({
     return null;
   }
 
-  // Create the Google Fonts URL
   const fontsUrl = `https://fonts.googleapis.com/css2?${fontFamilies
     .map((family) => `family=${family}`)
     .join("&")}&display=swap`;

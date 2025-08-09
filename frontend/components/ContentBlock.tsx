@@ -100,7 +100,6 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
     if (block.background_color) {
       style.backgroundColor = block.background_color;
     }
-    // Add transition delay if specified
     if (block.animation_delay && block.animation_type !== "none") {
       style.transitionDelay = `${block.animation_delay}ms`;
     }

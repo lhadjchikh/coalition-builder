@@ -7,7 +7,6 @@ const nextConfig = {
 
   // Webpack configuration
   webpack: (config) => {
-    // Add path aliases that match tsconfig.json
     config.resolve.alias = {
       ...config.resolve.alias,
       "@": path.resolve(__dirname),
@@ -21,7 +20,6 @@ const nextConfig = {
       "@utils": path.resolve(__dirname, "utils"),
     };
 
-    // Add SVG handling
     config.module.rules.push({
       test: /\.svg$/,
       type: "asset/resource",
@@ -79,7 +77,6 @@ const nextConfig = {
         port: "8000",
         pathname: "/**",
       },
-      // Add CloudFront domain if configured
       ...(process.env.CLOUDFRONT_DOMAIN
         ? [
             {
@@ -87,12 +84,11 @@ const nextConfig = {
               hostname: process.env.CLOUDFRONT_DOMAIN.replace(
                 /^https?:\/\//,
                 "",
-              ), // Remove protocol if included
+              ),
               pathname: "/**",
             },
           ]
         : []),
-      // Add any additional backend domain if different from CloudFront
       ...(process.env.BACKEND_DOMAIN &&
       process.env.BACKEND_DOMAIN !== process.env.CLOUDFRONT_DOMAIN
         ? [

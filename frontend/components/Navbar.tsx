@@ -43,7 +43,6 @@ const Navbar: React.FC<NavbarProps> = ({
         window.requestAnimationFrame(() => {
           const currentScrollY = window.scrollY;
 
-          // Update scrolled state
           setScrolled(currentScrollY > 20);
 
           // Determine scroll direction and visibility
@@ -65,7 +64,6 @@ const Navbar: React.FC<NavbarProps> = ({
       }
     };
 
-    // Set initial state
     const offset = window.scrollY;
     setScrolled(offset > 20);
     setLastScrollY(offset);
