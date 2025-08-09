@@ -1,0 +1,56 @@
+# Development overrides for docker-compose.yml
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+#
+# This configuration enables hot reloading for both backend and frontend development
+
+services:
+  api:
+    build:
+      target: python-deps  # Use development build stage with dependencies only
+    env_file:
+      - path: ./backend/.env
+        required: false
+    environment:
+      - DEBUG=True  # Enable Django debug mode
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Mount source code for hot reloading
+      - ./backend:/app
+      # Exclude virtual environment
+      - /app/.venv
+    # Use Django development server with auto-reload
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    
+  app:
+    build:
+      target: frontend-builder  # Use development build stage
+    env_file:
+      - path: ./frontend/.env
+        required: false
+    environment:
+      - NODE_ENV=development  # Enable Next.js development mode
+      - WATCHPACK_POLLING=true  # Enable file watching in Docker
+      # Development API URL
+      - API_URL=http://api:8000
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    volumes:
+      # Mount source code for hot reloading
+      - ./frontend:/app
+      # Exclude node_modules and build directories
+      - /app/node_modules
+      - /app/.next
+    # Use Next.js development server with hot reload
+    command: ["npm", "run", "dev"]
+    
+  # Optional: Add a database GUI for development
+  # adminer:
+  #   image: adminer
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - ADMINER_DEFAULT_SERVER=db
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - app-network
