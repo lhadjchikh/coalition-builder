@@ -81,23 +81,20 @@ class TermsAcceptanceAdmin(admin.ModelAdmin):
         "user_agent",
     ]
 
+    @admin.display(description="Stakeholder")
     def endorsement_stakeholder(self, obj: TermsAcceptance) -> str:
         if obj.endorsement and obj.endorsement.stakeholder:
             stakeholder = obj.endorsement.stakeholder
             return f"{stakeholder.name} ({stakeholder.organization})"
         return "N/A"
 
-    endorsement_stakeholder.short_description = "Stakeholder"
-
+    @admin.display(description="Document")
     def legal_document_title(self, obj: TermsAcceptance) -> str:
         return obj.legal_document.title if obj.legal_document else "N/A"
 
-    legal_document_title.short_description = "Document"
-
+    @admin.display(description="Version")
     def document_version(self, obj: TermsAcceptance) -> str:
         return obj.legal_document.version if obj.legal_document else "N/A"
-
-    document_version.short_description = "Version"
 
     def has_add_permission(self, request: HttpRequest) -> bool:  # noqa: ARG002
         return False

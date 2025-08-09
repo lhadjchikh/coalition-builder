@@ -70,12 +70,10 @@ class ImageAdmin(admin.ModelAdmin):
         ),
     )
 
+    @admin.display(description="Has Caption", boolean=True)
     def has_caption(self, obj: Image) -> bool:
         """Check if the image has a custom caption."""
         return bool(obj.caption)
-
-    has_caption.boolean = True
-    has_caption.short_description = "Has Caption"
 
     def save_model(
         self,

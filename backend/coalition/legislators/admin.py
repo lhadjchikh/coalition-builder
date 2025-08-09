@@ -71,23 +71,20 @@ class LegislatorAdmin(admin.ModelAdmin):
         ),
     )
 
+    @admin.display(description="Name")
     def display_name_short(self, obj: Legislator) -> str:
         """Short display name for list view"""
         return f"{obj.first_name} {obj.last_name}"
 
-    display_name_short.short_description = "Name"
-
+    @admin.display(description="Sponsored Bills")
     def sponsored_bills_count(self, obj: Legislator) -> int:
         """Display count of sponsored bills"""
         return obj.sponsored_bills.count()
 
-    sponsored_bills_count.short_description = "Sponsored Bills"
-
+    @admin.display(description="Cosponsored Bills")
     def cosponsored_bills_count(self, obj: Legislator) -> int:
         """Display count of cosponsored bills"""
         return obj.cosponsored_bills.count()
-
-    cosponsored_bills_count.short_description = "Cosponsored Bills"
 
     def get_queryset(self, request: "HttpRequest") -> "QuerySet[Legislator]":
         """Order by state, chamber, and then name"""

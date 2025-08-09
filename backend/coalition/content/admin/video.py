@@ -76,14 +76,14 @@ class VideoAdmin(admin.ModelAdmin):
         ),
     )
 
+    @admin.display(description="Video File")
     def display_video_file(self, obj: Video) -> str:
         """Display video file name or 'No file'."""
         if obj.video:
             return obj.video.name.split("/")[-1]
         return "-"
 
-    display_video_file.short_description = "Video File"
-
+    @admin.display(description="Preview")
     def display_video_preview(self, obj: Video) -> str:
         """Display video preview if available."""
         if obj.video and hasattr(obj.video, "url"):
@@ -95,8 +95,6 @@ class VideoAdmin(admin.ModelAdmin):
                 obj.video.url,
             )
         return "No video uploaded"
-
-    display_video_preview.short_description = "Preview"
 
     def save_model(
         self,

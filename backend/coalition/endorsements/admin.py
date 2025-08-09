@@ -125,18 +125,15 @@ class EndorsementAdmin(admin.ModelAdmin):
         "remove_from_display",
     ]
 
+    @admin.display(description="Name", ordering="stakeholder__last_name")
     def stakeholder_name(self, obj: Endorsement) -> str:
         return obj.stakeholder.name
 
-    stakeholder_name.short_description = "Name"
-    stakeholder_name.admin_order_field = "stakeholder__last_name"
-
+    @admin.display(description="Organization", ordering="stakeholder__organization")
     def stakeholder_organization(self, obj: Endorsement) -> str:
         return obj.stakeholder.organization
 
-    stakeholder_organization.short_description = "Organization"
-    stakeholder_organization.admin_order_field = "stakeholder__organization"
-
+    @admin.display(description="Endorsement Type")
     def endorsement_type(self, obj: Endorsement) -> str:
         if not obj.stakeholder.organization:
             return "Individual"
@@ -144,8 +141,6 @@ class EndorsementAdmin(admin.ModelAdmin):
             return f"On behalf of {obj.stakeholder.organization}"
         else:
             return f"Individual (affiliated with {obj.stakeholder.organization})"
-
-    endorsement_type.short_description = "Endorsement Type"
 
     def status_badge(self, obj: Endorsement) -> str:
         colors = {
