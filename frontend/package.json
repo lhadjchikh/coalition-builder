@@ -18,6 +18,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:integration": "jest --config jest.integration.config.js --runInBand --verbose",
+    "test:e2e": "jest tests/e2e --runInBand --verbose",
     "docs": "typedoc",
     "postinstall": "echo 'Disabling Next.js telemetry' && npx next telemetry disable"
   },
