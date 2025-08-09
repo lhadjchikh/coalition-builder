@@ -1,4 +1,4 @@
-# Development with Hot Reloading
+# Docker Development with Hot Reloading
 
 This guide explains how to use Docker Compose for local development with hot reloading enabled.
 

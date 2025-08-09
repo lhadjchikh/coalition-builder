@@ -8,6 +8,8 @@ This guide covers the development workflow, testing, and contributing to Coaliti
 
 For most developers, the [Installation guide](installation.md) provides everything needed. For detailed development environment setup including automated tooling installation, see the [Development Setup guide](development/setup.md).
 
+For Docker development with hot reloading, see the [Docker Hot Reload guide](development/docker-hot-reload.md).
+
 ### Docker Compose Configurations
 
 Coalition Builder uses Docker Compose for orchestrating services:
