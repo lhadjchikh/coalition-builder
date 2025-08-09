@@ -1,82 +1,25 @@
 const path = require("path");
-const fs = require("fs");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Enable standalone output for Docker
   output: "standalone",
 
-  // Experimental features
-  experimental: {
-    externalDir: true, // Allow importing from outside the project directory
-  },
-
-  // Webpack configuration to enable importing from frontend directory
-  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    // Add alias for importing from frontend and shared
-    // Support both Docker (./shared) and local (../shared) paths
-    const sharedPath = fs.existsSync(path.resolve(__dirname, "./shared"))
-      ? path.resolve(__dirname, "./shared")
-      : path.resolve(__dirname, "../shared");
-
-    // Support both Docker (./frontend) and local (../frontend) paths
-    const frontendPath = fs.existsSync(path.resolve(__dirname, "./frontend"))
-      ? path.resolve(__dirname, "./frontend/src")
-      : path.resolve(__dirname, "../frontend/src");
-
+  // Webpack configuration
+  webpack: (config) => {
+    // Add path aliases that match tsconfig.json
     config.resolve.alias = {
       ...config.resolve.alias,
-      "@frontend": frontendPath,
-      "@shared": sharedPath,
-      // Add aliases for frontend imports
-      "@services": path.join(frontendPath, "services"),
-      "@app-types": path.join(frontendPath, "types"),
-      "@styles": path.join(frontendPath, "styles"),
-      "@components": path.join(frontendPath, "components"),
-      "@contexts": path.join(frontendPath, "contexts"),
-      "@hooks": path.join(frontendPath, "hooks"),
-      "@pages": path.join(frontendPath, "pages"),
-      "@tests": path.join(frontendPath, "tests"),
-      "@utils": path.join(frontendPath, "utils"),
-      // Ensure vanilla-cookieconsent resolves from SSR's node_modules
-      "vanilla-cookieconsent": path.resolve(
-        __dirname,
-        "node_modules/vanilla-cookieconsent",
-      ),
-      // Ensure Font Awesome packages resolve from SSR's node_modules
-      "@fortawesome/react-fontawesome": path.resolve(
-        __dirname,
-        "node_modules/@fortawesome/react-fontawesome",
-      ),
-      "@fortawesome/fontawesome-svg-core": path.resolve(
-        __dirname,
-        "node_modules/@fortawesome/fontawesome-svg-core",
-      ),
-      "@fortawesome/free-brands-svg-icons": path.resolve(
-        __dirname,
-        "node_modules/@fortawesome/free-brands-svg-icons",
-      ),
-      "@fortawesome/free-solid-svg-icons": path.resolve(
-        __dirname,
-        "node_modules/@fortawesome/free-solid-svg-icons",
-      ),
+      "@": path.resolve(__dirname),
+      "@components": path.resolve(__dirname, "components"),
+      "@contexts": path.resolve(__dirname, "contexts"),
+      "@hooks": path.resolve(__dirname, "hooks"),
+      "@services": path.resolve(__dirname, "services"),
+      "@styles": path.resolve(__dirname, "styles"),
+      "@tests": path.resolve(__dirname, "tests"),
+      "@types": path.resolve(__dirname, "types"),
+      "@utils": path.resolve(__dirname, "utils"),
     };
-
-    // Exclude styled components and related files from compilation to avoid build errors
-    // and ensure compatibility with server-side rendering (SSR). These files contain
-    // styled-components that are not compatible with SSR compilation.
-    config.module.rules.push({
-      test: /\.(ts|tsx)$/,
-      include: [
-        path.join(frontendPath, "components/styled"),
-        path.join(frontendPath, "components/StyledHomePage.tsx"),
-        path.join(frontendPath, "components/ThemeStyles.tsx"),
-        path.join(frontendPath, "contexts/StyledThemeProvider.tsx"),
-        path.join(frontendPath, "hooks/useStyledTheme.ts"),
-        path.join(frontendPath, "styles/styled.d.ts"),
-      ],
-      loader: "null-loader",
-    });
 
     // Add SVG handling
     config.module.rules.push({
@@ -89,7 +32,6 @@ const nextConfig = {
 
   // TypeScript configuration
   typescript: {
-    // Allow importing from outside the root directory
     ignoreBuildErrors: false,
   },
 

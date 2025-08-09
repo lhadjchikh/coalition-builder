@@ -4,17 +4,17 @@ import type {
   Campaign,
   HomePage as HomePageType,
   ContentBlock,
-} from "../../types";
+} from "../types";
 import type { Metadata } from "next";
-import { getFallbackHomepage } from "../../utils/homepage-data";
-import { generateCSSVariables } from "../../utils/theme";
-import HomePageComponent from "../../components/HomePage";
+import { getFallbackHomepage } from "../utils/homepage-data";
+import { generateCSSVariables } from "../utils/theme";
+import HomePageComponent from "../components/HomePage";
 import { fetchApiResource } from "../lib/utils/api";
 
 // Import shared components
-import HeroSection from "../../components/HeroSection";
-import ContentBlockComponent from "../../components/ContentBlock";
-import SocialLinks from "../../components/SocialLinks";
+import HeroSection from "../components/HeroSection";
+import ContentBlockComponent from "../components/ContentBlock";
+import SocialLinks from "../components/SocialLinks";
 
 export async function generateMetadata(): Promise<Metadata> {
   try {

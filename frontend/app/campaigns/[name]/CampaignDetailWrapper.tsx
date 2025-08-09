@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import CampaignDetail from "./CampaignDetail";
+import CampaignDetail from "../../../components/CampaignDetail";
 import EndorsementForm from "../../../components/EndorsementForm";
 import EndorsementsList from "../../../components/EndorsementsList";
 import GrowthIcon from "../../../components/GrowthIcon";

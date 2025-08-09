@@ -4,8 +4,8 @@ import type { Metadata } from "next";
 import type { HomePage, ContentBlock as ContentBlockType } from "../../types";
 import { generateCSSVariables } from "../../utils/theme";
 import { getFallbackHomepage } from "../../utils/homepage-data";
-import ContactPage from "./ContactPage";
-import ContentBlock from "./ContentBlock";
+import ContactPage from "../../components/ContactPage";
+import ContentBlock from "../../components/ContentBlock";
 
 export async function generateMetadata(): Promise<Metadata> {
   try {

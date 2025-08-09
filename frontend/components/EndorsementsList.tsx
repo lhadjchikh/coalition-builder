@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import API from '@services/api';
-import { Endorsement } from '@app-types/index';
-import './Endorsements.css';
+import React, { useState, useEffect } from "react";
+import API from "../lib/api";
+import { Endorsement } from "../types/index";
+import "./Endorsements.css";
 
 interface EndorsementsListProps {
   campaignId?: number;
@@ -36,7 +36,7 @@ const EndorsementsList: React.FC<EndorsementsListProps> = ({
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
         const recentCount = data.filter(
-          endorsement => new Date(endorsement.created_at) > oneWeekAgo
+          (endorsement) => new Date(endorsement.created_at) > oneWeekAgo,
         ).length;
 
         // Update parent component with endorsement count and recent count
@@ -44,7 +44,9 @@ const EndorsementsList: React.FC<EndorsementsListProps> = ({
           onCountUpdate(data.length, recentCount);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch endorsements');
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch endorsements",
+        );
       } finally {
         setLoading(false);
       }
@@ -54,15 +56,17 @@ const EndorsementsList: React.FC<EndorsementsListProps> = ({
   }, [campaignId, refreshTrigger]);
 
   const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   if (loading) {
-    return <div data-testid="endorsements-loading">Loading endorsements...</div>;
+    return (
+      <div data-testid="endorsements-loading">Loading endorsements...</div>
+    );
   }
 
   if (error) {
@@ -79,7 +83,7 @@ const EndorsementsList: React.FC<EndorsementsListProps> = ({
       <h3>Endorsements ({endorsements.length})</h3>
 
       <div className="endorsements-grid">
-        {endorsements.map(endorsement => (
+        {endorsements.map((endorsement) => (
           <div
             key={endorsement.id}
             className="endorsement-card"
@@ -87,16 +91,20 @@ const EndorsementsList: React.FC<EndorsementsListProps> = ({
           >
             <div className="endorsement-header">
               <h4 className="stakeholder-name">
-                {endorsement.stakeholder.first_name} {endorsement.stakeholder.last_name}
+                {endorsement.stakeholder.first_name}{" "}
+                {endorsement.stakeholder.last_name}
               </h4>
               <div className="stakeholder-info">
                 {endorsement.stakeholder.role && (
                   <span className="role">{endorsement.stakeholder.role}, </span>
                 )}
-                <span className="organization">{endorsement.stakeholder.organization}</span>
+                <span className="organization">
+                  {endorsement.stakeholder.organization}
+                </span>
                 <br />
                 <span className="location">
-                  {endorsement.stakeholder.city}, {endorsement.stakeholder.state}
+                  {endorsement.stakeholder.city},{" "}
+                  {endorsement.stakeholder.state}
                 </span>
               </div>
               <div className="stakeholder-type">

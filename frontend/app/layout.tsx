@@ -3,15 +3,15 @@ import "./globals.css";
 import "../styles/content-animations.css";
 import "../styles/campaign-animations.css";
 import StyledComponentsRegistry from "../lib/registry";
-import SSRNavbar from "../../components/SSRNavbar";
-import SSRFooter from "../../components/SSRFooter";
-import CookieConsent from "./CookieConsent";
-import GoogleAnalytics from "../../components/GoogleAnalytics";
-import ThemeStyles from "../../components/ThemeStyles";
-import GoogleFontsLoader from "../../components/GoogleFontsLoader";
+import SSRNavbar from "../components/SSRNavbar";
+import SSRFooter from "../components/SSRFooter";
+import CookieConsent from "../components/CookieConsent";
+import GoogleAnalytics from "../components/GoogleAnalytics";
+import ThemeStyles from "../components/ThemeStyles";
+import GoogleFontsLoader from "../components/GoogleFontsLoader";
 import { ssrApiClient } from "../lib/api";
-import { NavItemData, DEFAULT_NAV_ITEMS } from "../../types";
-import { getFallbackHomepage } from "../../utils/homepage-data";
+import { NavItemData, DEFAULT_NAV_ITEMS } from "../types";
+import { getFallbackHomepage } from "../utils/homepage-data";
 
 const org = process.env.ORGANIZATION_NAME || "Coalition Builder";
 

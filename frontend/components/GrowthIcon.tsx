@@ -1,10 +1,10 @@
-import React from 'react';
-import seedSvg from '../public/assets/icons/seed.svg';
-import seedlingSvg from '../public/assets/icons/seedling.svg';
-import treeSvg from '../public/assets/icons/tree.svg';
+import React from "react";
+import seedSvg from "../public/assets/icons/seed.svg";
+import seedlingSvg from "../public/assets/icons/seedling.svg";
+import treeSvg from "../public/assets/icons/tree.svg";
 
 interface GrowthIconProps {
-  stage: 'seed' | 'seedling' | 'tree';
+  stage: "seed" | "seedling" | "tree";
   size?: string;
   color?: string;
   className?: string;
@@ -13,9 +13,9 @@ interface GrowthIconProps {
 
 const GrowthIcon: React.FC<GrowthIconProps> = ({
   stage,
-  size = '48px',
-  color = 'currentColor',
-  className = '',
+  size = "48px",
+  color = "currentColor",
+  className = "",
   style = {},
 }) => {
   const iconStyle: React.CSSProperties = {
@@ -28,11 +28,11 @@ const GrowthIcon: React.FC<GrowthIconProps> = ({
 
   const getSvgUrl = () => {
     switch (stage) {
-      case 'seed':
+      case "seed":
         return seedSvg;
-      case 'seedling':
+      case "seedling":
         return seedlingSvg;
-      case 'tree':
+      case "tree":
         return treeSvg;
       default:
         return seedSvg;

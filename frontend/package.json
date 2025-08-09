@@ -7,6 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "format": "prettier --write .",
+    "format:all": "prettier --write .",
+    "yaml:format": "prettier --write '**/*.{yml,yaml}'",
     "typecheck": "tsc --noEmit -p tsconfig.build.json",
     "tsc": "tsc --noEmit -p tsconfig.build.json",
     "test": "jest",
@@ -48,6 +52,7 @@
     "jest-environment-jsdom": "^30.0.4",
     "jsdom": "^26.1.0",
     "postcss": "^8.5.6",
+    "prettier": "^3.6.2",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"

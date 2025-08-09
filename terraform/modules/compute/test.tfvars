@@ -1,4 +1,4 @@
 
-task_cpu   = 512
-redis_cpu  = 128
+task_cpu  = 512
+redis_cpu = 128
 

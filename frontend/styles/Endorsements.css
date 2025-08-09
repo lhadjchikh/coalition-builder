@@ -227,7 +227,7 @@
 }
 
 .address-info-message::before {
-  content: 'ⓘ';
+  content: "ⓘ";
   position: absolute;
   left: 1rem;
   top: 1.1rem;
@@ -275,8 +275,8 @@
   margin-top: 0.25rem;
 }
 
-.form-group input[type='text'],
-.form-group input[type='email'],
+.form-group input[type="text"],
+.form-group input[type="email"],
 .form-group select,
 .form-group textarea {
   width: 100%;
@@ -325,8 +325,8 @@
   opacity: 0.6;
 }
 
-.form-group input[type='text']:focus,
-.form-group input[type='email']:focus,
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
@@ -348,7 +348,7 @@
   cursor: pointer;
 }
 
-.checkbox-label input[type='checkbox'] {
+.checkbox-label input[type="checkbox"] {
   width: 18px !important;
   height: 18px !important;
   min-width: 18px !important;
@@ -388,7 +388,7 @@ legend.form-label {
   line-height: 1.4;
 }
 
-.radio-label input[type='radio'] {
+.radio-label input[type="radio"] {
   width: 18px;
   height: 18px;
   min-width: 18px;
@@ -856,7 +856,11 @@ legend.form-label {
 
 .momentum-badge {
   display: inline-block;
-  background: linear-gradient(135deg, var(--theme-accent), var(--theme-accent-dark));
+  background: linear-gradient(
+    135deg,
+    var(--theme-accent),
+    var(--theme-accent-dark)
+  );
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 8px;
