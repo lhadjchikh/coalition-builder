@@ -76,7 +76,7 @@ module "loadbalancer" {
   acm_certificate_arn   = var.acm_certificate_arn
   waf_web_acl_arn       = module.security.waf_web_acl_arn
   health_check_path_api = var.health_check_path_api
-  health_check_path_ssr = var.health_check_path_ssr
+  health_check_path_app = var.health_check_path_app
 }
 
 # Database Module

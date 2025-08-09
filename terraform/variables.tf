@@ -241,8 +241,8 @@ variable "health_check_path_api" {
   default     = "/health/"
 }
 
-variable "health_check_path_ssr" {
-  description = "Path for frontend container and load balancer health checks"
+variable "health_check_path_app" {
+  description = "Path for app container and load balancer health checks"
   type        = string
   default     = "/health"
 }
