@@ -114,7 +114,7 @@ The infrastructure uses a layered security model with:
 
 ### 1. Configure Environment Variables
 
-For local testing and development with Terraform, you can use the `.env` file in the project root:
+For local testing and development with Terraform, create a `.env` file in the terraform directory or export these environment variables:
 
 ```bash
 # AWS deployment settings

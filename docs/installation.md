@@ -54,7 +54,7 @@ docker compose exec api python manage.py createsuperuser
 2. **Configure environment:**
 
    ```bash
-   cp ../.env.example .env
+   cp .env.example .env
    # Edit .env with your database credentials
    ```
 
