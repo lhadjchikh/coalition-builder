@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import Router
@@ -13,7 +14,7 @@ router = Router()
 def list_content_blocks(
     request: HttpRequest,
     page_type: str = None,
-) -> list[ContentBlock]:
+) -> QuerySet[ContentBlock]:
     """List all visible content blocks, optionally filtered by page type"""
     queryset = ContentBlock.objects.filter(is_visible=True).select_related("image")
 

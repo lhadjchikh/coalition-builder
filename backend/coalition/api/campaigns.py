@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import Router
@@ -10,7 +11,7 @@ router = Router()
 
 
 @router.get("/", response=list[PolicyCampaignOut])
-def list_campaigns(request: HttpRequest) -> list[PolicyCampaign]:
+def list_campaigns(request: HttpRequest) -> QuerySet[PolicyCampaign]:
     """
     List all active policy campaigns.
 

@@ -419,7 +419,7 @@ class SpamPreventionService:
         # Extract IP address from request with validation and spoofing protection
         ip_address = get_client_ip(request)
 
-        results = {
+        results: dict[str, Any] = {
             "is_spam": False,
             "confidence_score": 0.0,  # 0.0 = definitely human, 1.0 = definitely spam
             "reasons": [],
@@ -450,13 +450,13 @@ class SpamPreventionService:
 
         # Check timing
         if not cls.validate_timing(form_data):
-            results["confidence_score"] += 0.5
+            results["confidence_score"] = float(results["confidence_score"]) + 0.5
             results["reasons"].append("Suspicious submission timing")
 
         # Check email reputation
         email_check = cls.check_email_reputation(stakeholder_data.get("email", ""))
         if email_check["suspicious"]:
-            results["confidence_score"] += 0.3
+            results["confidence_score"] = float(results["confidence_score"]) + 0.3
             results["reasons"].extend(email_check["reasons"])
 
         # Check content quality
@@ -467,16 +467,16 @@ class SpamPreventionService:
             user_agent,
         )
         if content_check["suspicious"]:
-            results["confidence_score"] += 0.3
+            results["confidence_score"] = float(results["confidence_score"]) + 0.3
             results["reasons"].extend(content_check["reasons"])
 
         # Final determination
-        if results["confidence_score"] >= 0.7:
+        if float(results["confidence_score"]) >= 0.7:
             results["is_spam"] = True
             results["recommendations"].append("Block submission")
-        elif results["confidence_score"] >= 0.4:
+        elif float(results["confidence_score"]) >= 0.4:
             results["recommendations"].append("Require additional verification")
-        elif results["confidence_score"] >= 0.2:
+        elif float(results["confidence_score"]) >= 0.2:
             results["recommendations"].append("Flag for manual review")
         else:
             results["recommendations"].append("Allow submission")
