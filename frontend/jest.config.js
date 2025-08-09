@@ -51,11 +51,13 @@ const customJestConfig = {
     "<rootDir>/components/**/*.test.{ts,tsx,js,jsx}",
     "<rootDir>/services/**/*.test.{ts,tsx,js,jsx}",
     "<rootDir>/__tests__/**/*.test.{ts,tsx,js,jsx}",
+    "<rootDir>/tests/**/*.test.{ts,tsx,js,jsx}",
   ],
   testPathIgnorePatterns: [
     "<rootDir>/.next/",
     "<rootDir>/node_modules/",
     "<rootDir>/__tests__/integration/", // Integration tests use separate config
+    "<rootDir>/tests/integration/", // Integration tests use separate config
   ],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
   collectCoverageFrom: [
