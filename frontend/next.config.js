@@ -79,15 +79,25 @@ const nextConfig = {
         port: '8000',
         pathname: '/**',
       },
-      // Add your production domain here when deployed
-      // {
-      //   protocol: 'https',
-      //   hostname: 'your-backend-domain.com',
-      //   pathname: '/media/**',
-      // },
+      // Add CloudFront domain if configured
+      ...(process.env.CLOUDFRONT_DOMAIN ? [{
+        protocol: 'https',
+        hostname: process.env.CLOUDFRONT_DOMAIN.replace(/^https?:\/\//, ''), // Remove protocol if included
+        pathname: '/**',
+      }] : []),
+      // Add any additional backend domain if different from CloudFront
+      ...(process.env.BACKEND_DOMAIN && process.env.BACKEND_DOMAIN !== process.env.CLOUDFRONT_DOMAIN ? [{
+        protocol: 'https',
+        hostname: process.env.BACKEND_DOMAIN.replace(/^https?:\/\//, ''),
+        pathname: '/**',
+      }] : []),
     ],
-    // Keep domains for backwards compatibility
-    domains: ["localhost"],
+    // Keep domains for backwards compatibility and CloudFront
+    domains: [
+      "localhost",
+      ...(process.env.CLOUDFRONT_DOMAIN ? [process.env.CLOUDFRONT_DOMAIN.replace(/^https?:\/\//, '')] : []),
+      ...(process.env.BACKEND_DOMAIN ? [process.env.BACKEND_DOMAIN.replace(/^https?:\/\//, '')] : []),
+    ].filter(Boolean),
     // Allow dynamic image sizing when dimensions are unknown
     unoptimized: process.env.NODE_ENV === 'development',
   },
