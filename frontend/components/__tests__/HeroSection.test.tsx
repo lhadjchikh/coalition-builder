@@ -7,7 +7,13 @@ import type { HomePage } from "../../types/index";
 // Mock the Button component
 jest.mock("../Button", () => ({
   __esModule: true,
-  default: ({ children, href, variant, size, className }: {
+  default: ({
+    children,
+    href,
+    variant,
+    size,
+    className,
+  }: {
     children?: React.ReactNode;
     href?: string;
     variant?: string;
@@ -71,7 +77,11 @@ describe("HeroSection", () => {
 
   afterEach(() => {
     // Clean up mocked properties
-    delete (window.navigator as typeof window.navigator & { connection?: NetworkInformation }).connection;
+    delete (
+      window.navigator as typeof window.navigator & {
+        connection?: NetworkInformation;
+      }
+    ).connection;
   });
 
   describe("Basic Rendering", () => {

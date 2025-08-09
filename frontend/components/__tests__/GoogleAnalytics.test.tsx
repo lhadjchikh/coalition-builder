@@ -15,7 +15,17 @@ jest.mock("next/navigation", () => ({
 
 // Mock Next.js Script component
 jest.mock("next/script", () => {
-  return function MockScript({ src, id, children, ...props }: { src?: string; id?: string; children?: React.ReactNode; [key: string]: unknown }) {
+  return function MockScript({
+    src,
+    id,
+    children,
+    ...props
+  }: {
+    src?: string;
+    id?: string;
+    children?: React.ReactNode;
+    [key: string]: unknown;
+  }) {
     return (
       <div
         data-src={src}

@@ -15,7 +15,8 @@ const createLocationMock = (origin: string = "http://localhost:3000") => ({
 
 // Mock window.location for all tests
 delete (window as typeof window & { location?: Location }).location;
-(window as typeof window & { location: Location }).location = createLocationMock();
+(window as typeof window & { location: Location }).location =
+  createLocationMock();
 
 // Mock FontAwesome imports first
 jest.mock("@fortawesome/free-solid-svg-icons", () => ({
@@ -27,7 +28,12 @@ jest.mock("@fortawesome/free-solid-svg-icons", () => ({
 
 // Mock FontAwesomeIcon component
 jest.mock("@fortawesome/react-fontawesome", () => ({
-  FontAwesomeIcon: ({ icon, ...props }: { icon: { iconName?: string } } & React.HTMLAttributes<HTMLSpanElement>) => {
+  FontAwesomeIcon: ({
+    icon,
+    ...props
+  }: {
+    icon: { iconName?: string };
+  } & React.HTMLAttributes<HTMLSpanElement>) => {
     let iconName = "unknown";
     if (typeof icon === "object" && icon.iconName) {
       iconName = icon.iconName;
@@ -68,7 +74,11 @@ jest.mock("../SocialShareButtons", () => ({
 // Mock other components
 jest.mock("../Button", () => ({
   __esModule: true,
-  default: ({ children, onClick, ...props }: {
+  default: ({
+    children,
+    onClick,
+    ...props
+  }: {
     children?: React.ReactNode;
     onClick?: () => void;
     [key: string]: unknown;
@@ -81,17 +91,35 @@ jest.mock("../Button", () => ({
 
 jest.mock("../ImageWithCredit", () => ({
   __esModule: true,
-  default: ({ src, alt, title, className, imgClassName }: {
+  default: ({
+    src,
+    alt,
+    title,
+    className,
+    imgClassName,
+  }: {
     src?: string;
     alt?: string;
     title?: string;
     className?: string;
     imgClassName?: string;
-  }) => (
-    <div className={className} data-testid="image-with-credit">
-      <img src={src} alt={alt} title={title} className={imgClassName} />
-    </div>
-  ),
+  }) => {
+    // Use a div with data attributes to simulate an image for testing
+    // This avoids the Next.js image optimization warning in tests
+    return (
+      <div className={className} data-testid="image-with-credit">
+        <div 
+          data-testid="mock-image"
+          data-src={src}
+          data-alt={alt}
+          title={title}
+          className={imgClassName}
+          role="img"
+          aria-label={alt}
+        />
+      </div>
+    );
+  },
 }));
 
 describe("CampaignDetail Share Modal", () => {
@@ -130,7 +158,8 @@ describe("CampaignDetail Share Modal", () => {
 
     // Reset window.location mock only if window is available
     if (typeof window !== "undefined") {
-      (window as typeof window & { location: Location }).location = createLocationMock();
+      (window as typeof window & { location: Location }).location =
+        createLocationMock();
     }
   });
 
@@ -279,7 +308,8 @@ describe("CampaignDetail Share Modal", () => {
       expect(screen.getByTestId("share-url")).toBeInTheDocument();
 
       // Restore window.location
-      (window as typeof window & { location: Location }).location = originalLocation;
+      (window as typeof window & { location: Location }).location =
+        originalLocation;
     });
   });
 
@@ -347,7 +377,8 @@ describe("CampaignDetail Share Modal", () => {
   describe("Integration with Campaign Data", () => {
     it("uses campaign data for share URL", () => {
       // Set up window.location with a different origin
-      (window as typeof window & { location: Location }).location = createLocationMock("https://example.com");
+      (window as typeof window & { location: Location }).location =
+        createLocationMock("https://example.com");
 
       render(<CampaignDetail {...defaultProps} />);
 

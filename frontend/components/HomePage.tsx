@@ -35,7 +35,7 @@ const HomePage: React.FC<HomePageProps> = ({
   onCampaignSelect,
   HeroComponent,
   ContentBlockComponent,
-  _SocialLinksComponent,
+  SocialLinksComponent: _SocialLinksComponent,
   NavbarComponent,
   navItems,
   contentBlocks = [],

@@ -5,9 +5,13 @@ import SocialLinks from "../SocialLinks";
 
 // Mock FontAwesomeIcon
 jest.mock("@fortawesome/react-fontawesome", () => ({
-  FontAwesomeIcon: ({ icon, ...props }: { icon: { iconName: string }; [key: string]: unknown }) => (
-    <span data-testid={`icon-${icon.iconName}`} {...props} />
-  ),
+  FontAwesomeIcon: ({
+    icon,
+    ...props
+  }: {
+    icon: { iconName: string };
+    [key: string]: unknown;
+  }) => <span data-testid={`icon-${icon.iconName}`} {...props} />,
 }));
 
 describe("SocialLinks", () => {
@@ -319,7 +323,16 @@ describe("SocialLinks", () => {
         another_property: 123,
       };
 
-      render(<SocialLinks orgInfo={orgInfo as typeof defaultOrgInfo & { extra_property: string; another_property: number }} />);
+      render(
+        <SocialLinks
+          orgInfo={
+            orgInfo as typeof defaultOrgInfo & {
+              extra_property: string;
+              another_property: number;
+            }
+          }
+        />,
+      );
 
       expect(
         screen.getByLabelText("Follow us on Facebook"),

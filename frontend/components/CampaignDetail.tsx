@@ -43,12 +43,13 @@ interface CampaignDetailProps {
   analytics?: {
     trackCampaignView: (campaignName: string) => void;
   };
-  EndorsementFormComponent?: React.ComponentType<{
-    campaign: Campaign;
-    onEndorsementSubmitted: () => void;
-    onFormInteraction: (isActive: boolean) => void;
-    ref?: React.RefObject<HTMLFormElement>;
-  }>;
+  EndorsementFormComponent?: React.ForwardRefExoticComponent<
+    {
+      campaign: Campaign;
+      onEndorsementSubmitted?: () => void;
+      onFormInteraction?: (isActive: boolean) => void;
+    } & React.RefAttributes<{ scrollToFirstField: () => void }>
+  >;
   EndorsementsListComponent?: React.ComponentType<{
     campaignId: number;
     refreshTrigger: number;
@@ -89,7 +90,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   const [isFormActive, setIsFormActive] = useState<boolean>(false);
   const [showShareModal, setShowShareModal] = useState<boolean>(false);
   const endorsementSectionRef = useRef<HTMLElement>(null);
-  const endorsementFormRef = useRef<HTMLFormElement>(null);
+  const endorsementFormRef = useRef<{ scrollToFirstField: () => void }>(null);
   const aboutSectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {

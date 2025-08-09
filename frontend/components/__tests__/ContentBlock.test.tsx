@@ -114,7 +114,9 @@ describe("ContentBlock", () => {
       expect(image).toBeInTheDocument();
       // Next.js Image component transforms the src URL
       expect(image).toHaveAttribute("src");
-      expect(image.getAttribute("src")).toContain(encodeURIComponent("https://example.com/image.jpg"));
+      expect(image.getAttribute("src")).toContain(
+        encodeURIComponent("https://example.com/image.jpg"),
+      );
       expect(screen.getByText("Image caption")).toBeInTheDocument();
     });
 
@@ -302,10 +304,12 @@ describe("ContentBlock", () => {
       render(<ContentBlock block={block} />);
 
       // Quote uses HTML entities for quotation marks
-      const blockquote = document.querySelector('blockquote');
+      const blockquote = document.querySelector("blockquote");
       expect(blockquote).toBeInTheDocument();
       // HTML entities are rendered as curly quotes
-      expect(blockquote?.textContent).toContain('This is an inspiring quote about our cause.');
+      expect(blockquote?.textContent).toContain(
+        "This is an inspiring quote about our cause.",
+      );
       expect(screen.getByText("— John Doe")).toBeInTheDocument();
     });
 
@@ -319,10 +323,10 @@ describe("ContentBlock", () => {
       render(<ContentBlock block={block} />);
 
       // Quote uses HTML entities for quotation marks
-      const blockquote = document.querySelector('blockquote');
+      const blockquote = document.querySelector("blockquote");
       expect(blockquote).toBeInTheDocument();
       // HTML entities are rendered as curly quotes
-      expect(blockquote?.textContent).toContain('Quote without attribution.');
+      expect(blockquote?.textContent).toContain("Quote without attribution.");
       expect(screen.queryByText(/^—/)).not.toBeInTheDocument();
     });
 
@@ -334,10 +338,10 @@ describe("ContentBlock", () => {
       };
       render(<ContentBlock block={block} />);
 
-      const blockquote = document.querySelector('blockquote');
+      const blockquote = document.querySelector("blockquote");
       expect(blockquote).toBeInTheDocument();
       // HTML entities are rendered as curly quotes
-      expect(blockquote?.textContent).toContain('Test quote');
+      expect(blockquote?.textContent).toContain("Test quote");
       expect(blockquote.tagName).toBe("BLOCKQUOTE");
       expect(blockquote).toHaveClass(
         "text-2xl",
@@ -620,10 +624,10 @@ describe("ContentBlock", () => {
       };
       render(<ContentBlock block={block} />);
 
-      const blockquote = document.querySelector('blockquote');
+      const blockquote = document.querySelector("blockquote");
       expect(blockquote).toBeInTheDocument();
       // HTML entities are rendered as curly quotes
-      expect(blockquote?.textContent).toContain('Accessible quote');
+      expect(blockquote?.textContent).toContain("Accessible quote");
       expect(blockquote.tagName).toBe("BLOCKQUOTE");
     });
   });

@@ -38,7 +38,7 @@ const GrowthIcon: React.FC<GrowthIconProps> = ({
   };
 
   // Parse size to number for Next.js Image component
-  const sizeNum = parseInt(size.replace('px', '')) || 48;
+  const sizeNum = parseInt(size.replace("px", "")) || 48;
 
   return (
     <Image

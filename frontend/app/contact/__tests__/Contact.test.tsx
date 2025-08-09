@@ -32,7 +32,11 @@ jest.mock("../../../utils/homepage-data", () => ({
 // Mock the components
 jest.mock("../../../components/ContactPage", () => ({
   __esModule: true,
-  default: ({ orgInfo, contentBlocks, error }: {
+  default: ({
+    orgInfo,
+    contentBlocks,
+    error,
+  }: {
     orgInfo?: HomePage;
     contentBlocks?: ContentBlock[];
     error?: string;

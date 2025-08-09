@@ -32,7 +32,6 @@ describe("Terms", () => {
     version: "1.0",
   };
 
-
   beforeEach(() => {
     jest.clearAllMocks();
   });

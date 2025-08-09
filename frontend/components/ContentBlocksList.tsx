@@ -23,7 +23,8 @@ const ContentBlocksList: React.FC<ContentBlocksListProps> = ({
         </p>
         {process.env.NODE_ENV === "development" && (
           <p className="text-sm mt-2">
-            Add content blocks with page_type=&ldquo;{pageType}&rdquo; in the Django admin.
+            Add content blocks with page_type=&ldquo;{pageType}&rdquo; in the
+            Django admin.
           </p>
         )}
       </div>

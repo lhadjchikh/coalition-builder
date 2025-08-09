@@ -10,7 +10,8 @@ mockIntersectionObserver.mockReturnValue({
   unobserve: jest.fn(),
   disconnect: jest.fn(),
 });
-window.IntersectionObserver = mockIntersectionObserver as unknown as typeof IntersectionObserver;
+window.IntersectionObserver =
+  mockIntersectionObserver as unknown as typeof IntersectionObserver;
 
 describe("CampaignsList", () => {
   const mockCampaigns = [
@@ -134,7 +135,9 @@ describe("CampaignsList", () => {
       const bayImage = screen.getByAltText("Chesapeake Bay");
       // Next.js Image component transforms the src URL
       expect(bayImage).toHaveAttribute("src");
-      expect(bayImage.getAttribute("src")).toContain(encodeURIComponent("https://example.com/bay.jpg"));
+      expect(bayImage.getAttribute("src")).toContain(
+        encodeURIComponent("https://example.com/bay.jpg"),
+      );
 
       // Third campaign has image but no credits
       const climateImage = screen.getByAltText("Climate Action Now");
@@ -374,7 +377,11 @@ describe("CampaignsList", () => {
     it("renders without IntersectionObserver in SSR", () => {
       // Temporarily remove IntersectionObserver
       const originalIO = window.IntersectionObserver;
-      delete (window as typeof window & { IntersectionObserver?: typeof IntersectionObserver }).IntersectionObserver;
+      delete (
+        window as typeof window & {
+          IntersectionObserver?: typeof IntersectionObserver;
+        }
+      ).IntersectionObserver;
 
       render(<CampaignsList {...defaultProps} />);
 

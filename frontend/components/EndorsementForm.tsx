@@ -278,7 +278,9 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
             <h4>
               By submitting this form, you agree to the following statement:
             </h4>
-            <blockquote>&ldquo;{campaign.endorsement_statement}&rdquo;</blockquote>
+            <blockquote>
+              &ldquo;{campaign.endorsement_statement}&rdquo;
+            </blockquote>
           </div>
         )}
 

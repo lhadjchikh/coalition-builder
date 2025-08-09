@@ -21,7 +21,13 @@ jest.mock("next/navigation", () => ({
 
 // Mock structured data components
 jest.mock("../../../../components/StructuredData", () => ({
-  CampaignStructuredData: ({ title, description }: { title?: string; description?: string }) => (
+  CampaignStructuredData: ({
+    title,
+    description,
+  }: {
+    title?: string;
+    description?: string;
+  }) => (
     <script type="application/ld+json" data-testid="campaign-structured-data">
       {JSON.stringify({ title, description })}
     </script>

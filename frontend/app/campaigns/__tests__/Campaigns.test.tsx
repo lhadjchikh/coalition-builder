@@ -94,7 +94,12 @@ jest.mock("../../../lib/api", () => ({
 // Mock the components
 jest.mock("../../../components/CampaignsPage", () => ({
   __esModule: true,
-  default: ({ homepage, campaigns, contentBlocks, campaignsError }: {
+  default: ({
+    homepage,
+    campaigns,
+    contentBlocks,
+    campaignsError,
+  }: {
     homepage?: HomePage;
     campaigns?: Campaign[];
     contentBlocks?: ContentBlock[];

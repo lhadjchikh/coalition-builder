@@ -47,7 +47,10 @@ jest.mock("../../components/GoogleFontsLoader", () => ({
 }));
 
 // Mock ThemeStyles to capture its props
-let capturedThemeStylesProps: { cssVariables?: string; customCss?: string } | null = null;
+let capturedThemeStylesProps: {
+  cssVariables?: string;
+  customCss?: string;
+} | null = null;
 jest.mock("../../components/ThemeStyles", () => ({
   __esModule: true,
   default: (props: { cssVariables?: string; customCss?: string }) => {

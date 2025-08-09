@@ -171,29 +171,30 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
     .join(" ");
 
   // Determine if we should use fill mode or specific dimensions
-  const imageElement = fill || (!width || !height) ? (
-    <div className="relative w-full" style={{ minHeight: '200px' }}>
+  const imageElement =
+    fill || !width || !height ? (
+      <div className="relative w-full" style={{ minHeight: "200px" }}>
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          className={`${imgClassName} object-contain`}
+          title={title}
+          priority={priority}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
+      </div>
+    ) : (
       <Image
         src={src}
         alt={alt}
-        fill
-        className={`${imgClassName} object-contain`}
+        width={width}
+        height={height}
+        className={imgClassName}
         title={title}
         priority={priority}
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
       />
-    </div>
-  ) : (
-    <Image
-      src={src}
-      alt={alt}
-      width={width}
-      height={height}
-      className={imgClassName}
-      title={title}
-      priority={priority}
-    />
-  );
+    );
 
   return (
     <div className={containerClasses} data-testid="image-with-credit">

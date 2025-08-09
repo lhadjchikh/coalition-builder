@@ -60,7 +60,8 @@ const createLocationMock = (origin: string = "http://localhost:3000") => ({
 
 // Mock window.location for all tests
 delete (window as typeof window & { location?: Location }).location;
-(window as typeof window & { location: Location }).location = createLocationMock();
+(window as typeof window & { location: Location }).location =
+  createLocationMock();
 
 jest.mock("../../../../components/Navbar", () => ({
   __esModule: true,
@@ -170,7 +171,8 @@ describe("CampaignDetail Social Sharing Features", () => {
 
     // Reset window.location mock only if window is available
     if (typeof window !== "undefined") {
-      (window as typeof window & { location: Location }).location = createLocationMock();
+      (window as typeof window & { location: Location }).location =
+        createLocationMock();
     }
   });
 
