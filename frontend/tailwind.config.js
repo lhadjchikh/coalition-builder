@@ -1,14 +1,4 @@
-const fs = require("fs");
-const path = require("path");
-
-// Support both Docker (./shared) and local (../shared) paths
-const sharedConfigPath = fs.existsSync(
-  path.resolve(__dirname, "./shared/styles/tailwind.config.base.js"),
-)
-  ? "./shared/styles/tailwind.config.base.js"
-  : "../shared/styles/tailwind.config.base.js";
-
-const sharedConfig = require(sharedConfigPath);
+const sharedConfig = require("./styles/tailwind.config.base.js");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {

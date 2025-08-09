@@ -24,7 +24,7 @@ from django.urls import include, path
 from coalition.api.api import api
 from coalition.content.views import active_theme_css, theme_css
 from coalition.core.sitemap import sitemaps
-from coalition.core.views import health_check, home, robots_txt
+from coalition.core.views import home, robots_txt
 
 # Customize Django admin site headers
 admin.site.site_header = f"{settings.ORGANIZATION_NAME} Administration"
@@ -34,7 +34,6 @@ admin.site.index_title = f"Welcome to {settings.ORGANIZATION_NAME} Administratio
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", api.urls),
-    path("health/", health_check, name="health_check"),
     path("robots.txt", robots_txt, name="robots_txt"),
     path(
         "sitemap.xml",

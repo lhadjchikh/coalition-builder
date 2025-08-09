@@ -22,7 +22,7 @@ describe("SSR Integration Tests", () => {
     test(
       "API health endpoint responds successfully",
       async () => {
-        const response = await fetch(`${API_URL}/health/`);
+        const response = await fetch(`${API_URL}/api/health`);
         expect(response.ok).toBe(true);
       },
       timeout,

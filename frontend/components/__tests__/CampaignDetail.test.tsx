@@ -108,7 +108,7 @@ jest.mock("../ImageWithCredit", () => ({
     // This avoids the Next.js image optimization warning in tests
     return (
       <div className={className} data-testid="image-with-credit">
-        <div 
+        <div
           data-testid="mock-image"
           data-src={src}
           data-alt={alt}

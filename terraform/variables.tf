@@ -238,7 +238,7 @@ variable "create_new_key_pair" {
 variable "health_check_path_api" {
   description = "Path for backend container and load balancer health checks"
   type        = string
-  default     = "/health/"
+  default     = "/api/health"
 }
 
 variable "health_check_path_app" {

@@ -207,7 +207,7 @@ async function runTests(): Promise<void> {
   }
 
   console.log("Waiting for API service...");
-  const apiReady = await waitForService(`${config.API_URL}/api/health/`, {
+  const apiReady = await waitForService(`${config.API_URL}/api/health/api`, {
     timeout: config.TIMEOUT,
   });
   if (!apiReady) {

@@ -143,7 +143,7 @@ variable "app_target_group_arn" {
 variable "health_check_path_api" {
   description = "Path for load balancer health checks on Django backend"
   type        = string
-  default     = "/health/"
+  default     = "/health/api"
 }
 
 variable "redis_cpu" {

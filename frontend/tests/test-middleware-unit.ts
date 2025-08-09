@@ -56,7 +56,7 @@ async function runMiddlewareTests(): Promise<boolean> {
     process.env.SITE_PASSWORD = "secret";
 
     try {
-      const request = new MockNextRequest("http://localhost/health");
+      const request = new MockNextRequest("http://localhost/health/app");
       const response = middleware(request);
 
       if (!(response instanceof NextResponse) || response.status !== 200) {

@@ -10,7 +10,7 @@ import { Campaign, EndorsementCreate, Stakeholder } from "../types/index";
 import SocialShareButtons from "./SocialShareButtons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
-import "./Endorsements.css";
+import "../styles/Endorsements.css";
 
 interface EndorsementFormProps {
   campaign: Campaign;

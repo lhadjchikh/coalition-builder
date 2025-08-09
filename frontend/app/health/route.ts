@@ -1,4 +1,4 @@
-// ssr/app/health/route.ts
+// app/app/health/route.ts
 import { NextResponse } from "next/server";
 import { apiClient } from "@/lib/api";
 import metrics, { registerError } from "@/lib/metrics";

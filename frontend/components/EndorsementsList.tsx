@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import API from "../lib/api";
 import { Endorsement } from "../types/index";
-import "./Endorsements.css";
+import "../styles/Endorsements.css";
 
 interface EndorsementsListProps {
   campaignId?: number;
