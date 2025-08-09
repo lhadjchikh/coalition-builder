@@ -6,12 +6,12 @@
 services:
   api:
     build:
-      target: python-deps  # Use development build stage with dependencies only
+      target: python-deps # Use development build stage with dependencies only
     env_file:
       - path: ./backend/.env
         required: false
     environment:
-      - DEBUG=True  # Enable Django debug mode
+      - DEBUG=True # Enable Django debug mode
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONUNBUFFERED=1
     volumes:
@@ -21,16 +21,16 @@ services:
       - /app/.venv
     # Use Django development server with auto-reload
     command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
-    
+
   app:
     build:
-      target: frontend-builder  # Use development build stage
+      target: frontend-builder # Use development build stage
     env_file:
       - path: ./frontend/.env
         required: false
     environment:
-      - NODE_ENV=development  # Enable Next.js development mode
-      - WATCHPACK_POLLING=true  # Enable file watching in Docker
+      - NODE_ENV=development # Enable Next.js development mode
+      - WATCHPACK_POLLING=true # Enable file watching in Docker
       # Development API URL
       - API_URL=http://api:8000
       - NEXT_PUBLIC_API_URL=http://localhost:8000
@@ -42,7 +42,7 @@ services:
       - /app/.next
     # Use Next.js development server with hot reload
     command: ["npm", "run", "dev"]
-    
+
   # Optional: Add a database GUI for development
   # adminer:
   #   image: adminer
