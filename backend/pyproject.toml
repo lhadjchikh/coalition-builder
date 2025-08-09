@@ -132,7 +132,8 @@ module = [
     "*.migrations.*",
     "manage",
     "*.tests.*",
-    "*test*",
+    "coalition.*.tests",
+    "coalition.endorsements.tests",
 ]
 ignore_errors = true
 

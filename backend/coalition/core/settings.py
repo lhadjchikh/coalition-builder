@@ -238,7 +238,7 @@ INSTALLED_APPS = [
 ]
 
 # Configure database table names to maintain backward compatibility
-DATABASE_ROUTERS = []
+DATABASE_ROUTERS: list[str] = []
 DEFAULT_APP_CONFIG = None
 
 LOGGING = {
@@ -354,7 +354,7 @@ else:
     DATABASES = {
         "default": {
             "ENGINE": "django.contrib.gis.db.backends.spatialite",
-            "NAME": BASE_DIR / "db.sqlite3",
+            "NAME": str(BASE_DIR / "db.sqlite3"),
         },
     }
 
