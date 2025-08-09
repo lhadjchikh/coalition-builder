@@ -24,8 +24,7 @@ jest.mock("../../../../components/CampaignDetail", () => {
 });
 
 // Mock the CSS imports
-jest.mock("@frontend/components/Endorsements.css", () => ({}));
-jest.mock("@frontend/App.css", () => ({}));
+jest.mock("../../../../styles/Endorsements.css", () => ({}));
 
 describe("CampaignPageContent", () => {
   const mockCampaign = {

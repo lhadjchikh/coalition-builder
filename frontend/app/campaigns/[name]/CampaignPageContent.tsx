@@ -12,8 +12,7 @@ import {
   faTimes,
   faBullhorn,
 } from "@fortawesome/free-solid-svg-icons";
-import "@frontend/components/Endorsements.css";
-import "@frontend/App.css";
+import "../../../styles/Endorsements.css";
 import type { Campaign } from "../../../types";
 
 interface CampaignPageContentProps {
