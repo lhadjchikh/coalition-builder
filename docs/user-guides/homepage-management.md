@@ -18,6 +18,7 @@ Coalition Builder provides a flexible homepage management system that allows you
 ## Accessing Homepage Management
 
 1. **Log into Django Admin**:
+
    - Navigate to `http://your-domain.com/admin/`
    - Log in with your administrator credentials
 
@@ -96,13 +97,16 @@ Coalition Builder supports several content block types:
 ### Creating Content Blocks
 
 1. **Navigate to Content Blocks**:
+
    - In Django admin, go to "Content blocks" under the Core section
 
 2. **Add New Content Block**:
+
    - Click "Add content block"
    - Choose your block type from the dropdown
 
 3. **Fill in Content**:
+
    - **Title**: Heading for this section
    - **Content**: Main content (varies by block type)
    - **Order**: Numerical position (lower numbers appear first)
@@ -155,11 +159,13 @@ Is Visible: ✓
 When adding images to content blocks or hero sections:
 
 1. **File Requirements**:
+
    - Supported formats: JPEG, PNG, WebP
    - Recommended maximum size: 2MB
    - Optimal dimensions vary by use case
 
 2. **Hero Images**:
+
    - Recommended size: 1920x1080 pixels or similar wide aspect ratio
    - Should work well with text overlay
 

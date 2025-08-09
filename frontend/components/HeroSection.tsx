@@ -129,13 +129,19 @@ const HeroSection: React.FC<HeroSectionProps> = ({ homepage }) => {
 
   return (
     <section
-      className={`relative overflow-hidden -mt-20 ${hasVideo || hasImage ? textColorClass : "bg-theme-bg-section"} ${hasVideo ? "bg-theme-primary" : ""} ${hasImage && !hasVideo ? "transition-all duration-1000" : ""}`}
+      className={`relative overflow-hidden -mt-20 ${
+        hasVideo || hasImage ? textColorClass : "bg-theme-bg-section"
+      } ${hasVideo ? "bg-theme-primary" : ""} ${
+        hasImage && !hasVideo ? "transition-all duration-1000" : ""
+      }`}
       style={heroStyle}
     >
       {/* Background Image Layer - Shows while video loads */}
       {hasImage && hasVideo && (
         <div
-          className={`absolute inset-0 z-0 transition-opacity duration-1000 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
+          className={`absolute inset-0 z-0 transition-opacity duration-1000 ${
+            imageLoaded ? "opacity-100" : "opacity-0"
+          }`}
           data-testid="hero-background-image"
           data-background-url={homepage.hero_background_image_url}
           style={{

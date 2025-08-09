@@ -310,12 +310,13 @@ ANALYZE=true
 
 ### Image Optimization Configuration
 
-| Variable            | Description                                                        | Default | Required |
-| ------------------- | ------------------------------------------------------------------ | ------- | -------- |
-| `CLOUDFRONT_DOMAIN` | CloudFront CDN domain for serving optimized images                | -       | No       |
-| `BACKEND_DOMAIN`    | Backend domain for direct image serving (if different from CDN)   | -       | No       |
+| Variable            | Description                                                     | Default | Required |
+| ------------------- | --------------------------------------------------------------- | ------- | -------- |
+| `CLOUDFRONT_DOMAIN` | CloudFront CDN domain for serving optimized images              | -       | No       |
+| `BACKEND_DOMAIN`    | Backend domain for direct image serving (if different from CDN) | -       | No       |
 
 **Notes:**
+
 - Next.js automatically optimizes images served through these domains
 - Supports dynamic image dimensions from backend storage
 - Protocol (http/https) is automatically stripped if included

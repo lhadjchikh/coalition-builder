@@ -46,6 +46,7 @@ In Coalition Builder, stakeholders are individuals, organizations, or entities t
 ### Accessing Stakeholder Management
 
 1. **Navigate to Django Admin**
+
    - Go to your admin interface (`/admin/`)
    - Look for the "Stakeholders" section
    - Click "Stakeholders" to view existing entries

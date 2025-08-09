@@ -166,12 +166,14 @@ To add these secrets:
 When deploying to AWS, CloudFront CDN is automatically configured to serve media files and optimized images. To enable Next.js image optimization with CloudFront:
 
 1. **Set the CloudFront domain** in your environment variables:
+
    ```bash
    # In your ECS task definition or environment configuration
    CLOUDFRONT_DOMAIN=d123456789.cloudfront.net  # Your CloudFront distribution domain
    ```
 
 2. **Custom domain (optional)**: If you've configured a custom domain for CloudFront:
+
    ```bash
    CLOUDFRONT_DOMAIN=cdn.yourdomain.com
    ```
@@ -182,6 +184,7 @@ When deploying to AWS, CloudFront CDN is automatically configured to serve media
    ```
 
 **Benefits of CloudFront Integration:**
+
 - Automatic image optimization and resizing by Next.js
 - Global CDN distribution for faster image loading
 - Support for dynamic image dimensions from backend storage
@@ -190,6 +193,7 @@ When deploying to AWS, CloudFront CDN is automatically configured to serve media
 
 **Image Storage in S3:**
 Media files uploaded through the admin interface are automatically stored in S3 with the following structure:
+
 - `logos/` - Organization logos from theme settings
 - `favicons/` - Favicon uploads
 - `backgrounds/` - Hero background images
@@ -265,21 +269,25 @@ After the initial deployment, you need to enable the PostGIS extension in the RD
 The Terraform configuration creates:
 
 1. **Networking**:
+
    - VPC with public subnets
    - Internet Gateway
    - Security Groups
 
 2. **Database**:
+
    - Amazon RDS PostgreSQL instance
    - Custom parameter group for PostGIS
 
 3. **Security**:
+
    - AWS Secrets Manager for secure credential storage
    - IAM roles with least privilege access
    - KMS keys for encryption
    - Secure credential management
 
 4. **Container Infrastructure**:
+
    - ECR Repository
    - ECS Cluster
    - ECS Task Definition
@@ -287,6 +295,7 @@ The Terraform configuration creates:
    - IAM Roles for ECS tasks
 
 5. **Load Balancing**:
+
    - Application Load Balancer
    - Target Group
    - Listener

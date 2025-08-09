@@ -141,7 +141,9 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
                 }}
                 className={`
                   card-modern overflow-hidden cursor-pointer group p-0
-                  campaign-card-animate ${isVisible ? "campaign-card-visible" : ""}
+                  campaign-card-animate ${
+                    isVisible ? "campaign-card-visible" : ""
+                  }
                   ${cardClassName}
                 `}
                 data-testid={`campaign-${campaign.id}`}

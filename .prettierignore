@@ -1,9 +1,92 @@
+# Node modules
 node_modules/
+**/node_modules/
+
+# Build outputs
 build/
 dist/
-coverage/
-frontend/node_modules/
-backend/.venv/
+.next/
+out/
+**/.next/
+**/out/
+**/build/
+**/dist/
+
+# Cache directories
 cache/
 .cache/
 **/cache/
+**/.cache/
+*.cache
+**/.mypy_cache/
+**/.pytest_cache/
+**/.ruff_cache/
+
+# Python
+**/__pycache__/
+**/*.pyc
+.venv/
+venv/
+backend/.venv/
+**/venv/
+
+# TypeScript
+**/*.tsbuildinfo
+
+# Coverage
+coverage/
+**/coverage/
+**/.coverage
+**/htmlcov/
+
+# Environment files
+.env*
+**/.env*
+
+# Temporary files
+tmp/
+temp/
+**/tmp/
+**/temp/
+
+# Generated documentation
+frontend/docs/
+backend/docs/_build/
+site/
+**/typedoc/
+
+# Database
+**/*.sqlite3
+**/*.db
+
+# IDE
+.vscode/
+.idea/
+**/.vscode/
+**/.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+**/.DS_Store
+**/Thumbs.db
+
+# Claude
+.claude/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+
+# Git
+.git/
+
+# Lock files
+package-lock.json
+poetry.lock
+yarn.lock
+pnpm-lock.yaml

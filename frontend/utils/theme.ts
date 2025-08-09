@@ -110,9 +110,15 @@ export function generateCSSVariables(theme: Theme | null): string {
       --theme-primary-rgb: ${primaryRgbValue};
       
       --theme-secondary: ${currentTheme.secondary_color};
-      --theme-secondary-light: ${lightenColor(currentTheme.secondary_color, 0.1)};
+      --theme-secondary-light: ${lightenColor(
+        currentTheme.secondary_color,
+        0.1,
+      )};
       --theme-secondary-dark: ${darkenColor(currentTheme.secondary_color, 0.1)};
-      --theme-secondary-darker: ${darkenColor(currentTheme.secondary_color, 0.3)};
+      --theme-secondary-darker: ${darkenColor(
+        currentTheme.secondary_color,
+        0.3,
+      )};
       --theme-secondary-rgb: ${secondaryRgbValue};
       
       --theme-accent: ${currentTheme.accent_color};

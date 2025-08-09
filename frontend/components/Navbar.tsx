@@ -137,7 +137,11 @@ const Navbar: React.FC<NavbarProps> = ({
 
   // Build mobile nav item classes
   const getMobileNavItemClasses = (isActive: boolean, isButton = false) => {
-    const baseClasses = `${isButton ? "block w-full text-left" : "block"} px-3 py-2 rounded-md ${isButton ? "text-base" : "text-lg"} font-medium transition-all duration-300 transform hover:scale-[1.02]`;
+    const baseClasses = `${
+      isButton ? "block w-full text-left" : "block"
+    } px-3 py-2 rounded-md ${
+      isButton ? "text-base" : "text-lg"
+    } font-medium transition-all duration-300 transform hover:scale-[1.02]`;
 
     const stateClasses = isActive
       ? "bg-theme-primary-dark text-white"

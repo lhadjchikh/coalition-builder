@@ -309,7 +309,9 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
               <SocialShareButtons
                 url={`${window.location.origin}/campaigns/${campaign.name}`}
                 title={`I just endorsed ${campaign.title}!`}
-                description={`Join me in supporting this important initiative: ${campaign.summary || campaign.description}`}
+                description={`Join me in supporting this important initiative: ${
+                  campaign.summary || campaign.description
+                }`}
                 hashtags={[
                   "PolicyChange",
                   "CivicEngagement",
