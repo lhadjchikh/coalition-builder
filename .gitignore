@@ -24,7 +24,8 @@ dist/
 ssr/.next/
 next-env.d.ts
 ssr/next-env.d.ts
-ssr/tsconfig.tsbuildinfo
+# TypeScript build cache files
+*.tsbuildinfo
 
 # SSR symlinks (created by setup script)
 ssr/frontend
