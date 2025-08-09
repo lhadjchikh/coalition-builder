@@ -23,7 +23,7 @@ export async function fetchApiResource<T>(
   }
   try {
     return (await response.json()) as T;
-  } catch (error) {
+  } catch {
     throw new Error(`Failed to parse JSON for ${resourceName}`);
   }
 }

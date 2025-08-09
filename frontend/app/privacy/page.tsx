@@ -3,9 +3,7 @@ import { notFound } from "next/navigation";
 import { apiClient } from "../../lib/api";
 import LegalDocumentTracker from "../../components/LegalDocumentTracker";
 
-interface PrivacyPageProps {}
-
-export default async function PrivacyPage({}: PrivacyPageProps): Promise<React.ReactElement> {
+export default async function PrivacyPage(): Promise<React.ReactElement> {
   let privacyData = null;
   let error = null;
 

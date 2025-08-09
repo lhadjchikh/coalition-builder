@@ -3,9 +3,7 @@ import { notFound } from "next/navigation";
 import { apiClient } from "../../lib/api";
 import LegalDocumentTracker from "../../components/LegalDocumentTracker";
 
-interface TermsPageProps {}
-
-export default async function TermsPage({}: TermsPageProps): Promise<React.ReactElement> {
+export default async function TermsPage(): Promise<React.ReactElement> {
   let termsData = null;
   let error = null;
 

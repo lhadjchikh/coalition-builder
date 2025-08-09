@@ -1,5 +1,4 @@
 import React from "react";
-import { ssrApiClient } from "../lib/api";
 import type {
   Campaign,
   HomePage as HomePageType,
@@ -27,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
     let homepage;
     try {
       homepage = await response.json();
-    } catch (error) {
+    } catch {
       throw new Error("Failed to parse JSON response");
     }
     return {

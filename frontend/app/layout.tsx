@@ -9,8 +9,7 @@ import CookieConsent from "../components/CookieConsent";
 import GoogleAnalytics from "../components/GoogleAnalytics";
 import ThemeStyles from "../components/ThemeStyles";
 import GoogleFontsLoader from "../components/GoogleFontsLoader";
-import { ssrApiClient } from "../lib/api";
-import { NavItemData, DEFAULT_NAV_ITEMS } from "../types";
+import { DEFAULT_NAV_ITEMS } from "../types";
 import { getFallbackHomepage } from "../utils/homepage-data";
 
 const org = process.env.ORGANIZATION_NAME || "Coalition Builder";

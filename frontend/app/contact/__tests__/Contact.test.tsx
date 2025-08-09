@@ -2,6 +2,7 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import Contact from "../page";
 import { ssrApiClient } from "../../../lib/api";
+import { getFallbackHomepage } from "../../../utils/homepage-data";
 
 // Mock the ssrApiClient module
 jest.mock("../../../lib/api", () => ({
@@ -103,8 +104,6 @@ describe("Contact Page", () => {
       order: 4,
     },
   ];
-
-  const { getFallbackHomepage } = require("../../../utils/homepage-data");
 
   beforeEach(() => {
     jest.clearAllMocks();

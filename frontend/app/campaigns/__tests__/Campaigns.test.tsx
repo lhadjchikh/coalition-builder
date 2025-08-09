@@ -7,7 +7,7 @@ async function TestCampaigns() {
   let homepage = null;
   let campaigns = [];
   let contentBlocks = [];
-  let campaignsError = null;
+  const campaignsError = null;
 
   try {
     // Use Promise.all to match the server component behavior when all succeed

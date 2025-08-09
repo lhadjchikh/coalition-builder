@@ -27,11 +27,11 @@ export default function CampaignPageContent({
 
   // For SSR, we'll create a simplified API client
   const apiClient = {
-    getCampaignById: async (id: number) => {
+    getCampaignById: async (_id: number) => {
       // In SSR, we already have the campaign data, so just return it
       return campaign;
     },
-    getCampaignByName: async (name: string) => {
+    getCampaignByName: async (_name: string) => {
       // In SSR, we already have the campaign data, so just return it
       return campaign;
     },

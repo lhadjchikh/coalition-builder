@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import Navbar from "../Navbar";
 import { DEFAULT_NAV_ITEMS } from "../../types/index";
+import { usePathname } from "next/navigation";
 
 // Mock Next.js navigation
 jest.mock("next/navigation", () => ({
@@ -12,8 +13,7 @@ jest.mock("next/navigation", () => ({
 describe("Navbar", () => {
   beforeEach(() => {
     // Reset pathname mock to homepage
-    const { usePathname } = require("next/navigation");
-    usePathname.mockReturnValue("/");
+    (usePathname as jest.Mock).mockReturnValue("/");
   });
 
   describe("Basic Rendering", () => {
@@ -62,8 +62,7 @@ describe("Navbar", () => {
     });
 
     it("applies active class to active navigation items", () => {
-      const { usePathname } = require("next/navigation");
-      usePathname.mockReturnValue("/about");
+      (usePathname as jest.Mock).mockReturnValue("/about");
 
       render(<Navbar navItems={customNavItems} />);
       const aboutLink = screen.getByText("About");
@@ -71,8 +70,7 @@ describe("Navbar", () => {
     });
 
     it("applies active class to Campaigns link when on campaigns page", () => {
-      const { usePathname } = require("next/navigation");
-      usePathname.mockReturnValue("/campaigns");
+      (usePathname as jest.Mock).mockReturnValue("/campaigns");
 
       render(<Navbar navItems={customNavItems} />);
       const campaignsLink = screen.getByText("Campaigns");

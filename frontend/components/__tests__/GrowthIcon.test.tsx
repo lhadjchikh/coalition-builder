@@ -103,7 +103,7 @@ describe("GrowthIcon", () => {
 
   // Test the default case in getSvgUrl switch statement
   it("handles invalid stage gracefully by defaulting to seed", () => {
-    // @ts-ignore - Testing invalid prop
+    // @ts-expect-error - Testing invalid prop
     render(<GrowthIcon stage="invalid" />);
 
     const icon = screen.getByAltText("invalid growth stage icon");

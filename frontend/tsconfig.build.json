@@ -44,7 +44,13 @@
       }
     ]
   },
-  "include": ["next-env.d.ts", ".next/types/**/*.ts", "**/*.ts", "**/*.tsx", "types/**/*.d.ts"],
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "types/**/*.d.ts"
+  ],
   "exclude": [
     "node_modules",
     "tests/**/*",

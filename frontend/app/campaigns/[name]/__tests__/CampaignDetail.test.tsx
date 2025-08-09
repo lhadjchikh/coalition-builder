@@ -2,6 +2,7 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import CampaignPage from "../page";
 import { apiClient } from "../../../../lib/api";
+import { notFound } from "next/navigation";
 
 // Mock the apiClient module
 jest.mock("../../../../lib/api", () => ({
@@ -62,8 +63,6 @@ describe("CampaignPage", () => {
     active: true,
     created_at: "2023-01-01T00:00:00Z",
   };
-
-  const { notFound } = require("next/navigation");
 
   beforeEach(() => {
     jest.clearAllMocks();

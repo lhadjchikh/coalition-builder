@@ -1,6 +1,8 @@
 import React from "react";
 import { render } from "@testing-library/react";
 import CampaignPageContent from "../CampaignPageContent";
+import fs from "fs";
+import path from "path";
 
 // Mock the CampaignDetail component
 jest.mock("../../../../components/CampaignDetail", () => {
@@ -70,8 +72,6 @@ describe("CampaignPageContent", () => {
 
   it("should be marked as a client component", () => {
     // Read the actual file to verify it has "use client" directive
-    const fs = require("fs");
-    const path = require("path");
     const filePath = path.join(__dirname, "../CampaignPageContent.tsx");
     const fileContent = fs.readFileSync(filePath, "utf-8");
 

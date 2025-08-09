@@ -229,7 +229,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             Campaign not found
           </h1>
           <p className="text-gray-600">
-            The campaign you're looking for doesn't exist.
+            The campaign you&apos;re looking for doesn&apos;t exist.
           </p>
         </div>
       </div>
@@ -428,7 +428,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
                     </Button>
                   </div>
                   <p className="cta-footer-text">
-                    Together, we're building momentum for change.
+                    Together, we&apos;re building momentum for change.
                   </p>
                 </div>
               )}

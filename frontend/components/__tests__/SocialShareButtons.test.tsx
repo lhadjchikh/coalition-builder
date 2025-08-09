@@ -11,6 +11,7 @@ import {
 } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import SocialShareButtons from "../SocialShareButtons";
+import analytics from "../../services/analytics";
 
 // Mock FontAwesome icons
 jest.mock("@fortawesome/free-brands-svg-icons", () => ({
@@ -95,8 +96,7 @@ describe("SocialShareButtons", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockWriteText.mockResolvedValue(undefined);
-    const { mockTrackEvent } = require("../../services/analytics");
-    mockTrackEvent?.mockClear();
+    (analytics.trackEvent as jest.Mock)?.mockClear();
   });
 
   describe("Rendering", () => {
@@ -346,13 +346,12 @@ describe("SocialShareButtons", () => {
 
   describe("Analytics Tracking", () => {
     it("tracks Facebook share click", () => {
-      const { mockTrackEvent } = require("../../services/analytics");
       render(<SocialShareButtons {...defaultProps} />);
 
       const facebookButton = screen.getByLabelText("Share on Facebook");
       fireEvent.click(facebookButton);
 
-      expect(mockTrackEvent).toHaveBeenCalledWith({
+      expect(analytics.trackEvent).toHaveBeenCalledWith({
         action: "share_click",
         category: "social_share",
         label: "facebook_test-campaign",
@@ -360,13 +359,12 @@ describe("SocialShareButtons", () => {
     });
 
     it("tracks LinkedIn share click", () => {
-      const { mockTrackEvent } = require("../../services/analytics");
       render(<SocialShareButtons {...defaultProps} />);
 
       const linkedinButton = screen.getByLabelText("Share on LinkedIn");
       fireEvent.click(linkedinButton);
 
-      expect(mockTrackEvent).toHaveBeenCalledWith({
+      expect(analytics.trackEvent).toHaveBeenCalledWith({
         action: "share_click",
         category: "social_share",
         label: "linkedin_test-campaign",
@@ -374,13 +372,12 @@ describe("SocialShareButtons", () => {
     });
 
     it("tracks copy link action", () => {
-      const { mockTrackEvent } = require("../../services/analytics");
       render(<SocialShareButtons {...defaultProps} />);
 
       const copyButton = screen.getByLabelText("Copy link");
       fireEvent.click(copyButton);
 
-      expect(mockTrackEvent).toHaveBeenCalledWith({
+      expect(analytics.trackEvent).toHaveBeenCalledWith({
         action: "share_click",
         category: "social_share",
         label: "copy_test-campaign",

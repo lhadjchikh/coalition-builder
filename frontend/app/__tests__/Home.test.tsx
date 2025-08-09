@@ -1,6 +1,8 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import Home from "../page";
+import { getFallbackHomepage } from "../../utils/homepage-data";
+import type { HomePage, Campaign, ContentBlock } from "../../types";
 
 // Mock fetch globally
 const mockFetch = jest.fn();
@@ -40,7 +42,13 @@ jest.mock("../../components/HomePage", () => ({
     homepageError,
     campaignsError,
     contentBlocks,
-  }: any) => (
+  }: {
+    homepage?: HomePage;
+    campaigns?: Campaign[];
+    homepageError?: string | null;
+    campaignsError?: string | null;
+    contentBlocks?: ContentBlock[];
+  }) => (
     <div data-testid="home-page">
       {homepage && (
         <div data-testid="homepage-name">{homepage.organization_name}</div>
@@ -134,8 +142,6 @@ describe("Home Page", () => {
       order: 2,
     },
   ];
-
-  const { getFallbackHomepage } = require("../../utils/homepage-data");
 
   beforeEach(() => {
     jest.clearAllMocks();

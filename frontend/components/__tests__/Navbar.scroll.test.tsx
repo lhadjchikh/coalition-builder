@@ -2,6 +2,7 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import Navbar from "../Navbar";
+import { usePathname } from "next/navigation";
 
 // Mock Next.js navigation hooks
 jest.mock("next/navigation", () => ({
@@ -13,8 +14,7 @@ describe("Navbar scroll behavior", () => {
     // Reset scroll position
     Object.defineProperty(window, "scrollY", { value: 0, writable: true });
     // Reset the mock
-    const { usePathname } = require("next/navigation");
-    usePathname.mockReturnValue("/");
+    (usePathname as jest.Mock).mockReturnValue("/");
     // Mock requestAnimationFrame for tests
     global.requestAnimationFrame = (callback) => {
       callback(0);
@@ -101,8 +101,7 @@ describe("Navbar scroll behavior", () => {
 
   test("navbar is always glass effect on non-homepage routes", () => {
     // Mock non-homepage location
-    const { usePathname } = require("next/navigation");
-    usePathname.mockReturnValue("/about");
+    (usePathname as jest.Mock).mockReturnValue("/about");
 
     const { container } = render(<Navbar />);
     const nav = container.querySelector("nav");

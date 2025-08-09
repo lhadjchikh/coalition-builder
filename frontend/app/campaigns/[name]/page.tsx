@@ -115,7 +115,7 @@ export async function generateMetadata({ params }: CampaignPageProps) {
         canonical: campaignUrl,
       },
     };
-  } catch (error) {
+  } catch {
     return {
       title: "Campaign Not Found",
       robots: "noindex, nofollow",

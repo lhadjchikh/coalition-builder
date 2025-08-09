@@ -1,7 +1,5 @@
 import React from "react";
-import seedSvg from "../public/assets/icons/seed.svg";
-import seedlingSvg from "../public/assets/icons/seedling.svg";
-import treeSvg from "../public/assets/icons/tree.svg";
+import Image from "next/image";
 
 interface GrowthIconProps {
   stage: "seed" | "seedling" | "tree";
@@ -29,22 +27,25 @@ const GrowthIcon: React.FC<GrowthIconProps> = ({
   const getSvgUrl = () => {
     switch (stage) {
       case "seed":
-        return seedSvg;
+        return "/assets/icons/seed.svg";
       case "seedling":
-        return seedlingSvg;
+        return "/assets/icons/seedling.svg";
       case "tree":
-        return treeSvg;
+        return "/assets/icons/tree.svg";
       default:
-        return seedSvg;
+        return "/assets/icons/seed.svg";
     }
   };
 
+  // Parse size to number for Next.js Image component
+  const sizeNum = parseInt(size.replace('px', '')) || 48;
+
   return (
-    <img
+    <Image
       src={getSvgUrl()}
       alt={`${stage} growth stage icon`}
-      width={size}
-      height={size}
+      width={sizeNum}
+      height={sizeNum}
       style={iconStyle}
       className={className}
     />

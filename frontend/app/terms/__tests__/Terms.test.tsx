@@ -1,7 +1,7 @@
-import React from "react";
 import { render, screen } from "@testing-library/react";
 import Terms from "../page";
 import { apiClient } from "../../../lib/api";
+import { notFound } from "next/navigation";
 
 // Mock the apiClient
 jest.mock("../../../lib/api", () => ({
@@ -32,7 +32,6 @@ describe("Terms", () => {
     version: "1.0",
   };
 
-  const { notFound } = require("next/navigation");
 
   beforeEach(() => {
     jest.clearAllMocks();

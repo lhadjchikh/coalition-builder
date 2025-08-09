@@ -46,10 +46,10 @@ jest.mock("../../components/GoogleFontsLoader", () => ({
 }));
 
 // Mock ThemeStyles to capture its props
-let capturedThemeStylesProps: any = null;
+let capturedThemeStylesProps: { cssVariables?: string; customCss?: string } | null = null;
 jest.mock("../../components/ThemeStyles", () => ({
   __esModule: true,
-  default: (props: any) => {
+  default: (props: { cssVariables?: string; customCss?: string }) => {
     capturedThemeStylesProps = props;
     return (
       <>
@@ -149,7 +149,7 @@ describe("Theme CSS Loading", () => {
       children: <div>Test Content</div>,
     });
 
-    const { container } = render(Layout);
+    render(Layout);
 
     // Verify fetch was called with correct endpoints
     expect(global.fetch).toHaveBeenCalledWith(

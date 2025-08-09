@@ -2,6 +2,7 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import PrivacyPage from "../page";
 import { apiClient } from "../../../lib/api";
+import { notFound } from "next/navigation";
 
 // Mock the apiClient
 jest.mock("../../../lib/api", () => ({
@@ -68,7 +69,6 @@ describe("PrivacyPage", () => {
   it("calls notFound when privacy data is null", async () => {
     (apiClient.getPrivacyPolicy as jest.Mock).mockResolvedValue(null);
 
-    const { notFound } = require("next/navigation");
     // Mock notFound to throw an error to simulate Next.js behavior
     notFound.mockImplementation(() => {
       throw new Error("NEXT_NOT_FOUND");

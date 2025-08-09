@@ -232,7 +232,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
         return (
           <div className="text-center max-w-reading-lg mx-auto">
             <blockquote className="text-2xl italic text-theme-text-body font-light leading-relaxed mb-6">
-              "{block.content}"
+              &ldquo;{block.content}&rdquo;
             </blockquote>
             {block.title && (
               <cite className="text-lg text-theme-text-muted font-medium">
