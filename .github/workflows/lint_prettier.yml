@@ -61,5 +61,5 @@ jobs:
         run: |
           cd frontend
           # Check all relevant files including root directory files and workflow files
-          # Use the existing .prettierignore file from the repository root
-          npx prettier --check "../{,**/}*.{md,yml,yaml,json,css}" "../.github/workflows/*.yml" --ignore-path ../.prettierignore
+          # Use the existing .prettierignore and .prettierrc files from the repository root
+          npx prettier --check "../{,**/}*.{md,yml,yaml,json,css}" "../.github/workflows/*.yml" --ignore-path ../.prettierignore --config ../.prettierrc
