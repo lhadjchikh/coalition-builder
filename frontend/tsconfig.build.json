@@ -24,7 +24,7 @@
       "@utils/*": ["./utils/*"]
     },
     "typeRoots": ["./node_modules/@types", "./types"],
-    "types": ["node", "react", "react-dom"],
+    "types": ["node", "react", "react-dom", "jest"],
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -54,6 +54,7 @@
   "exclude": [
     "node_modules",
     "tests/**/*",
+    "**/__tests__/**/*",
     "**/*.test.tsx",
     "**/*.test.ts",
     "**/*.spec.tsx",
