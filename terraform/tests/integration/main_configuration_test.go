@@ -2,6 +2,7 @@ package integration
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"terraform-tests/common"
@@ -11,6 +12,10 @@ import (
 )
 
 func TestMainConfiguration(t *testing.T) {
+	// Skip this test if not in CI (requires S3 backend)
+	if os.Getenv("CI") == "" && os.Getenv("AWS_ACCOUNT_ID") == "" {
+		t.Skip("Skipping integration test - requires CI environment or AWS_ACCOUNT_ID with S3 backend")
+	}
 
 	testConfig := common.SetupIntegrationTest(t)
 	testVars := common.GetIntegrationTestVars()
@@ -67,6 +72,10 @@ func TestMainConfiguration(t *testing.T) {
 }
 
 func TestMainConfigurationValidation(t *testing.T) {
+	// Skip this test if not in CI (requires S3 backend)
+	if os.Getenv("CI") == "" && os.Getenv("AWS_ACCOUNT_ID") == "" {
+		t.Skip("Skipping integration test - requires CI environment or AWS_ACCOUNT_ID with S3 backend")
+	}
 
 	testConfig := common.SetupIntegrationTest(t)
 
@@ -93,6 +102,10 @@ func TestMainConfigurationValidation(t *testing.T) {
 }
 
 func TestMainConfigurationCORS(t *testing.T) {
+	// Skip this test if not in CI (requires S3 backend for subtests)
+	if os.Getenv("CI") == "" {
+		t.Skip("Skipping CORS subtests - requires CI environment with S3 backend")
+	}
 
 	// Test default CORS configuration
 	t.Run("DefaultCORS", func(t *testing.T) {
