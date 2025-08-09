@@ -10,6 +10,7 @@
     "lint:fix": "next lint --fix",
     "format": "prettier --write .",
     "format:all": "prettier --write .",
+    "format:check": "prettier --check .",
     "yaml:format": "prettier --write '**/*.{yml,yaml}'",
     "typecheck": "tsc --noEmit -p tsconfig.build.json",
     "tsc": "tsc --noEmit -p tsconfig.build.json",
