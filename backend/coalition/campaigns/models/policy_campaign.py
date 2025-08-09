@@ -80,7 +80,7 @@ class PolicyCampaign(models.Model):
     def current_bills(self) -> "models.QuerySet[Bill]":
 
         session = f"{((timezone.now().date().year - 1789) // 2) + 1}th"
-        return self.bills.filter(congress_session=session)
+        return self.bills.filter(session=session)
 
     def save(self, *args: "Any", **kwargs: "Any") -> None:
         """Sanitize HTML fields before saving to prevent XSS attacks."""
