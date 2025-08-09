@@ -132,13 +132,16 @@ describe("CampaignsList", () => {
 
       // First campaign has full image credits
       const bayImage = screen.getByAltText("Chesapeake Bay");
-      expect(bayImage).toHaveAttribute("src", "https://example.com/bay.jpg");
+      // Next.js Image component transforms the src URL
+      expect(bayImage).toHaveAttribute("src");
+      expect(bayImage.getAttribute("src")).toContain(encodeURIComponent("https://example.com/bay.jpg"));
 
       // Third campaign has image but no credits
       const climateImage = screen.getByAltText("Climate Action Now");
-      expect(climateImage).toHaveAttribute(
-        "src",
-        "https://example.com/climate.jpg",
+      // Next.js Image component transforms the src URL
+      expect(climateImage).toHaveAttribute("src");
+      expect(climateImage.getAttribute("src")).toContain(
+        encodeURIComponent("https://example.com/climate.jpg"),
       );
     });
 

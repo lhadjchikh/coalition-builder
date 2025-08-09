@@ -70,7 +70,7 @@ describe("GoogleAnalytics", () => {
     const gaScript = screen.getByTestId("google-analytics-script");
     expect(gaScript).toBeInTheDocument();
     expect(gaScript).toHaveAttribute(
-      "src",
+      "data-src",
       "https://www.googletagmanager.com/gtag/js?id=G-TEST123456",
     );
 

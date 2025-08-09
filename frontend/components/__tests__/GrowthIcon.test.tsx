@@ -8,8 +8,8 @@ describe("GrowthIcon", () => {
 
     const icon = screen.getByAltText("seed growth stage icon");
     expect(icon).toBeInTheDocument();
-    expect(icon).toHaveAttribute("width", "48px");
-    expect(icon).toHaveAttribute("height", "48px");
+    expect(icon).toHaveAttribute("width", "48");
+    expect(icon).toHaveAttribute("height", "48");
     expect(icon.tagName).toBe("IMG");
   });
 
@@ -18,8 +18,8 @@ describe("GrowthIcon", () => {
 
     const icon = screen.getByAltText("seedling growth stage icon");
     expect(icon).toBeInTheDocument();
-    expect(icon).toHaveAttribute("width", "48px");
-    expect(icon).toHaveAttribute("height", "48px");
+    expect(icon).toHaveAttribute("width", "48");
+    expect(icon).toHaveAttribute("height", "48");
   });
 
   it("renders tree icon with correct attributes", () => {
@@ -27,16 +27,16 @@ describe("GrowthIcon", () => {
 
     const icon = screen.getByAltText("tree growth stage icon");
     expect(icon).toBeInTheDocument();
-    expect(icon).toHaveAttribute("width", "48px");
-    expect(icon).toHaveAttribute("height", "48px");
+    expect(icon).toHaveAttribute("width", "48");
+    expect(icon).toHaveAttribute("height", "48");
   });
 
   it("applies custom size", () => {
     render(<GrowthIcon stage="seed" size="64px" />);
 
     const icon = screen.getByAltText("seed growth stage icon");
-    expect(icon).toHaveAttribute("width", "64px");
-    expect(icon).toHaveAttribute("height", "64px");
+    expect(icon).toHaveAttribute("width", "64");
+    expect(icon).toHaveAttribute("height", "64");
     expect(icon).toHaveStyle({ width: "64px", height: "64px" });
   });
 
@@ -74,8 +74,8 @@ describe("GrowthIcon", () => {
     );
 
     const icon = screen.getByAltText("tree growth stage icon");
-    expect(icon).toHaveAttribute("width", "100px");
-    expect(icon).toHaveAttribute("height", "100px");
+    expect(icon).toHaveAttribute("width", "100");
+    expect(icon).toHaveAttribute("height", "100");
     expect(icon).toHaveClass("test-icon");
     expect(icon).toHaveStyle({
       width: "100px",
@@ -89,8 +89,8 @@ describe("GrowthIcon", () => {
     render(<GrowthIcon stage="seed" />);
 
     const icon = screen.getByAltText("seed growth stage icon");
-    expect(icon).toHaveAttribute("width", "48px");
-    expect(icon).toHaveAttribute("height", "48px");
+    expect(icon).toHaveAttribute("width", "48");
+    expect(icon).toHaveAttribute("height", "48");
   });
 
   it("uses currentColor as default color", () => {

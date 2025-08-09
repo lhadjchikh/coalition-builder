@@ -14,7 +14,9 @@ describe("ImageWithCredit", () => {
       render(<ImageWithCredit {...defaultProps} />);
 
       const img = screen.getByRole("img");
-      expect(img).toHaveAttribute("src", defaultProps.src);
+      // Next.js Image component transforms the src URL
+      expect(img).toHaveAttribute("src");
+      expect(img.getAttribute("src")).toContain(encodeURIComponent(defaultProps.src));
       expect(img).toHaveAttribute("alt", defaultProps.alt);
     });
 

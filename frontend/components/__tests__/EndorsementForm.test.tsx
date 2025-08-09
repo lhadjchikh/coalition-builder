@@ -412,9 +412,11 @@ describe("EndorsementForm", () => {
           "By submitting this form, you agree to the following statement:",
         ),
       ).toBeInTheDocument();
-      expect(
-        screen.getByText('"We support this important policy change."'),
-      ).toBeInTheDocument();
+      // Endorsement statement uses HTML entities for quotation marks
+      const blockquote = document.querySelector('blockquote');
+      expect(blockquote).toBeInTheDocument();
+      // HTML entities are rendered as curly quotes
+      expect(blockquote?.textContent).toContain('We support this important policy change.');
     });
 
     it("displays endorsement form instructions when provided", () => {
