@@ -53,12 +53,14 @@ func (tc *TestConfig) GetTerraformOptions(vars map[string]interface{}) *terrafor
 		"db_allocated_storage": 20,
 		"db_instance_class":    "db.t4g.micro",
 		// Required for some modules but not needed for most tests
-		"route53_zone_id":     "Z123456789",
-		"domain_name":         fmt.Sprintf("%s.example.com", tc.UniqueID),
-		"acm_certificate_arn": fmt.Sprintf("arn:aws:acm:us-east-1:123456789012:certificate/%s", tc.UniqueID),
-		"alert_email":         "test@example.com",
-		"db_password":         "testpassword123!",
-		"app_db_password":     "apppassword123!",
+		"route53_zone_id":                 "Z123456789",
+		"domain_name":                     fmt.Sprintf("%s.example.com", tc.UniqueID),
+		"acm_certificate_arn":             fmt.Sprintf("arn:aws:acm:us-east-1:123456789012:certificate/%s", tc.UniqueID),
+		"alert_email":                     "test@example.com",
+		"db_password":                     "testpassword123!",
+		"app_db_password":                 "apppassword123!",
+		"static_assets_upload_policy_arn": "arn:aws:iam::123456789012:policy/test-static-assets-upload",
+		"site_password_secret_arn":        "arn:aws:secretsmanager:us-east-1:123456789012:secret:test-site-password",
 	}
 
 	// Merge with provided vars (provided vars override defaults)
@@ -98,12 +100,14 @@ func (tc *TestConfig) GetTerraformOptionsForPlanOnly(vars map[string]interface{}
 		"db_allocated_storage": 20,
 		"db_instance_class":    "db.t4g.micro",
 		// Required for some modules but not needed for most tests
-		"route53_zone_id":     "Z123456789",
-		"domain_name":         fmt.Sprintf("%s.example.com", tc.UniqueID),
-		"acm_certificate_arn": fmt.Sprintf("arn:aws:acm:us-east-1:123456789012:certificate/%s", tc.UniqueID),
-		"alert_email":         "test@example.com",
-		"db_password":         "testpassword123!",
-		"app_db_password":     "apppassword123!",
+		"route53_zone_id":                 "Z123456789",
+		"domain_name":                     fmt.Sprintf("%s.example.com", tc.UniqueID),
+		"acm_certificate_arn":             fmt.Sprintf("arn:aws:acm:us-east-1:123456789012:certificate/%s", tc.UniqueID),
+		"alert_email":                     "test@example.com",
+		"db_password":                     "testpassword123!",
+		"app_db_password":                 "apppassword123!",
+		"static_assets_upload_policy_arn": "arn:aws:iam::123456789012:policy/test-static-assets-upload",
+		"site_password_secret_arn":        "arn:aws:secretsmanager:us-east-1:123456789012:secret:test-site-password",
 	}
 
 	// Merge with provided vars (provided vars override defaults)
@@ -220,8 +224,10 @@ func (tc *TestConfig) getModuleSpecificVars(
 			"health_check_path_api":     "/api/health",
 			"api_target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:" +
 				"targetgroup/test-api/1234567890123456",
-			"ssr_target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:" +
-				"targetgroup/test-ssr/1234567890123456",
+			"app_target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:" +
+				"targetgroup/test-app/1234567890123456",
+			"static_assets_upload_policy_arn": "arn:aws:iam::123456789012:policy/test-static-assets-upload",
+			"site_password_secret_arn":        "arn:aws:secretsmanager:us-east-1:123456789012:secret:test-site-password",
 		}
 	default:
 		// Default fallback for unrecognized modules
@@ -443,17 +449,19 @@ func GetDefaultComputeTestVars(testConfig *TestConfig) map[string]interface{} {
 		"bastion_security_group_id": "sg-bastion123",
 		"api_target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:" +
 			"targetgroup/test-api/1234567890123456",
-		"ssr_target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:" +
-			"targetgroup/test-ssr/1234567890123456",
-		"db_url_secret_arn":     "arn:aws:secretsmanager:us-east-1:123456789012:secret:test-db-url",
-		"secret_key_secret_arn": "arn:aws:secretsmanager:us-east-1:123456789012:secret:test-secret-key",
-		"secrets_kms_key_arn":   "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012",
-		"bastion_key_name":      "test-key",
-		"bastion_public_key":    "",
-		"create_new_key_pair":   false,
-		"container_port":        8000,
-		"domain_name":           fmt.Sprintf("%s.example.com", testConfig.UniqueID),
-		"health_check_path_api": "/api/health",
+		"app_target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:" +
+			"targetgroup/test-app/1234567890123456",
+		"db_url_secret_arn":               "arn:aws:secretsmanager:us-east-1:123456789012:secret:test-db-url",
+		"secret_key_secret_arn":           "arn:aws:secretsmanager:us-east-1:123456789012:secret:test-secret-key",
+		"secrets_kms_key_arn":             "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012",
+		"bastion_key_name":                "test-key",
+		"bastion_public_key":              "",
+		"create_new_key_pair":             false,
+		"container_port":                  8000,
+		"domain_name":                     fmt.Sprintf("%s.example.com", testConfig.UniqueID),
+		"health_check_path_api":           "/api/health",
+		"static_assets_upload_policy_arn": "arn:aws:iam::123456789012:policy/test-static-assets-upload",
+		"site_password_secret_arn":        "arn:aws:secretsmanager:us-east-1:123456789012:secret:test-site-password",
 	}
 }
 

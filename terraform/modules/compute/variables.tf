@@ -23,7 +23,7 @@ variable "task_cpu" {
 variable "task_memory" {
   description = "Memory for the task in MiB. Must be compatible with CPU value."
   type        = number
-  default     = null # When null, will be calculated based on enable_ssr and CPU
+  default     = null # When null, will be calculated based on CPU
 
   validation {
     condition     = var.task_memory == null || var.task_memory >= 512
