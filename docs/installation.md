@@ -30,7 +30,7 @@ docker compose exec api python manage.py createsuperuser
 
 **Access Points:**
 
-- Frontend (SSR): http://localhost:3000
+- Frontend: http://localhost:3000
 - API: http://localhost:8000/api/
 - Admin: http://localhost:8000/admin/
 
@@ -54,7 +54,7 @@ docker compose exec api python manage.py createsuperuser
 2. **Configure environment:**
 
    ```bash
-   cp ../.env.example .env
+   cp .env.example .env
    # Edit .env with your database credentials
    ```
 

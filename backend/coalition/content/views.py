@@ -7,7 +7,7 @@ from coalition.content.theme_service import ThemeService
 from .models import Theme
 
 
-def theme_css(request: HttpRequest, theme_id: int = None) -> HttpResponse:
+def theme_css(request: HttpRequest, theme_id: int | None = None) -> HttpResponse:
     """
     Serve dynamic CSS for a specific theme or the active theme.
 
@@ -28,8 +28,13 @@ def theme_css(request: HttpRequest, theme_id: int = None) -> HttpResponse:
             response["Cache-Control"] = "no-cache"
             return response
     else:
-        theme = Theme.get_active()
-        return ThemeService.get_theme_css_response(theme)
+        active_theme = Theme.get_active()
+        if active_theme is None:
+            # Return empty CSS if no active theme
+            response = HttpResponse("", content_type="text/css")
+            response["Cache-Control"] = "no-cache"
+            return response
+        return ThemeService.get_theme_css_response(active_theme)
 
 
 def active_theme_css(request: HttpRequest) -> HttpResponse:

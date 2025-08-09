@@ -93,6 +93,11 @@ jobs:
           mkdir -p docs/api
           cp -r backend/docs/_build/html/* docs/api/
 
+      - name: Copy frontend docs to site
+        run: |
+          mkdir -p docs/frontend
+          cp -r frontend/docs/* docs/frontend/
+
       - name: Build main documentation
         run: mkdocs build --clean --strict
 

@@ -29,7 +29,7 @@ api.add_router("/themes/", themes.router)
 api.add_router("/legal/", legal.router)
 
 
-@api.get("/health/", tags=["Health"])
+@api.get("/health", tags=["Health"])
 def api_health_check(request: HttpRequest) -> JsonResponse:
     """Health check endpoint for API monitoring and external tools"""
     # Re-use the Django view health check function

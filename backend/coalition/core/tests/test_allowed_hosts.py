@@ -88,7 +88,6 @@ class AllowedHostsConfigurationTest(TestCase):
                 clear=False,
             ),
         ):
-
             reload(settings_module)
 
             assert (

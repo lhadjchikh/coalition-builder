@@ -20,7 +20,6 @@ def reverse_clean_image_fields(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("content", "0001_initial"),
     ]

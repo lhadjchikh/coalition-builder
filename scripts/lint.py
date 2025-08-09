@@ -137,6 +137,12 @@ def run_python_linters(project_root: Path) -> tuple[bool, bool]:
         cwd=backend_dir,
     )
 
+    print_step("Running mypy type checker")
+    success &= run_command(
+        ["poetry", "run", "mypy", "coalition/", "--config-file", "pyproject.toml"],
+        cwd=backend_dir,
+    )
+
     return success, True
 
 
@@ -177,15 +183,15 @@ def run_prettier(project_root: Path) -> tuple[bool, bool]:
         return True, False
 
     try:
-        # First, try to run the format:all script which is defined in package.json
-        print_step("Running comprehensive format:all script")
-        format_result = run_command(
+        # First, format files in the frontend directory
+        print_step("Running Prettier on frontend files")
+        frontend_result = run_command(
             ["npm", "--prefix", "frontend", "run", "format:all"],
             cwd=project_root,
         )
 
-        if not format_result:
-            print("⚠️  Format:all script failed, trying alternative approaches...")
+        if not frontend_result:
+            print("⚠️  Frontend formatting failed, trying alternative approaches...")
             success = False
 
             # Try YAML formatting as a fallback
@@ -208,8 +214,36 @@ def run_prettier(project_root: Path) -> tuple[bool, bool]:
                 # Still mark as failure since format:all should work
                 success = False
             else:
-                print("❌ All formatting attempts failed.")
+                print("❌ All frontend formatting attempts failed.")
                 success = False
+        
+        # Now also format markdown and other files at the project root level
+        # This matches what the GitHub workflow does
+        print_step("Running Prettier on project-wide files (docs, configs)")
+        
+        # Check if npx is available (it should be if npm is)
+        if which("npx"):
+            # Run prettier from frontend directory to match CI behavior
+            # This ensures consistent formatting behavior
+            frontend_dir = project_root / "frontend"
+            
+            # Format docs and root config files from frontend context
+            # This matches the GitHub workflow exactly
+            project_files_result = run_command(
+                ["npx", "prettier", "--write", 
+                 "../docs/**/*.md", 
+                 "../*.{json,yml,yaml,md}",
+                 "../.github/workflows/*.yml",
+                 "--ignore-path", "../.prettierignore",
+                 "--config", "../.prettierrc"],
+                cwd=frontend_dir,
+            )
+            if not project_files_result:
+                print("⚠️  Failed to format project-wide files")
+                success = False
+        else:
+            print("⚠️  npx not available, skipping project-wide formatting")
+            
     except Exception as e:
         print(f"❌ Error running Prettier: {e}")
         success = False

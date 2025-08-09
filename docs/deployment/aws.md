@@ -44,8 +44,8 @@ flowchart TB
         %% Private Subnets
         subgraph private["Private Subnets"]
             subgraph ecs_cluster["ECS Cluster"]
-                django[Django API Container]
-                ssr[Next.js SSR Container<br/>*optional*]
+                api[Django API Container]
+                app[Next.js Frontend Container]
                 redis[Redis Cache]
             end
         end
@@ -65,33 +65,33 @@ flowchart TB
     end
 
     %% Connections
-    alb --> django
-    alb --> ssr
-    django --> redis
-    django --> rds
-    ssr --> django
+    alb --> api
+    alb --> app
+    api --> redis
+    api --> rds
+    app --> api
     bastion --> rds
 
     %% CloudFront connections
     cloudfront --> alb
 
     %% Service connections
-    django --> secrets
-    ssr --> secrets
-    django --> cloudwatch
-    ssr --> cloudwatch
+    api --> secrets
+    app --> secrets
+    api --> cloudwatch
+    app --> cloudwatch
     redis --> cloudwatch
 
     %% ECR
-    ecr --> django
-    ecr --> ssr
+    ecr --> api
+    ecr --> app
     ecr --> redis
 ```
 
 The infrastructure uses a layered security model with:
 
 - **Public Subnets**: Load balancer and bastion host
-- **Private Subnets**: ECS containers (Django API + optional Next.js SSR)
+- **Private Subnets**: ECS containers (Django API + Next.js Frontend)
 - **Database Subnets**: RDS PostgreSQL with PostGIS
 - **Security Groups**: Component isolation with least privilege
 - **Secrets Manager**: Secure credential storage
@@ -114,7 +114,7 @@ The infrastructure uses a layered security model with:
 
 ### 1. Configure Environment Variables
 
-For local testing and development with Terraform, you can use the `.env` file in the project root:
+For local testing and development with Terraform, create a `.env` file in the terraform directory or export these environment variables:
 
 ```bash
 # AWS deployment settings
@@ -161,7 +161,45 @@ To add these secrets:
 2. Click on "Settings" > "Secrets and variables" > "Actions"
 3. Click "New repository secret" and add each secret
 
-### 3. Secure Credentials Management with AWS Secrets Manager
+### 3. Configure CloudFront for Image Optimization
+
+When deploying to AWS, CloudFront CDN is automatically configured to serve media files and optimized images. To enable Next.js image optimization with CloudFront:
+
+1. **Set the CloudFront domain** in your environment variables:
+
+   ```bash
+   # In your ECS task definition or environment configuration
+   CLOUDFRONT_DOMAIN=d123456789.cloudfront.net  # Your CloudFront distribution domain
+   ```
+
+2. **Custom domain (optional)**: If you've configured a custom domain for CloudFront:
+
+   ```bash
+   CLOUDFRONT_DOMAIN=cdn.yourdomain.com
+   ```
+
+3. **Backend domain (optional)**: If serving images directly from the backend without CDN:
+   ```bash
+   BACKEND_DOMAIN=api.yourdomain.com
+   ```
+
+**Benefits of CloudFront Integration:**
+
+- Automatic image optimization and resizing by Next.js
+- Global CDN distribution for faster image loading
+- Support for dynamic image dimensions from backend storage
+- WebP format serving when supported by browsers
+- Reduced bandwidth costs through caching
+
+**Image Storage in S3:**
+Media files uploaded through the admin interface are automatically stored in S3 with the following structure:
+
+- `logos/` - Organization logos from theme settings
+- `favicons/` - Favicon uploads
+- `backgrounds/` - Hero background images
+- `content_blocks/` - Images from content blocks
+
+### 4. Secure Credentials Management with AWS Secrets Manager
 
 Before deployment, set up your database credentials in AWS Secrets Manager:
 

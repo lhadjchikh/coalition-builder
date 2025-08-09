@@ -1,22 +1,7 @@
 name: Terraform Check
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "terraform/**"
-      - ".github/workflows/lint_terraform.yml"
-      - ".github/workflows/lint_go.yml"
-      - ".github/workflows/test_terraform.yml"
-      - ".github/workflows/check_terraform.yml"
-  pull_request:
-    branches: [main]
-    paths:
-      - "terraform/**"
-      - ".github/workflows/lint_terraform.yml"
-      - ".github/workflows/lint_go.yml"
-      - ".github/workflows/test_terraform.yml"
-      - ".github/workflows/check_terraform.yml"
+  workflow_call: # Allow this workflow to be called by other workflows
   workflow_dispatch:
     inputs:
       ref:

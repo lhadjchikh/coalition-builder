@@ -18,8 +18,6 @@ on:
       - ".github/workflows/*.yaml"
       # Exclude paths covered by check_frontend
       - "!frontend/**"
-      - "!shared/**"
-      - "!ssr/**"
   pull_request:
     branches: [main]
     paths:
@@ -34,8 +32,6 @@ on:
       - ".github/workflows/*.yaml"
       # Exclude paths covered by check_frontend
       - "!frontend/**"
-      - "!shared/**"
-      - "!ssr/**"
   workflow_call: # Allow this workflow to be called by other workflows
 
 jobs:
@@ -61,17 +57,9 @@ jobs:
           cd frontend
           npm run format:check
 
-      - name: Create .prettierignore
-        run: |
-          echo "node_modules/" > .prettierignore
-          echo "build/" >> .prettierignore
-          echo "dist/" >> .prettierignore
-          echo "coverage/" >> .prettierignore
-          echo "frontend/node_modules/" >> .prettierignore
-          echo "backend/.venv/" >> .prettierignore
-
       - name: Check project-wide files
         run: |
           cd frontend
           # Check all relevant files including root directory files and workflow files
-          npx prettier --check "../{,**/}*.{md,yml,yaml,json,css}" "../.github/workflows/*.yml" --ignore-path ../.prettierignore
+          # Use the existing .prettierignore and .prettierrc files from the repository root
+          npx prettier --check "../{,**/}*.{md,yml,yaml,json,css}" "../.github/workflows/*.yml" --ignore-path ../.prettierignore --config ../.prettierrc

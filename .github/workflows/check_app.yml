@@ -14,9 +14,7 @@ permissions:
 env:
   FRONTEND_PATHS: |
     frontend/
-    shared/
     .github/workflows/test_frontend.yml
-    .github/workflows/test_ssr.yml
     .github/workflows/check_frontend.yml
     .github/workflows/lint_typescript.yml
     .github/workflows/lint_prettier.yml
@@ -25,16 +23,12 @@ env:
     backend/
     scripts/
     docker-compose.yml
-    Dockerfile
     pyproject.toml
     .github/workflows/test_backend.yml
     .github/workflows/check_backend.yml
     .github/workflows/lint_python.yml
 
-  SSR_PATHS: |
-    ssr/
-    Dockerfile.ssr
-    .github/workflows/test_ssr.yml
+  # SSR paths removed - now part of FRONTEND_PATHS
 
   TERRAFORM_PATHS: |
     terraform/
@@ -59,7 +53,6 @@ jobs:
     outputs:
       run_frontend: ${{ steps.changes.outputs.run_frontend }}
       run_backend: ${{ steps.changes.outputs.run_backend }}
-      run_ssr: ${{ steps.changes.outputs.run_ssr }}
       run_terraform: ${{ steps.changes.outputs.run_terraform }}
       run_fullstack: ${{ steps.changes.outputs.run_fullstack }}
       docs_only: ${{ steps.changes.outputs.docs_only }}
@@ -105,13 +98,12 @@ jobs:
           # Initialize flags
           RUN_FRONTEND=false
           RUN_BACKEND=false
-          RUN_SSR=false
           RUN_TERRAFORM=false
           RUN_FULLSTACK=false
           DOCS_ONLY=true
 
           # Build the complete fullstack paths by combining all component paths
-          FULLSTACK_PATHS="$FRONTEND_PATHS"$'\n'"$BACKEND_PATHS"$'\n'"$SSR_PATHS"$'\n'"$TERRAFORM_PATHS"$'\n'"$FULLSTACK_ONLY_PATHS"
+          FULLSTACK_PATHS="$FRONTEND_PATHS"$'\n'"$BACKEND_PATHS"$'\n'"$TERRAFORM_PATHS"$'\n'"$FULLSTACK_ONLY_PATHS"
 
           echo "Full stack paths include:"
           echo "$FULLSTACK_PATHS" | grep -v '^$' | sed 's/^/  - /'
@@ -168,11 +160,6 @@ jobs:
                 echo "  -> Backend tests required"
               fi
 
-              if matches_pattern "$file" "$SSR_PATHS"; then
-                RUN_SSR=true
-                RUN_FULLSTACK=true
-                echo "  -> SSR tests required"
-              fi
 
               if matches_pattern "$file" "$TERRAFORM_PATHS"; then
                 RUN_TERRAFORM=true
@@ -197,7 +184,6 @@ jobs:
           # Set outputs
           echo "run_frontend=$RUN_FRONTEND" >> $GITHUB_OUTPUT
           echo "run_backend=$RUN_BACKEND" >> $GITHUB_OUTPUT
-          echo "run_ssr=$RUN_SSR" >> $GITHUB_OUTPUT
           echo "run_terraform=$RUN_TERRAFORM" >> $GITHUB_OUTPUT
           echo "run_fullstack=$RUN_FULLSTACK" >> $GITHUB_OUTPUT
           echo "docs_only=$DOCS_ONLY" >> $GITHUB_OUTPUT
@@ -207,7 +193,6 @@ jobs:
           echo "  Documentation only: $DOCS_ONLY"
           echo "  Frontend tests: $RUN_FRONTEND"
           echo "  Backend tests: $RUN_BACKEND"
-          echo "  SSR tests: $RUN_SSR"
           echo "  Terraform tests: $RUN_TERRAFORM"
           echo "  Full stack tests: $RUN_FULLSTACK"
 
@@ -222,184 +207,63 @@ jobs:
           echo "Skipping tests - only documentation files were changed"
           echo "No application code changes detected"
 
-  trigger_tests:
-    name: Trigger Required Tests
-    runs-on: ubuntu-latest
+  # Frontend tests
+  frontend-check:
+    name: Frontend Check
     needs: analyze_changes
-    if: needs.analyze_changes.outputs.docs_only != 'true'
-    steps:
-      - name: Trigger Frontend Check (includes TypeScript lint + Prettier + Frontend/SSR tests)
-        if: needs.analyze_changes.outputs.run_frontend == 'true' || needs.analyze_changes.outputs.run_ssr == 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            try {
-              await github.rest.actions.createWorkflowDispatch({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                workflow_id: 'check_frontend.yml',
-                ref: '${{ github.head_ref || github.ref }}',
-                inputs: {
-                  ref: '${{ github.sha }}'
-                }
-              });
-              console.log('✅ Triggered Frontend Check (linting + tests)');
-            } catch (error) {
-              console.error('❌ Failed to trigger Frontend Check:', error);
-              throw error;
-            }
+    if: needs.analyze_changes.outputs.docs_only != 'true' && needs.analyze_changes.outputs.run_frontend == 'true'
+    uses: ./.github/workflows/check_frontend.yml
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    secrets: inherit
 
-      - name: Trigger Backend Check (includes Python lint + Backend tests)
-        if: needs.analyze_changes.outputs.run_backend == 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'check_backend.yml',
-              ref: '${{ github.head_ref || github.ref }}',
-              inputs: {
-                ref: '${{ github.sha }}'
-              }
-            });
-            console.log('✅ Triggered Backend Check (linting + tests)');
+  # Backend tests
+  backend-check:
+    name: Backend Check
+    needs: analyze_changes
+    if: needs.analyze_changes.outputs.docs_only != 'true' && needs.analyze_changes.outputs.run_backend == 'true'
+    uses: ./.github/workflows/check_backend.yml
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    secrets: inherit
 
-      - name: Trigger Full Stack Tests
-        if: needs.analyze_changes.outputs.run_fullstack == 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'test_fullstack.yml',
-              ref: '${{ github.head_ref || github.ref }}',
-              inputs: {
-                ref: '${{ github.sha }}'
-              }
-            });
-            console.log('✅ Triggered Full Stack Tests');
+  # Terraform tests
+  terraform-check:
+    name: Terraform Check
+    needs: analyze_changes
+    if: needs.analyze_changes.outputs.docs_only != 'true' && needs.analyze_changes.outputs.run_terraform == 'true'
+    uses: ./.github/workflows/check_terraform.yml
+    permissions:
+      contents: read
+      id-token: write
+    secrets: inherit
 
-      - name: Trigger Terraform Check (includes Terraform lint + Go lint + Terraform tests)
-        if: needs.analyze_changes.outputs.run_terraform == 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'check_terraform.yml',
-              ref: '${{ github.head_ref || github.ref }}',
-              inputs: {
-                ref: '${{ github.sha }}'
-              }
-            });
-            console.log('✅ Triggered Terraform Check (linting + tests)');
-
-      - name: Record triggered tests
-        run: |
-          echo "Triggered tests summary:"
-          echo "Frontend Check (includes Frontend/SSR): ${{ needs.analyze_changes.outputs.run_frontend == 'true' || needs.analyze_changes.outputs.run_ssr == 'true' }}"
-          echo "Backend Check (includes Backend): ${{ needs.analyze_changes.outputs.run_backend }}"
-          echo "Terraform Check (includes Terraform): ${{ needs.analyze_changes.outputs.run_terraform }}"
-          echo "Full Stack: ${{ needs.analyze_changes.outputs.run_fullstack }}"
-
-  wait_for_tests:
-    name: Wait for Test Completion
-    runs-on: ubuntu-latest
-    needs: [analyze_changes, trigger_tests]
-    if: needs.analyze_changes.outputs.docs_only != 'true'
-    steps:
-      - name: Wait for test workflows
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const requiredTests = [];
-            if ('${{ needs.analyze_changes.outputs.run_frontend }}' === 'true' || '${{ needs.analyze_changes.outputs.run_ssr }}' === 'true') {
-              requiredTests.push('Frontend Check');
-            }
-            if ('${{ needs.analyze_changes.outputs.run_backend }}' === 'true') {
-              requiredTests.push('Backend Check');
-            }
-            if ('${{ needs.analyze_changes.outputs.run_terraform }}' === 'true') {
-              requiredTests.push('Terraform Check');
-            }
-            if ('${{ needs.analyze_changes.outputs.run_fullstack }}' === 'true') {
-              requiredTests.push('Full Stack Integration Tests');
-            }
-
-            console.log('Waiting for tests:', requiredTests);
-
-            const maxWaitTime = 30 * 60 * 1000; // 30 minutes
-            const pollInterval = 30 * 1000; // 30 seconds
-            const startTime = Date.now();
-
-            async function checkWorkflows() {
-              const runs = await github.rest.actions.listWorkflowRunsForRepo({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                per_page: 100
-              });
-
-              const relevantRuns = runs.data.workflow_runs.filter(run =>
-                requiredTests.includes(run.name) &&
-                run.event === 'workflow_dispatch' &&
-                new Date(run.created_at).getTime() > startTime - 60000
-              );
-
-              const statuses = {};
-              for (const testName of requiredTests) {
-                const testRuns = relevantRuns.filter(run => run.name === testName);
-                if (testRuns.length === 0) {
-                  statuses[testName] = 'not_started';
-                } else {
-                  const latestRun = testRuns.sort((a, b) =>
-                    new Date(b.created_at) - new Date(a.created_at)
-                  )[0];
-                  statuses[testName] = latestRun.status === 'completed'
-                    ? latestRun.conclusion
-                    : latestRun.status;
-                }
-              }
-
-              console.log('Test statuses:', statuses);
-
-              const allComplete = requiredTests.every(test =>
-                statuses[test] === 'success'
-              );
-              const anyFailed = requiredTests.some(test =>
-                ['failure', 'cancelled'].includes(statuses[test])
-              );
-
-              if (allComplete) {
-                return { done: true, success: true };
-              } else if (anyFailed) {
-                return { done: true, success: false };
-              } else {
-                return { done: false, success: false };
-              }
-            }
-
-            // Poll until complete or timeout
-            while (Date.now() - startTime < maxWaitTime) {
-              const result = await checkWorkflows();
-              if (result.done) {
-                if (!result.success) {
-                  throw new Error('One or more test workflows failed');
-                }
-                console.log('All tests completed successfully');
-                return;
-              }
-              await new Promise(resolve => setTimeout(resolve, pollInterval));
-            }
-
-            throw new Error('Timeout waiting for test workflows to complete');
+  # Full Stack tests
+  fullstack-tests:
+    name: Full Stack Tests
+    needs: analyze_changes
+    if: needs.analyze_changes.outputs.docs_only != 'true' && needs.analyze_changes.outputs.run_fullstack == 'true'
+    uses: ./.github/workflows/test_fullstack.yml
+    permissions:
+      contents: read
+    secrets: inherit
 
   tests_complete:
     name: All Tests Complete
     runs-on: ubuntu-latest
-    needs: [analyze_changes, skip_tests, wait_for_tests]
+    needs:
+      [
+        analyze_changes,
+        skip_tests,
+        frontend-check,
+        backend-check,
+        terraform-check,
+        fullstack-tests,
+      ]
     if: always()
     steps:
       - name: Check test results
@@ -410,10 +274,31 @@ jobs:
             exit 0
           fi
 
-          # Check if wait_for_tests job succeeded
-          if [ "${{ needs.wait_for_tests.result }}" != "success" ]; then
-            echo "❌ Test workflows failed or timed out"
-            echo "Check the individual test workflow runs for details"
+          # Check individual test results
+          FAILED=false
+
+          if [ "${{ needs.analyze_changes.outputs.run_frontend }}" = "true" ] && [ "${{ needs.frontend-check.result }}" != "success" ] && [ "${{ needs.frontend-check.result }}" != "skipped" ]; then
+            echo "❌ Frontend Check failed"
+            FAILED=true
+          fi
+
+          if [ "${{ needs.analyze_changes.outputs.run_backend }}" = "true" ] && [ "${{ needs.backend-check.result }}" != "success" ] && [ "${{ needs.backend-check.result }}" != "skipped" ]; then
+            echo "❌ Backend Check failed"
+            FAILED=true
+          fi
+
+          if [ "${{ needs.analyze_changes.outputs.run_terraform }}" = "true" ] && [ "${{ needs.terraform-check.result }}" != "success" ] && [ "${{ needs.terraform-check.result }}" != "skipped" ]; then
+            echo "❌ Terraform Check failed"
+            FAILED=true
+          fi
+
+          if [ "${{ needs.analyze_changes.outputs.run_fullstack }}" = "true" ] && [ "${{ needs.fullstack-tests.result }}" != "success" ] && [ "${{ needs.fullstack-tests.result }}" != "skipped" ]; then
+            echo "❌ Full Stack Tests failed"
+            FAILED=true
+          fi
+
+          if [ "$FAILED" = "true" ]; then
+            echo "❌ One or more test workflows failed"
             exit 1
           fi
 

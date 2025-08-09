@@ -92,8 +92,7 @@ flowchart TD
 ## 🏗️ Technology Stack
 
 - **Backend**: Django 5.2 + PostgreSQL + PostGIS
-- **Frontend**: React 19 + TypeScript
-- **SSR**: Next.js 15 (optional)
+- **Frontend**: Next.js 15 + React 19 + TypeScript (Server-Side Rendered)
 - **Infrastructure**: AWS + Terraform
 
 ## 📚 Documentation

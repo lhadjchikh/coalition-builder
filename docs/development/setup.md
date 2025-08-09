@@ -163,7 +163,7 @@ The `gosec` security scanner may fail to install due to repository access issues
 
 ## 📚 Tool Documentation
 
-- **Python Linting**: Uses Black (formatting) + Ruff (linting)
+- **Python Linting**: Uses Black (formatting) + Ruff (linting) + mypy (type checking)
 - **Go Linting**: Uses gofmt, go vet, staticcheck, golangci-lint
 - **JavaScript/TypeScript**: Uses Prettier via npm
 - **Terraform**: Uses terraform fmt + tflint

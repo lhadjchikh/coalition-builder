@@ -1,28 +1,7 @@
 name: Frontend Check
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "frontend/**"
-      - "shared/**"
-      - "ssr/**"
-      - ".github/workflows/lint_typescript.yml"
-      - ".github/workflows/lint_prettier.yml"
-      - ".github/workflows/test_frontend.yml"
-      - ".github/workflows/test_ssr.yml"
-      - ".github/workflows/check_frontend.yml"
-  pull_request:
-    branches: [main]
-    paths:
-      - "frontend/**"
-      - "shared/**"
-      - "ssr/**"
-      - ".github/workflows/lint_typescript.yml"
-      - ".github/workflows/lint_prettier.yml"
-      - ".github/workflows/test_frontend.yml"
-      - ".github/workflows/test_ssr.yml"
-      - ".github/workflows/check_frontend.yml"
+  workflow_call: # Allow this workflow to be called by other workflows
   workflow_dispatch:
     inputs:
       ref:
@@ -58,12 +37,4 @@ jobs:
       contents: read
       actions: read # Need actions:read for codecov
       id-token: write # For Codecov authentication on protected branches
-    secrets: inherit
-
-  ssr-tests:
-    name: SSR Tests
-    needs: [typescript-lint, prettier-lint]
-    uses: ./.github/workflows/test_ssr.yml
-    permissions:
-      contents: read
     secrets: inherit

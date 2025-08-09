@@ -28,7 +28,7 @@ permissions:
 
 env:
   API_ECR_REPOSITORY: coalition-api
-  SSR_ECR_REPOSITORY: coalition-ssr
+  APP_ECR_REPOSITORY: coalition-app
 
 jobs:
   check_deployment_trigger:
@@ -240,7 +240,7 @@ jobs:
     environment: prod
     outputs:
       api_image: ${{ steps.image_outputs.outputs.api_image }}
-      ssr_image: ${{ steps.image_outputs.outputs.ssr_image }}
+      app_image: ${{ steps.image_outputs.outputs.app_image }}
 
     steps:
       - name: Checkout
@@ -270,23 +270,24 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-api-
 
-      # Cache Docker layers for SSR builds
-      - name: Cache SSR Docker layers
+      # Cache Docker layers for App (frontend) builds
+      - name: Cache App Docker layers
         uses: actions/cache@v4
         with:
-          path: /tmp/.buildx-cache-ssr
-          key: ${{ runner.os }}-buildx-ssr-${{ github.sha }}
+          path: /tmp/.buildx-cache-app
+          key: ${{ runner.os }}-buildx-app-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-ssr-
+            ${{ runner.os }}-buildx-app-
 
-      # Build and push the Django app Docker image with layer caching
-      - name: Build and push Django app image
-        id: build_app_image
+      # Build and push the Django API Docker image with layer caching
+      - name: Build and push Django API image
+        id: build_api_image
         uses: docker/build-push-action@v5
         env:
           ECR_REGISTRY: ${{ steps.login_ecr.outputs.registry }}
         with:
-          context: .
+          context: ./backend
+          dockerfile: ./backend/Dockerfile
           push: true
           tags: ${{ steps.login_ecr.outputs.registry }}/${{ env.API_ECR_REPOSITORY }}:${{ github.sha }}-${{ github.run_number }}
           cache-from: type=local,src=/tmp/.buildx-cache-api
@@ -295,19 +296,19 @@ jobs:
             BUILDKIT_INLINE_CACHE=1
           platforms: linux/amd64
 
-      # Build and push the SSR Docker image with layer caching
-      - name: Build and push SSR image
-        id: build_ssr_image
+      # Build and push the App (frontend) Docker image with layer caching
+      - name: Build and push App image
+        id: build_app_image
         uses: docker/build-push-action@v5
         env:
           ECR_REGISTRY: ${{ steps.login_ecr.outputs.registry }}
         with:
-          context: .
-          file: ./Dockerfile.ssr
+          context: ./frontend
+          dockerfile: ./frontend/Dockerfile
           push: true
-          tags: ${{ steps.login_ecr.outputs.registry }}/${{ env.SSR_ECR_REPOSITORY }}:${{ github.sha }}-${{ github.run_number }}
-          cache-from: type=local,src=/tmp/.buildx-cache-ssr
-          cache-to: type=local,dest=/tmp/.buildx-cache-ssr-new,mode=max
+          tags: ${{ steps.login_ecr.outputs.registry }}/${{ env.APP_ECR_REPOSITORY }}:${{ github.sha }}-${{ github.run_number }}
+          cache-from: type=local,src=/tmp/.buildx-cache-app
+          cache-to: type=local,dest=/tmp/.buildx-cache-app-new,mode=max
           build-args: |
             BUILDKIT_INLINE_CACHE=1
             API_URL=http://localhost:8000
@@ -320,9 +321,9 @@ jobs:
           rm -rf /tmp/.buildx-cache-api
           mv /tmp/.buildx-cache-api-new /tmp/.buildx-cache-api
 
-          # Move SSR cache
-          rm -rf /tmp/.buildx-cache-ssr
-          mv /tmp/.buildx-cache-ssr-new /tmp/.buildx-cache-ssr
+          # Move App cache
+          rm -rf /tmp/.buildx-cache-app
+          mv /tmp/.buildx-cache-app-new /tmp/.buildx-cache-app
 
       # Set outputs for use in other jobs
       - name: Set output image variables
@@ -330,10 +331,10 @@ jobs:
         run: |
           API_IMAGE_TAG="${{ github.sha }}-${{ github.run_number }}"
           API_IMAGE="${{ steps.login_ecr.outputs.registry }}/${{ env.API_ECR_REPOSITORY }}:$API_IMAGE_TAG"
-          SSR_IMAGE_TAG="${{ github.sha }}-${{ github.run_number }}"
-          SSR_IMAGE="${{ steps.login_ecr.outputs.registry }}/${{ env.SSR_ECR_REPOSITORY }}:$SSR_IMAGE_TAG"
+          APP_IMAGE_TAG="${{ github.sha }}-${{ github.run_number }}"
+          APP_IMAGE="${{ steps.login_ecr.outputs.registry }}/${{ env.APP_ECR_REPOSITORY }}:$APP_IMAGE_TAG"
           echo "api_image=$API_IMAGE" >> $GITHUB_OUTPUT
-          echo "ssr_image=$SSR_IMAGE" >> $GITHUB_OUTPUT
+          echo "app_image=$APP_IMAGE" >> $GITHUB_OUTPUT
 
   deploy:
     name: Deploy to ECS
@@ -356,47 +357,57 @@ jobs:
         run: |
           aws ecs describe-task-definition --task-definition coalition --query taskDefinition > task-definition.json
 
-      - name: Update Django app container image in ECS task definition
-        id: task_def_app
+      - name: Update Django API container image in ECS task definition
+        id: task_def_api
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
-          container-name: app
+          container-name: api
           image: ${{ needs.build_and_push.outputs.api_image }}
 
-      # Check if SSR container exists in the task definition
-      - name: Check for SSR container
-        id: check_ssr
+      # Check if app container exists in the task definition
+      - name: Check for app container
+        id: check_app_frontend
         run: |
-          # Use jq to properly parse JSON and check for SSR container
-          if jq -e '.containerDefinitions[] | select(.name=="ssr")' task-definition.json > /dev/null 2>&1; then
-            echo "has_ssr=true" >> $GITHUB_OUTPUT
-            echo "SSR container found in task definition"
+          # Use jq to properly parse JSON and check for app container (could be named 'app', 'frontend', or 'ssr')
+          if jq -e '.containerDefinitions[] | select(.name=="app" or .name=="frontend" or .name=="ssr")' task-definition.json > /dev/null 2>&1; then
+            echo "has_app=true" >> $GITHUB_OUTPUT
+            # Determine the actual container name
+            if jq -e '.containerDefinitions[] | select(.name=="app")' task-definition.json > /dev/null 2>&1; then
+              echo "container_name=app" >> $GITHUB_OUTPUT
+              echo "App container found in task definition"
+            elif jq -e '.containerDefinitions[] | select(.name=="frontend")' task-definition.json > /dev/null 2>&1; then
+              echo "container_name=frontend" >> $GITHUB_OUTPUT
+              echo "Frontend container found in task definition (legacy name)"
+            else
+              echo "container_name=ssr" >> $GITHUB_OUTPUT
+              echo "SSR container found in task definition (legacy name)"
+            fi
           else
-            echo "has_ssr=false" >> $GITHUB_OUTPUT
-            echo "No SSR container found in task definition"
+            echo "has_app=false" >> $GITHUB_OUTPUT
+            echo "No app/frontend/SSR container found in task definition"
           fi
 
-      # Only update the SSR container if it exists in the task definition
-      - name: Update SSR container image in ECS task definition
-        id: task_def_ssr
-        if: ${{ steps.check_ssr.outputs.has_ssr == 'true' }}
+      # Only update the app container if it exists in the task definition
+      - name: Update app container image in ECS task definition
+        id: task_def_app_frontend
+        if: ${{ steps.check_app_frontend.outputs.has_app == 'true' }}
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: ${{ steps.task_def_app.outputs.task-definition }}
-          container-name: ssr
-          image: ${{ needs.build_and_push.outputs.ssr_image }}
+          task-definition: ${{ steps.task_def_api.outputs.task-definition }}
+          container-name: ${{ steps.check_app_frontend.outputs.container_name }}
+          image: ${{ needs.build_and_push.outputs.app_image }}
 
       # Choose the right task definition based on whether SSR was updated
       - name: Set final task definition
         id: set_final_taskdef
         run: |
-          if [[ "${{ steps.check_ssr.outputs.has_ssr }}" == "true" ]]; then
-            echo "final_taskdef=${{ steps.task_def_ssr.outputs.task-definition }}" >> $GITHUB_OUTPUT
-            echo "Using task definition with SSR container updated"
+          if [[ "${{ steps.check_app_frontend.outputs.has_app }}" == "true" ]]; then
+            echo "final_taskdef=${{ steps.task_def_app_frontend.outputs.task-definition }}" >> $GITHUB_OUTPUT
+            echo "Using task definition with app container updated"
           else
-            echo "final_taskdef=${{ steps.task_def_app.outputs.task-definition }}" >> $GITHUB_OUTPUT
-            echo "Using task definition with only app container updated (no SSR)"
+            echo "final_taskdef=${{ steps.task_def_api.outputs.task-definition }}" >> $GITHUB_OUTPUT
+            echo "Using task definition with only API container updated (no app/frontend)"
           fi
 
       - name: Deploy Amazon ECS task definition

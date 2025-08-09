@@ -209,14 +209,14 @@ class Theme(models.Model):
     def logo_url(self) -> str | None:
         """Return the URL of the uploaded logo, or None if no logo."""
         if self.logo and hasattr(self.logo, "url"):
-            return self.logo.url
+            return str(self.logo.url)
         return None
 
     @property
     def favicon_url(self) -> str | None:
         """Return the URL of the uploaded favicon, or None if no favicon."""
         if self.favicon and hasattr(self.favicon, "url"):
-            return self.favicon.url
+            return str(self.favicon.url)
         return None
 
     def clean(self) -> None:

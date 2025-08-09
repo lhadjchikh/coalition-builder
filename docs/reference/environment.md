@@ -272,7 +272,7 @@ NEXT_PUBLIC_HOTJAR_ID=1234567
 - Analytics only activates when users consent to analytics cookies
 - Leave blank to disable all analytics tracking
 
-## SSR Environment Variables
+## Frontend Environment Variables
 
 ### Server Configuration
 
@@ -306,6 +306,33 @@ HOSTNAME=0.0.0.0
 ```bash
 NEXT_TELEMETRY_DISABLED=1
 ANALYZE=true
+```
+
+### Image Optimization Configuration
+
+| Variable            | Description                                                     | Default | Required |
+| ------------------- | --------------------------------------------------------------- | ------- | -------- |
+| `CLOUDFRONT_DOMAIN` | CloudFront CDN domain for serving optimized images              | -       | No       |
+| `BACKEND_DOMAIN`    | Backend domain for direct image serving (if different from CDN) | -       | No       |
+
+**Notes:**
+
+- Next.js automatically optimizes images served through these domains
+- Supports dynamic image dimensions from backend storage
+- Protocol (http/https) is automatically stripped if included
+- Images are served with responsive sizing and WebP format when supported
+
+**Example:**
+
+```bash
+# CloudFront CDN (recommended for production)
+CLOUDFRONT_DOMAIN=d123456789.cloudfront.net
+
+# Or with custom domain
+CLOUDFRONT_DOMAIN=cdn.yourdomain.com
+
+# Optional: Direct backend serving
+BACKEND_DOMAIN=api.yourdomain.com
 ```
 
 ## Terraform/Deployment Variables
@@ -395,11 +422,15 @@ CACHE_URL=redis://redis:6379/1
 NEXT_PUBLIC_API_URL=http://localhost:8000/api
 REACT_APP_DEBUG=true
 
-# SSR
-API_URL=http://backend:8000
-NEXT_PUBLIC_API_URL=http://localhost:8000/api
+# Frontend
+API_URL=http://api:8000
+NEXT_PUBLIC_API_URL=http://localhost:8000
 PORT=3000
 NODE_ENV=development
+
+# Image Sources (optional for development)
+# CLOUDFRONT_DOMAIN=
+# BACKEND_DOMAIN=
 ```
 
 ### Production (.env.production)
@@ -442,13 +473,14 @@ USE_S3=True
 AWS_STORAGE_BUCKET_NAME=${S3_BUCKET_NAME}
 
 # Frontend
-NEXT_PUBLIC_API_URL=https://api.yourdomain.com/api
-
-# SSR
-API_URL=http://backend:8000
-NEXT_PUBLIC_API_URL=https://api.yourdomain.com/api
+API_URL=http://api:8000
+NEXT_PUBLIC_API_URL=https://yourdomain.com
 NODE_ENV=production
 NEXT_TELEMETRY_DISABLED=1
+
+# Image Sources
+CLOUDFRONT_DOMAIN=${CLOUDFRONT_DOMAIN}  # e.g., d123456789.cloudfront.net
+BACKEND_DOMAIN=${BACKEND_DOMAIN}        # Optional: api.yourdomain.com
 
 # Monitoring
 LOG_LEVEL=INFO
@@ -490,12 +522,8 @@ ORG_TAGLINE="Testing advocacy partnerships"
 CONTACT_EMAIL="test@example.com"
 
 # Frontend Test Settings
-NEXT_PUBLIC_API_URL=http://localhost:8000/api
-REACT_APP_DEBUG=true
-
-# SSR Test Settings
 API_URL=http://localhost:8000
-NEXT_PUBLIC_API_URL=http://localhost:8000/api
+NEXT_PUBLIC_API_URL=http://localhost:8000
 NODE_ENV=test
 ```
 

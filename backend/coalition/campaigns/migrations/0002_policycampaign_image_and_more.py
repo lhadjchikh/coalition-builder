@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("campaigns", "0001_initial"),
         ("content", "0003_remove_contentblock_homepage_and_more"),

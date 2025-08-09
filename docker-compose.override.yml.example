@@ -1,0 +1,39 @@
+# Docker Compose Override Example
+# Copy this file to docker-compose.override.yml for local development
+# This file allows you to override settings without modifying the main docker-compose.yml
+
+# If you don't have .env files, you can comment out the env_file sections:
+services:
+  api:
+    # Comment out if backend/.env doesn't exist
+    # env_file:
+    #   - ./backend/.env
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=dev_secret_key_for_local_development
+      - DATABASE_URL=postgis://coalition_app:app_password@db:5432/coalition
+      - CACHE_URL=redis://redis:6379/1
+      - ALLOWED_HOSTS=localhost,127.0.0.1,api,nginx,app
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+
+  app:
+    # Comment out if frontend/.env doesn't exist
+    # env_file:
+    #   - ./frontend/.env
+    environment:
+      - NODE_ENV=development
+      - API_URL=http://api:8000
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - PORT=3000
+
+  # You can also add volumes for development
+  # api:
+  #   volumes:
+  #     - ./backend:/app
+  #     - /app/.venv  # Exclude virtual environment
+
+  # app:
+  #   volumes:
+  #     - ./frontend:/app
+  #     - /app/node_modules  # Exclude node_modules
+  #     - /app/.next  # Exclude build directory

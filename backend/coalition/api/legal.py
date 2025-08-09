@@ -11,7 +11,9 @@ router = Router()
 
 
 @router.get("/terms/", response={200: dict, 404: dict}, tags=["Legal"])
-def get_terms_of_use(request: HttpRequest) -> dict[str, Any]:
+def get_terms_of_use(
+    request: HttpRequest,
+) -> dict[str, Any] | tuple[int, dict[str, str]]:
     """
     Get the currently active Terms of Use document.
 
@@ -37,7 +39,9 @@ def get_terms_of_use(request: HttpRequest) -> dict[str, Any]:
 
 
 @router.get("/privacy/", response={200: dict, 404: dict}, tags=["Legal"])
-def get_privacy_policy(request: HttpRequest) -> dict[str, Any]:
+def get_privacy_policy(
+    request: HttpRequest,
+) -> dict[str, Any] | tuple[int, dict[str, str]]:
     """
     Get the currently active Privacy Policy document.
 

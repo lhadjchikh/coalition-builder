@@ -1,0 +1,56 @@
+/* Campaign Card Animations */
+
+/* Initial state - scale down and invisible */
+.campaign-card-animate {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Visible state - scale to normal and fade in */
+.campaign-card-animate.campaign-card-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Hover state - subtle scale up */
+.campaign-card-animate.campaign-card-visible:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Focus state - subtle ring effect using box-shadow */
+.campaign-card-animate.campaign-card-visible:focus {
+  transform: scale(1.02);
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.12),
+    0 0 0 3px rgba(59, 130, 246, 0.15);
+  outline: none;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .campaign-card-animate,
+  .campaign-card-animate.campaign-card-visible,
+  .campaign-card-animate.campaign-card-visible:hover,
+  .campaign-card-animate.campaign-card-visible:focus {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Keep subtle focus ring for accessibility */
+  .campaign-card-animate.campaign-card-visible:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    outline: none;
+  }
+}
+
+/* Mobile optimizations - faster animations */
+@media (max-width: 768px) {
+  .campaign-card-animate {
+    transition-duration: 0.3s;
+  }
+}

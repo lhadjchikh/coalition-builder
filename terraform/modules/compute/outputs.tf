@@ -3,9 +3,9 @@ output "api_ecr_repository_url" {
   value       = aws_ecr_repository.api.repository_url
 }
 
-output "ssr_ecr_repository_url" {
-  description = "URL of the SSR ECR repository"
-  value       = aws_ecr_repository.ssr.repository_url
+output "app_ecr_repository_url" {
+  description = "URL of the App (frontend) ECR repository"
+  value       = aws_ecr_repository.app.repository_url
 }
 
 output "redis_ecr_repository_url" {

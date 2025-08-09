@@ -11,7 +11,7 @@ try:
     from django.contrib.gis.gdal import DataSource
 except ImportError:
     # GDAL not available - this is optional for docs builds
-    DataSource = None
+    DataSource = None  # type: ignore[assignment,misc]
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction

@@ -8,21 +8,51 @@ This guide covers the development workflow, testing, and contributing to Coaliti
 
 For most developers, the [Installation guide](installation.md) provides everything needed. For detailed development environment setup including automated tooling installation, see the [Development Setup guide](development/setup.md).
 
+For Docker development with hot reloading, see the [Docker Hot Reload guide](development/docker-hot-reload.md).
+
 ### Docker Compose Configurations
 
-Coalition Builder uses two Docker Compose configurations:
+Coalition Builder uses Docker Compose for orchestrating services:
 
-#### Production Configuration (`docker compose.yml`)
+#### Environment Configuration
+
+Each service loads environment variables from its respective `.env` file:
+
+1. **Backend API**: `backend/.env` (create from `backend/.env.example`)
+2. **Frontend App**: `frontend/.env` (create from `frontend/.env.example`)
+
+```bash
+# Set up environment files
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+# Edit the .env files with your configuration
+```
+
+The `env_file` directives in `docker-compose.yml` are marked as optional (`required: false`), so containers will start even without `.env` files, using default values from the `environment` section.
+
+#### Production Configuration (`docker-compose.yml`)
 
 - **Purpose**: Production deployments and CI/CD pipelines
 - **Features**: Optimized builds, production environment variables, no volume mounts
 - **Usage**: `docker compose up -d`
 
-#### Development Configuration (`docker compose.dev.yml`)
+#### Development Configuration (`docker-compose.dev.yml`)
 
 - **Purpose**: Local development with live code reload
 - **Features**: Volume mounts for instant code changes, development build targets, debug mode
-- **Usage**: `docker compose -f docker compose.yml -f docker compose.dev.yml up -d`
+- **Usage**: `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d`
+
+#### Override Configuration
+
+For local customization without modifying tracked files:
+
+```bash
+# Create a local override file
+cp docker-compose.override.yml.example docker-compose.override.yml
+# Edit docker-compose.override.yml with your local settings
+```
+
+Docker Compose automatically loads `docker-compose.override.yml` if it exists.
 
 **Key Differences:**
 
@@ -33,7 +63,7 @@ Coalition Builder uses two Docker Compose configurations:
 
 ### Code Style
 
-- Python: Black formatting, Ruff linting
+- Python: Black formatting, Ruff linting, mypy type checking
 - TypeScript/React: Prettier formatting, ESLint
 - Git: Conventional commit messages
 
@@ -64,7 +94,7 @@ flowchart TD
     frontend_lint_complete --> ssr_tests[SSR Tests]
 
     %% Backend workflow
-    backend_check --> python_lint[Python Lint]
+    backend_check --> python_lint[Python Lint & Type Check]
     python_lint --> backend_tests[Backend Tests]
 
     %% Terraform workflow
@@ -267,17 +297,15 @@ Coalition Builder includes a comprehensive theme system for visual customization
 - `theme_service.py`: CSS variable generation service
 - `/api/themes.py`: Theme management API endpoints
 
-#### Frontend (`/frontend/src/`)
+#### Frontend (`/frontend/`)
 
 - `contexts/ThemeContext.tsx`: React context for theme data
 - `contexts/StyledThemeProvider.tsx`: Styled-components theme provider
 - `styles/theme.ts`: Theme type definitions and utilities
-- `components/styled/`: Reusable styled components library
-
-#### Shared (`/shared/`)
-
-- `utils/theme.ts`: Common theme utilities for both frontend and SSR
-- `components/`: Shared components with theme support
+- `components/`: React components with theme support
+- `app/`: Next.js app router pages
+- `services/`: API client and service layer
+- `types/`: TypeScript type definitions
 
 ### Development Guidelines
 

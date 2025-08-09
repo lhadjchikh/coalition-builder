@@ -1,0 +1,486 @@
+/* Global styles shared between frontend and SSR apps */
+
+/* Import modern design systems */
+@import "./spacing.css";
+@import "./typography.css";
+
+/* Ensure theme colors have proper defaults */
+:root {
+  /* Fallback colors in case theme doesn't load */
+  --theme-primary: #2563eb;
+  --theme-primary-light: #3b82f6;
+  --theme-primary-dark: #1d4ed8;
+}
+
+/* Modern glassmorphism navbar with proper contrast */
+.navbar-glass {
+  position: relative;
+
+  /* Use theme primary color with opacity */
+  --navbar-bg-fallback: var(--theme-primary, #2563eb);
+
+  /* Fallback for browsers that don't support backdrop-filter */
+  background-color: var(--navbar-bg-fallback);
+  opacity: 0.95;
+
+  /* Modern glass effect with proper contrast */
+  @supports (backdrop-filter: blur(12px)) or
+    (-webkit-backdrop-filter: blur(12px)) {
+    opacity: 1;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+
+    /* Enhanced glass background with theme color tint */
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--theme-primary, #2563eb) 25%, rgba(0, 0, 0, 0.4)),
+      color-mix(in srgb, var(--theme-primary, #2563eb) 15%, rgba(0, 0, 0, 0.3))
+    );
+  }
+
+  /* Fallback for browsers that don't support color-mix */
+  @supports not (background: color-mix(in srgb, red 50%, blue)) {
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.3),
+      rgba(0, 0, 0, 0.2)
+    );
+  }
+
+  /* Ensure text is always white */
+  color: white;
+
+  /* Enhanced shadow for better elevation over images */
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    0 4px 24px rgba(0, 0, 0, 0.15);
+
+  /* Add subtle border */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure navbar links maintain visibility */
+.navbar-glass a,
+.navbar-glass button {
+  color: white;
+}
+
+/* Add a subtle tinted overlay behind the blur for better contrast */
+@supports (backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px)) {
+  .navbar-glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: color-mix(
+      in srgb,
+      var(--theme-primary, #2563eb) 10%,
+      rgba(0, 0, 0, 0.1)
+    );
+    z-index: -1;
+  }
+}
+
+/* Fallback for browsers that don't support color-mix */
+@supports not (background: color-mix(in srgb, red 50%, blue)) {
+  .navbar-glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.1);
+    z-index: -1;
+  }
+}
+
+/* Modern CSS reset and base styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+body {
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+/* Basic link styling */
+a {
+  color: #0070f3;
+  text-decoration: none;
+}
+
+/* Underline on hover for content links, but not navigation, footer, or buttons */
+a:hover:not(nav a):not(footer a):not(.no-underline) {
+  text-decoration: underline;
+}
+
+/* Ensure nav and footer links never have underlines */
+nav a:hover,
+footer a:hover {
+  text-decoration: none;
+}
+
+/* Ensure buttons and elements with no-underline class never have underlines */
+a.no-underline,
+a.no-underline:hover,
+button,
+button:hover,
+[role="button"],
+[role="button"]:hover {
+  text-decoration: none !important;
+}
+
+/* Global heading styles - use theme fonts */
+h1,
+h2,
+h3 {
+  font-family:
+    var(--theme-font-heading),
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  /* Prevent layout shift with font-size-adjust */
+  font-size-adjust: 0.5;
+}
+
+/* Typography utilities from theme */
+.font-theme-heading {
+  font-family: var(--theme-font-heading, inherit);
+  font-display: swap;
+}
+
+.font-theme-body {
+  font-family: var(--theme-font-body, inherit);
+  font-display: swap;
+}
+
+/* Prevent FOUT (Flash of Unstyled Text) */
+.fonts-loading .font-theme-heading,
+.fonts-loading .font-theme-body,
+.fonts-loading .h1,
+.fonts-loading .h2,
+.fonts-loading .h3,
+.fonts-loading .h4,
+.fonts-loading .h5,
+.fonts-loading .h6 {
+  opacity: 0;
+}
+
+.fonts-loaded .font-theme-heading,
+.fonts-loaded .font-theme-body,
+.fonts-loaded .h1,
+.fonts-loaded .h2,
+.fonts-loaded .h3,
+.fonts-loaded .h4,
+.fonts-loaded .h5,
+.fonts-loaded .h6 {
+  animation: textFadeIn 0.2s ease-out forwards;
+}
+
+/* Immediate visibility for critical text */
+.no-font-fade {
+  opacity: 1 !important;
+  animation: none !important;
+}
+
+@keyframes textFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Optimal reading width utilities */
+.max-w-reading {
+  max-width: 65ch; /* ~65 characters for optimal reading */
+}
+
+.max-w-reading-lg {
+  max-width: 75ch; /* Slightly wider for larger text */
+}
+
+/* Content block utilities */
+.text-image-reversed > .grid > :first-child {
+  order: 2;
+}
+
+.text-image-reversed > .grid > :last-child {
+  order: 1;
+}
+
+/* On mobile, maintain standard order for better UX */
+/* Note: 1023px matches our existing breakpoint usage throughout the codebase */
+@media (max-width: 1023px) {
+  .text-image-reversed > .grid > :first-child {
+    order: 1;
+  }
+
+  .text-image-reversed > .grid > :last-child {
+    order: 2;
+  }
+}
+
+.max-w-prose-container {
+  max-width: 65ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Modern animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInSimple {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-fadeInSimple {
+  animation: fadeInSimple 1s ease-out forwards;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.5s ease-out forwards;
+}
+
+/* Smooth transitions for interactive elements */
+button,
+a,
+input,
+textarea,
+select,
+.transition-base {
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+/* Additional transition utilities */
+.transition-colors {
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.transition-transform {
+  transition: transform 0.2s ease;
+}
+
+.transition-opacity {
+  transition: opacity 0.2s ease;
+}
+
+.transition-all {
+  transition: all 0.2s ease;
+}
+
+.transition-none {
+  transition: none;
+}
+
+/* Text break utilities */
+.text-no-break {
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  -ms-hyphens: none;
+}
+
+/* Global text wrapping improvements */
+body {
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  -ms-hyphens: auto;
+}
+
+/* Prevent breaking of common UI elements */
+button,
+.btn,
+a,
+.nav-item,
+.menu-item,
+nav a {
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
+/* Prevent breaking brand names and proper nouns */
+.brand-name,
+.proper-noun,
+.no-break {
+  word-break: keep-all;
+  white-space: nowrap;
+}
+
+/* Auto-protect common proper nouns and place names from breaking */
+:is(h1, h2, h3, .hero-title, .hero-subtitle, .h1, .h2, .h3) {
+  /* Use CSS hyphenation rules that respect proper nouns */
+  hyphens: manual;
+  -webkit-hyphens: manual;
+  -moz-hyphens: manual;
+  /* Prevent awkward breaks in titles */
+  text-wrap: balance;
+  word-spacing: 0.1em;
+  /* Additional protection for proper nouns */
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+/* Ensure proper text flow on very small screens */
+@media (max-width: 399px) {
+  /* Allow more aggressive text scaling for small screens */
+  p,
+  span,
+  div {
+    font-size: clamp(0.75rem, 3vw, 1rem);
+    line-height: 1.4;
+  }
+
+  /* But keep headings readable and prevent awkward breaks */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .h1,
+  .h2,
+  .h3 {
+    font-size: clamp(1.5rem, 6vw, 3rem);
+    line-height: 1.2;
+    /* More aggressive text balancing on small screens */
+    text-wrap: balance;
+    word-spacing: 0.05em;
+    /* Allow text to wrap more naturally */
+    white-space: normal;
+  }
+
+  /* Hero titles should be even larger */
+  h1.h1,
+  .hero-title {
+    font-size: clamp(1.75rem, 7vw, 4rem);
+    line-height: 1.1;
+  }
+}
+
+/* Footer utility classes */
+.footer-attribution {
+  font-size: clamp(1.125rem, 2.75vw, 1.25rem);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.copyright-text {
+  white-space: nowrap;
+}
+
+/* Modern selection styling */
+::selection {
+  background-color: var(--theme-primary, #2563eb);
+  color: white;
+}
+
+/* Improved focus states */
+*:focus-visible {
+  outline: 2px solid var(--theme-primary, #2563eb);
+  outline-offset: 2px;
+}
+
+/* Modern scrollbar styling */
+@supports (scrollbar-width: thin) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--theme-primary-light, #3b82f6) transparent;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--theme-primary-light, #3b82f6);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-primary, #2563eb);
+}

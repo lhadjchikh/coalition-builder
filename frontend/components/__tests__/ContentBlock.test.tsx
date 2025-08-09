@@ -1,0 +1,769 @@
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import "@testing-library/jest-dom";
+import ContentBlock from "../ContentBlock";
+import { ContentBlock as ContentBlockType } from "../../types/index";
+
+const baseContentBlock: ContentBlockType = {
+  id: 1,
+  title: "Test Block",
+  block_type: "text",
+  page_type: "homepage",
+  content: "<p>Test content</p>",
+  image_url: "",
+  image_alt_text: "",
+  image_title: "",
+  image_author: "",
+  image_license: "",
+  image_source_url: "",
+  css_classes: "",
+  background_color: "",
+  order: 1,
+  is_visible: true,
+  created_at: "2023-01-01T00:00:00Z",
+  updated_at: "2023-01-01T00:00:00Z",
+  animation_type: "none",
+  animation_delay: 0,
+};
+
+describe("ContentBlock", () => {
+  describe("visibility control", () => {
+    it("should render when is_visible is true", () => {
+      const block = { ...baseContentBlock, is_visible: true };
+      render(<ContentBlock block={block} />);
+
+      expect(screen.getByText("Test Block")).toBeInTheDocument();
+    });
+
+    it("should not render when is_visible is false", () => {
+      const block = { ...baseContentBlock, is_visible: false };
+      const { container } = render(<ContentBlock block={block} />);
+
+      expect(container.firstChild).toBeNull();
+    });
+  });
+
+  describe("text block type", () => {
+    it("should render text block with title and content", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "text",
+        title: "Text Block Title",
+        content: "<p>This is <strong>bold</strong> text content.</p>",
+      };
+      render(<ContentBlock block={block} />);
+
+      expect(screen.getByText("Text Block Title")).toBeInTheDocument();
+      // Check the paragraph contains the expected text
+      const paragraph = screen.getByText((content, element) => {
+        return (
+          element?.tagName === "P" &&
+          element?.textContent === "This is bold text content."
+        );
+      });
+      expect(paragraph).toBeInTheDocument();
+      expect(screen.getByText("bold")).toBeInTheDocument();
+    });
+
+    it("should render text block without title", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "text",
+        title: "",
+        content: "<p>Content without title</p>",
+      };
+      render(<ContentBlock block={block} />);
+
+      expect(screen.getByText("Content without title")).toBeInTheDocument();
+      expect(
+        screen.queryByRole("heading", { level: 3 })
+      ).not.toBeInTheDocument();
+    });
+
+    it("should render text blocks without prose-modern class", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "text",
+        content: "<p>Test content</p>",
+      };
+      render(<ContentBlock block={block} />);
+
+      const contentDiv = screen.getByText("Test content");
+      expect(contentDiv).toBeInTheDocument();
+      const proseDiv = screen
+        .getByText("Test content")
+        .closest(".prose-modern");
+      expect(proseDiv).not.toBeInTheDocument();
+    });
+  });
+
+  describe("image block type", () => {
+    it("should render image block with all elements", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "image",
+        title: "Image Block Title",
+        image_url: "https://example.com/image.jpg",
+        image_alt_text: "Test image",
+        content: "<p>Image caption</p>",
+      };
+      render(<ContentBlock block={block} />);
+
+      expect(screen.getByText("Image Block Title")).toBeInTheDocument();
+      const image = screen.getByAltText("Test image");
+      expect(image).toBeInTheDocument();
+      // Next.js Image component transforms the src URL
+      expect(image).toHaveAttribute("src");
+      expect(image.getAttribute("src")).toContain(
+        encodeURIComponent("https://example.com/image.jpg")
+      );
+      expect(screen.getByText("Image caption")).toBeInTheDocument();
+    });
+
+    it("should use fallback alt text when image_alt_text is empty", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "image",
+        title: "Image Title",
+        image_url: "https://example.com/image.jpg",
+        image_alt_text: "",
+      };
+      render(<ContentBlock block={block} />);
+
+      const image = screen.getByAltText("Image Title");
+      expect(image).toBeInTheDocument();
+    });
+
+    it("should use default alt text when both alt text and title are empty", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "image",
+        title: "",
+        image_url: "https://example.com/image.jpg",
+        image_alt_text: "",
+      };
+      render(<ContentBlock block={block} />);
+
+      const image = screen.getByAltText("Content image");
+      expect(image).toBeInTheDocument();
+    });
+
+    it("should not render image when image_url is empty", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "image",
+        title: "Image Block",
+        image_url: "",
+        content: "<p>Caption only</p>",
+      };
+      render(<ContentBlock block={block} />);
+
+      expect(screen.getByText("Image Block")).toBeInTheDocument();
+      expect(screen.getByText("Caption only")).toBeInTheDocument();
+      expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    });
+
+    it("should not render caption when content is empty", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "image",
+        title: "Image Block",
+        image_url: "https://example.com/image.jpg",
+        image_alt_text: "Test image",
+        content: "",
+      };
+      render(<ContentBlock block={block} />);
+
+      expect(screen.getByText("Image Block")).toBeInTheDocument();
+      expect(screen.getByAltText("Test image")).toBeInTheDocument();
+      const captionDiv = screen.queryByText("mt-4 text-gray-600");
+      expect(captionDiv).not.toBeInTheDocument();
+    });
+  });
+
+  describe("text_image block type", () => {
+    it("should render text and image side by side", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "text_image",
+        title: "Text Image Block",
+        content: "<p>Text content alongside image</p>",
+        image_url: "https://example.com/image.jpg",
+        image_alt_text: "Side image",
+      };
+      render(<ContentBlock block={block} />);
+
+      expect(screen.getByText("Text Image Block")).toBeInTheDocument();
+      expect(
+        screen.getByText("Text content alongside image")
+      ).toBeInTheDocument();
+      expect(screen.getByAltText("Side image")).toBeInTheDocument();
+    });
+
+    it("should render text without image when image_url is empty", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "text_image",
+        title: "Text Only",
+        content: "<p>Just text content</p>",
+        image_url: "",
+      };
+      render(<ContentBlock block={block} />);
+
+      expect(screen.getByText("Text Only")).toBeInTheDocument();
+      expect(screen.getByText("Just text content")).toBeInTheDocument();
+      expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    });
+
+    it("should apply responsive grid layout classes", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "text_image",
+        content: "<p>Test</p>",
+        image_url: "https://example.com/image.jpg",
+      };
+      render(<ContentBlock block={block} />);
+
+      const container = screen.getByText("Test").closest(".grid");
+      expect(container).toHaveClass(
+        "grid",
+        "grid-cols-1",
+        "lg:grid-cols-2",
+        "gap-8",
+        "lg:gap-12",
+        "items-center"
+      );
+    });
+
+    it("should apply reversed layout when layout_option is reversed", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "text_image",
+        content: "<p>Test content</p>",
+        image_url: "https://example.com/image.jpg",
+        image_alt_text: "Test image",
+        layout_option: "reversed",
+      };
+      render(<ContentBlock block={block} />);
+
+      const textDiv =
+        screen.getByText("Test content").parentElement?.parentElement;
+      // The image is inside ImageWithCredit component, which is wrapped in a div with the order class
+      const image = screen.getByAltText("Test image");
+      const imageWrapper = image.closest("div.lg\\:order-1");
+
+      expect(textDiv).toHaveClass("lg:order-2");
+      expect(imageWrapper).toBeInTheDocument();
+    });
+
+    it("should apply stacked layout when layout_option is stacked", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "text_image",
+        content: "<p>Test content</p>",
+        image_url: "https://example.com/image.jpg",
+        layout_option: "stacked",
+      };
+      render(<ContentBlock block={block} />);
+
+      const container = screen.getByText("Test content").closest(".grid");
+      expect(container).toHaveClass("grid-cols-1");
+      expect(container).not.toHaveClass("lg:grid-cols-2");
+    });
+
+    it("should apply stacked reversed layout when layout_option is stacked_reversed", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "text_image",
+        content: "<p>Test content</p>",
+        image_url: "https://example.com/image.jpg",
+        image_alt_text: "Test image",
+        layout_option: "stacked_reversed",
+      };
+      render(<ContentBlock block={block} />);
+
+      const textDiv =
+        screen.getByText("Test content").parentElement?.parentElement;
+      // The image is inside ImageWithCredit component, which is wrapped in a div with the order class
+      const image = screen.getByAltText("Test image");
+      const imageWrapper = image.closest("div.order-1");
+
+      expect(textDiv).toHaveClass("order-2");
+      expect(imageWrapper).toBeInTheDocument();
+    });
+  });
+
+  describe("quote block type", () => {
+    it("should render quote with attribution", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "quote",
+        title: "John Doe",
+        content: "This is an inspiring quote about our cause.",
+      };
+      render(<ContentBlock block={block} />);
+
+      // Quote uses HTML entities for quotation marks
+      const blockquote = document.querySelector("blockquote");
+      expect(blockquote).toBeInTheDocument();
+      // HTML entities are rendered as curly quotes
+      expect(blockquote?.textContent).toContain(
+        "This is an inspiring quote about our cause."
+      );
+      expect(screen.getByText("— John Doe")).toBeInTheDocument();
+    });
+
+    it("should render quote without attribution when title is empty", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "quote",
+        title: "",
+        content: "Quote without attribution.",
+      };
+      render(<ContentBlock block={block} />);
+
+      // Quote uses HTML entities for quotation marks
+      const blockquote = document.querySelector("blockquote");
+      expect(blockquote).toBeInTheDocument();
+      // HTML entities are rendered as curly quotes
+      expect(blockquote?.textContent).toContain("Quote without attribution.");
+      expect(screen.queryByText(/^—/)).not.toBeInTheDocument();
+    });
+
+    it("should apply correct quote styling", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "quote",
+        content: "Test quote",
+      };
+      render(<ContentBlock block={block} />);
+
+      const blockquote = document.querySelector("blockquote");
+      expect(blockquote).toBeInTheDocument();
+      // HTML entities are rendered as curly quotes
+      expect(blockquote?.textContent).toContain("Test quote");
+      expect(blockquote.tagName).toBe("BLOCKQUOTE");
+      expect(blockquote).toHaveClass(
+        "text-2xl",
+        "italic",
+        "text-theme-text-body",
+        "font-light",
+        "leading-relaxed",
+        "mb-6"
+      );
+    });
+  });
+
+  describe("stats block type", () => {
+    it("should render stats block with title and grid content", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "stats",
+        title: "Key Statistics",
+        content:
+          '<div class="stat">100+ Members</div><div class="stat">50 Events</div>',
+      };
+      render(<ContentBlock block={block} />);
+
+      expect(screen.getByText("Key Statistics")).toBeInTheDocument();
+      expect(screen.getByText("100+ Members")).toBeInTheDocument();
+      expect(screen.getByText("50 Events")).toBeInTheDocument();
+    });
+
+    it("should apply grid layout classes", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "stats",
+        content: "<div>Stat content</div>",
+      };
+      render(<ContentBlock block={block} />);
+
+      const gridDiv = screen.getByText("Stat content").closest(".grid");
+      expect(gridDiv).toHaveClass(
+        "grid",
+        "grid-cols-1",
+        "md:grid-cols-2",
+        "lg:grid-cols-3",
+        "gap-8",
+        "lg:gap-12"
+      );
+    });
+  });
+
+  describe("custom_html block type", () => {
+    it("should render custom HTML content", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "custom_html",
+        title: "Custom Section",
+        content: '<div class="custom-widget"><span>Custom Widget</span></div>',
+      };
+      render(<ContentBlock block={block} />);
+
+      expect(screen.getByText("Custom Section")).toBeInTheDocument();
+      expect(screen.getByText("Custom Widget")).toBeInTheDocument();
+    });
+
+    it("should render custom HTML without title", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "custom_html",
+        title: "",
+        content: '<button class="custom-btn">Click me</button>',
+      };
+      render(<ContentBlock block={block} />);
+
+      expect(screen.getByText("Click me")).toBeInTheDocument();
+      expect(
+        screen.queryByRole("heading", { level: 3 })
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  describe("unknown block type (default case)", () => {
+    it("should render unknown block type as text block", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "unknown_type",
+        title: "Unknown Block",
+        content: "<p>Fallback content</p>",
+      };
+      render(<ContentBlock block={block} />);
+
+      expect(screen.getByText("Unknown Block")).toBeInTheDocument();
+      expect(screen.getByText("Fallback content")).toBeInTheDocument();
+    });
+  });
+
+  describe("styling and CSS classes", () => {
+    it("should apply base CSS classes", () => {
+      const block = { ...baseContentBlock };
+      const { container } = render(<ContentBlock block={block} />);
+
+      const blockContainer = container.firstChild as HTMLElement;
+      expect(blockContainer).toHaveClass("w-full");
+    });
+
+    it("should apply custom CSS classes", () => {
+      const block = {
+        ...baseContentBlock,
+        css_classes: "custom-class another-class",
+      };
+      const { container } = render(<ContentBlock block={block} />);
+
+      const blockContainer = container.firstChild as HTMLElement;
+      expect(blockContainer).toHaveClass(
+        "w-full",
+        "custom-class",
+        "another-class"
+      );
+    });
+
+    it("should apply background color style", () => {
+      const block = {
+        ...baseContentBlock,
+        background_color: "#ff0000",
+      };
+      const { container } = render(<ContentBlock block={block} />);
+
+      const blockContainer = container.firstChild as HTMLElement;
+      expect(blockContainer).toHaveStyle({ backgroundColor: "#ff0000" });
+    });
+
+    it("should not apply background color when empty", () => {
+      const block = {
+        ...baseContentBlock,
+        background_color: "",
+      };
+      const { container } = render(<ContentBlock block={block} />);
+
+      const blockContainer = container.firstChild as HTMLElement;
+      expect(blockContainer.style.backgroundColor).toBe("");
+    });
+
+    it("should combine custom classes and background color", () => {
+      const block = {
+        ...baseContentBlock,
+        css_classes: "custom-bg",
+        background_color: "#00ff00",
+      };
+      const { container } = render(<ContentBlock block={block} />);
+
+      const blockContainer = container.firstChild as HTMLElement;
+      expect(blockContainer).toHaveClass("w-full", "custom-bg");
+      expect(blockContainer).toHaveStyle({ backgroundColor: "#00ff00" });
+    });
+  });
+
+  describe("responsive container layout", () => {
+    it("should apply responsive container classes", () => {
+      const block = { ...baseContentBlock };
+      render(<ContentBlock block={block} />);
+
+      const innerContainer = screen
+        .getByText("Test Block")
+        .closest(".max-w-7xl");
+      expect(innerContainer).toBeInTheDocument();
+      expect(innerContainer).toHaveClass(
+        "max-w-7xl",
+        "mx-auto",
+        "container-padding",
+        "section-spacing"
+      );
+    });
+  });
+
+  describe("HTML content security", () => {
+    it("should render safe HTML content", () => {
+      const block = {
+        ...baseContentBlock,
+        content: "<p>Safe <strong>bold</strong> and <em>italic</em> text.</p>",
+      };
+      render(<ContentBlock block={block} />);
+
+      const boldText = screen.getByText("bold");
+      const italicText = screen.getByText("italic");
+
+      expect(boldText.tagName).toBe("STRONG");
+      expect(italicText.tagName).toBe("EM");
+    });
+
+    it("should handle complex HTML structures", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "custom_html",
+        content: `
+          <div class="complex-structure">
+            <ul>
+              <li>Item 1</li>
+              <li>Item 2</li>
+            </ul>
+            <table>
+              <tr><td>Cell 1</td><td>Cell 2</td></tr>
+            </table>
+          </div>
+        `,
+      };
+      render(<ContentBlock block={block} />);
+
+      expect(screen.getByText("Item 1")).toBeInTheDocument();
+      expect(screen.getByText("Item 2")).toBeInTheDocument();
+      expect(screen.getByText("Cell 1")).toBeInTheDocument();
+      expect(screen.getByText("Cell 2")).toBeInTheDocument();
+    });
+  });
+
+  describe("edge cases", () => {
+    it("should handle empty content gracefully", () => {
+      const block = {
+        ...baseContentBlock,
+        content: "",
+      };
+      render(<ContentBlock block={block} />);
+
+      expect(screen.getByText("Test Block")).toBeInTheDocument();
+    });
+
+    it("should handle null/undefined values in optional fields", () => {
+      const block: ContentBlockType = {
+        ...baseContentBlock,
+        image_title: undefined,
+        image_author: undefined,
+        image_license: undefined,
+        image_source_url: undefined,
+      };
+      render(<ContentBlock block={block} />);
+
+      expect(screen.getByText("Test Block")).toBeInTheDocument();
+    });
+
+    it("should handle very long content", () => {
+      const longContent = "<p>" + "Very long content. ".repeat(100) + "</p>";
+      const block = {
+        ...baseContentBlock,
+        content: longContent,
+      };
+      render(<ContentBlock block={block} />);
+
+      expect(screen.getByText(/Very long content/)).toBeInTheDocument();
+    });
+  });
+
+  describe("accessibility", () => {
+    it("should have proper heading hierarchy", () => {
+      const block = {
+        ...baseContentBlock,
+        title: "Accessible Block Title",
+      };
+      render(<ContentBlock block={block} />);
+
+      const heading = screen.getByRole("heading", { level: 3 });
+      expect(heading).toHaveTextContent("Accessible Block Title");
+    });
+
+    it("should have proper alt text for images", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "image",
+        image_url: "https://example.com/image.jpg",
+        image_alt_text: "Descriptive alt text for accessibility",
+      };
+      render(<ContentBlock block={block} />);
+
+      const image = screen.getByAltText(
+        "Descriptive alt text for accessibility"
+      );
+      expect(image).toBeInTheDocument();
+    });
+
+    it("should use semantic HTML elements", () => {
+      const block = {
+        ...baseContentBlock,
+        block_type: "quote",
+        content: "Accessible quote",
+      };
+      render(<ContentBlock block={block} />);
+
+      const blockquote = document.querySelector("blockquote");
+      expect(blockquote).toBeInTheDocument();
+      // HTML entities are rendered as curly quotes
+      expect(blockquote?.textContent).toContain("Accessible quote");
+      expect(blockquote.tagName).toBe("BLOCKQUOTE");
+    });
+  });
+
+  describe("animation options", () => {
+    it("should apply no animation classes when animation_type is none", () => {
+      const block = {
+        ...baseContentBlock,
+        animation_type: "none",
+      };
+      const { container } = render(<ContentBlock block={block} />);
+
+      const blockContainer = container.firstChild as HTMLElement;
+      expect(blockContainer).toHaveClass("w-full");
+      expect(blockContainer).not.toHaveClass("content-block-visible");
+    });
+
+    it("should apply fade-in animation classes", () => {
+      const block = {
+        ...baseContentBlock,
+        animation_type: "fade-in",
+      };
+      const { container } = render(<ContentBlock block={block} />);
+
+      const blockContainer = container.firstChild as HTMLElement;
+      expect(blockContainer).toHaveClass("content-block-fade-in");
+    });
+
+    it("should apply slide-up animation classes", () => {
+      const block = {
+        ...baseContentBlock,
+        animation_type: "slide-up",
+      };
+      const { container } = render(<ContentBlock block={block} />);
+
+      const blockContainer = container.firstChild as HTMLElement;
+      expect(blockContainer).toHaveClass("content-block-slide-up");
+    });
+
+    it("should apply slide-left animation classes", () => {
+      const block = {
+        ...baseContentBlock,
+        animation_type: "slide-left",
+      };
+      const { container } = render(<ContentBlock block={block} />);
+
+      const blockContainer = container.firstChild as HTMLElement;
+      expect(blockContainer).toHaveClass("content-block-slide-left");
+    });
+
+    it("should apply slide-right animation classes", () => {
+      const block = {
+        ...baseContentBlock,
+        animation_type: "slide-right",
+      };
+      const { container } = render(<ContentBlock block={block} />);
+
+      const blockContainer = container.firstChild as HTMLElement;
+      expect(blockContainer).toHaveClass("content-block-slide-right");
+    });
+
+    it("should apply scale animation classes", () => {
+      const block = {
+        ...baseContentBlock,
+        animation_type: "scale",
+      };
+      const { container } = render(<ContentBlock block={block} />);
+
+      const blockContainer = container.firstChild as HTMLElement;
+      expect(blockContainer).toHaveClass("content-block-scale");
+    });
+
+    it("should apply animation delay style when specified", () => {
+      const block = {
+        ...baseContentBlock,
+        animation_type: "fade-in",
+        animation_delay: 500,
+      };
+      const { container } = render(<ContentBlock block={block} />);
+
+      const blockContainer = container.firstChild as HTMLElement;
+      expect(blockContainer).toHaveStyle({ transitionDelay: "500ms" });
+    });
+
+    it("should not apply animation delay when animation is none", () => {
+      const block = {
+        ...baseContentBlock,
+        animation_type: "none",
+        animation_delay: 500,
+      };
+      const { container } = render(<ContentBlock block={block} />);
+
+      const blockContainer = container.firstChild as HTMLElement;
+      expect(blockContainer.style.transitionDelay).toBe("");
+    });
+
+    it("should use none as default animation when not specified", () => {
+      const block = {
+        ...baseContentBlock,
+        animation_type: undefined,
+      };
+      const { container } = render(<ContentBlock block={block} />);
+
+      const blockContainer = container.firstChild as HTMLElement;
+      expect(blockContainer).toHaveClass("w-full");
+      expect(blockContainer).not.toHaveClass("content-block-fade-in");
+    });
+
+    it("should combine animation classes with custom CSS classes", () => {
+      const block = {
+        ...baseContentBlock,
+        animation_type: "slide-up",
+        css_classes: "custom-class",
+      };
+      const { container } = render(<ContentBlock block={block} />);
+
+      const blockContainer = container.firstChild as HTMLElement;
+      expect(blockContainer).toHaveClass(
+        "w-full",
+        "content-block-slide-up",
+        "custom-class"
+      );
+    });
+
+    it("should apply visible class after animation triggers", () => {
+      // Note: Testing IntersectionObserver behavior would require mocking
+      // which is complex in this setup. This is a placeholder for the behavior.
+      const block = {
+        ...baseContentBlock,
+        animation_type: "fade-in",
+      };
+      render(<ContentBlock block={block} />);
+
+      // In a real test, we would mock IntersectionObserver and trigger it
+      // For now, we just verify the component renders
+      expect(screen.getByText("Test Block")).toBeInTheDocument();
+    });
+  });
+});

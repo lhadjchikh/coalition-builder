@@ -23,7 +23,7 @@ variable "task_cpu" {
 variable "task_memory" {
   description = "Memory for the task in MiB. Must be compatible with CPU value."
   type        = number
-  default     = null # When null, will be calculated based on enable_ssr and CPU
+  default     = null # When null, will be calculated based on CPU
 
   validation {
     condition     = var.task_memory == null || var.task_memory >= 512
@@ -35,21 +35,12 @@ variable "task_memory" {
 locals {
   # Calculate appropriate memory if not specified
   calculated_memory = var.task_memory != null ? var.task_memory : (
-    var.enable_ssr ? (
-      # For SSR (dual container), use higher memory
-      var.task_cpu == 256 ? 1024 :  # 256 CPU -> 1GB
-      var.task_cpu == 512 ? 2048 :  # 512 CPU -> 2GB  
-      var.task_cpu == 1024 ? 4096 : # 1024 CPU -> 4GB
-      var.task_cpu == 2048 ? 8192 : # 2048 CPU -> 8GB
-      16384                         # 4096 CPU -> 16GB
-      ) : (
-      # For API-only (single container), use lower memory
-      var.task_cpu == 256 ? 512 :   # 256 CPU -> 512MB
-      var.task_cpu == 512 ? 1024 :  # 512 CPU -> 1GB
-      var.task_cpu == 1024 ? 2048 : # 1024 CPU -> 2GB
-      var.task_cpu == 2048 ? 4096 : # 2048 CPU -> 4GB
-      8192                          # 4096 CPU -> 8GB
-    )
+    # For dual container (API + Frontend), use higher memory
+    var.task_cpu == 256 ? 1024 :  # 256 CPU -> 1GB
+    var.task_cpu == 512 ? 2048 :  # 512 CPU -> 2GB  
+    var.task_cpu == 1024 ? 4096 : # 1024 CPU -> 4GB
+    var.task_cpu == 2048 ? 8192 : # 2048 CPU -> 8GB
+    16384                         # 4096 CPU -> 16GB
   )
 }
 
@@ -59,8 +50,8 @@ variable "container_port_api" {
   default     = 8000
 }
 
-variable "container_port_ssr" {
-  description = "Container port for SSR"
+variable "container_port_app" {
+  description = "Container port for app (frontend)"
   type        = number
   default     = 3000
 }
@@ -143,22 +134,16 @@ variable "api_target_group_arn" {
   default     = ""
 }
 
-variable "ssr_target_group_arn" {
-  description = "ARN of the SSR target group for the ECS service"
+variable "app_target_group_arn" {
+  description = "ARN of the app (frontend) target group for the ECS service"
   type        = string
-  default     = ""
 }
 
-variable "enable_ssr" {
-  description = "Enable Server-Side Rendering with Node.js"
-  type        = bool
-  default     = true
-}
 
 variable "health_check_path_api" {
   description = "Path for load balancer health checks on Django backend"
   type        = string
-  default     = "/health/"
+  default     = "/api/health"
 }
 
 variable "redis_cpu" {
@@ -194,7 +179,7 @@ variable "redis_memory" {
 
   validation {
     # Ensure Redis memory doesn't exceed calculated minimums for any CPU level
-    condition     = var.redis_memory < (var.enable_ssr ? 1024 : 512)
+    condition     = var.redis_memory < 1024
     error_message = "Redis memory allocation is too high for the minimum calculated memory allocation. Reduce redis_memory or increase task_cpu."
   }
 }

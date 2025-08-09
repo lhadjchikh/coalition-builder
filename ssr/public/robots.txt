@@ -1,3 +1,0 @@
-# Disallow all crawlers until site is ready for promotion
-User-agent: *
-Disallow: /

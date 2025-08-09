@@ -20,8 +20,8 @@ except ImportError:
 try:
     from email_validator import EmailNotValidError, validate_email
 except ImportError:
-    validate_email = None
-    EmailNotValidError = Exception
+    validate_email = None  # type: ignore[assignment]
+    EmailNotValidError = Exception  # type: ignore[misc,assignment]
 
 from django_ratelimit.core import is_ratelimited
 
@@ -84,7 +84,7 @@ def get_client_ip(request: HttpRequest) -> str:
     # Find the first valid public IP in the chain
     for ip in forwarded_ips:
         if is_valid_ip(ip) and not is_private_ip(ip):
-            return ip
+            return str(ip)
 
     # No valid public IP found, fall back to REMOTE_ADDR
     return remote_addr if is_valid_ip(remote_addr) else "127.0.0.1"
@@ -310,11 +310,11 @@ class SpamPreventionService:
         reasons = []
 
         # Use email-validator for comprehensive validation if available
-        if validate_email:
+        if validate_email is not None:
             reasons.extend(cls._validate_with_email_validator(email))
 
         # Fallback to basic domain checks if email-validator unavailable or failed
-        if not validate_email or not reasons:
+        if validate_email is None or not reasons:
             reasons.extend(cls._validate_with_basic_checks(email))
 
         # Always check for suspicious patterns
@@ -330,8 +330,8 @@ class SpamPreventionService:
         cls,
         stakeholder_data: dict[str, Any],
         statement: str,
-        ip_address: str = None,
-        user_agent: str = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
     ) -> dict[str, Any]:
         """
         Check content quality for spam indicators using Akismet
@@ -409,7 +409,7 @@ class SpamPreventionService:
         stakeholder_data: dict[str, Any],
         statement: str,
         form_data: dict[str, Any],
-        user_agent: str = None,
+        user_agent: str | None = None,
         skip_rate_limiting: bool = False,
     ) -> dict[str, Any]:
         """
@@ -419,7 +419,7 @@ class SpamPreventionService:
         # Extract IP address from request with validation and spoofing protection
         ip_address = get_client_ip(request)
 
-        results = {
+        results: dict[str, Any] = {
             "is_spam": False,
             "confidence_score": 0.0,  # 0.0 = definitely human, 1.0 = definitely spam
             "reasons": [],
@@ -450,13 +450,13 @@ class SpamPreventionService:
 
         # Check timing
         if not cls.validate_timing(form_data):
-            results["confidence_score"] += 0.5
+            results["confidence_score"] = float(results["confidence_score"]) + 0.5
             results["reasons"].append("Suspicious submission timing")
 
         # Check email reputation
         email_check = cls.check_email_reputation(stakeholder_data.get("email", ""))
         if email_check["suspicious"]:
-            results["confidence_score"] += 0.3
+            results["confidence_score"] = float(results["confidence_score"]) + 0.3
             results["reasons"].extend(email_check["reasons"])
 
         # Check content quality
@@ -467,16 +467,16 @@ class SpamPreventionService:
             user_agent,
         )
         if content_check["suspicious"]:
-            results["confidence_score"] += 0.3
+            results["confidence_score"] = float(results["confidence_score"]) + 0.3
             results["reasons"].extend(content_check["reasons"])
 
         # Final determination
-        if results["confidence_score"] >= 0.7:
+        if float(results["confidence_score"]) >= 0.7:
             results["is_spam"] = True
             results["recommendations"].append("Block submission")
-        elif results["confidence_score"] >= 0.4:
+        elif float(results["confidence_score"]) >= 0.4:
             results["recommendations"].append("Require additional verification")
-        elif results["confidence_score"] >= 0.2:
+        elif float(results["confidence_score"]) >= 0.2:
             results["recommendations"].append("Flag for manual review")
         else:
             results["recommendations"].append("Allow submission")

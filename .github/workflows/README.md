@@ -34,7 +34,7 @@ flowchart TD
     frontend_lint_complete --> ssr_tests[SSR Tests]
 
     %% Backend workflow
-    backend_check --> python_lint[Python Lint]
+    backend_check --> python_lint[Python Lint & Type Check]
     python_lint --> backend_tests[Backend Tests]
 
     %% Terraform workflow
@@ -73,8 +73,8 @@ _Figure 1: Workflow dependency tree showing how push/PR events trigger orchestra
 
 - **Triggered by**: changes to Python files or workflow files
 - Orchestrates backend-related workflows in the correct order:
-  1. Runs Python linting (`lint_python.yml`) first
-  2. Only after lint checks pass, runs Backend tests (`test_backend.yml`)
+  1. Runs Python linting and type checking (`lint_python.yml`) first
+  2. Only after lint and type checks pass, runs Backend tests (`test_backend.yml`)
 
 #### Frontend Check (`check_frontend.yml`)
 
@@ -95,8 +95,10 @@ _Figure 1: Workflow dependency tree showing how push/PR events trigger orchestra
 #### Python Linting (`lint_python.yml`)
 
 - **Triggered by**: Backend Check workflow
-- Runs Black code formatter and Ruff linter
-- Ensures consistent Python code style
+- Runs Black code formatter, Ruff linter, and mypy type checker
+- Ensures consistent Python code style and type safety
+- mypy configured with gradual typing approach for existing codebase
+- Ignores migrations, tests, and third-party modules with known issues
 
 #### TypeScript Linting (`lint_typescript.yml`)
 
