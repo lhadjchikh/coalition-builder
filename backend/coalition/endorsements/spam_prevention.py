@@ -20,8 +20,8 @@ except ImportError:
 try:
     from email_validator import EmailNotValidError, validate_email
 except ImportError:
-    validate_email = None
-    EmailNotValidError = Exception
+    validate_email = None  # type: ignore[assignment]
+    EmailNotValidError = Exception  # type: ignore[misc,assignment]
 
 from django_ratelimit.core import is_ratelimited
 
@@ -310,11 +310,11 @@ class SpamPreventionService:
         reasons = []
 
         # Use email-validator for comprehensive validation if available
-        if validate_email:
+        if validate_email is not None:
             reasons.extend(cls._validate_with_email_validator(email))
 
         # Fallback to basic domain checks if email-validator unavailable or failed
-        if not validate_email or not reasons:
+        if validate_email is None or not reasons:
             reasons.extend(cls._validate_with_basic_checks(email))
 
         # Always check for suspicious patterns
@@ -330,8 +330,8 @@ class SpamPreventionService:
         cls,
         stakeholder_data: dict[str, Any],
         statement: str,
-        ip_address: str = None,
-        user_agent: str = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
     ) -> dict[str, Any]:
         """
         Check content quality for spam indicators using Akismet
@@ -409,7 +409,7 @@ class SpamPreventionService:
         stakeholder_data: dict[str, Any],
         statement: str,
         form_data: dict[str, Any],
-        user_agent: str = None,
+        user_agent: str | None = None,
         skip_rate_limiting: bool = False,
     ) -> dict[str, Any]:
         """

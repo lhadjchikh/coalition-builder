@@ -13,7 +13,7 @@ router = Router()
 @router.get("/", response=list[ContentBlockOut])
 def list_content_blocks(
     request: HttpRequest,
-    page_type: str = None,
+    page_type: str | None = None,
 ) -> QuerySet[ContentBlock]:
     """List all visible content blocks, optionally filtered by page type"""
     queryset = ContentBlock.objects.filter(is_visible=True).select_related("image")

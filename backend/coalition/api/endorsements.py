@@ -2,6 +2,7 @@ import csv
 import json
 import logging
 import uuid
+from typing import Any
 
 from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
@@ -334,7 +335,7 @@ def _create_endorsement_with_emails(
 @router.get("/", response=list[EndorsementOut], auth=None)
 def list_endorsements(
     request: HttpRequest,
-    campaign_id: int = None,
+    campaign_id: int | None = None,
 ) -> list[Endorsement]:
     """List all publicly displayed endorsements in reverse chronological order
 
@@ -570,7 +571,7 @@ def admin_list_pending_endorsements(request: HttpRequest) -> list[Endorsement]:
 @router.get("/export/csv/")
 def export_endorsements_csv(
     request: HttpRequest,
-    campaign_id: int = None,
+    campaign_id: int | None = None,
 ) -> HttpResponse:
     """Export endorsements to CSV format (admin only)"""
     # Require staff/admin access for data export
@@ -693,7 +694,7 @@ def export_endorsements_csv(
 @router.get("/export/json/")
 def export_endorsements_json(
     request: HttpRequest,
-    campaign_id: int = None,
+    campaign_id: int | None = None,
 ) -> HttpResponse:
     """Export endorsements to JSON format (admin only)"""
     # Require staff/admin access for data export
@@ -714,7 +715,7 @@ def export_endorsements_json(
         filename = "endorsements_all.json"
 
     # Build JSON data
-    data = {
+    data: dict[str, Any] = {
         "export_info": {
             "exported_at": timezone.now().isoformat(),
             "total_count": queryset.count(),
