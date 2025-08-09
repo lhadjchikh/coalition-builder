@@ -55,6 +55,10 @@ backend/docs/_build/
 site/
 **/typedoc/
 
+# Django templates (Prettier can't handle Django template syntax properly)
+backend/templates/**/*.html
+backend/**/*.html
+
 # Database
 **/*.sqlite3
 **/*.db

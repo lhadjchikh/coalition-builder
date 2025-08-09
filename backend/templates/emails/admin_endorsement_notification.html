@@ -54,35 +54,20 @@
     <div class="endorsement-details">
       <h3>Campaign: {{ campaign.title }}</h3>
       <p><strong>Status:</strong> {{ endorsement.get_status_display }}</p>
-      <p>
-        <strong>Email Verified:</strong> {% if endorsement.email_verified
-        %}Yes{% else %}No{% endif %}
-      </p>
-      <p>
-        <strong>Public Display:</strong> {% if endorsement.public_display
-        %}Yes{% else %}No{% endif %}
-      </p>
-      <p>
-        <strong>Submitted:</strong> {{ endorsement.created_at|date:"F j, Y g:i
-        A" }}
-      </p>
+      <p><strong>Email Verified:</strong> {% if endorsement.email_verified %}Yes{% else %}No{% endif %}</p>
+      <p><strong>Public Display:</strong> {% if endorsement.public_display %}Yes{% else %}No{% endif %}</p>
+      <p><strong>Submitted:</strong> {{ endorsement.created_at|date:"F j, Y g:i A" }}</p>
     </div>
 
     <div class="stakeholder-info">
       <h4>Stakeholder Information:</h4>
-      <p>
-        <strong>Name:</strong> {{ stakeholder.first_name }} {{
-        stakeholder.last_name }}
-      </p>
+      <p><strong>Name:</strong> {{ stakeholder.first_name }} {{ stakeholder.last_name }}</p>
       <p><strong>Organization:</strong> {{ stakeholder.organization }}</p>
       {% if stakeholder.role %}
       <p><strong>Role:</strong> {{ stakeholder.role }}</p>
       {% endif %}
       <p><strong>Email:</strong> {{ stakeholder.email }}</p>
-      <p>
-        <strong>Location:</strong> {% if stakeholder.county %}{{
-        stakeholder.county }}, {% endif %}{{ stakeholder.state }}
-      </p>
+      <p><strong>Location:</strong> {% if stakeholder.county %}{{ stakeholder.county }}, {% endif %}{{ stakeholder.state }}</p>
       <p><strong>Type:</strong> {{ stakeholder.get_type_display }}</p>
     </div>
 
