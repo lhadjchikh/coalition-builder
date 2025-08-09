@@ -18,31 +18,16 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache-unit
-          key: ${{ runner.os }}-buildx-unit-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-unit-
-
       # Build a lightweight image just for frontend unit tests
+      # TEMPORARILY DISABLED CACHE due to stale test files issue
       - name: Build frontend test image
         run: |
           cd frontend && docker buildx build \
-            --cache-from=type=local,src=/tmp/.buildx-cache-unit \
-            --cache-to=type=local,dest=/tmp/.buildx-cache-unit-new,mode=max \
-            --no-cache-filter=frontend-builder \
+            --no-cache \
             --load \
             --target=frontend-builder \
             -t coalition_frontend_test:latest \
             .
-
-      # Temp fix for cache
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache-unit
-          mv /tmp/.buildx-cache-unit-new /tmp/.buildx-cache-unit
 
       - name: Run TypeScript check (TEMPORARILY DISABLED)
         run: |
