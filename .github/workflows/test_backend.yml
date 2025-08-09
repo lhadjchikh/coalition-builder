@@ -105,8 +105,8 @@ jobs:
             -e DATABASE_URL=postgis://coalition_admin:admin_password@db:5432/coalition \
             api sh -c "
               poetry install --with dev &&
-              cd /app/coverage &&
-              poetry run pytest -n auto --dist loadscope /app
+              poetry run coverage run --source='.' manage.py test --parallel auto &&
+              poetry run coverage xml -o /app/coverage/coverage.xml
             "
 
       - name: Upload coverage to Codecov
