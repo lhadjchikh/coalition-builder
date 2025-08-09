@@ -164,7 +164,7 @@ resource "aws_lb_listener_rule" "media" {
   }
 }
 
-# Lower Priority: App Health check routing (for monitoring tools)
+# App Health check routing - /health endpoint for Next.js app
 resource "aws_lb_listener_rule" "app_health" {
   listener_arn = aws_lb_listener.https.arn
   priority     = 500
@@ -177,23 +177,6 @@ resource "aws_lb_listener_rule" "app_health" {
   condition {
     path_pattern {
       values = [var.health_check_path_app]
-    }
-  }
-}
-
-# Lower Priority: API Health check routing (for monitoring tools)
-resource "aws_lb_listener_rule" "api_health" {
-  listener_arn = aws_lb_listener.https.arn
-  priority     = 550
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.api.arn
-  }
-
-  condition {
-    path_pattern {
-      values = [var.health_check_path_api]
     }
   }
 }
