@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import SocialLinks from "./SocialLinks";
 import { HomePage } from "../types";
 
@@ -38,13 +39,16 @@ const Footer: React.FC<FooterProps> = ({
                   href="/"
                   className="mb-3 transition-all duration-300 transform hover:scale-105"
                 >
-                  <img
+                  <Image
                     src={orgInfo.theme.logo_url}
                     alt={
                       orgInfo.theme.logo_alt_text ||
                       `${orgInfo.organization_name} logo`
                     }
+                    width={200}
+                    height={64}
                     className="h-10 sm:h-12 lg:h-16 w-auto max-w-full object-contain"
+                    priority
                   />
                 </Link>
               ) : (

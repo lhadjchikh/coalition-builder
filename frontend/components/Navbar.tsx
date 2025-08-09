@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
@@ -159,10 +160,13 @@ const Navbar: React.FC<NavbarProps> = ({
               onClick={closeMenu}
             >
               {logoUrl ? (
-                <img
+                <Image
                   src={logoUrl}
                   alt={logoAltText || `${organizationName} logo`}
+                  width={200}
+                  height={64}
                   className="h-12 sm:h-14 lg:h-16 w-auto max-w-full object-contain"
+                  priority
                 />
               ) : (
                 organizationName

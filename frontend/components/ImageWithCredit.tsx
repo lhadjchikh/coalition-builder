@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 
 interface ImageWithCreditProps {
   src: string;
@@ -12,6 +13,9 @@ interface ImageWithCreditProps {
   creditDisplay?: "caption" | "overlay" | "tooltip" | "none";
   className?: string;
   imgClassName?: string;
+  width?: number;
+  height?: number;
+  priority?: boolean;
 }
 
 // Helper function to determine display mode
@@ -44,6 +48,9 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
   creditDisplay = "caption",
   className = "",
   imgClassName = "",
+  width = 800,
+  height = 600,
+  priority = false,
 }) => {
   // Use caption if provided, otherwise build credit text from individual fields
   const creditText =
@@ -163,7 +170,15 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
 
   return (
     <div className={containerClasses} data-testid="image-with-credit">
-      <img src={src} alt={alt} className={imgClassName} title={title} />
+      <Image
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        className={imgClassName}
+        title={title}
+        priority={priority}
+      />
       {renderCredit()}
     </div>
   );

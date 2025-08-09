@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import API from "../lib/api";
 import { Endorsement } from "../types/index";
 import "./Endorsements.css";
@@ -17,6 +17,10 @@ const EndorsementsList: React.FC<EndorsementsListProps> = ({
   const [endorsements, setEndorsements] = useState<Endorsement[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Use ref to avoid stale closure issues with onCountUpdate
+  const onCountUpdateRef = useRef(onCountUpdate);
+  onCountUpdateRef.current = onCountUpdate;
 
   useEffect(() => {
     const fetchEndorsements = async (): Promise<void> => {
@@ -40,8 +44,8 @@ const EndorsementsList: React.FC<EndorsementsListProps> = ({
         ).length;
 
         // Update parent component with endorsement count and recent count
-        if (onCountUpdate) {
-          onCountUpdate(data.length, recentCount);
+        if (onCountUpdateRef.current) {
+          onCountUpdateRef.current(data.length, recentCount);
         }
       } catch (err) {
         setError(

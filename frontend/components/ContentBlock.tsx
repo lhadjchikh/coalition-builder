@@ -64,13 +64,14 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
       },
     );
 
-    if (blockRef.current) {
-      observer.observe(blockRef.current);
+    const element = blockRef.current;
+    if (element) {
+      observer.observe(element);
     }
 
     return () => {
-      if (blockRef.current) {
-        observer.unobserve(blockRef.current);
+      if (element) {
+        observer.unobserve(element);
       }
     };
   }, [block.animation_type]);
