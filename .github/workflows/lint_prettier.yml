@@ -57,17 +57,9 @@ jobs:
           cd frontend
           npm run format:check
 
-      - name: Create .prettierignore
-        run: |
-          echo "node_modules/" > .prettierignore
-          echo "build/" >> .prettierignore
-          echo "dist/" >> .prettierignore
-          echo "coverage/" >> .prettierignore
-          echo "frontend/node_modules/" >> .prettierignore
-          echo "backend/.venv/" >> .prettierignore
-
       - name: Check project-wide files
         run: |
           cd frontend
           # Check all relevant files including root directory files and workflow files
+          # Use the existing .prettierignore file from the repository root
           npx prettier --check "../{,**/}*.{md,yml,yaml,json,css}" "../.github/workflows/*.yml" --ignore-path ../.prettierignore
