@@ -1,6 +1,7 @@
 """Admin configuration for Image model."""
 
 from django.contrib import admin
+from django.contrib.auth.models import User
 from django.forms import ModelForm
 from django.http import HttpRequest
 
@@ -84,5 +85,6 @@ class ImageAdmin(admin.ModelAdmin):
     ) -> None:
         """Set the uploaded_by field to the current user."""
         if not change:  # Only set on creation
-            obj.uploaded_by = request.user
+            # In Django admin, user is always authenticated
+            obj.uploaded_by = request.user if isinstance(request.user, User) else None
         super().save_model(request, obj, form, change)

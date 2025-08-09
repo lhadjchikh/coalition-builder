@@ -170,7 +170,7 @@ class ContentBlock(models.Model):
     def image_url(self) -> str:
         """Return the URL of the uploaded image, or empty string if no image."""
         if self.image and self.image.image and hasattr(self.image.image, "url"):
-            return self.image.image.url
+            return str(self.image.image.url)
         return ""
 
     @property

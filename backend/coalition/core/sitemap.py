@@ -53,12 +53,12 @@ class CampaignSitemap(Sitemap):
 
     def lastmod(self, obj: PolicyCampaign) -> datetime:
         """Return last modification date of the campaign."""
-        return obj.updated_at
+        return obj.created_at
 
     def location(self, obj: PolicyCampaign) -> str:
         """Return the URL for the campaign."""
         # Frontend handles routing, so we return the frontend URL pattern
-        return f"/campaigns/{obj.url_name}/"
+        return f"/campaigns/{obj.name}/"
 
 
 class ContentPageSitemap(Sitemap):

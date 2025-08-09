@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.models import User
 from django.forms import ModelForm
 from django.http import HttpRequest
 
@@ -51,7 +52,8 @@ class LegalDocumentAdmin(admin.ModelAdmin):
         change: bool,
     ) -> None:
         if not obj.created_by:
-            obj.created_by = request.user
+            # In Django admin, user is always authenticated
+            obj.created_by = request.user if isinstance(request.user, User) else None
         super().save_model(request, obj, form, change)
 
 

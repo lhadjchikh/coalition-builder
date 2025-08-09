@@ -128,7 +128,7 @@ class Image(models.Model):
     def image_url(self) -> str:
         """Return the URL of the uploaded image, or empty string if no image."""
         if self.image and hasattr(self.image, "url"):
-            return self.image.url
+            return str(self.image.url)
         return ""
 
     def save(self, *args: "Any", **kwargs: "Any") -> None:

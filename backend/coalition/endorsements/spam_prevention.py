@@ -84,7 +84,7 @@ def get_client_ip(request: HttpRequest) -> str:
     # Find the first valid public IP in the chain
     for ip in forwarded_ips:
         if is_valid_ip(ip) and not is_private_ip(ip):
-            return ip
+            return str(ip)
 
     # No valid public IP found, fall back to REMOTE_ADDR
     return remote_addr if is_valid_ip(remote_addr) else "127.0.0.1"
