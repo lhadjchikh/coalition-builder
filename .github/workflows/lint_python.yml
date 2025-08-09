@@ -18,7 +18,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t coalition:latest .
+          docker build -t coalition:latest ./backend
 
       - name: Run linters and type checker in Docker container
         run: |
