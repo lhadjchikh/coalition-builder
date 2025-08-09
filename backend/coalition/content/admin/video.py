@@ -1,6 +1,7 @@
 """Admin configuration for Video model."""
 
 from django.contrib import admin
+from django.contrib.auth.models import User
 from django.forms import ModelForm
 from django.http import HttpRequest
 from django.utils.html import format_html
@@ -76,14 +77,14 @@ class VideoAdmin(admin.ModelAdmin):
         ),
     )
 
+    @admin.display(description="Video File")
     def display_video_file(self, obj: Video) -> str:
         """Display video file name or 'No file'."""
         if obj.video:
-            return obj.video.name.split("/")[-1]
+            return str(obj.video.name).split("/")[-1]
         return "-"
 
-    display_video_file.short_description = "Video File"
-
+    @admin.display(description="Preview")
     def display_video_preview(self, obj: Video) -> str:
         """Display video preview if available."""
         if obj.video and hasattr(obj.video, "url"):
@@ -96,8 +97,6 @@ class VideoAdmin(admin.ModelAdmin):
             )
         return "No video uploaded"
 
-    display_video_preview.short_description = "Preview"
-
     def save_model(
         self,
         request: HttpRequest,
@@ -107,5 +106,6 @@ class VideoAdmin(admin.ModelAdmin):
     ) -> None:
         """Set uploaded_by to current user if not set."""
         if not obj.uploaded_by:
-            obj.uploaded_by = request.user
+            # In Django admin, user is always authenticated
+            obj.uploaded_by = request.user if isinstance(request.user, User) else None
         super().save_model(request, obj, form, change)

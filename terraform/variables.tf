@@ -234,20 +234,15 @@ variable "create_new_key_pair" {
   default     = false
 }
 
-variable "enable_ssr" {
-  description = "Enable Server-Side Rendering with Node.js"
-  type        = bool
-  default     = true
-}
 
 variable "health_check_path_api" {
   description = "Path for backend container and load balancer health checks"
   type        = string
-  default     = "/health/"
+  default     = "/api/health"
 }
 
-variable "health_check_path_ssr" {
-  description = "Path for frontend container and load balancer health checks"
+variable "health_check_path_app" {
+  description = "Path for app container and load balancer health checks"
   type        = string
   default     = "/health"
 }

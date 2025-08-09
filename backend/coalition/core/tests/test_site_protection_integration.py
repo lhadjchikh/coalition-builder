@@ -37,12 +37,12 @@ class TestSiteProtectionIntegration:
 
     @override_settings(
         LOCKDOWN_ENABLED=True,
-        LOCKDOWN_URL_EXCEPTIONS=[r"^/health/.*"],
+        LOCKDOWN_URL_EXCEPTIONS=[r"^/api/health"],
         LOCKDOWN_PASSWORDS=["integration-test-password"],
     )
     def test_health_endpoint_bypasses_password_protection(self, client: Client) -> None:
         """Test that health check endpoint is accessible without password"""
-        response = client.get("/health/")
+        response = client.get("/api/health")
         assert response.status_code == 200
         assert response.json()["status"] == "healthy"
 

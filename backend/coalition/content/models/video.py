@@ -129,7 +129,7 @@ class Video(models.Model):
     def video_url(self) -> str:
         """Return the URL of the uploaded video, or empty string if no video."""
         if self.video and hasattr(self.video, "url"):
-            return self.video.url
+            return str(self.video.url)
         return ""
 
     def clean(self) -> None:

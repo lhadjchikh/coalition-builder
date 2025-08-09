@@ -156,7 +156,7 @@ class HomePage(models.Model):
             and self.hero_background_image.image
             and hasattr(self.hero_background_image.image, "url")
         ):
-            return self.hero_background_image.image.url
+            return str(self.hero_background_image.image.url)
         return ""
 
     @property
@@ -167,7 +167,7 @@ class HomePage(models.Model):
             and self.hero_background_video.video
             and hasattr(self.hero_background_video.video, "url")
         ):
-            return self.hero_background_video.video.url
+            return str(self.hero_background_video.video.url)
         return ""
 
     def clean(self) -> None:

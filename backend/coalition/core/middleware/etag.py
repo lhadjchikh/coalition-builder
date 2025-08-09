@@ -47,11 +47,13 @@ class ETagMiddleware:
                 response["Cache-Control"] = "private, must-revalidate"
 
             # Check for conditional response
-            response = get_conditional_response(
+            conditional_response = get_conditional_response(
                 request,
                 etag=response.get("ETag"),
                 response=response,
             )
+            if conditional_response is not None:
+                response = conditional_response
 
         return response
 

@@ -19,8 +19,6 @@ flag_management:
     - name: javascript
       paths:
         - frontend/
-        - ssr/
-        - shared/
       carryforward: true
 
 comment:
@@ -36,9 +34,8 @@ ignore:
   - "backend/htmlcov/*"
   - "frontend/build/*"
   - "frontend/coverage/*"
-  - "ssr/.next/*"
-  - "ssr/node_modules/*"
-  - "shared/node_modules/*"
+  - "frontend/.next/*"
+  - "frontend/node_modules/*"
   - "terraform/.terraform/*"
   - "**/*_test.go"
   - "**/*.test.js"

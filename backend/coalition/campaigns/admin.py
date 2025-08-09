@@ -79,24 +79,20 @@ class PolicyCampaignAdmin(admin.ModelAdmin):
         ),
     )
 
+    @admin.display(description="Endorsements")
     def endorsement_count(self, obj: PolicyCampaign) -> int:
         """Display count of endorsements"""
         return obj.endorsements.count()
 
-    endorsement_count.short_description = "Endorsements"
-
+    @admin.display(description="Bills")
     def bill_count(self, obj: PolicyCampaign) -> int:
         """Display count of associated bills"""
         return obj.bills.count()
 
-    bill_count.short_description = "Bills"
-
+    @admin.display(description="Has Image", boolean=True)
     def has_image(self, obj: PolicyCampaign) -> bool:
         """Display whether campaign has an image"""
         return bool(obj.image)
-
-    has_image.boolean = True
-    has_image.short_description = "Has Image"
 
     def get_queryset(self, request: "HttpRequest") -> "QuerySet[PolicyCampaign]":
         """Order by most recently created first"""

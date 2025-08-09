@@ -13,9 +13,9 @@ output "api_target_group_arn" {
   value       = aws_lb_target_group.api.arn
 }
 
-output "ssr_target_group_arn" {
-  description = "ARN of the SSR target group"
-  value       = aws_lb_target_group.ssr.arn
+output "app_target_group_arn" {
+  description = "ARN of the App (frontend) target group"
+  value       = aws_lb_target_group.app.arn
 }
 
 output "http_listener_arn" {

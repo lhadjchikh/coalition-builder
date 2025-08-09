@@ -20,7 +20,6 @@ class CSRFConfigurationTest(TestCase):
     def test_csrf_trusted_origins_development_defaults(self) -> None:
         """Test that development origins are included when DEBUG=True."""
         with override_settings(DEBUG=True):
-
             # Should include localhost origins for development
             expected_origins = [
                 "http://localhost:3000",
@@ -38,11 +37,9 @@ class CSRFConfigurationTest(TestCase):
         """Test CSRF security settings are properly configured."""
         # CSRF cookie should be secure in production (not DEBUG)
         with override_settings(DEBUG=False, CSRF_COOKIE_SECURE=True):
-
             assert settings.CSRF_COOKIE_SECURE is True
 
         with override_settings(DEBUG=True, CSRF_COOKIE_SECURE=False):
-
             assert settings.CSRF_COOKIE_SECURE is False
 
         # Other security settings should be configured
@@ -55,7 +52,6 @@ class CSRFConfigurationTest(TestCase):
         with override_settings(
             CSRF_TRUSTED_ORIGINS=["https://example.com", "https://api.example.com"],
         ):
-
             # Parse URLs and check hostnames to avoid substring attacks
             origins_hostnames = [
                 urlparse(origin).hostname for origin in settings.CSRF_TRUSTED_ORIGINS

@@ -241,7 +241,7 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /static/
 Disallow: /media/
-Disallow: /health/
+Disallow: /health
 
 # Sitemap location
 Sitemap: {}/sitemap.xml

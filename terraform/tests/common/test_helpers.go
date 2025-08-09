@@ -49,7 +49,6 @@ func (tc *TestConfig) GetTerraformOptions(vars map[string]interface{}) *terrafor
 		"create_public_subnets":  true,
 		"create_private_subnets": true,
 		"create_db_subnets":      true,
-		"enable_ssr":             false, // Disable SSR for most tests to simplify
 		// Use minimal resources for testing
 		"db_allocated_storage": 20,
 		"db_instance_class":    "db.t4g.micro",
@@ -95,7 +94,6 @@ func (tc *TestConfig) GetTerraformOptionsForPlanOnly(vars map[string]interface{}
 		"create_public_subnets":  true,
 		"create_private_subnets": true,
 		"create_db_subnets":      true,
-		"enable_ssr":             false, // Disable SSR for most tests to simplify
 		// Use minimal resources for testing
 		"db_allocated_storage": 20,
 		"db_instance_class":    "db.t4g.micro",
@@ -219,8 +217,7 @@ func (tc *TestConfig) getModuleSpecificVars(
 			"create_new_key_pair":       false,
 			"container_port":            8000,
 			"domain_name":               fmt.Sprintf("%s.example.com", tc.UniqueID),
-			"enable_ssr":                false,
-			"health_check_path":         "/health/",
+			"health_check_path_api":     "/api/health",
 			"api_target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:" +
 				"targetgroup/test-api/1234567890123456",
 			"ssr_target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:" +
@@ -456,8 +453,7 @@ func GetDefaultComputeTestVars(testConfig *TestConfig) map[string]interface{} {
 		"create_new_key_pair":   false,
 		"container_port":        8000,
 		"domain_name":           fmt.Sprintf("%s.example.com", testConfig.UniqueID),
-		"enable_ssr":            false,
-		"health_check_path":     "/health/",
+		"health_check_path_api": "/api/health",
 	}
 }
 

@@ -40,7 +40,7 @@ Fast validation tests that check module file structure and configuration:
 Plan-only validation tests using real AWS credentials:
 
 - **Main Configuration Testing**: Tests the root terraform configuration with different scenarios
-- **Variable Validation**: Tests with/without SSR, different CORS configurations, required variables
+- **Variable Validation**: Tests different CORS configurations, required variables
 - **Resource Planning**: Validates terraform can plan successfully and includes expected resources
 - **Output Validation**: Ensures all expected outputs are defined
 
@@ -98,8 +98,7 @@ Plan-only validation that tests terraform configuration:
 go test ./integration/
 
 # Run specific integration test
-go test -v -run TestMainConfigurationWithoutSSR ./integration/
-go test -v -run TestMainConfigurationWithSSR ./integration/
+go test -v -run TestMainConfiguration ./integration/
 go test -v -run TestMainConfigurationCORS ./integration/
 ```
 
@@ -107,7 +106,7 @@ go test -v -run TestMainConfigurationCORS ./integration/
 
 - ✅ Tests terraform init and plan with real AWS credentials
 - ✅ Validates all expected resources and outputs are defined
-- ✅ Tests different configuration scenarios (SSR on/off, CORS settings)
+- ✅ Tests different configuration scenarios (CORS settings, etc.)
 - ✅ Runs in ~2-3 minutes per test
 - ✅ No AWS resources created = $0 cost
 
@@ -162,7 +161,7 @@ go test ./...
 go test -v ./...
 
 # Run specific test
-go test -v -run TestMainConfigurationWithSSR ./integration/
+go test -v -run TestMainConfiguration ./integration/
 ```
 
 ## 🔧 Configuration
@@ -213,18 +212,12 @@ All modules have unit tests that validate:
 
 Comprehensive plan-only tests that validate:
 
-**TestMainConfigurationWithoutSSR:**
+**TestMainConfiguration:**
 
-- ✅ Complete infrastructure plan without SSR
+- ✅ Complete infrastructure plan with both API and App containers
 - ✅ All expected outputs defined
 - ✅ Key resources planned correctly
-- ✅ SSR-specific resources excluded
-
-**TestMainConfigurationWithSSR:**
-
-- ✅ Complete infrastructure plan with SSR enabled
-- ✅ Both API and SSR containers configured
-- ✅ SSR-specific outputs included
+- ✅ Both API and App (frontend) containers configured
 
 **TestMainConfigurationValidation:**
 
@@ -249,10 +242,9 @@ func TestDnsModuleValidation(t *testing.T) {
 ### Integration Test Pattern
 
 ```go
-func TestMainConfigurationWithoutSSR(t *testing.T) {
+func TestMainConfiguration(t *testing.T) {
     testConfig := common.NewTestConfig("../../")
     testVars := common.GetIntegrationTestVars()
-    testVars["enable_ssr"] = false
 
     terraformOptions := testConfig.GetTerraformOptions(testVars)
 
@@ -260,7 +252,7 @@ func TestMainConfigurationWithoutSSR(t *testing.T) {
     planOutput := terraform.Plan(t, terraformOptions)
 
     assert.Contains(t, planOutput, "aws_vpc.main", "Plan should create VPC")
-    assert.Contains(t, planOutput, "enable_ssr = false", "Plan should disable SSR")
+    assert.Contains(t, planOutput, "app_ecr_repository", "Plan should create App ECR repository")
 }
 ```
 
@@ -331,11 +323,11 @@ which terraform
 go test -v ./...
 
 # Run single test for debugging
-go test -v -run TestMainConfigurationWithSSR ./integration/
+go test -v -run TestMainConfiguration ./integration/
 
 # Debug terraform plan output
 export TF_LOG=DEBUG
-go test -v -run TestMainConfigurationWithSSR ./integration/
+go test -v -run TestMainConfiguration ./integration/
 ```
 
 ## 📈 CI/CD Integration

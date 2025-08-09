@@ -9,7 +9,6 @@ import coalition.content.validators
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("content", "0004_alter_contentblock_content_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),

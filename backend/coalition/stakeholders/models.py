@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib.gis.db.models import PointField
 from django.db import models
 
@@ -126,7 +128,7 @@ class Stakeholder(models.Model):
         help_text="Timestamp when stakeholder record was last modified",
     )
 
-    def save(self, *args: object, **kwargs: object) -> None:
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """Normalize email and state to consistent format"""
         if self.email:
             self.email = self.email.lower()

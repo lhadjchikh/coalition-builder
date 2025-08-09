@@ -1,6 +1,7 @@
 from typing import Any
 
 from django.contrib import admin
+from django.contrib.auth.models import User
 from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.utils import timezone
@@ -125,18 +126,15 @@ class EndorsementAdmin(admin.ModelAdmin):
         "remove_from_display",
     ]
 
+    @admin.display(description="Name", ordering="stakeholder__last_name")
     def stakeholder_name(self, obj: Endorsement) -> str:
         return obj.stakeholder.name
 
-    stakeholder_name.short_description = "Name"
-    stakeholder_name.admin_order_field = "stakeholder__last_name"
-
+    @admin.display(description="Organization", ordering="stakeholder__organization")
     def stakeholder_organization(self, obj: Endorsement) -> str:
         return obj.stakeholder.organization
 
-    stakeholder_organization.short_description = "Organization"
-    stakeholder_organization.admin_order_field = "stakeholder__organization"
-
+    @admin.display(description="Endorsement Type")
     def endorsement_type(self, obj: Endorsement) -> str:
         if not obj.stakeholder.organization:
             return "Individual"
@@ -145,8 +143,7 @@ class EndorsementAdmin(admin.ModelAdmin):
         else:
             return f"Individual (affiliated with {obj.stakeholder.organization})"
 
-    endorsement_type.short_description = "Endorsement Type"
-
+    @admin.display(description="Status", ordering="status")
     def status_badge(self, obj: Endorsement) -> str:
         colors = {
             "pending": "#ffc107",  # warning yellow
@@ -162,18 +159,14 @@ class EndorsementAdmin(admin.ModelAdmin):
             obj.get_status_display(),
         )
 
-    status_badge.short_description = "Status"
-    status_badge.admin_order_field = "status"
-
+    @admin.display(description="Email", ordering="email_verified")
     def email_verified_badge(self, obj: Endorsement) -> str:
         if obj.email_verified:
             return format_html('<span style="color: #28a745;">✓ Verified</span>')
         else:
             return format_html('<span style="color: #dc3545;">✗ Unverified</span>')
 
-    email_verified_badge.short_description = "Email"
-    email_verified_badge.admin_order_field = "email_verified"
-
+    @admin.display(description="Verification Link")
     def verification_link(self, obj: Endorsement) -> str:
         if obj.verification_token:
             from django.conf import settings
@@ -185,8 +178,7 @@ class EndorsementAdmin(admin.ModelAdmin):
             )
         return "No token generated"
 
-    verification_link.short_description = "Verification Link"
-
+    @admin.action(description="Approve selected endorsements")
     def approve_endorsements(
         self,
         request: HttpRequest,
@@ -195,7 +187,9 @@ class EndorsementAdmin(admin.ModelAdmin):
         count = 0
         for endorsement in queryset:
             if endorsement.status != "approved":
-                endorsement.approve(user=request.user)
+                endorsement.approve(
+                    user=request.user if isinstance(request.user, User) else None,
+                )
                 # Send approval notification
                 EndorsementEmailService.send_confirmation_email(endorsement)
                 count += 1
@@ -205,8 +199,7 @@ class EndorsementAdmin(admin.ModelAdmin):
             f"Successfully approved {count} endorsement(s) and sent notifications.",
         )
 
-    approve_endorsements.short_description = "Approve selected endorsements"
-
+    @admin.action(description="Reject selected endorsements")
     def reject_endorsements(
         self,
         request: HttpRequest,
@@ -215,13 +208,14 @@ class EndorsementAdmin(admin.ModelAdmin):
         count = 0
         for endorsement in queryset:
             if endorsement.status != "rejected":
-                endorsement.reject(user=request.user)
+                endorsement.reject(
+                    user=request.user if isinstance(request.user, User) else None,
+                )
                 count += 1
 
         self.message_user(request, f"Successfully rejected {count} endorsement(s).")
 
-    reject_endorsements.short_description = "Reject selected endorsements"
-
+    @admin.action(description="Mark as email verified")
     def mark_verified(
         self,
         request: HttpRequest,
@@ -238,8 +232,7 @@ class EndorsementAdmin(admin.ModelAdmin):
             f"Successfully marked {count} endorsement(s) as email verified.",
         )
 
-    mark_verified.short_description = "Mark as email verified"
-
+    @admin.action(description="Send verification emails")
     def send_verification_emails(
         self,
         request: HttpRequest,
@@ -258,8 +251,7 @@ class EndorsementAdmin(admin.ModelAdmin):
             f"Successfully sent verification emails for {count} endorsement(s).",
         )
 
-    send_verification_emails.short_description = "Send verification emails"
-
+    @admin.action(description="Send approval notifications")
     def send_approval_notifications(
         self,
         request: HttpRequest,
@@ -275,8 +267,7 @@ class EndorsementAdmin(admin.ModelAdmin):
             f"Successfully sent approval notifications for {count} endorsement(s).",
         )
 
-    send_approval_notifications.short_description = "Send approval notifications"
-
+    @admin.action(description="Approve for public display")
     def approve_for_display(
         self,
         request: HttpRequest,
@@ -293,8 +284,6 @@ class EndorsementAdmin(admin.ModelAdmin):
             request,
             f"Successfully approved {count} endorsement(s) for public display.",
         )
-
-    approve_for_display.short_description = "Approve for public display"
 
     def remove_from_display(
         self,
@@ -317,7 +306,7 @@ class EndorsementAdmin(admin.ModelAdmin):
     ) -> None:
         # Track who made changes
         if change and "status" in form.changed_data:
-            obj.reviewed_by = request.user
+            obj.reviewed_by = request.user if isinstance(request.user, User) else None
             obj.reviewed_at = timezone.now()
 
         super().save_model(request, obj, form, change)

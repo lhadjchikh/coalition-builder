@@ -24,7 +24,7 @@ def perform_health_check() -> None:
     # Configuration
     hostname = "localhost"
     port = int(os.environ.get("PORT", 8000))
-    path = "/health/"
+    path = "/api/health"
     timeout = 3  # seconds
 
     try:

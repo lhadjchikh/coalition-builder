@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from django.http import HttpRequest
 from ninja import Router
 
@@ -9,5 +10,5 @@ router = Router()
 
 
 @router.get("/", response=list[StakeholderOut])
-def list_stakeholders(request: HttpRequest) -> list[Stakeholder]:
+def list_stakeholders(request: HttpRequest) -> QuerySet[Stakeholder]:
     return Stakeholder.objects.all()

@@ -83,15 +83,12 @@ class StakeholderAdmin(admin.ModelAdmin):
         ),
     )
 
+    @admin.display(description="Name", ordering="first_name")
     def get_full_name(self, obj: Stakeholder) -> str:
         """Display full name from first and last name"""
         return obj.name
 
-    get_full_name.short_description = "Name"
-    get_full_name.admin_order_field = "first_name"  # Allow sorting
-
+    @admin.display(description="Endorsements")
     def endorsement_count(self, obj: Stakeholder) -> int:
         """Display count of endorsements"""
         return obj.endorsements.count()
-
-    endorsement_count.short_description = "Endorsements"

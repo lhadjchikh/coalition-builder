@@ -94,16 +94,12 @@ class HomePageAdmin(admin.ModelAdmin):
         ),
     )
 
+    @admin.display(description="Has Hero Image", boolean=True)
     def has_hero_image(self, obj: HomePage) -> bool:
         """Display whether homepage has a hero image"""
         return bool(obj.hero_background_image)
 
-    has_hero_image.boolean = True
-    has_hero_image.short_description = "Has Hero Image"
-
+    @admin.display(description="Has Hero Video", boolean=True)
     def has_hero_video(self, obj: HomePage) -> bool:
         """Display whether homepage has a hero video"""
         return bool(obj.hero_background_video)
-
-    has_hero_video.boolean = True
-    has_hero_video.short_description = "Has Hero Video"

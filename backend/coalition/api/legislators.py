@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from django.http import HttpRequest
 from ninja import Router
 
@@ -9,5 +10,5 @@ router = Router()
 
 
 @router.get("/", response=list[LegislatorOut])
-def list_legislators(request: HttpRequest) -> list[Legislator]:
+def list_legislators(request: HttpRequest) -> QuerySet[Legislator]:
     return Legislator.objects.all()

@@ -44,12 +44,10 @@ class RegionAdmin(admin.ModelAdmin):
         ),
     )
 
+    @admin.display(description="Has Geometry", boolean=True)
     def has_geometry(self, obj: Region) -> bool:
         """Display whether the region has geometric data"""
         return bool(obj.geom or obj.coords)
-
-    has_geometry.boolean = True
-    has_geometry.short_description = "Has Geometry"
 
     def get_queryset(self, request: "HttpRequest") -> "QuerySet[Region]":
         """Order by type and then name"""

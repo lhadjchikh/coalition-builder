@@ -25,8 +25,8 @@ output "api_ecr_repository_url" {
   value = module.compute.api_ecr_repository_url
 }
 
-output "ssr_ecr_repository_url" {
-  value = module.compute.ssr_ecr_repository_url
+output "app_ecr_repository_url" {
+  value = module.compute.app_ecr_repository_url
 }
 
 output "redis_ecr_repository_url" {

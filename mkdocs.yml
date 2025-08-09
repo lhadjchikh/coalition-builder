@@ -51,6 +51,8 @@ nav:
   - Reference:
       - Environment Variables: reference/environment.md
       - CLI Reference: reference/cli.md
+      - API Documentation: api.md
+      - Frontend Documentation: frontend.md
 
 markdown_extensions:
   - admonition

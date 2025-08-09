@@ -8,12 +8,6 @@ from django.urls import reverse
 from django.utils import timezone
 
 from coalition.campaigns.models import PolicyCampaign
-from coalition.content.models import ContentBlock
-
-# Constants for sitemap configuration
-# ContentBlock identifiers that should not be indexed
-# Note: The actual /privacy and /terms pages are handled separately via Legal app
-EXCLUDED_CONTENT_IDENTIFIERS = ["privacy-policy", "terms-of-service"]
 
 # Use application start time as lastmod for static pages
 # This prevents unnecessary recrawling by search engines
@@ -53,48 +47,20 @@ class CampaignSitemap(Sitemap):
 
     def lastmod(self, obj: PolicyCampaign) -> datetime:
         """Return last modification date of the campaign."""
-        return obj.updated_at
+        return obj.created_at
 
     def location(self, obj: PolicyCampaign) -> str:
         """Return the URL for the campaign."""
         # Frontend handles routing, so we return the frontend URL pattern
-        return f"/campaigns/{obj.url_name}/"
+        return f"/campaigns/{obj.name}/"
 
 
-class ContentPageSitemap(Sitemap):
-    """Sitemap for content pages."""
-
-    changefreq = "monthly"
-    priority = 0.6
-
-    def items(self) -> QuerySet[ContentBlock]:
-        """Return all published content pages."""
-        # Get pages that should be indexed
-        return ContentBlock.objects.filter(
-            block_type="page",
-            active=True,
-        ).exclude(
-            identifier__in=EXCLUDED_CONTENT_IDENTIFIERS,
-        )
-
-    def lastmod(self, obj: ContentBlock) -> datetime:
-        """Return last modification date."""
-        return obj.updated_at
-
-    def location(self, obj: ContentBlock) -> str:
-        """Return the URL for the content page."""
-        # Map content blocks to their frontend routes
-        if obj.identifier == "about":
-            return "/about/"
-        elif obj.identifier == "contact":
-            return "/contact/"
-        else:
-            return f"/content/{obj.identifier}/"
+# ContentPageSitemap removed - ContentBlock model is for homepage sections,
+# not standalone pages. Standalone content pages should be handled by dedicated models.
 
 
 # Dictionary of sitemap classes
 sitemaps = {
     "static": StaticViewSitemap,
     "campaigns": CampaignSitemap,
-    "content": ContentPageSitemap,
 }

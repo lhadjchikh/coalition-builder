@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("endorsements", "0002_endorsement_terms_accepted_and_more"),
     ]

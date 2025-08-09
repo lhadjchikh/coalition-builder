@@ -1,30 +1,56 @@
 # Development overrides for docker-compose.yml
 # Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+#
+# This configuration enables hot reloading for both backend and frontend development
 
 services:
   api:
     build:
-      target: python-deps # Use development build stage
+      target: python-deps # Use development build stage with dependencies only
     env_file:
-      - .env
+      - path: ./backend/.env
+        required: false
     environment:
-      - DEBUG=True # Override to enable debug mode
+      - DEBUG=True # Enable Django debug mode
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
     volumes:
-      - ./backend:/app/backend
-      - ./frontend/build:/app/frontend/build:ro
-    command: ["python", "/app/backend/manage.py", "runserver", "0.0.0.0:8000"]
+      # Mount source code for hot reloading
+      - ./backend:/app
+      # Exclude virtual environment
+      - /app/.venv
+    # Use Django development server with auto-reload
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 
-  ssr:
+  app:
     build:
-      target: deps # Use development build stage
+      target: frontend-builder # Use development build stage
     env_file:
-      - .env
+      - path: ./frontend/.env
+        required: false
     environment:
-      - NODE_ENV=development # Override to development mode
-      # Analytics settings
-      - NEXT_PUBLIC_GA_TRACKING_ID=${NEXT_PUBLIC_GA_TRACKING_ID:-}
+      - NODE_ENV=development # Enable Next.js development mode
+      - WATCHPACK_POLLING=true # Enable file watching in Docker
+      # Development API URL
+      - API_URL=http://api:8000
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
     volumes:
-      - ./ssr:/app
-      - ./frontend/src:/app/frontend/src:ro
-      - ./shared:/app/shared:ro
-    command: ["npx", "next", "dev"]
+      # Mount source code for hot reloading
+      - ./frontend:/app
+      # Exclude node_modules and build directories
+      - /app/node_modules
+      - /app/.next
+    # Use Next.js development server with hot reload
+    command: ["npm", "run", "dev"]
+
+  # Optional: Add a database GUI for development
+  # adminer:
+  #   image: adminer
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - ADMINER_DEFAULT_SERVER=db
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - app-network

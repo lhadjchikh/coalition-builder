@@ -451,7 +451,7 @@ class HTMLSanitizer:
 
         # Use bleach to properly parse and strip HTML tags
         # This handles malformed HTML better than regex
-        cleaned = bleach.clean(text, tags=[], strip=True)
+        cleaned = str(bleach.clean(text, tags=[], strip=True))
 
         # Decode HTML entities to get proper characters
         # This converts &amp; to &, &lt; to <, etc.

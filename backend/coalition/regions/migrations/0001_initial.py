@@ -8,7 +8,6 @@ import coalition.stakeholders.constants
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = []

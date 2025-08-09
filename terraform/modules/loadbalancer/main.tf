@@ -27,7 +27,7 @@ resource "aws_lb_target_group" "api" {
 
   health_check {
     enabled             = true
-    path                = var.health_check_path_api # Django backend health at /health/
+    path                = var.health_check_path_api # Django backend health at /api/health
     port                = "traffic-port"
     healthy_threshold   = 3
     unhealthy_threshold = 3
@@ -41,9 +41,9 @@ resource "aws_lb_target_group" "api" {
   }
 }
 
-# Target Group for SSR Frontend
-resource "aws_lb_target_group" "ssr" {
-  name        = "${var.prefix}-ssr-tg"
+# Target Group for App (SSR-based frontend)
+resource "aws_lb_target_group" "app" {
+  name        = "${var.prefix}-app-tg"
   port        = 3000
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -51,7 +51,7 @@ resource "aws_lb_target_group" "ssr" {
 
   health_check {
     enabled             = true
-    path                = var.health_check_path_ssr
+    path                = var.health_check_path_app
     port                = "traffic-port"
     healthy_threshold   = 3
     unhealthy_threshold = 3
@@ -61,7 +61,7 @@ resource "aws_lb_target_group" "ssr" {
   }
 
   tags = {
-    Name = "${var.prefix}-ssr-tg"
+    Name = "${var.prefix}-app-tg"
   }
 }
 
@@ -89,10 +89,10 @@ resource "aws_lb_listener" "https" {
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
   certificate_arn   = var.acm_certificate_arn
 
-  # Default action - send ALL traffic to SSR (Next.js handles routing)
+  # Default action - send ALL traffic to App (Next.js handles routing)
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.ssr.arn
+    target_group_arn = aws_lb_target_group.app.arn
   }
 }
 
@@ -164,48 +164,31 @@ resource "aws_lb_listener_rule" "media" {
   }
 }
 
-# Lower Priority: SSR Health check routing (for monitoring tools)
-resource "aws_lb_listener_rule" "ssr_health" {
+# App Health check routing - /health endpoint for Next.js app
+resource "aws_lb_listener_rule" "app_health" {
   listener_arn = aws_lb_listener.https.arn
   priority     = 500
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.ssr.arn
+    target_group_arn = aws_lb_target_group.app.arn
   }
 
   condition {
     path_pattern {
-      values = ["/health"]
+      values = [var.health_check_path_app]
     }
   }
 }
 
-# Lower Priority: API Health check routing (for monitoring tools)
-resource "aws_lb_listener_rule" "api_health" {
-  listener_arn = aws_lb_listener.https.arn
-  priority     = 550
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.api.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["/health/"]
-    }
-  }
-}
-
-# Lower Priority: SSR Metrics routing (for monitoring tools)
-resource "aws_lb_listener_rule" "ssr_metrics" {
+# Lower Priority: App Metrics routing (for monitoring tools)
+resource "aws_lb_listener_rule" "app_metrics" {
   listener_arn = aws_lb_listener.https.arn
   priority     = 600
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.ssr.arn
+    target_group_arn = aws_lb_target_group.app.arn
   }
 
   condition {

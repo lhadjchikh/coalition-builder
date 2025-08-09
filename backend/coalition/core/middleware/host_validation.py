@@ -26,9 +26,8 @@ class ECSHostValidationMiddleware:
     def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
         self.get_response = get_response
         self.health_check_paths = [
-            "/health/",  # Django health check
-            "/health",  # Next.js health check
-            "/api/health/",
+            "/api/health",  # Django API health check endpoint
+            "/health",  # Next.js app health check endpoint
         ]
 
     def __call__(self, request: HttpRequest) -> HttpResponse:

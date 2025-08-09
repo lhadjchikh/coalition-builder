@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib.gis.db.models import Q
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point
@@ -38,15 +40,16 @@ class SpatialQueryUtils:
             geom__contains=point,
         )
 
-        # Organize results by district type
-        result = {
-            DistrictType.CONGRESSIONAL: None,
-            DistrictType.STATE_SENATE: None,
-            DistrictType.STATE_HOUSE: None,
+        # Organize results by district type using string keys
+        result: dict[str, Region | None] = {
+            DistrictType.CONGRESSIONAL.value: None,
+            DistrictType.STATE_SENATE.value: None,
+            DistrictType.STATE_HOUSE.value: None,
         }
 
         for district in districts:
             if district.type in DistrictType:
+                # district.type is a DistrictType enum value
                 result[district.type] = district
 
         return result
@@ -69,7 +72,7 @@ class SpatialQueryUtils:
         # Use foreign key relationship for efficiency
         if district.type in DistrictType:
             # Use direct field mapping since field names match district types
-            filter_kwargs = {district.type: district}
+            filter_kwargs: dict[str, Any] = {district.type: district}
         else:
             # Fall back to spatial query for other district types
             filter_kwargs = {"location__within": district.geom}
@@ -168,7 +171,7 @@ class SpatialQueryUtils:
         )
 
     @staticmethod
-    def get_district_statistics() -> dict[str, dict]:
+    def get_district_statistics() -> dict[str, list[dict[str, Any]]]:
         """
         Get statistics about stakeholder distribution across districts
 

@@ -7,7 +7,6 @@ from pydantic import Field, validator
 from coalition.stakeholders.validators import AddressValidator
 
 if TYPE_CHECKING:
-
     from coalition.content.models import ContentBlock, HomePage, Theme
 
 # Import models for ModelSchema
@@ -264,12 +263,12 @@ class HomePageOut(ModelSchema):
         return obj.hero_background_video_url or None
 
     @staticmethod
-    def resolve_hero_background_video_data(obj: "HomePage") -> "VideoOut | None":
+    def resolve_hero_background_video_data(obj: "HomePage") -> "Video | None":
         """Get the hero background video data"""
         return obj.hero_background_video if obj.hero_background_video else None
 
     @staticmethod
-    def resolve_theme(obj: "HomePage") -> "ThemeOut | None":
+    def resolve_theme(obj: "HomePage") -> "Theme | None":
         """Get the effective theme for this homepage"""
         theme = obj.get_theme()
         return theme if theme else None

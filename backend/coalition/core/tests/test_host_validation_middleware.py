@@ -20,7 +20,7 @@ class ECSHostValidationMiddlewareTest(TestCase):
 
     def test_health_check_paths_bypass_validation(self) -> None:
         """Test that health check paths bypass host validation."""
-        health_paths = ["/health/", "/health", "/api/health/"]
+        health_paths = ["/api/health", "/health"]
 
         for path in health_paths:
             with self.subTest(path=path):

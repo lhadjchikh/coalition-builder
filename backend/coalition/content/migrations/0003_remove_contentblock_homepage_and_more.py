@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("content", "0002_clean_image_fields"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),

@@ -108,6 +108,62 @@ class PolicyCampaignModelTest(TestCase):
         assert campaign_endorsements.count() == 1
         assert campaign_endorsements.first() == endorsement
 
+    def test_current_bills_method(self) -> None:
+        """Test that current_bills() correctly filters bills by session"""
+        from django.utils import timezone
+
+        campaign = PolicyCampaign.objects.create(
+            name="test-current-bills",
+            title="Test Current Bills Campaign",
+            summary="Testing current bills filtering",
+        )
+
+        # Calculate what the current session should be (same logic as in the method)
+        current_session = f"{((timezone.now().date().year - 1789) // 2) + 1}th"
+
+        # Create a bill with the current session
+        current_bill = Bill.objects.create(
+            policy=campaign,
+            number="100",
+            title="Current Session Bill",
+            chamber="house",
+            session=current_session,
+            introduced_date=timezone.now().date(),
+        )
+
+        # Create a bill with an old session
+        old_bill = Bill.objects.create(
+            policy=campaign,
+            number="200",
+            title="Old Session Bill",
+            chamber="senate",
+            session="117th",  # An old session
+            introduced_date=timezone.now().date(),
+        )
+
+        # Create a bill with a future session (edge case)
+        future_bill = Bill.objects.create(
+            policy=campaign,
+            number="300",
+            title="Future Session Bill",
+            chamber="house",
+            session="150th",  # A future session
+            introduced_date=timezone.now().date(),
+        )
+
+        # Test the current_bills() method
+        current_bills = campaign.current_bills()
+
+        # Should only include the bill with the current session
+        assert current_bills.count() == 1
+        assert current_bill in current_bills
+        assert old_bill not in current_bills
+        assert future_bill not in current_bills
+
+        # Verify it's filtering by the correct field (session, not congress_session)
+        # This ensures our bug fix is working
+        assert current_bills.first().session == current_session
+
 
 class BillModelTest(TestCase):
     """Test the Bill model for both federal and state bills"""
