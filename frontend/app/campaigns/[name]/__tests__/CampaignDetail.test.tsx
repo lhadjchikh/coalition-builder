@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import CampaignPage from "../page";
 import { apiClient } from "../../../../lib/api";
 import { notFound } from "next/navigation";
+import type { Campaign } from "../../../../types";
 
 // Mock the apiClient module
 jest.mock("../../../../lib/api", () => ({
@@ -20,12 +21,12 @@ jest.mock("next/navigation", () => ({
 
 // Mock structured data components
 jest.mock("../../../../components/StructuredData", () => ({
-  CampaignStructuredData: ({ title, description }: any) => (
+  CampaignStructuredData: ({ title, description }: { title?: string; description?: string }) => (
     <script type="application/ld+json" data-testid="campaign-structured-data">
       {JSON.stringify({ title, description })}
     </script>
   ),
-  BreadcrumbStructuredData: ({ items }: any) => (
+  BreadcrumbStructuredData: ({ items }: { items?: unknown[] }) => (
     <script type="application/ld+json" data-testid="breadcrumb-structured-data">
       {JSON.stringify(items)}
     </script>
@@ -35,7 +36,7 @@ jest.mock("../../../../components/StructuredData", () => ({
 // Mock campaign page content
 jest.mock("../CampaignPageContent", () => ({
   __esModule: true,
-  default: ({ campaign }: any) => (
+  default: ({ campaign }: { campaign?: Campaign }) => (
     <div data-testid="campaign-page-content">
       {campaign && (
         <>

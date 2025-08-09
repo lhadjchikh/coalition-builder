@@ -59,8 +59,8 @@ const createLocationMock = (origin: string = "http://localhost:3000") => ({
 });
 
 // Mock window.location for all tests
-delete (window as any).location;
-(window as any).location = createLocationMock();
+delete (window as typeof window & { location?: Location }).location;
+(window as typeof window & { location: Location }).location = createLocationMock();
 
 jest.mock("../../../../components/Navbar", () => ({
   __esModule: true,
@@ -81,7 +81,15 @@ Object.defineProperty(window, "innerWidth", {
 
 // Mock SocialShareButtons but keep it testable
 jest.mock("../../../../components/SocialShareButtons", () => {
-  return function MockSocialShareButtons(props: any) {
+  return function MockSocialShareButtons(props: {
+    url?: string;
+    title?: string;
+    description?: string;
+    hashtags?: string[];
+    campaignName?: string;
+    showLabel?: boolean;
+    className?: string;
+  }) {
     return (
       <div data-testid="social-share-buttons" className={props.className}>
         <div data-testid="share-url">{props.url}</div>
@@ -162,7 +170,7 @@ describe("CampaignDetail Social Sharing Features", () => {
 
     // Reset window.location mock only if window is available
     if (typeof window !== "undefined") {
-      (window as any).location = createLocationMock();
+      (window as typeof window & { location: Location }).location = createLocationMock();
     }
   });
 

@@ -14,8 +14,8 @@ const createLocationMock = (origin: string = "http://localhost:3000") => ({
 });
 
 // Mock window.location for all tests
-delete (window as any).location;
-(window as any).location = createLocationMock();
+delete (window as typeof window & { location?: Location }).location;
+(window as typeof window & { location: Location }).location = createLocationMock();
 
 // Mock FontAwesome imports first
 jest.mock("@fortawesome/free-solid-svg-icons", () => ({
@@ -27,7 +27,7 @@ jest.mock("@fortawesome/free-solid-svg-icons", () => ({
 
 // Mock FontAwesomeIcon component
 jest.mock("@fortawesome/react-fontawesome", () => ({
-  FontAwesomeIcon: ({ icon, ...props }: any) => {
+  FontAwesomeIcon: ({ icon, ...props }: { icon: { iconName?: string } } & React.HTMLAttributes<HTMLSpanElement>) => {
     let iconName = "unknown";
     if (typeof icon === "object" && icon.iconName) {
       iconName = icon.iconName;
@@ -47,7 +47,15 @@ jest.mock("../SocialShareButtons", () => ({
     _campaignName,
     showLabel,
     className,
-  }: any) => (
+  }: {
+    url?: string;
+    title?: string;
+    description?: string;
+    _hashtags?: string[];
+    _campaignName?: string;
+    showLabel?: boolean;
+    className?: string;
+  }) => (
     <div data-testid="social-share-buttons" className={className}>
       <div data-testid="share-url">{url}</div>
       <div data-testid="share-title">{title}</div>
@@ -60,7 +68,11 @@ jest.mock("../SocialShareButtons", () => ({
 // Mock other components
 jest.mock("../Button", () => ({
   __esModule: true,
-  default: ({ children, onClick, ...props }: any) => (
+  default: ({ children, onClick, ...props }: {
+    children?: React.ReactNode;
+    onClick?: () => void;
+    [key: string]: unknown;
+  }) => (
     <button onClick={onClick} {...props}>
       {children}
     </button>
@@ -69,7 +81,13 @@ jest.mock("../Button", () => ({
 
 jest.mock("../ImageWithCredit", () => ({
   __esModule: true,
-  default: ({ src, alt, title, className, imgClassName }: any) => (
+  default: ({ src, alt, title, className, imgClassName }: {
+    src?: string;
+    alt?: string;
+    title?: string;
+    className?: string;
+    imgClassName?: string;
+  }) => (
     <div className={className} data-testid="image-with-credit">
       <img src={src} alt={alt} title={title} className={imgClassName} />
     </div>
@@ -112,7 +130,7 @@ describe("CampaignDetail Share Modal", () => {
 
     // Reset window.location mock only if window is available
     if (typeof window !== "undefined") {
-      (window as any).location = createLocationMock();
+      (window as typeof window & { location: Location }).location = createLocationMock();
     }
   });
 
@@ -250,7 +268,7 @@ describe("CampaignDetail Share Modal", () => {
       const originalLocation = window.location;
 
       // Set window.location to undefined to simulate SSR
-      (window as any).location = undefined;
+      (window as typeof window & { location?: Location }).location = undefined;
 
       render(<CampaignDetail {...defaultProps} />);
 
@@ -261,7 +279,7 @@ describe("CampaignDetail Share Modal", () => {
       expect(screen.getByTestId("share-url")).toBeInTheDocument();
 
       // Restore window.location
-      (window as any).location = originalLocation;
+      (window as typeof window & { location: Location }).location = originalLocation;
     });
   });
 
@@ -329,7 +347,7 @@ describe("CampaignDetail Share Modal", () => {
   describe("Integration with Campaign Data", () => {
     it("uses campaign data for share URL", () => {
       // Set up window.location with a different origin
-      (window as any).location = createLocationMock("https://example.com");
+      (window as typeof window & { location: Location }).location = createLocationMock("https://example.com");
 
       render(<CampaignDetail {...defaultProps} />);
 

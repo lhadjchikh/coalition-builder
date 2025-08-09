@@ -552,13 +552,13 @@ describe("ContentBlock", () => {
     });
 
     it("should handle null/undefined values in optional fields", () => {
-      const block = {
+      const block: ContentBlockType = {
         ...baseContentBlock,
         image_title: undefined,
         image_author: undefined,
         image_license: undefined,
         image_source_url: undefined,
-      } as any;
+      };
       render(<ContentBlock block={block} />);
 
       expect(screen.getByText("Test Block")).toBeInTheDocument();

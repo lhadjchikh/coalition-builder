@@ -7,7 +7,13 @@ import type { HomePage } from "../../types/index";
 // Mock the Button component
 jest.mock("../Button", () => ({
   __esModule: true,
-  default: ({ children, href, variant, size, className }: any) => (
+  default: ({ children, href, variant, size, className }: {
+    children?: React.ReactNode;
+    href?: string;
+    variant?: string;
+    size?: string;
+    className?: string;
+  }) => (
     <a href={href} className={`${variant} ${size} ${className}`}>
       {children}
     </a>
@@ -39,7 +45,7 @@ const createMockHomepage = (overrides?: Partial<HomePage>): HomePage => ({
 });
 
 // Mock navigator.connection
-const mockConnection = (overrides?: any) => {
+const mockConnection = (overrides?: Partial<NetworkInformation>) => {
   Object.defineProperty(window.navigator, "connection", {
     writable: true,
     configurable: true,
@@ -65,7 +71,7 @@ describe("HeroSection", () => {
 
   afterEach(() => {
     // Clean up mocked properties
-    delete (window.navigator as any).connection;
+    delete (window.navigator as typeof window.navigator & { connection?: NetworkInformation }).connection;
   });
 
   describe("Basic Rendering", () => {

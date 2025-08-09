@@ -29,7 +29,7 @@ jest.mock("@fortawesome/free-solid-svg-icons", () => ({
 
 // Mock FontAwesomeIcon component
 jest.mock("@fortawesome/react-fontawesome", () => ({
-  FontAwesomeIcon: ({ icon, ...props }: any) => {
+  FontAwesomeIcon: ({ icon, ...props }: { icon: { iconName?: string }; [key: string]: unknown }) => {
     const iconName = icon.iconName || "unknown";
     return <span data-testid={`icon-${iconName}`} {...props} />;
   },
@@ -81,8 +81,8 @@ Object.defineProperty(window, "isSecureContext", {
 });
 
 // Mock window.location
-delete (window as any).location;
-window.location = { origin: "http://localhost:3000" } as any;
+delete (window as typeof window & { location?: Location }).location;
+window.location = { origin: "http://localhost:3000" } as Location;
 
 describe("SocialShareButtons", () => {
   const defaultProps = {
@@ -320,7 +320,7 @@ describe("SocialShareButtons", () => {
       const originalIsSecureContext = window.isSecureContext;
 
       // Remove clipboard API
-      delete (navigator as any).clipboard;
+      delete (navigator as typeof navigator & { clipboard?: Clipboard }).clipboard;
       window.isSecureContext = false;
 
       const mockExecCommand = jest.fn(() => true);

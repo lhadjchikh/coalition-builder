@@ -47,7 +47,7 @@ interface CampaignDetailProps {
     campaign: Campaign;
     onEndorsementSubmitted: () => void;
     onFormInteraction: (isActive: boolean) => void;
-    ref?: React.RefObject<any>;
+    ref?: React.RefObject<HTMLFormElement>;
   }>;
   EndorsementsListComponent?: React.ComponentType<{
     campaignId: number;
@@ -89,7 +89,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   const [isFormActive, setIsFormActive] = useState<boolean>(false);
   const [showShareModal, setShowShareModal] = useState<boolean>(false);
   const endorsementSectionRef = useRef<HTMLElement>(null);
-  const endorsementFormRef = useRef<any>(null);
+  const endorsementFormRef = useRef<HTMLFormElement>(null);
   const aboutSectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -300,7 +300,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             {/* Heading */}
             <h2
               className="text-2xl font-bold mb-3 text-center text-gray-900"
-              style={{ textWrap: "balance" as any }}
+              style={{ textWrap: "balance" as React.CSSProperties["textWrap"] }}
             >
               Spread the Word
             </h2>
@@ -308,7 +308,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             {/* Body text */}
             <p
               className="text-gray-600 text-center mb-6"
-              style={{ textWrap: "balance" as any }}
+              style={{ textWrap: "balance" as React.CSSProperties["textWrap"] }}
             >
               Help this campaign reach more people. Your share could inspire
               others to join this important cause.
@@ -335,7 +335,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
             {/* Footer text */}
             <p
               className="text-gray-500 text-sm text-center mt-6 italic"
-              style={{ textWrap: "balance" as any }}
+              style={{ textWrap: "balance" as React.CSSProperties["textWrap"] }}
             >
               Every share helps build a stronger coalition
             </p>

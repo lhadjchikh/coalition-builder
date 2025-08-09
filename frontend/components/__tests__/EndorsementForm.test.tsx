@@ -73,7 +73,10 @@ jest.mock("../../services/analytics");
 
 // Mock SocialShareButtons component
 jest.mock("../SocialShareButtons", () => {
-  return function MockSocialShareButtons(props: any) {
+  return function MockSocialShareButtons(props: {
+    onShare?: (platform: string) => void;
+    [key: string]: unknown;
+  }) {
     return (
       <div data-testid="social-share-buttons">
         <button onClick={() => props.onShare?.("facebook")}>
@@ -428,7 +431,7 @@ describe("EndorsementForm", () => {
     });
 
     it("scrolls to first field when scrollToFirstField is called", () => {
-      const ref = React.createRef<any>();
+      const ref = React.createRef<{ scrollToFirstField: () => void }>();
       render(<EndorsementForm campaign={mockCampaign} ref={ref} />);
 
       const typeSelect = screen.getByTestId("type-select");

@@ -10,7 +10,7 @@ mockIntersectionObserver.mockReturnValue({
   unobserve: jest.fn(),
   disconnect: jest.fn(),
 });
-window.IntersectionObserver = mockIntersectionObserver as any;
+window.IntersectionObserver = mockIntersectionObserver as unknown as typeof IntersectionObserver;
 
 describe("CampaignsList", () => {
   const mockCampaigns = [
@@ -355,9 +355,9 @@ describe("CampaignsList", () => {
             {
               isIntersecting: true,
               target: card1,
-            } as any,
+            } as IntersectionObserverEntry,
           ],
-          {} as any,
+          {} as IntersectionObserver,
         );
       });
 
@@ -371,7 +371,7 @@ describe("CampaignsList", () => {
     it("renders without IntersectionObserver in SSR", () => {
       // Temporarily remove IntersectionObserver
       const originalIO = window.IntersectionObserver;
-      delete (window as any).IntersectionObserver;
+      delete (window as typeof window & { IntersectionObserver?: typeof IntersectionObserver }).IntersectionObserver;
 
       render(<CampaignsList {...defaultProps} />);
 

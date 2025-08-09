@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import About from "../page";
 import { ssrApiClient } from "../../../lib/api";
 import { getFallbackHomepage } from "../../../utils/homepage-data";
+import type { HomePage, ContentBlock } from "../../../types";
 
 // Mock the ssrApiClient module
 jest.mock("../../../lib/api", () => ({
@@ -31,7 +32,11 @@ jest.mock("../../../utils/homepage-data", () => ({
 // Mock the components
 jest.mock("../../../components/AboutPage", () => ({
   __esModule: true,
-  default: ({ orgInfo, contentBlocks, error }: any) => (
+  default: ({ orgInfo, contentBlocks, error }: {
+    orgInfo?: HomePage;
+    contentBlocks?: ContentBlock[];
+    error?: string;
+  }) => (
     <div data-testid="about-page">
       {orgInfo && <div data-testid="org-name">{orgInfo.organization_name}</div>}
       {error && <div data-testid="error">{error}</div>}

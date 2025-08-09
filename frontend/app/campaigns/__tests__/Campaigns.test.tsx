@@ -1,6 +1,7 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { ssrApiClient } from "../../../lib/api";
+import type { ContentBlock, Campaign, HomePage } from "../../../types";
 
 // Create a testable version of the component that mimics the server component behavior
 async function TestCampaigns() {
@@ -38,7 +39,7 @@ async function TestCampaigns() {
       campaigns={campaigns}
       contentBlocks={contentBlocks}
       campaignsError={campaignsError}
-      ContentBlockComponent={({ block }: any) => (
+      ContentBlockComponent={({ block }: { block: ContentBlock }) => (
         <div data-testid={`block-${block.id}`}>{block.content}</div>
       )}
     />
@@ -93,7 +94,12 @@ jest.mock("../../../lib/api", () => ({
 // Mock the components
 jest.mock("../../../components/CampaignsPage", () => ({
   __esModule: true,
-  default: ({ homepage, campaigns, contentBlocks, campaignsError }: any) => (
+  default: ({ homepage, campaigns, contentBlocks, campaignsError }: {
+    homepage?: HomePage;
+    campaigns?: Campaign[];
+    contentBlocks?: ContentBlock[];
+    campaignsError?: string | null;
+  }) => (
     <div data-testid="campaigns-page">
       {homepage && (
         <div data-testid="org-name">{homepage.organization_name}</div>

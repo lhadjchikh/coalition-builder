@@ -2,6 +2,7 @@ import React from "react";
 import { render } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import RootLayout from "../layout";
+import type { HomePage } from "../../types";
 // Mock the dependencies
 jest.mock("../../components/Navbar", () => ({
   __esModule: true,
@@ -77,12 +78,12 @@ describe("Theme CSS Loading", () => {
 
   // Helper function to setup fetch mocks
   const setupFetchMock = (
-    homepageData: any = mockHomepage,
-    themeCSSData?: any,
+    homepageData: Partial<HomePage> = mockHomepage,
+    themeCSSData?: { css_variables?: string; custom_css?: string },
     options: {
       homepageOk?: boolean;
       themeCssOk?: boolean;
-      themeData?: any;
+      themeData?: { google_fonts?: string[] };
     } = {},
   ) => {
     const {

@@ -23,8 +23,8 @@ const Navbar: React.FC<NavbarProps> = ({
   logoAltText,
   navItems = [],
   className,
-  currentView,
-  onNavigate,
+  _currentView,
+  _onNavigate,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);

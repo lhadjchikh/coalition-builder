@@ -20,8 +20,8 @@ describe("Analytics Service - SSR Integration", () => {
   describe("Server-side Environment", () => {
     beforeEach(() => {
       // Ensure we're in a server-like environment
-      delete (global as any).window;
-      delete (global as any).document;
+      delete (global as typeof global & { window?: Window; document?: Document }).window;
+      delete (global as typeof global & { window?: Window; document?: Document }).document;
     });
 
     it("should be importable in SSR environment", () => {
@@ -35,7 +35,7 @@ describe("Analytics Service - SSR Integration", () => {
 
     it("should get tracking ID from NEXT_PUBLIC_GA_TRACKING_ID", () => {
       // Reset service to pick up environment
-      (analytics as any)._resetForTesting();
+      (analytics as typeof analytics & { _resetForTesting: () => void })._resetForTesting();
       expect(analytics.getTrackingId()).toBe("G-TEST123456");
     });
 
@@ -43,7 +43,7 @@ describe("Analytics Service - SSR Integration", () => {
       process.env.NEXT_PUBLIC_GA_TRACKING_ID = "";
       process.env.REACT_APP_GA_TRACKING_ID = "";
 
-      (analytics as any)._resetForTesting();
+      (analytics as typeof analytics & { _resetForTesting: () => void })._resetForTesting();
       expect(analytics.getTrackingId()).toBeNull();
     });
 
@@ -70,7 +70,7 @@ describe("Analytics Service - SSR Integration", () => {
   describe("SSR-specific Methods", () => {
     beforeEach(() => {
       // Mock minimal window for client-side tests
-      (global as any).window = {
+      (global as typeof global & { window?: Window }).window = {
         location: { href: "https://example.com/test" },
         document: { title: "Test Page" },
       };
@@ -85,7 +85,7 @@ describe("Analytics Service - SSR Integration", () => {
     });
 
     afterEach(() => {
-      delete (global as any).window;
+      delete (global as typeof global & { window?: Window }).window;
     });
   });
 

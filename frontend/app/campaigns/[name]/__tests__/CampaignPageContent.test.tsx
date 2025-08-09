@@ -3,6 +3,7 @@ import { render } from "@testing-library/react";
 import CampaignPageContent from "../CampaignPageContent";
 import fs from "fs";
 import path from "path";
+import type { Campaign } from "../../../types";
 
 // Mock the CampaignDetail component
 jest.mock("../../../../components/CampaignDetail", () => {
@@ -11,7 +12,7 @@ jest.mock("../../../../components/CampaignDetail", () => {
     initialCampaign,
   }: {
     campaignId?: number;
-    initialCampaign?: any;
+    initialCampaign?: Campaign;
   }) {
     return (
       <div data-testid="mock-campaign-detail">

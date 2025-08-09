@@ -41,7 +41,7 @@ const mockHomepage: HomePage = {
 
 // Mock Next.js Link component
 jest.mock("next/link", () => {
-  const MockLink = ({ href, children, className }: any) => (
+  const MockLink = ({ href, children, className }: { href?: string; children?: React.ReactNode; className?: string }) => (
     <a href={href} className={className}>
       {children}
     </a>
