@@ -10,19 +10,47 @@ For most developers, the [Installation guide](installation.md) provides everythi
 
 ### Docker Compose Configurations
 
-Coalition Builder uses two Docker Compose configurations:
+Coalition Builder uses Docker Compose for orchestrating services:
 
-#### Production Configuration (`docker compose.yml`)
+#### Environment Configuration
+
+Each service loads environment variables from its respective `.env` file:
+
+1. **Backend API**: `backend/.env` (create from `backend/.env.example`)
+2. **Frontend App**: `frontend/.env` (create from `frontend/.env.example`)
+
+```bash
+# Set up environment files
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+# Edit the .env files with your configuration
+```
+
+The `env_file` directives in `docker-compose.yml` are marked as optional (`required: false`), so containers will start even without `.env` files, using default values from the `environment` section.
+
+#### Production Configuration (`docker-compose.yml`)
 
 - **Purpose**: Production deployments and CI/CD pipelines
 - **Features**: Optimized builds, production environment variables, no volume mounts
 - **Usage**: `docker compose up -d`
 
-#### Development Configuration (`docker compose.dev.yml`)
+#### Development Configuration (`docker-compose.dev.yml`)
 
 - **Purpose**: Local development with live code reload
 - **Features**: Volume mounts for instant code changes, development build targets, debug mode
-- **Usage**: `docker compose -f docker compose.yml -f docker compose.dev.yml up -d`
+- **Usage**: `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d`
+
+#### Override Configuration
+
+For local customization without modifying tracked files:
+
+```bash
+# Create a local override file
+cp docker-compose.override.yml.example docker-compose.override.yml
+# Edit docker-compose.override.yml with your local settings
+```
+
+Docker Compose automatically loads `docker-compose.override.yml` if it exists.
 
 **Key Differences:**
 

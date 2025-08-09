@@ -46,6 +46,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    # Load .env file if it exists (create from .env.example)
+    env_file:
+      - path: ./backend/.env
+        required: false
     environment:
       - DEBUG=${DEBUG:-False}
       - SECRET_KEY=${SECRET_KEY:-dev_secret_key_replace_in_production}
@@ -70,6 +74,10 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - api
+    # Load .env file if it exists (create from .env.example)
+    env_file:
+      - path: ./frontend/.env
+        required: false
     environment:
       - NODE_ENV=production
       - API_URL=http://api:8000
