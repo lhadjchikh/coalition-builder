@@ -35,8 +35,8 @@ jobs:
             --load \
             --target=frontend-builder \
             -t coalition_frontend_test:latest \
-            -f frontend/Dockerfile \
-            .
+            -f Dockerfile \
+            frontend/
 
       # Temp fix for cache
       - name: Move cache
