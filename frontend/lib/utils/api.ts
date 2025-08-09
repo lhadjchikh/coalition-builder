@@ -23,7 +23,9 @@ export async function fetchApiResource<T>(
   }
   try {
     return (await response.json()) as T;
-  } catch {
-    throw new Error(`Failed to parse JSON for ${resourceName}`);
+  } catch (error) {
+    // Include original error for better debugging
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to parse JSON for ${resourceName}: ${message}`);
   }
 }

@@ -65,18 +65,23 @@ const nextConfig = {
   images: {
     // For Next.js 12.3.0+, use remotePatterns for more flexible configuration
     remotePatterns: [
-      {
-        protocol: "http",
-        hostname: "localhost",
-        port: "8000",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "localhost",
-        port: "8000",
-        pathname: "/**",
-      },
+      // Only allow localhost in development
+      ...(process.env.NODE_ENV === "development"
+        ? [
+            {
+              protocol: "http",
+              hostname: "localhost",
+              port: "8000",
+              pathname: "/**",
+            },
+            {
+              protocol: "https",
+              hostname: "localhost",
+              port: "8000",
+              pathname: "/**",
+            },
+          ]
+        : []),
       ...(process.env.CLOUDFRONT_DOMAIN
         ? [
             {
