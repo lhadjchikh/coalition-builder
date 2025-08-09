@@ -39,7 +39,7 @@ func TestMainConfiguration(t *testing.T) {
 	expectedOutputs := []string{
 		"vpc_id", "public_subnet_ids", "private_subnet_ids", "database_endpoint",
 		"database_name", "ecs_cluster_name", "load_balancer_dns",
-		"api_ecr_repository_url", "ssr_ecr_repository_url", "static_assets_bucket_name", "static_assets_bucket_arn",
+		"api_ecr_repository_url", "app_ecr_repository_url", "static_assets_bucket_name", "static_assets_bucket_arn",
 		"cloudfront_distribution_domain_name", "cloudfront_distribution_id",
 	}
 
@@ -53,7 +53,7 @@ func TestMainConfiguration(t *testing.T) {
 		"module.networking.aws_subnet.private", "module.networking.aws_subnet.private_db",
 		"module.database.aws_db_instance.postgres", "module.compute.aws_ecs_cluster.main",
 		"module.loadbalancer.aws_lb.main", "module.compute.aws_ecr_repository.api",
-		"module.compute.aws_ecr_repository.ssr", "module.storage.aws_s3_bucket.static_assets",
+		"module.compute.aws_ecr_repository.app", "module.storage.aws_s3_bucket.static_assets",
 		"module.storage.aws_cloudfront_distribution.static_assets",
 		"module.storage.aws_cloudfront_origin_access_identity.static_assets",
 	}
@@ -62,9 +62,9 @@ func TestMainConfiguration(t *testing.T) {
 		assert.Contains(t, planOutput, resource, "Plan should create %s resource", resource)
 	}
 
-	// Validate both API and SSR target groups exist
+	// Validate both API and App target groups exist
 	assert.Contains(t, planOutput, "module.loadbalancer.aws_lb_target_group.api", "Plan should create API target group")
-	assert.Contains(t, planOutput, "module.loadbalancer.aws_lb_target_group.ssr", "Plan should create SSR target group")
+	assert.Contains(t, planOutput, "module.loadbalancer.aws_lb_target_group.app", "Plan should create App target group")
 
 	// Verify the plan completes successfully
 	assert.Contains(t, planOutput, "Plan:", "Plan should complete successfully")
