@@ -66,8 +66,7 @@ func TestComputeModuleCreatesECSCluster(t *testing.T) {
 		"create_new_key_pair":   false,
 		"container_port":        8000,
 		"domain_name":           fmt.Sprintf("%s.example.com", testConfig.UniqueID),
-		"enable_ssr":            false,
-		"health_check_path":     "/health/",
+		"health_check_path_api": "/api/health",
 	}
 
 	terraformOptions := testConfig.GetModuleTerraformOptions("../../modules/compute", testVars)
@@ -109,8 +108,7 @@ func TestComputeModuleCreatesIAMRoles(t *testing.T) {
 		"create_new_key_pair":   false,
 		"container_port":        8000,
 		"domain_name":           fmt.Sprintf("%s.example.com", testConfig.UniqueID),
-		"enable_ssr":            false,
-		"health_check_path":     "/health/",
+		"health_check_path_api": "/api/health",
 	}
 
 	terraformOptions := testConfig.GetModuleTerraformOptions("../../modules/compute", testVars)
@@ -154,8 +152,7 @@ func TestComputeModuleCreatesTaskDefinitionWithoutSSR(t *testing.T) {
 		"create_new_key_pair":   false,
 		"container_port":        8000,
 		"domain_name":           fmt.Sprintf("%s.example.com", testConfig.UniqueID),
-		"enable_ssr":            false, // Test without SSR
-		"health_check_path":     "/health/",
+		"health_check_path_api": "/api/health",
 		"task_cpu":              256,
 		"task_memory":           512,
 	}
@@ -198,8 +195,7 @@ func TestComputeModuleCreatesTaskDefinitionWithSSR(t *testing.T) {
 		"create_new_key_pair":   false,
 		"container_port":        8000,
 		"domain_name":           fmt.Sprintf("%s.example.com", testConfig.UniqueID),
-		"enable_ssr":            true, // Test with SSR enabled
-		"health_check_path":     "/health/",
+		"health_check_path_api": "/api/health",
 		"task_cpu":              512,
 		"task_memory":           1024,
 	}
@@ -242,8 +238,7 @@ func TestComputeModuleCreatesBastionHost(t *testing.T) {
 		"create_new_key_pair":   false,
 		"container_port":        8000,
 		"domain_name":           fmt.Sprintf("%s.example.com", testConfig.UniqueID),
-		"enable_ssr":            false,
-		"health_check_path":     "/health/",
+		"health_check_path_api": "/api/health",
 	}
 
 	terraformOptions := testConfig.GetModuleTerraformOptions("../../modules/compute", testVars)
@@ -314,8 +309,7 @@ func TestComputeModuleValidatesResourceConstraints(t *testing.T) {
 				"create_new_key_pair":   false,
 				"container_port":        8000,
 				"domain_name":           fmt.Sprintf("%s.example.com", testConfig.UniqueID),
-				"enable_ssr":            false,
-				"health_check_path":     "/health/",
+				"health_check_path_api": "/api/health",
 				"task_cpu":              tc.taskCPU,
 				"task_memory":           tc.taskMemory,
 			}

@@ -15,8 +15,7 @@ func TestMainConfigurationWithoutSSR(t *testing.T) {
 	testConfig := common.SetupIntegrationTest(t)
 	testVars := common.GetIntegrationTestVars()
 
-	// Configure for deployment without SSR
-	testVars["enable_ssr"] = false
+	// Configure for deployment
 	testVars["route53_zone_id"] = "Z123456789ABCDEF"
 	testVars["domain_name"] = fmt.Sprintf("%s.example.com", testConfig.UniqueID)
 	testVars["acm_certificate_arn"] = fmt.Sprintf("arn:aws:acm:us-east-1:123456789012:certificate/%s", testConfig.UniqueID)
@@ -61,7 +60,7 @@ func TestMainConfigurationWithoutSSR(t *testing.T) {
 		assert.Contains(t, planOutput, resource, "Plan should create %s resource", resource)
 	}
 
-	// Validate SSR ECR repository is created (always created regardless of enable_ssr)
+	// Validate SSR ECR repository is created
 	assert.Contains(t, planOutput, "module.compute.aws_ecr_repository.ssr", "Plan should create SSR ECR repository")
 	assert.Contains(t, planOutput, "ssr_ecr_repository_url", "Plan should define SSR ECR output")
 
@@ -75,8 +74,7 @@ func TestMainConfigurationWithSSR(t *testing.T) {
 	testConfig := common.SetupIntegrationTest(t)
 	testVars := common.GetIntegrationTestVars()
 
-	// Configure for deployment with SSR enabled
-	testVars["enable_ssr"] = true
+	// Configure for deployment
 	testVars["route53_zone_id"] = "Z123456789ABCDEF"
 	testVars["domain_name"] = fmt.Sprintf("%s-ssr.example.com", testConfig.UniqueID)
 	testVars["acm_certificate_arn"] = fmt.Sprintf("arn:aws:acm:us-east-1:123456789012:certificate/%s", testConfig.UniqueID)
