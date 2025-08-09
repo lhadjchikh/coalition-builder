@@ -1,6 +1,6 @@
 import { apiClient } from "../api";
-import type { Campaign } from "../types";
-import { withSuppressedErrors } from "../tests/utils/testUtils";
+import type { Campaign } from "../../types";
+import { withSuppressedErrors } from "../../tests/utils/testUtils";
 
 // Mock fetch globally
 global.fetch = jest.fn();

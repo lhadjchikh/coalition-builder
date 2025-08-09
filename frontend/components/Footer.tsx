@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import SocialLinks from "./SocialLinks";
 import { HomePage } from "../types";
 
@@ -9,11 +10,6 @@ interface FooterProps {
   showSocialLinks?: boolean;
   showLegalLinks?: boolean;
   className?: string;
-  LinkComponent?: React.ComponentType<{
-    to: string;
-    children: React.ReactNode;
-    className?: string;
-  }>;
 }
 
 const Footer: React.FC<FooterProps> = ({
@@ -21,11 +17,6 @@ const Footer: React.FC<FooterProps> = ({
   showSocialLinks = true,
   showLegalLinks = true,
   className,
-  LinkComponent = ({ to, children, className }) => (
-    <a href={to} className={className}>
-      {children}
-    </a>
-  ),
 }) => {
   if (!orgInfo) {
     return null;
@@ -43,8 +34,8 @@ const Footer: React.FC<FooterProps> = ({
             <div className="flex flex-col items-center lg:items-start">
               {/* Logo */}
               {orgInfo.theme?.logo_url ? (
-                <LinkComponent
-                  to="/"
+                <Link
+                  href="/"
                   className="mb-3 transition-all duration-300 transform hover:scale-105"
                 >
                   <img
@@ -55,14 +46,14 @@ const Footer: React.FC<FooterProps> = ({
                     }
                     className="h-10 sm:h-12 lg:h-16 w-auto max-w-full object-contain"
                   />
-                </LinkComponent>
+                </Link>
               ) : (
-                <LinkComponent
-                  to="/"
+                <Link
+                  href="/"
                   className="text-2xl font-bold text-white hover:text-gray-200 transition-colors duration-200 no-underline mb-3"
                 >
                   {orgInfo.organization_name}
-                </LinkComponent>
+                </Link>
               )}
 
               {/* Tagline */}
@@ -98,36 +89,36 @@ const Footer: React.FC<FooterProps> = ({
             <nav aria-label="Footer navigation">
               <ul className="space-y-2 text-center lg:text-left">
                 <li>
-                  <LinkComponent
-                    to="/"
+                  <Link
+                    href="/"
                     className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline text-sm sm:text-base"
                   >
                     Home
-                  </LinkComponent>
+                  </Link>
                 </li>
                 <li>
-                  <LinkComponent
-                    to="/campaigns"
+                  <Link
+                    href="/campaigns"
                     className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline text-sm sm:text-base"
                   >
                     Campaigns
-                  </LinkComponent>
+                  </Link>
                 </li>
                 <li>
-                  <LinkComponent
-                    to="/about"
+                  <Link
+                    href="/about"
                     className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline text-sm sm:text-base"
                   >
                     About
-                  </LinkComponent>
+                  </Link>
                 </li>
                 <li>
-                  <LinkComponent
-                    to="/contact"
+                  <Link
+                    href="/contact"
                     className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline text-sm sm:text-base"
                   >
                     Contact
-                  </LinkComponent>
+                  </Link>
                 </li>
               </ul>
             </nav>
@@ -142,28 +133,28 @@ const Footer: React.FC<FooterProps> = ({
               <nav aria-label="Legal links">
                 <ul className="space-y-2 text-center lg:text-left">
                   <li>
-                    <LinkComponent
-                      to="/terms"
+                    <Link
+                      href="/terms"
                       className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline text-sm sm:text-base"
                     >
                       Terms of Use
-                    </LinkComponent>
+                    </Link>
                   </li>
                   <li>
-                    <LinkComponent
-                      to="/privacy"
+                    <Link
+                      href="/privacy"
                       className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline text-sm sm:text-base"
                     >
                       Privacy Policy
-                    </LinkComponent>
+                    </Link>
                   </li>
                   <li>
-                    <LinkComponent
-                      to="/admin/"
+                    <Link
+                      href="/admin/"
                       className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline text-sm sm:text-base"
                     >
                       Admin Login
-                    </LinkComponent>
+                    </Link>
                   </li>
                 </ul>
               </nav>

@@ -4,11 +4,11 @@
 
 import React from "react";
 import { render } from "@testing-library/react";
-import LegalDocumentTracker from "./LegalDocumentTracker";
-import analytics from "../services/analytics";
+import LegalDocumentTracker from "../LegalDocumentTracker";
+import analytics from "../../services/analytics";
 
 // Mock the analytics module
-jest.mock("@shared/services/analytics", () => ({
+jest.mock("../../services/analytics", () => ({
   trackLegalDocumentView: jest.fn(),
 }));
 

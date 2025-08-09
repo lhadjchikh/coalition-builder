@@ -1,4 +1,5 @@
 // Shared theme utilities that work in both frontend and SSR environments
+import { loadGoogleFonts } from "./googleFonts";
 
 export interface Theme {
   id: number;
@@ -193,6 +194,15 @@ export function darkenColor(hex: string, amount: number): string {
  */
 export function applyThemeToDocument(theme: Theme | null): void {
   if (typeof document === "undefined") return;
+
+  // Load Google Fonts if specified
+  if (theme?.google_fonts && theme.google_fonts.length > 0) {
+    try {
+      loadGoogleFonts(theme.google_fonts);
+    } catch (error) {
+      console.warn("Failed to load Google Fonts:", error);
+    }
+  }
 
   let styleElement = document.getElementById(
     "theme-variables",

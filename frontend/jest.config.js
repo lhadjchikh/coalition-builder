@@ -10,23 +10,28 @@ const customJestConfig = {
   // Add more setup options before each test is run
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
   moduleNameMapper: {
-    // Handle module aliases (if you have them in your tsconfig)
+    // Handle module aliases (matching tsconfig.json)
     "^@/(.*)$": "<rootDir>/$1",
-    "^@frontend/types$": "<rootDir>/frontend/src/types/index.ts",
-    "^@frontend/(.*)$": "<rootDir>/frontend/src/$1",
-    "^@shared/(.*)$": "<rootDir>/shared/$1",
+    "^@components/(.*)$": "<rootDir>/components/$1",
+    "^@contexts/(.*)$": "<rootDir>/contexts/$1",
+    "^@hooks/(.*)$": "<rootDir>/hooks/$1",
+    "^@services/(.*)$": "<rootDir>/services/$1",
+    "^@styles/(.*)$": "<rootDir>/styles/$1",
+    "^@tests/(.*)$": "<rootDir>/tests/$1",
+    "^@types/(.*)$": "<rootDir>/types/$1",
+    "^@utils/(.*)$": "<rootDir>/utils/$1",
 
-    // Explicitly map React modules to SSR's node_modules
+    // Map React modules to node_modules
     "^react$": "<rootDir>/node_modules/react",
     "^react-dom$": "<rootDir>/node_modules/react-dom",
     "^react/jsx-runtime$": "<rootDir>/node_modules/react/jsx-runtime",
 
-    // Map vanilla-cookieconsent to SSR's node_modules
+    // Map vanilla-cookieconsent to node_modules
     "^vanilla-cookieconsent$": "<rootDir>/node_modules/vanilla-cookieconsent",
     "^vanilla-cookieconsent/dist/cookieconsent.css$":
       "<rootDir>/__mocks__/styleMock.js",
 
-    // Map testing libraries to SSR's node_modules
+    // Map testing libraries to node_modules
     "^@testing-library/react$": "<rootDir>/node_modules/@testing-library/react",
     "^@testing-library/jest-dom$":
       "<rootDir>/node_modules/@testing-library/jest-dom",
@@ -51,16 +56,16 @@ const customJestConfig = {
   testPathIgnorePatterns: [
     "<rootDir>/.next/",
     "<rootDir>/node_modules/",
-    "<rootDir>/frontend/", // Ignore copied frontend tests - they're tested in frontend workflow
-    "<rootDir>/shared/", // Ignore copied shared tests - they're tested in other workflows
     "<rootDir>/__tests__/integration/", // Integration tests use separate config
   ],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
   collectCoverageFrom: [
     "app/**/*.{js,jsx,ts,tsx}",
     "lib/**/*.{js,jsx,ts,tsx}",
-    "!app/**/*.d.ts",
-    "!lib/**/*.d.ts",
+    "components/**/*.{js,jsx,ts,tsx}",
+    "services/**/*.{js,jsx,ts,tsx}",
+    "utils/**/*.{js,jsx,ts,tsx}",
+    "!**/*.d.ts",
     "!**/__tests__/**",
     "!**/node_modules/**",
   ],

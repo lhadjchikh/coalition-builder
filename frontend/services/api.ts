@@ -1,0 +1,245 @@
+// Frontend API client implementation
+// Extends the shared base client with browser-specific functionality like CSRF
+
+import { BaseApiClient } from "./api-client";
+
+export function getBaseUrl(): string {
+  // Check environment variables in order of precedence
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+
+  // In CI environments, default to localhost
+  if (process.env.CI === "true") {
+    return "http://localhost:8000";
+  }
+
+  // For development, check if we're in browser context
+  if (typeof window !== "undefined") {
+    // Browser environment - use relative URLs or current origin
+    return "";
+  }
+
+  // SSR environment - fallback to localhost
+  return "http://localhost:8000";
+}
+
+// Frontend API client with CSRF support
+class FrontendApiClient extends BaseApiClient {
+  private csrfToken: string | null = null;
+  private csrfTokenPromise: Promise<string> | null = null;
+
+  constructor() {
+    super({
+      baseURL: getBaseUrl(),
+      timeout: 30000,
+    });
+  }
+
+  protected async request<T>(
+    endpoint: string,
+    options: RequestInit = {},
+  ): Promise<T> {
+    const url = this.baseURL ? `${this.baseURL}${endpoint}` : endpoint;
+
+    let attempts = 0;
+    const maxRetries = 3;
+    const retryDelay = 1000; // 1 second
+
+    const makeRequest = async (): Promise<T> => {
+      const startTime = Date.now();
+
+      // Set up abort controller for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+      }, this.timeout);
+
+      try {
+        const response = await fetch(url, {
+          headers: this.defaultHeaders,
+          signal: controller.signal,
+          ...options,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return await response.json();
+      } catch (error) {
+        clearTimeout(timeoutId);
+
+        // Handle timeout separately
+        if (error instanceof Error && error.name === "AbortError") {
+          const duration = Date.now() - startTime;
+          console.error(
+            "API request timed out for %s after %dms",
+            url,
+            duration,
+          );
+          throw new Error("Request timeout");
+        }
+
+        throw error;
+      }
+    };
+
+    // Retry logic for network errors (but not HTTP errors)
+    while (attempts < maxRetries) {
+      try {
+        return await makeRequest();
+      } catch (error) {
+        attempts++;
+
+        // Don't retry HTTP errors (4xx, 5xx responses)
+        if (error instanceof Error && error.message.startsWith("HTTP error!")) {
+          throw error;
+        }
+
+        // If this was the last attempt, throw the error
+        if (attempts >= maxRetries) {
+          console.error("API request failed for %s:", url, error);
+          throw error;
+        }
+
+        // Log retry attempt
+        console.warn(
+          "Network error for %s - retrying in %dms (attempt %d/%d)",
+          url,
+          retryDelay,
+          attempts,
+          maxRetries,
+        );
+
+        // Wait before retrying
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+      }
+    }
+
+    // This should never be reached, but TypeScript requires it
+    throw new Error("Unexpected retry loop exit");
+  }
+
+  private async getCsrfToken(): Promise<string> {
+    // If we already have a token, return it
+    if (this.csrfToken) {
+      return this.csrfToken;
+    }
+
+    // If we're already fetching a token, wait for that promise
+    if (this.csrfTokenPromise) {
+      return this.csrfTokenPromise;
+    }
+
+    // Only fetch CSRF token in browser environment
+    if (typeof window === "undefined") {
+      return "";
+    }
+
+    // Start fetching the token
+    this.csrfTokenPromise = this.fetchCsrfToken();
+
+    try {
+      this.csrfToken = await this.csrfTokenPromise;
+      return this.csrfToken;
+    } finally {
+      // Clear the promise so future calls can try again if needed
+      this.csrfTokenPromise = null;
+    }
+  }
+
+  private async fetchCsrfToken(): Promise<string> {
+    try {
+      // First try to get token from cookie
+      if (typeof document !== "undefined") {
+        const cookies = document.cookie.split(";");
+        for (const cookie of cookies) {
+          const [name, value] = cookie.trim().split("=");
+          if (name === "csrftoken") {
+            return value;
+          }
+        }
+      }
+
+      // If no cookie, fetch from API
+      const response = await fetch(`${this.baseURL}/api/csrf-token/`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch CSRF token: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.csrf_token;
+    } catch (error) {
+      console.warn("Failed to fetch CSRF token:", error);
+      return "";
+    }
+  }
+
+  // Enhanced POST method with CSRF support
+  async post<T>(endpoint: string, data?: any): Promise<T> {
+    const csrfToken = await this.getCsrfToken();
+
+    const headers = new Headers(this.defaultHeaders);
+    if (csrfToken) {
+      headers.set("X-CSRFToken", csrfToken);
+    }
+
+    return this.request<T>(endpoint, {
+      method: "POST",
+      headers,
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  // Enhanced PUT method with CSRF support
+  async put<T>(endpoint: string, data?: any): Promise<T> {
+    const csrfToken = await this.getCsrfToken();
+
+    const headers = new Headers(this.defaultHeaders);
+    if (csrfToken) {
+      headers.set("X-CSRFToken", csrfToken);
+    }
+
+    return this.request<T>(endpoint, {
+      method: "PUT",
+      headers,
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  // Enhanced DELETE method with CSRF support
+  async delete<T>(endpoint: string): Promise<T> {
+    const csrfToken = await this.getCsrfToken();
+
+    const headers = new Headers(this.defaultHeaders);
+    if (csrfToken) {
+      headers.set("X-CSRFToken", csrfToken);
+    }
+
+    return this.request<T>(endpoint, {
+      method: "DELETE",
+      headers,
+    });
+  }
+
+  // Basic GET method (no CSRF needed)
+  async get<T>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: "GET",
+    });
+  }
+}
+
+export const frontendApiClient = new FrontendApiClient();
+export default frontendApiClient;

@@ -8,7 +8,7 @@
 // Mock environment variable before importing
 process.env.NEXT_PUBLIC_GA_TRACKING_ID = "G-TEST123456";
 
-import analytics from "../services/analytics";
+import analytics from "../../services/analytics";
 
 const originalEnv = process.env;
 
@@ -92,14 +92,14 @@ describe("Analytics Service - SSR Integration", () => {
   describe("Type Safety", () => {
     it("should export expected interfaces", () => {
       // Test that TypeScript types are properly exported
-      const event: import("@shared/services/analytics").AnalyticsEvent = {
+      const event: import("../../services/analytics").AnalyticsEvent = {
         action: "test",
         category: "test",
         label: "test",
         value: 1,
       };
 
-      const pageView: import("@shared/services/analytics").PageViewEvent = {
+      const pageView: import("../../services/analytics").PageViewEvent = {
         page_title: "Test",
         page_location: "https://example.com",
         page_path: "/test",

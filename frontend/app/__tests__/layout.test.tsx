@@ -7,7 +7,7 @@ import { DEFAULT_NAV_ITEMS, NavItemData, HomePage } from "../../types";
 
 // Mock the dependencies
 jest.mock("../../lib/api");
-jest.mock("../../components/SSRNavbar", () => ({
+jest.mock("../../components/Navbar", () => ({
   __esModule: true,
   default: ({
     organizationName,
@@ -16,18 +16,18 @@ jest.mock("../../components/SSRNavbar", () => ({
     organizationName: string;
     navItems: NavItemData[];
   }) => (
-    <nav data-testid="ssr-navbar">
+    <nav data-testid="navbar">
       <span>{organizationName}</span>
       <span>{navItems?.length || 0} nav items</span>
     </nav>
   ),
 }));
-jest.mock("../../components/SSRFooter", () => ({
+jest.mock("../../components/Footer", () => ({
   __esModule: true,
   default: ({ orgInfo }: { orgInfo?: { organization_name: string } }) => {
     const organizationName = orgInfo?.organization_name || "Coalition Builder";
     return (
-      <footer data-testid="ssr-footer">
+      <footer data-testid="footer">
         <span>
           © {new Date().getFullYear()} {organizationName}. All rights reserved.
         </span>
@@ -39,7 +39,7 @@ jest.mock("../../lib/registry", () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-jest.mock("../components/CookieConsent", () => ({
+jest.mock("../../components/CookieConsent", () => ({
   __esModule: true,
   default: () => <div data-testid="cookie-consent">Cookie Consent</div>,
 }));
@@ -121,7 +121,7 @@ describe("RootLayout", () => {
     const { container } = render(bodyChildren);
 
     // Check for navbar
-    const navbar = screen.getByTestId("ssr-navbar");
+    const navbar = screen.getByTestId("navbar");
     expect(navbar).toBeInTheDocument();
     expect(navbar).toHaveTextContent("Test Organization");
     expect(navbar).toHaveTextContent("3 nav items");
@@ -132,7 +132,7 @@ describe("RootLayout", () => {
     expect(mainContent).toHaveTextContent("Test Page Content");
 
     // Check for footer
-    const footer = screen.getByTestId("ssr-footer");
+    const footer = screen.getByTestId("footer");
     expect(footer).toBeInTheDocument();
     expect(footer).toHaveTextContent(
       `© ${new Date().getFullYear()} Test Organization. All rights reserved.`,
@@ -195,12 +195,12 @@ describe("RootLayout", () => {
     );
 
     // Should still render with fallback organization name
-    const navbar = screen.getByTestId("ssr-navbar");
+    const navbar = screen.getByTestId("navbar");
     expect(navbar).toBeInTheDocument();
     expect(navbar).toHaveTextContent("Coalition Builder");
     expect(navbar).toHaveTextContent(`${DEFAULT_NAV_ITEMS.length} nav items`);
 
-    const footer = screen.getByTestId("ssr-footer");
+    const footer = screen.getByTestId("footer");
     expect(footer).toBeInTheDocument();
     expect(footer).toHaveTextContent("Coalition Builder");
 
@@ -243,7 +243,7 @@ describe("RootLayout", () => {
     const bodyChildren = bodyElement.props.children;
     render(bodyChildren);
 
-    const navbar = screen.getByTestId("ssr-navbar");
+    const navbar = screen.getByTestId("navbar");
     // Empty nav_items should use DEFAULT_NAV_ITEMS
     expect(navbar).toHaveTextContent(`${DEFAULT_NAV_ITEMS.length} nav items`);
   });
@@ -285,7 +285,7 @@ describe("RootLayout", () => {
     render(bodyChildren);
 
     // Should use default nav items
-    const navbar = screen.getByTestId("ssr-navbar");
+    const navbar = screen.getByTestId("navbar");
     expect(navbar).toBeInTheDocument();
     expect(navbar).toHaveTextContent(`${DEFAULT_NAV_ITEMS.length} nav items`);
   });

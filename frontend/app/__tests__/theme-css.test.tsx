@@ -3,19 +3,19 @@ import { render } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import RootLayout from "../layout";
 // Mock the dependencies
-jest.mock("../../components/SSRNavbar", () => ({
+jest.mock("../../components/Navbar", () => ({
   __esModule: true,
-  default: () => <nav>SSR Navbar</nav>,
+  default: () => <nav>Navbar</nav>,
 }));
-jest.mock("../../components/SSRFooter", () => ({
+jest.mock("../../components/Footer", () => ({
   __esModule: true,
-  default: () => <footer>SSR Footer</footer>,
+  default: () => <footer>Footer</footer>,
 }));
 jest.mock("../../lib/registry", () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-jest.mock("../components/CookieConsent", () => ({
+jest.mock("../../components/CookieConsent", () => ({
   __esModule: true,
   default: () => <div>Cookie Consent</div>,
 }));
@@ -23,7 +23,7 @@ jest.mock("../../components/GoogleAnalytics", () => ({
   __esModule: true,
   default: (): null => null,
 }));
-jest.mock("../components/LegalDocumentTracker", () => ({
+jest.mock("../../components/LegalDocumentTracker", () => ({
   __esModule: true,
   default: (): null => null,
 }));

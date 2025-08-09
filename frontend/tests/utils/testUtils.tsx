@@ -1,7 +1,7 @@
 import React from "react";
 import { render, act, RenderOptions } from "@testing-library/react";
 import { ThemeProvider } from "styled-components";
-import { defaultTheme } from "@styles/theme";
+import { DEFAULT_THEME } from "../../utils/theme";
 import {
   Campaign,
   Endorser,
@@ -11,7 +11,7 @@ import {
   ContentBlock,
   Theme,
   Stakeholder,
-} from "@app-types/index";
+} from "../../types/index";
 
 // Utility function to wait for all async operations to complete
 export const waitForAsyncUpdates = async () => {
@@ -65,7 +65,7 @@ export const rejectPromiseInTest = async (
 // Theme-aware wrapper for tests
 const ThemeWrapper: React.FC<{ children: React.ReactNode }> = ({
   children,
-}) => <ThemeProvider theme={defaultTheme}>{children}</ThemeProvider>;
+}) => <ThemeProvider theme={DEFAULT_THEME}>{children}</ThemeProvider>;
 
 // Custom render function with theme provider
 export const renderWithTheme = (

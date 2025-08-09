@@ -8,6 +8,7 @@ import {
 } from "@fortawesome/free-brands-svg-icons";
 import { faEnvelope, faLink, faCheck } from "@fortawesome/free-solid-svg-icons";
 import analytics from "../services/analytics";
+import "./SocialShareButtons.css";
 
 interface SocialShareButtonsProps {
   url: string;

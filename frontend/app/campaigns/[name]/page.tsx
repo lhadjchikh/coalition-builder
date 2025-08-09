@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { apiClient } from "../../../lib/api";
-import CampaignDetailWrapper from "./CampaignDetailWrapper";
+import CampaignPageContent from "./CampaignPageContent";
 import {
   CampaignStructuredData,
   BreadcrumbStructuredData,
@@ -44,7 +44,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
             { name: campaign.title, url: campaignUrl },
           ]}
         />
-        <CampaignDetailWrapper campaign={campaign} />
+        <CampaignPageContent campaign={campaign} />
       </>
     );
   } catch (error) {

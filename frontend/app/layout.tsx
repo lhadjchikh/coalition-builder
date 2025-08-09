@@ -3,8 +3,8 @@ import "./globals.css";
 import "../styles/content-animations.css";
 import "../styles/campaign-animations.css";
 import StyledComponentsRegistry from "../lib/registry";
-import SSRNavbar from "../components/SSRNavbar";
-import SSRFooter from "../components/SSRFooter";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import CookieConsent from "../components/CookieConsent";
 import GoogleAnalytics from "../components/GoogleAnalytics";
 import ThemeStyles from "../components/ThemeStyles";
@@ -127,14 +127,14 @@ export default async function RootLayout({
               flexDirection: "column",
             }}
           >
-            <SSRNavbar
+            <Navbar
               organizationName={organizationName}
               logoUrl={homepage?.theme?.logo_url}
               logoAltText={homepage?.theme?.logo_alt_text}
               navItems={DEFAULT_NAV_ITEMS}
             />
             <main style={{ flex: 1 }}>{children}</main>
-            <SSRFooter orgInfo={homepage} />
+            <Footer orgInfo={homepage} />
           </div>
           <CookieConsent />
           <GoogleAnalytics />

@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { NavItemData } from "../types";
@@ -13,14 +15,6 @@ interface NavbarProps {
   className?: string;
   currentView?: string;
   onNavigate?: (view: string) => void;
-  LinkComponent?: React.ComponentType<{
-    to?: string;
-    href?: string;
-    children: React.ReactNode;
-    className?: string;
-    onClick?: () => void;
-  }>;
-  useLocation?: () => { pathname: string };
 }
 
 const Navbar: React.FC<NavbarProps> = ({
@@ -31,19 +25,13 @@ const Navbar: React.FC<NavbarProps> = ({
   className,
   currentView,
   onNavigate,
-  LinkComponent = ({ href, to, children, className, onClick }: any) => (
-    <a href={href || to} className={className} onClick={onClick}>
-      {children}
-    </a>
-  ),
-  useLocation,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const location = useLocation?.();
-  const isHomepage = location?.pathname === "/" || location?.pathname === "";
+  const pathname = usePathname();
+  const isHomepage = pathname === "/" || pathname === "";
 
   useEffect(() => {
     let ticking = false;
@@ -94,8 +82,8 @@ const Navbar: React.FC<NavbarProps> = ({
   };
 
   const isActiveLink = (href?: string) => {
-    if (!location || !href) return false;
-    return location.pathname === href;
+    if (!href) return false;
+    return pathname === href;
   };
 
   // Build navbar classes in a more readable way
@@ -165,8 +153,7 @@ const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Brand */}
           <div className="flex-shrink-0 min-w-0 mr-3 sm:mr-4 max-w-[calc(100%-56px)] sm:max-w-none">
-            <LinkComponent
-              to="/"
+            <Link
               href="/"
               className={getBrandLinkClasses()}
               onClick={closeMenu}
@@ -180,7 +167,7 @@ const Navbar: React.FC<NavbarProps> = ({
               ) : (
                 organizationName
               )}
-            </LinkComponent>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
@@ -191,14 +178,13 @@ const Navbar: React.FC<NavbarProps> = ({
 
                 if (item.href) {
                   return (
-                    <LinkComponent
+                    <Link
                       key={`nav-item-${index}-${item.label}`}
-                      to={item.href}
                       href={item.href}
                       className={getNavItemClasses(isActive)}
                     >
                       {item.label}
-                    </LinkComponent>
+                    </Link>
                   );
                 } else {
                   return (
@@ -242,15 +228,14 @@ const Navbar: React.FC<NavbarProps> = ({
 
                 if (item.href) {
                   return (
-                    <LinkComponent
+                    <Link
                       key={`mobile-nav-item-${index}-${item.label}`}
-                      to={item.href}
                       href={item.href}
                       className={getMobileNavItemClasses(isActive)}
                       onClick={closeMenu}
                     >
                       {item.label}
-                    </LinkComponent>
+                    </Link>
                   );
                 } else {
                   return (

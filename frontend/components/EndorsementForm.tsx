@@ -7,7 +7,7 @@ import React, {
 import API from "../lib/api";
 import analytics from "../services/analytics";
 import { Campaign, EndorsementCreate, Stakeholder } from "../types/index";
-import SocialShareButtons from "./SocialShareButtonsWrapper";
+import SocialShareButtons from "./SocialShareButtons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import "./Endorsements.css";

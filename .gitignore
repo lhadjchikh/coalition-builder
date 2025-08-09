@@ -88,5 +88,12 @@ backend/coverage.xml
 backend/htmlcov/
 backend/.coverage
 
+# Frontend Test Coverage
+frontend/coverage/
+frontend/coverage.xml
+frontend/.nyc_output/
+.nyc_output/
+coverage/
+
 # Project Data
 /backend/fixtures

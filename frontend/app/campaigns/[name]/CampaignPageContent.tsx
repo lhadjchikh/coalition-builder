@@ -5,7 +5,7 @@ import CampaignDetail from "../../../components/CampaignDetail";
 import EndorsementForm from "../../../components/EndorsementForm";
 import EndorsementsList from "../../../components/EndorsementsList";
 import GrowthIcon from "../../../components/GrowthIcon";
-import SocialShareButtons from "../../../components/SocialShareButtonsWrapper";
+import SocialShareButtons from "../../../components/SocialShareButtons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faShare,
@@ -16,13 +16,13 @@ import "@frontend/components/Endorsements.css";
 import "@frontend/App.css";
 import type { Campaign } from "../../../types";
 
-interface CampaignDetailWrapperProps {
+interface CampaignPageContentProps {
   campaign: Campaign;
 }
 
-export default function CampaignDetailWrapper({
+export default function CampaignPageContent({
   campaign,
-}: CampaignDetailWrapperProps) {
+}: CampaignPageContentProps) {
   const [showFloatingShare, setShowFloatingShare] = useState(false);
 
   // For SSR, we'll create a simplified API client

@@ -3,7 +3,7 @@ import { render } from "@testing-library/react";
 import { notFound } from "next/navigation";
 import CampaignPage, { generateStaticParams, generateMetadata } from "../page";
 import { apiClient } from "../../../../lib/api";
-import { withSuppressedErrors } from "../tests/utils/testUtils";
+import { withSuppressedErrors } from "../../../../tests/utils/testUtils";
 
 // Mock dependencies
 jest.mock("next/navigation", () => ({
@@ -17,16 +17,14 @@ jest.mock("../../../../lib/api", () => ({
   },
 }));
 
-jest.mock("../CampaignDetailWrapper", () => {
-  return function MockCampaignDetailWrapper({
+jest.mock("../CampaignPageContent", () => {
+  return function MockCampaignPageContent({
     campaign,
   }: {
     campaign: { id: number; title: string };
   }) {
     return (
-      <div data-testid="campaign-detail-wrapper">
-        Campaign ID: {campaign.id}
-      </div>
+      <div data-testid="campaign-page-content">Campaign ID: {campaign.id}</div>
     );
   };
 });
@@ -87,7 +85,7 @@ describe("CampaignPage", () => {
       expect(notFound).not.toHaveBeenCalled();
 
       const wrapper = container.querySelector(
-        '[data-testid="campaign-detail-wrapper"]',
+        '[data-testid="campaign-page-content"]',
       );
       expect(wrapper).toBeInTheDocument();
       expect(wrapper?.textContent).toBe("Campaign ID: 1");

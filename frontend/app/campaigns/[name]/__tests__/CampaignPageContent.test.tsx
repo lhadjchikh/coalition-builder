@@ -1,9 +1,9 @@
 import React from "react";
 import { render } from "@testing-library/react";
-import CampaignDetailWrapper from "../CampaignDetailWrapper";
+import CampaignPageContent from "../CampaignPageContent";
 
 // Mock the CampaignDetail component
-jest.mock("../components/CampaignDetail", () => {
+jest.mock("../../../../components/CampaignDetail", () => {
   return function MockCampaignDetail({
     campaignId,
     initialCampaign,
@@ -24,7 +24,7 @@ jest.mock("../components/CampaignDetail", () => {
 jest.mock("@frontend/components/Endorsements.css", () => ({}));
 jest.mock("@frontend/App.css", () => ({}));
 
-describe("CampaignDetailWrapper", () => {
+describe("CampaignPageContent", () => {
   const mockCampaign = {
     id: 123,
     name: "test-campaign",
@@ -36,7 +36,7 @@ describe("CampaignDetailWrapper", () => {
 
   it("should render CampaignDetail with correct campaign data", () => {
     const { getByTestId } = render(
-      <CampaignDetailWrapper campaign={mockCampaign} />,
+      <CampaignPageContent campaign={mockCampaign} />,
     );
 
     const campaignDetail = getByTestId("mock-campaign-detail");
@@ -55,7 +55,7 @@ describe("CampaignDetailWrapper", () => {
 
     testCampaigns.forEach((campaign) => {
       const { getByTestId, unmount } = render(
-        <CampaignDetailWrapper campaign={campaign} />,
+        <CampaignPageContent campaign={campaign} />,
       );
 
       const campaignDetail = getByTestId("mock-campaign-detail");
@@ -72,7 +72,7 @@ describe("CampaignDetailWrapper", () => {
     // Read the actual file to verify it has "use client" directive
     const fs = require("fs");
     const path = require("path");
-    const filePath = path.join(__dirname, "../CampaignDetailWrapper.tsx");
+    const filePath = path.join(__dirname, "../CampaignPageContent.tsx");
     const fileContent = fs.readFileSync(filePath, "utf-8");
 
     expect(fileContent).toMatch(/^["']use client["'];?/);
