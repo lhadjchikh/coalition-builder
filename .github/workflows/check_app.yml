@@ -217,6 +217,7 @@ jobs:
       contents: read
       actions: read
       id-token: write
+    secrets: inherit
 
   # Backend tests
   backend-check:
@@ -228,6 +229,7 @@ jobs:
       contents: read
       actions: read
       id-token: write
+    secrets: inherit
 
   # Terraform tests
   terraform-check:
@@ -238,6 +240,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    secrets: inherit
 
   # Full Stack tests
   fullstack-tests:
@@ -247,6 +250,7 @@ jobs:
     uses: ./.github/workflows/test_fullstack.yml
     permissions:
       contents: read
+    secrets: inherit
 
   tests_complete:
     name: All Tests Complete
