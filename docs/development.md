@@ -267,17 +267,15 @@ Coalition Builder includes a comprehensive theme system for visual customization
 - `theme_service.py`: CSS variable generation service
 - `/api/themes.py`: Theme management API endpoints
 
-#### Frontend (`/frontend/src/`)
+#### Frontend (`/frontend/`)
 
 - `contexts/ThemeContext.tsx`: React context for theme data
 - `contexts/StyledThemeProvider.tsx`: Styled-components theme provider
 - `styles/theme.ts`: Theme type definitions and utilities
-- `components/styled/`: Reusable styled components library
-
-#### Shared (`/shared/`)
-
-- `utils/theme.ts`: Common theme utilities for both frontend and SSR
-- `components/`: Shared components with theme support
+- `components/`: React components with theme support
+- `app/`: Next.js app router pages
+- `services/`: API client and service layer
+- `types/`: TypeScript type definitions
 
 ### Development Guidelines
 

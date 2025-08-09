@@ -44,8 +44,8 @@ flowchart TB
         %% Private Subnets
         subgraph private["Private Subnets"]
             subgraph ecs_cluster["ECS Cluster"]
-                django[Django API Container]
-                ssr[Next.js SSR Container<br/>*optional*]
+                api[Django API Container]
+                app[Next.js Frontend Container]
                 redis[Redis Cache]
             end
         end
@@ -65,33 +65,33 @@ flowchart TB
     end
 
     %% Connections
-    alb --> django
-    alb --> ssr
-    django --> redis
-    django --> rds
-    ssr --> django
+    alb --> api
+    alb --> app
+    api --> redis
+    api --> rds
+    app --> api
     bastion --> rds
 
     %% CloudFront connections
     cloudfront --> alb
 
     %% Service connections
-    django --> secrets
-    ssr --> secrets
-    django --> cloudwatch
-    ssr --> cloudwatch
+    api --> secrets
+    app --> secrets
+    api --> cloudwatch
+    app --> cloudwatch
     redis --> cloudwatch
 
     %% ECR
-    ecr --> django
-    ecr --> ssr
+    ecr --> api
+    ecr --> app
     ecr --> redis
 ```
 
 The infrastructure uses a layered security model with:
 
 - **Public Subnets**: Load balancer and bastion host
-- **Private Subnets**: ECS containers (Django API + optional Next.js SSR)
+- **Private Subnets**: ECS containers (Django API + Next.js Frontend)
 - **Database Subnets**: RDS PostgreSQL with PostGIS
 - **Security Groups**: Component isolation with least privilege
 - **Secrets Manager**: Secure credential storage

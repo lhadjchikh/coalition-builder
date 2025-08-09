@@ -12,11 +12,11 @@ Coalition Builder is designed for containerized deployment with Docker. The appl
 
 ```
 docker compose.yml
-├── backend (Django API)
-├── frontend (React - development only)
-├── ssr (Next.js - optional)
+├── api (Django Backend)
+├── frontend (Next.js Frontend)
 ├── db (PostgreSQL + PostGIS)
-└── nginx (reverse proxy - production)
+├── redis (Cache)
+└── nginx (reverse proxy)
 ```
 
 ## Quick Start
@@ -48,9 +48,9 @@ docker compose down
 Services will be available at:
 
 - **Backend API**: http://localhost:8000
-- **Frontend**: http://localhost:3000 (if built)
-- **SSR**: http://localhost:3001 (if enabled)
+- **Frontend**: http://localhost:3000
 - **Database**: localhost:5432
+- **Redis**: localhost:6379
 
 ## Docker Compose Configuration
 
@@ -150,10 +150,10 @@ services:
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
     volumes: [] # Remove development volume mounts
 
-  ssr:
+  frontend:
     environment:
       - NODE_ENV=production
-      - API_URL=http://backend:8000
+      - API_URL=http://api:8000
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
   db:
@@ -223,10 +223,10 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 CMD ["poetry", "run", "gunicorn", "--bind", "0.0.0.0:8000", "coalition.wsgi:application"]
 ```
 
-### SSR (Next.js) Container
+### Frontend (Next.js) Container
 
 ```dockerfile
-# ssr/Dockerfile
+# Dockerfile.frontend
 FROM node:22-alpine AS base
 WORKDIR /app
 COPY package*.json ./
@@ -319,10 +319,10 @@ if __name__ == "__main__":
     check_health()
 ```
 
-### SSR Health Check
+### Frontend Health Check
 
 ```javascript
-// ssr/healthcheck.js
+// frontend/healthcheck.js
 const http = require("http");
 
 const options = {
@@ -335,21 +335,21 @@ const options = {
 
 const req = http.request(options, (res) => {
   if (res.statusCode === 200) {
-    console.log("SSR health check passed");
+    console.log("Frontend health check passed");
     process.exit(0);
   } else {
-    console.log(`SSR health check failed: HTTP ${res.statusCode}`);
+    console.log(`Frontend health check failed: HTTP ${res.statusCode}`);
     process.exit(1);
   }
 });
 
 req.on("error", (err) => {
-  console.log(`SSR health check error: ${err.message}`);
+  console.log(`Frontend health check error: ${err.message}`);
   process.exit(1);
 });
 
 req.on("timeout", () => {
-  console.log("SSR health check timeout");
+  console.log("Frontend health check timeout");
   req.destroy();
   process.exit(1);
 });
@@ -371,9 +371,9 @@ ORGANIZATION_NAME=Coalition Builder Development
 ORG_TAGLINE=Building advocacy partnerships
 CONTACT_EMAIL=dev@coalitionbuilder.org
 
-# Frontend/SSR
-API_URL=http://backend:8000
-NEXT_PUBLIC_API_URL=http://localhost:8000/api
+# Frontend
+API_URL=http://api:8000
+NEXT_PUBLIC_API_URL=http://localhost:8000
 PORT=3000
 NODE_ENV=development
 ```
@@ -390,9 +390,9 @@ ORGANIZATION_NAME=Your Organization
 ORG_TAGLINE=Your mission statement
 CONTACT_EMAIL=info@yourdomain.com
 
-# SSR Production
-API_URL=http://backend:8000
-NEXT_PUBLIC_API_URL=https://yourdomain.com/api
+# Frontend Production
+API_URL=http://api:8000
+NEXT_PUBLIC_API_URL=https://yourdomain.com
 NODE_ENV=production
 NEXT_TELEMETRY_DISABLED=1
 ```
@@ -408,12 +408,12 @@ events {
 }
 
 http {
-    upstream backend {
-        server backend:8000;
+    upstream api {
+        server api:8000;
     }
 
-    upstream ssr {
-        server ssr:3000;
+    upstream frontend {
+        server frontend:3000;
     }
 
     server {
@@ -422,7 +422,7 @@ http {
 
         # API requests
         location /api/ {
-            proxy_pass http://backend;
+            proxy_pass http://api;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -430,7 +430,7 @@ http {
 
         # Admin interface
         location /admin/ {
-            proxy_pass http://backend;
+            proxy_pass http://api;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -441,9 +441,9 @@ http {
             alias /var/www/static/;
         }
 
-        # SSR application
+        # Frontend application
         location / {
-            proxy_pass http://ssr;
+            proxy_pass http://frontend;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -473,12 +473,12 @@ http {
     gzip_vary on;
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml;
 
-    upstream backend {
-        server backend:8000;
+    upstream api {
+        server api:8000;
     }
 
-    upstream ssr {
-        server ssr:3000;
+    upstream frontend {
+        server frontend:3000;
     }
 
     # Redirect HTTP to HTTPS
@@ -509,7 +509,7 @@ http {
         # API requests with rate limiting
         location /api/ {
             limit_req zone=api burst=20 nodelay;
-            proxy_pass http://backend;
+            proxy_pass http://api;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -519,7 +519,7 @@ http {
         # Admin interface with stricter rate limiting
         location /admin/ {
             limit_req zone=admin burst=10 nodelay;
-            proxy_pass http://backend;
+            proxy_pass http://api;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -533,9 +533,9 @@ http {
             add_header Cache-Control "public, immutable";
         }
 
-        # SSR application
+        # Frontend application
         location / {
-            proxy_pass http://ssr;
+            proxy_pass http://frontend;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -576,8 +576,8 @@ docker compose ps
 docker stats
 
 # Health status
-docker compose exec backend python healthcheck.py
-docker compose exec ssr node healthcheck.js
+docker compose exec api python healthcheck.py
+docker compose exec frontend node healthcheck.js
 ```
 
 ### Database Operations
@@ -605,11 +605,11 @@ docker compose exec -T db psql -U postgres coalition < backup.sql
 ### Scaling Services
 
 ```bash
-# Scale SSR service
-docker compose up -d --scale ssr=3
+# Scale frontend service
+docker compose up -d --scale frontend=3
 
-# Scale backend service
-docker compose up -d --scale backend=2
+# Scale API service
+docker compose up -d --scale api=2
 ```
 
 ## Troubleshooting

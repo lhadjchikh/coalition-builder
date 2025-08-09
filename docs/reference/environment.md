@@ -272,7 +272,7 @@ NEXT_PUBLIC_HOTJAR_ID=1234567
 - Analytics only activates when users consent to analytics cookies
 - Leave blank to disable all analytics tracking
 
-## SSR Environment Variables
+## Frontend Environment Variables
 
 ### Server Configuration
 
@@ -395,9 +395,9 @@ CACHE_URL=redis://redis:6379/1
 NEXT_PUBLIC_API_URL=http://localhost:8000/api
 REACT_APP_DEBUG=true
 
-# SSR
-API_URL=http://backend:8000
-NEXT_PUBLIC_API_URL=http://localhost:8000/api
+# Frontend
+API_URL=http://api:8000
+NEXT_PUBLIC_API_URL=http://localhost:8000
 PORT=3000
 NODE_ENV=development
 ```
@@ -442,11 +442,8 @@ USE_S3=True
 AWS_STORAGE_BUCKET_NAME=${S3_BUCKET_NAME}
 
 # Frontend
-NEXT_PUBLIC_API_URL=https://api.yourdomain.com/api
-
-# SSR
-API_URL=http://backend:8000
-NEXT_PUBLIC_API_URL=https://api.yourdomain.com/api
+API_URL=http://api:8000
+NEXT_PUBLIC_API_URL=https://yourdomain.com
 NODE_ENV=production
 NEXT_TELEMETRY_DISABLED=1
 
@@ -490,12 +487,8 @@ ORG_TAGLINE="Testing advocacy partnerships"
 CONTACT_EMAIL="test@example.com"
 
 # Frontend Test Settings
-NEXT_PUBLIC_API_URL=http://localhost:8000/api
-REACT_APP_DEBUG=true
-
-# SSR Test Settings
 API_URL=http://localhost:8000
-NEXT_PUBLIC_API_URL=http://localhost:8000/api
+NEXT_PUBLIC_API_URL=http://localhost:8000
 NODE_ENV=test
 ```
 

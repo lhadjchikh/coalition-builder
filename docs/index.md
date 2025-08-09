@@ -71,61 +71,39 @@ flowchart TD
 ## Architecture
 
 - **Backend**: Django API with PostgreSQL/PostGIS
-- **Frontend**: React with TypeScript and styled-components
-- **SSR**: Next.js for SEO optimization (optional)
+- **Frontend**: Next.js with React, TypeScript and styled-components (Server-Side Rendered)
 - **Infrastructure**: Terraform-managed AWS deployment
 
 ### Frontend Architecture
 
-Coalition Builder uses a flexible frontend architecture that supports both traditional SPA deployment and optional server-side rendering (SSR).
+Coalition Builder uses a Next.js-based frontend architecture with server-side rendering for optimal SEO and performance.
 
 #### How the Frontend Works
 
-The `/frontend` directory contains a React application built with Webpack that serves as the primary user interface. This single codebase works in two different deployment modes:
+The `/frontend` directory contains a Next.js application that serves as the primary user interface:
 
-**Without SSR (Default Mode):**
-
-1. React app is built into static files (JS/CSS with cache-busting hashes)
-2. Django serves these files through a template (`index.html`)
-3. Django's `home` view reads `asset-manifest.json` to inject correct file paths
-4. React takes over as a single-page application in the browser
-5. API calls go to Django backend via `/api/*` routes
-
-**With SSR (Optional Mode):**
-
-1. Next.js handles server-side rendering for better SEO
-2. Django serves only API endpoints (`/api/*`, `/admin/*`)
-3. nginx routes frontend requests (`/*`) to Next.js instead of Django
-4. Next.js imports and renders the same React components from `/frontend/src/components/`
-5. Shared error handling logic ensures consistent behavior in both modes
+1. **Server-Side Rendering**: Next.js pre-renders pages on the server for better SEO
+2. **API Integration**: Frontend fetches data from Django backend via `/api/*` routes
+3. **Optimized Performance**: Automatic code splitting and optimized bundle sizes
+4. **React Components**: Modern React with TypeScript for type safety
+5. **Styled Components**: CSS-in-JS for component-level styling
 
 #### Request Routing
 
-**SSR Disabled:**
-
 ```
-/* → Django home view → React SPA
+/* → Next.js Frontend (SSR)
 /api/* → Django API
 /admin/* → Django Admin
-```
-
-**SSR Enabled:**
-
-```
-/* → Next.js SSR
-/api/* → Django API
-/admin/* → Django Admin
+/static/* → Django Static Files
 ```
 
 #### Key Benefits
 
-- **Single Frontend Codebase**: Write once, deploy with or without SSR
-- **Django Integration**: Static files served through Django's static system
-- **Asset Management**: Automatic cache-busting via asset manifest
-- **Deployment Flexibility**: Choose complexity vs. performance trade-offs
-- **Fallback Strategy**: Can disable SSR without losing frontend functionality
-
-This architecture allows organizations to start simple (Django + React SPA) and add SSR later for improved SEO without rewriting their frontend code.
+- **SEO Optimized**: Server-side rendering ensures search engines can index content
+- **Fast Initial Load**: Pre-rendered HTML for instant page display
+- **Type Safety**: Full TypeScript support across the application
+- **Modern Stack**: Latest React and Next.js features
+- **Production Ready**: Containerized deployment with Docker and AWS ECS
 
 ## Getting Started
 
