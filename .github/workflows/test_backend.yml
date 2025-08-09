@@ -39,7 +39,7 @@ jobs:
             --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
             --load \
             -t coalition_api:latest \
-            .
+            ./backend
 
       - name: Start database and cache containers
         run: |
@@ -75,7 +75,7 @@ jobs:
         run: |
           # Use git to check if any backend files were changed
           git fetch origin main
-          CHANGES=$(git diff --name-only HEAD origin/main | grep -E "^(backend/|docker-compose.yml|Dockerfile)" -c || echo 0)
+          CHANGES=$(git diff --name-only HEAD origin/main | grep -E "^(backend/|docker-compose.yml)" -c || echo 0)
 
           if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" && $CHANGES -eq 0 ]]; then
             echo "Running minimal tests for non-backend changes to main branch"
