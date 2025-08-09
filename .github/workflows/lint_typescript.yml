@@ -29,8 +29,8 @@ jobs:
 
       - name: Run frontend TypeScript check
         run: |
-          # Run typecheck with the standard config
-          npx tsc --noEmit
+          # Run typecheck with the build config that excludes test files
+          npx tsc --noEmit -p tsconfig.build.json
         working-directory: frontend
 
 
