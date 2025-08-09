@@ -223,24 +223,23 @@ def run_prettier(project_root: Path) -> tuple[bool, bool]:
         
         # Check if npx is available (it should be if npm is)
         if which("npx"):
-            # Format markdown files in docs directory
-            docs_dir = project_root / "docs"
-            if docs_dir.exists():
-                docs_result = run_command(
-                    ["npx", "prettier", "--write", "docs/**/*.md"],
-                    cwd=project_root,
-                )
-                if not docs_result:
-                    print("⚠️  Failed to format docs markdown files")
-                    success = False
+            # Run prettier from frontend directory to match CI behavior
+            # This ensures consistent formatting behavior
+            frontend_dir = project_root / "frontend"
             
-            # Format root-level config files (JSON, YAML, MD)
-            root_configs_result = run_command(
-                ["npx", "prettier", "--write", "*.{json,yml,yaml,md}"],
-                cwd=project_root,
+            # Format docs and root config files from frontend context
+            # This matches the GitHub workflow exactly
+            project_files_result = run_command(
+                ["npx", "prettier", "--write", 
+                 "../docs/**/*.md", 
+                 "../*.{json,yml,yaml,md}",
+                 "../.github/workflows/*.yml",
+                 "--ignore-path", "../.prettierignore",
+                 "--config", "../.prettierrc"],
+                cwd=frontend_dir,
             )
-            if not root_configs_result:
-                print("⚠️  Failed to format root config files")
+            if not project_files_result:
+                print("⚠️  Failed to format project-wide files")
                 success = False
         else:
             print("⚠️  npx not available, skipping project-wide formatting")
