@@ -17,7 +17,8 @@ out
 # Testing
 coverage
 .nyc_output
-tests
+# Don't ignore tests directory - needed for test imports
+# tests
 
 # Misc
 .git
