@@ -33,7 +33,7 @@ Coalition Builder uses two Docker Compose configurations:
 
 ### Code Style
 
-- Python: Black formatting, Ruff linting
+- Python: Black formatting, Ruff linting, mypy type checking
 - TypeScript/React: Prettier formatting, ESLint
 - Git: Conventional commit messages
 
@@ -64,7 +64,7 @@ flowchart TD
     frontend_lint_complete --> ssr_tests[SSR Tests]
 
     %% Backend workflow
-    backend_check --> python_lint[Python Lint]
+    backend_check --> python_lint[Python Lint & Type Check]
     python_lint --> backend_tests[Backend Tests]
 
     %% Terraform workflow

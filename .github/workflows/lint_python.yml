@@ -20,7 +20,7 @@ jobs:
         run: |
           docker build -t coalition:latest .
 
-      - name: Run linters in Docker container
+      - name: Run linters and type checker in Docker container
         run: |
           # Override the entrypoint to skip database connection and migrations
-          docker run --rm --entrypoint="" coalition:latest bash -c "cd /app && black --check . && ruff check ."
+          docker run --rm --entrypoint="" coalition:latest bash -c "cd /app && black --check . && ruff check . && poetry run mypy coalition/ --config-file pyproject.toml"

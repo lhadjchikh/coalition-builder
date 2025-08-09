@@ -137,6 +137,12 @@ def run_python_linters(project_root: Path) -> tuple[bool, bool]:
         cwd=backend_dir,
     )
 
+    print_step("Running mypy type checker")
+    success &= run_command(
+        ["poetry", "run", "mypy", "coalition/", "--config-file", "pyproject.toml"],
+        cwd=backend_dir,
+    )
+
     return success, True
 
 
