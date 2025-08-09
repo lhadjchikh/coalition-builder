@@ -4,3 +4,6 @@ dist/
 coverage/
 frontend/node_modules/
 backend/.venv/
+cache/
+.cache/
+**/cache/
