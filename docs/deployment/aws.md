@@ -269,25 +269,21 @@ After the initial deployment, you need to enable the PostGIS extension in the RD
 The Terraform configuration creates:
 
 1. **Networking**:
-
    - VPC with public subnets
    - Internet Gateway
    - Security Groups
 
 2. **Database**:
-
    - Amazon RDS PostgreSQL instance
    - Custom parameter group for PostGIS
 
 3. **Security**:
-
    - AWS Secrets Manager for secure credential storage
    - IAM roles with least privilege access
    - KMS keys for encryption
    - Secure credential management
 
 4. **Container Infrastructure**:
-
    - ECR Repository
    - ECS Cluster
    - ECS Task Definition
@@ -295,7 +291,6 @@ The Terraform configuration creates:
    - IAM Roles for ECS tasks
 
 5. **Load Balancing**:
-
    - Application Load Balancer
    - Target Group
    - Listener
