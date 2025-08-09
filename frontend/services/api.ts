@@ -2,6 +2,7 @@
 // Extends the shared base client with browser-specific functionality like CSRF
 
 import { BaseApiClient } from "./api-client";
+import type { Endorsement, EndorsementCreate } from "../types";
 
 export function getBaseUrl(): string {
   // Check environment variables in order of precedence
@@ -59,20 +60,20 @@ class FrontendApiClient extends BaseApiClient {
         controller.abort();
       }, this.timeout);
 
+      let response: Response;
+      
       try {
-        const response = await fetch(url, {
-          headers: this.defaultHeaders,
-          signal: controller.signal,
+        response = await fetch(url, {
           ...options,
+          headers: {
+            ...this.defaultHeaders,
+            ...(options.headers instanceof Headers
+              ? Object.fromEntries(options.headers.entries())
+              : options.headers || {}),
+          },
+          signal: controller.signal,
+          credentials: "same-origin",
         });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        return await response.json();
       } catch (error) {
         clearTimeout(timeoutId);
 
@@ -87,6 +88,20 @@ class FrontendApiClient extends BaseApiClient {
           throw new Error("Request timeout");
         }
 
+        // Re-throw the original error (network failure, etc.)
+        throw error;
+      }
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      try {
+        return await response.json();
+      } catch (error) {
+        // Handle JSON parsing errors
         throw error;
       }
     };
@@ -128,6 +143,17 @@ class FrontendApiClient extends BaseApiClient {
   }
 
   private async getCsrfToken(): Promise<string> {
+    // Only fetch CSRF token in browser environment
+    if (typeof window === "undefined") {
+      return "";
+    }
+
+    // First try to get token from cookie
+    const cookieToken = this.getCsrfTokenFromCookie();
+    if (cookieToken) {
+      return cookieToken;
+    }
+
     // If we already have a token, return it
     if (this.csrfToken) {
       return this.csrfToken;
@@ -136,11 +162,6 @@ class FrontendApiClient extends BaseApiClient {
     // If we're already fetching a token, wait for that promise
     if (this.csrfTokenPromise) {
       return this.csrfTokenPromise;
-    }
-
-    // Only fetch CSRF token in browser environment
-    if (typeof window === "undefined") {
-      return "";
     }
 
     // Start fetching the token
@@ -238,6 +259,46 @@ class FrontendApiClient extends BaseApiClient {
     return this.request<T>(endpoint, {
       method: "GET",
     });
+  }
+
+  // Enhanced PATCH method with CSRF support
+  async patch<T>(endpoint: string, data?: any): Promise<T> {
+    // Get CSRF token from cookie
+    const csrfToken = this.getCsrfTokenFromCookie();
+
+    const headers = new Headers(this.defaultHeaders);
+    if (csrfToken) {
+      headers.set("X-CSRFToken", csrfToken);
+    }
+
+    return this.request<T>(endpoint, {
+      method: "PATCH",
+      headers,
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  // Get CSRF token from cookie
+  private getCsrfTokenFromCookie(): string | null {
+    if (typeof document === "undefined") {
+      return null;
+    }
+
+    const cookies = document.cookie.split(";");
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split("=");
+      if (name === "csrftoken") {
+        return value;
+      }
+    }
+    return null;
+  }
+
+  // Override createEndorsement to use CSRF-enabled POST
+  async createEndorsement(
+    endorsementData: EndorsementCreate,
+  ): Promise<Endorsement> {
+    return this.post<Endorsement>("/api/endorsements/", endorsementData);
   }
 }
 

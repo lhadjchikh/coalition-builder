@@ -6,11 +6,26 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import CampaignDetail from "../CampaignDetail";
 
+// Suppress JSDOM navigation warnings
+const originalError = console.error;
+console.error = (...args: unknown[]) => {
+  if (args[0] && typeof args[0] === 'object' && args[0].message && args[0].message.includes('Not implemented: navigation')) {
+    return; // Suppress JSDOM navigation warnings
+  }
+  if (typeof args[0] === 'string' && args[0].includes('Not implemented: navigation')) {
+    return; // Suppress JSDOM navigation warnings
+  }
+  originalError(...args);
+};
+
 // Setup window.location mock
 const createLocationMock = (origin: string = "http://localhost:3000") => ({
   origin,
   href: `${origin}/campaigns/test-campaign`,
   pathname: "/campaigns/test-campaign",
+  protocol: "http:",
+  hostname: "localhost",
+  port: "3000",
 });
 
 // Mock window.location for all tests
@@ -156,7 +171,7 @@ describe("CampaignDetail Share Modal", () => {
     mockApiClient.getCampaignById.mockResolvedValue(mockCampaign);
     mockApiClient.getCampaignByName.mockResolvedValue(mockCampaign);
 
-    // Reset window.location mock only if window is available
+    // Reset window.location mock
     if (typeof window !== "undefined") {
       (window as typeof window & { location: Location }).location =
         createLocationMock();
@@ -533,4 +548,9 @@ describe("CampaignDetail Share Modal", () => {
       );
     });
   });
+});
+
+// Restore console.error after all tests
+afterAll(() => {
+  console.error = originalError;
 });

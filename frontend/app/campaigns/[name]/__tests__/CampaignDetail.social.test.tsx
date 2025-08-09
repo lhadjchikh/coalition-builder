@@ -49,6 +49,18 @@ jest.mock("../../../../lib/api", () => ({
 }));
 jest.mock("../../../../services/analytics");
 
+// Suppress JSDOM navigation warnings
+const originalError = console.error;
+console.error = (...args: unknown[]) => {
+  if (args[0] && typeof args[0] === 'object' && args[0].message && args[0].message.includes('Not implemented: navigation')) {
+    return; // Suppress JSDOM navigation warnings
+  }
+  if (typeof args[0] === 'string' && args[0].includes('Not implemented: navigation')) {
+    return; // Suppress JSDOM navigation warnings
+  }
+  originalError(...args);
+};
+
 // Don't mock CampaignDetail - test the real component with social features
 
 // Setup window.location mock
@@ -463,4 +475,9 @@ describe("CampaignDetail Social Sharing Features", () => {
       expect(urlElement?.textContent).toContain("/campaigns/clean-water");
     });
   });
+});
+
+// Restore console.error after all tests
+afterAll(() => {
+  console.error = originalError;
 });

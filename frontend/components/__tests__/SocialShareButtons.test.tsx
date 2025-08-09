@@ -86,6 +86,18 @@ Object.defineProperty(window, "isSecureContext", {
   value: true,
 });
 
+// Mock window.location - use original method but suppress navigation warnings
+const originalWarn = console.error;
+console.error = (...args: unknown[]) => {
+  if (args[0] && typeof args[0] === 'object' && args[0].message && args[0].message.includes('Not implemented: navigation')) {
+    return; // Suppress JSDOM navigation warnings
+  }
+  if (typeof args[0] === 'string' && args[0].includes('Not implemented: navigation')) {
+    return; // Suppress JSDOM navigation warnings
+  }
+  originalWarn(...args);
+};
+
 // Mock window.location
 delete (window as typeof window & { location?: Location }).location;
 window.location = { origin: "http://localhost:3000" } as Location;
@@ -378,11 +390,14 @@ describe("SocialShareButtons", () => {
       });
     });
 
-    it("tracks copy link action", () => {
+    it("tracks copy link action", async () => {
       render(<SocialShareButtons {...defaultProps} />);
 
       const copyButton = screen.getByLabelText("Copy link");
-      fireEvent.click(copyButton);
+      
+      await act(async () => {
+        fireEvent.click(copyButton);
+      });
 
       expect(analytics.trackEvent).toHaveBeenCalledWith({
         action: "share_click",
@@ -440,4 +455,9 @@ describe("SocialShareButtons", () => {
       );
     });
   });
+});
+
+// Restore console.error after all tests
+afterAll(() => {
+  console.error = originalWarn;
 });
