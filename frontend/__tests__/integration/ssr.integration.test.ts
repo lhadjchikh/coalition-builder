@@ -11,7 +11,7 @@
 
 // Using Node.js built-in fetch (available in Node 18+)
 
-const SSR_URL = process.env.SSR_URL || "http://localhost:3000";
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 const API_URL = process.env.API_URL || "http://localhost:8000";
 const NGINX_URL = process.env.NGINX_URL || "http://localhost:80";
 
@@ -192,7 +192,7 @@ describe("SSR Integration Tests", () => {
     test(
       "SSR health endpoint reports healthy status",
       async () => {
-        const response = await fetch(`${SSR_URL}/health`);
+        const response = await fetch(`${FRONTEND_URL}/health`);
         expect(response.ok).toBe(true);
 
         const health = await response.json();
@@ -204,7 +204,7 @@ describe("SSR Integration Tests", () => {
     test(
       "SSR renders homepage with real or fallback data",
       async () => {
-        const response = await fetch(SSR_URL);
+        const response = await fetch(FRONTEND_URL);
         expect(response.ok).toBe(true);
 
         const html = await response.text();
@@ -270,7 +270,7 @@ describe("SSR Integration Tests", () => {
 
         while (retries > 0) {
           campaignPageResponse = await fetch(
-            `${SSR_URL}/campaigns/${testCampaignName}`,
+            `${FRONTEND_URL}/campaigns/${testCampaignName}`,
           );
           expect(campaignPageResponse.ok).toBe(true);
 
@@ -323,7 +323,7 @@ describe("SSR Integration Tests", () => {
       async () => {
         // This test verifies that SSR still renders when API is slow/unavailable
         // by checking for fallback content patterns
-        const response = await fetch(SSR_URL);
+        const response = await fetch(FRONTEND_URL);
         expect(response.ok).toBe(true);
 
         const html = await response.text();
