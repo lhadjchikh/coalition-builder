@@ -161,7 +161,41 @@ To add these secrets:
 2. Click on "Settings" > "Secrets and variables" > "Actions"
 3. Click "New repository secret" and add each secret
 
-### 3. Secure Credentials Management with AWS Secrets Manager
+### 3. Configure CloudFront for Image Optimization
+
+When deploying to AWS, CloudFront CDN is automatically configured to serve media files and optimized images. To enable Next.js image optimization with CloudFront:
+
+1. **Set the CloudFront domain** in your environment variables:
+   ```bash
+   # In your ECS task definition or environment configuration
+   CLOUDFRONT_DOMAIN=d123456789.cloudfront.net  # Your CloudFront distribution domain
+   ```
+
+2. **Custom domain (optional)**: If you've configured a custom domain for CloudFront:
+   ```bash
+   CLOUDFRONT_DOMAIN=cdn.yourdomain.com
+   ```
+
+3. **Backend domain (optional)**: If serving images directly from the backend without CDN:
+   ```bash
+   BACKEND_DOMAIN=api.yourdomain.com
+   ```
+
+**Benefits of CloudFront Integration:**
+- Automatic image optimization and resizing by Next.js
+- Global CDN distribution for faster image loading
+- Support for dynamic image dimensions from backend storage
+- WebP format serving when supported by browsers
+- Reduced bandwidth costs through caching
+
+**Image Storage in S3:**
+Media files uploaded through the admin interface are automatically stored in S3 with the following structure:
+- `logos/` - Organization logos from theme settings
+- `favicons/` - Favicon uploads
+- `backgrounds/` - Hero background images
+- `content_blocks/` - Images from content blocks
+
+### 4. Secure Credentials Management with AWS Secrets Manager
 
 Before deployment, set up your database credentials in AWS Secrets Manager:
 

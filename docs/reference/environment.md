@@ -308,6 +308,32 @@ NEXT_TELEMETRY_DISABLED=1
 ANALYZE=true
 ```
 
+### Image Optimization Configuration
+
+| Variable            | Description                                                        | Default | Required |
+| ------------------- | ------------------------------------------------------------------ | ------- | -------- |
+| `CLOUDFRONT_DOMAIN` | CloudFront CDN domain for serving optimized images                | -       | No       |
+| `BACKEND_DOMAIN`    | Backend domain for direct image serving (if different from CDN)   | -       | No       |
+
+**Notes:**
+- Next.js automatically optimizes images served through these domains
+- Supports dynamic image dimensions from backend storage
+- Protocol (http/https) is automatically stripped if included
+- Images are served with responsive sizing and WebP format when supported
+
+**Example:**
+
+```bash
+# CloudFront CDN (recommended for production)
+CLOUDFRONT_DOMAIN=d123456789.cloudfront.net
+
+# Or with custom domain
+CLOUDFRONT_DOMAIN=cdn.yourdomain.com
+
+# Optional: Direct backend serving
+BACKEND_DOMAIN=api.yourdomain.com
+```
+
 ## Terraform/Deployment Variables
 
 ### AWS Configuration
@@ -400,6 +426,10 @@ API_URL=http://api:8000
 NEXT_PUBLIC_API_URL=http://localhost:8000
 PORT=3000
 NODE_ENV=development
+
+# Image Sources (optional for development)
+# CLOUDFRONT_DOMAIN=
+# BACKEND_DOMAIN=
 ```
 
 ### Production (.env.production)
@@ -446,6 +476,10 @@ API_URL=http://api:8000
 NEXT_PUBLIC_API_URL=https://yourdomain.com
 NODE_ENV=production
 NEXT_TELEMETRY_DISABLED=1
+
+# Image Sources
+CLOUDFRONT_DOMAIN=${CLOUDFRONT_DOMAIN}  # e.g., d123456789.cloudfront.net
+BACKEND_DOMAIN=${BACKEND_DOMAIN}        # Optional: api.yourdomain.com
 
 # Monitoring
 LOG_LEVEL=INFO
