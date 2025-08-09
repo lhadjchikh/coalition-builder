@@ -183,15 +183,15 @@ def run_prettier(project_root: Path) -> tuple[bool, bool]:
         return True, False
 
     try:
-        # First, try to run the format:all script which is defined in package.json
-        print_step("Running comprehensive format:all script")
-        format_result = run_command(
+        # First, format files in the frontend directory
+        print_step("Running Prettier on frontend files")
+        frontend_result = run_command(
             ["npm", "--prefix", "frontend", "run", "format:all"],
             cwd=project_root,
         )
 
-        if not format_result:
-            print("⚠️  Format:all script failed, trying alternative approaches...")
+        if not frontend_result:
+            print("⚠️  Frontend formatting failed, trying alternative approaches...")
             success = False
 
             # Try YAML formatting as a fallback
@@ -214,8 +214,37 @@ def run_prettier(project_root: Path) -> tuple[bool, bool]:
                 # Still mark as failure since format:all should work
                 success = False
             else:
-                print("❌ All formatting attempts failed.")
+                print("❌ All frontend formatting attempts failed.")
                 success = False
+        
+        # Now also format markdown and other files at the project root level
+        # This matches what the GitHub workflow does
+        print_step("Running Prettier on project-wide files (docs, configs)")
+        
+        # Check if npx is available (it should be if npm is)
+        if which("npx"):
+            # Format markdown files in docs directory
+            docs_dir = project_root / "docs"
+            if docs_dir.exists():
+                docs_result = run_command(
+                    ["npx", "prettier", "--write", "docs/**/*.md"],
+                    cwd=project_root,
+                )
+                if not docs_result:
+                    print("⚠️  Failed to format docs markdown files")
+                    success = False
+            
+            # Format root-level config files (JSON, YAML, MD)
+            root_configs_result = run_command(
+                ["npx", "prettier", "--write", "*.{json,yml,yaml,md}"],
+                cwd=project_root,
+            )
+            if not root_configs_result:
+                print("⚠️  Failed to format root config files")
+                success = False
+        else:
+            print("⚠️  npx not available, skipping project-wide formatting")
+            
     except Exception as e:
         print(f"❌ Error running Prettier: {e}")
         success = False
