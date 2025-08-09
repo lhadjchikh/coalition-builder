@@ -1,0 +1,30 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "./app",
+    "./components",
+    "./services",
+    "./hooks",
+    "./utils",
+    "./types"
+  ],
+  "entryPointStrategy": "expand",
+  "out": "./docs",
+  "exclude": [
+    "**/*.test.tsx",
+    "**/*.test.ts",
+    "**/*.spec.tsx",
+    "**/*.spec.ts",
+    "**/node_modules/**",
+    "**/__tests__/**",
+    "**/tests/**"
+  ],
+  "excludeExternals": true,
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeInternal": true,
+  "skipErrorChecking": true,
+  "tsconfig": "./tsconfig.build.json",
+  "theme": "default",
+  "name": "Coalition Frontend Documentation"
+}
