@@ -279,14 +279,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-app-
 
-      # Build and push the Django app Docker image with layer caching
-      - name: Build and push Django app image
-        id: build_app_image
+      # Build and push the Django API Docker image with layer caching
+      - name: Build and push Django API image
+        id: build_api_image
         uses: docker/build-push-action@v5
         env:
           ECR_REGISTRY: ${{ steps.login_ecr.outputs.registry }}
         with:
-          context: .
+          context: ./backend
+          dockerfile: Dockerfile
           push: true
           tags: ${{ steps.login_ecr.outputs.registry }}/${{ env.API_ECR_REPOSITORY }}:${{ github.sha }}-${{ github.run_number }}
           cache-from: type=local,src=/tmp/.buildx-cache-api
@@ -302,8 +303,8 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login_ecr.outputs.registry }}
         with:
-          context: .
-          file: ./Dockerfile.frontend
+          context: ./frontend
+          dockerfile: Dockerfile
           push: true
           tags: ${{ steps.login_ecr.outputs.registry }}/${{ env.APP_ECR_REPOSITORY }}:${{ github.sha }}-${{ github.run_number }}
           cache-from: type=local,src=/tmp/.buildx-cache-app
@@ -406,7 +407,7 @@ jobs:
             echo "Using task definition with app container updated"
           else
             echo "final_taskdef=${{ steps.task_def_api.outputs.task-definition }}" >> $GITHUB_OUTPUT
-            echo "Using task definition with only app container updated (no SSR)"
+            echo "Using task definition with only API container updated (no app/frontend)"
           fi
 
       - name: Deploy Amazon ECS task definition

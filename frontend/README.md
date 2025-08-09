@@ -43,7 +43,7 @@ frontend/
 ├── next.config.js           # Next.js configuration
 ├── package.json             # Dependencies and scripts
 ├── tsconfig.json            # TypeScript configuration
-└── Dockerfile.frontend      # Container configuration
+└── Dockerfile               # Container configuration
 ```
 
 ## Key Features

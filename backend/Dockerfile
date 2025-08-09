@@ -38,48 +38,23 @@ FROM python-base AS python-deps
 WORKDIR /app
 
 # Copy only dependency files first
-COPY backend/pyproject.toml backend/poetry.lock /app/
+COPY pyproject.toml poetry.lock /app/
 
 # Install Python dependencies
 # This layer will be cached as long as the dependencies don't change
 RUN poetry install --no-root
 
-# Stage 3: Build React frontend
-# This stage is separate and can be rebuilt without affecting the Python base
-FROM node:22 AS frontend-builder
-
-WORKDIR /app
-
-# Copy package files first to leverage caching
-COPY frontend/package.json /app/
-
-# Clean install npm dependencies with Node.js 22 compatibility
-RUN npm cache clean --force && \
-    npm install --legacy-peer-deps --no-audit --no-fund
-
-# Copy the rest of the frontend code and shared directory
-COPY frontend/ /app/
-COPY shared/ /shared/
-
-# Build the frontend
-RUN npm run build
-
-# Stage 4: Final image
+# Stage 3: Final image
 # This combines the Python base with dependencies and adds application code
 FROM python-deps AS final
 
 WORKDIR /app
 
 # Copy backend code (changes frequently)
-COPY backend/ /app/
+COPY . /app/
 
-# Copy the built frontend static files to the backend static directory
-COPY --from=frontend-builder /app/build/static /app/static
-COPY --from=frontend-builder /app/build/asset-manifest.json /app/static/asset-manifest.json
-
-# Also copy the manifest to the frontend subdirectory for our Django view
-RUN mkdir -p /app/static/frontend && \
-    cp /app/static/asset-manifest.json /app/static/frontend/asset-manifest.json
+# Create static directory
+RUN mkdir -p /app/static
 
 # Copy entrypoint script
 COPY entrypoint.sh /app/entrypoint.sh

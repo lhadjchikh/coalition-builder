@@ -42,17 +42,18 @@ jobs:
             --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
             --load \
             -t coalition_api:latest \
-            .
+            -f backend/Dockerfile \
+            ./backend
 
           docker buildx build \
             --cache-from=type=local,src=/tmp/.buildx-cache \
             --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
             --load \
-            -t coalition_ssr:latest \
-            -f Dockerfile.ssr \
+            -t coalition_app:latest \
+            -f frontend/Dockerfile \
             --build-arg NEXT_PUBLIC_API_URL=http://localhost:8000 \
             --build-arg API_URL=http://api:8000 \
-            .
+            ./frontend
 
       - name: Start all containers
         run: docker compose up -d
@@ -90,20 +91,20 @@ jobs:
             exit 1
           fi
 
-          # Check if SSR is responding with proper health check
+          # Check if frontend is responding with proper health check
           timeout=60
           until curl -s http://localhost:3000/health | jq -e '.status == "healthy"' > /dev/null 2>&1 || [ $timeout -le 0 ]; do
-            echo "Waiting for SSR to be ready with healthy status..."
+            echo "Waiting for frontend to be ready with healthy status..."
             sleep 5
             timeout=$((timeout-5))
           done
           if [ $timeout -le 0 ]; then
-            echo "SSR service failed to start with healthy status in time"
-            echo "Current SSR health status:"
-            curl -s http://localhost:3000/health || echo "SSR health endpoint not responding"
-            # Continue anyway, as we'll see test failures if SSR isn't available
+            echo "Frontend service failed to start with healthy status in time"
+            echo "Current frontend health status:"
+            curl -s http://localhost:3000/health || echo "Frontend health endpoint not responding"
+            # Continue anyway, as we'll see test failures if frontend isn't available
           else
-            echo "✅ SSR service started with healthy status"
+            echo "✅ Frontend service started with healthy status"
             curl -s http://localhost:3000/health | jq '.'
           fi
 
@@ -130,16 +131,15 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Install SSR test dependencies
-        working-directory: ssr
-        run: npm ci
+      # SSR test dependencies are now part of frontend
+      # No separate SSR installation needed
 
       - name: Check if tests are necessary
         id: check_tests
         run: |
           # Use git to check if any app files were changed
           git fetch origin main
-          CHANGES=$(git diff --name-only HEAD origin/main | grep -E "^(frontend/|backend/|ssr/|docker-compose.yml|Dockerfile)" -c || echo 0)
+          CHANGES=$(git diff --name-only HEAD origin/main | grep -E "^(frontend/|backend/|docker-compose.yml|Dockerfile)" -c || echo 0)
 
           if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" && $CHANGES -eq 0 ]]; then
             echo "Running minimal tests for non-app changes to main branch"
@@ -165,12 +165,12 @@ jobs:
           SKIP_E2E: false
         run: npm run test:e2e
 
-      # Run the SSR integration tests
-      - name: Run SSR integration tests
+      # Run the frontend integration tests (includes SSR)
+      - name: Run frontend integration tests
         if: steps.check_tests.outputs.skip_full_tests != 'true'
-        working-directory: ssr
+        working-directory: frontend
         env:
-          SSR_URL: http://localhost:3000
+          FRONTEND_URL: http://localhost:3000
           API_URL: http://localhost:8000
           NGINX_URL: http://localhost:80
         run: npm run test:integration

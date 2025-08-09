@@ -99,9 +99,9 @@ services:
       timeout: 10s
       retries: 3
 
-  ssr:
+  frontend:
     build:
-      context: ./ssr
+      context: ./frontend
       dockerfile: Dockerfile
     environment:
       - API_URL=http://backend:8000
@@ -226,7 +226,7 @@ CMD ["poetry", "run", "gunicorn", "--bind", "0.0.0.0:8000", "coalition.wsgi:appl
 ### Frontend (Next.js) Container
 
 ```dockerfile
-# Dockerfile.frontend
+# frontend/Dockerfile
 FROM node:22-alpine AS base
 WORKDIR /app
 COPY package*.json ./

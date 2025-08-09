@@ -14,7 +14,6 @@ permissions:
 env:
   FRONTEND_PATHS: |
     frontend/
-    Dockerfile.frontend
     .github/workflows/test_frontend.yml
     .github/workflows/check_frontend.yml
     .github/workflows/lint_typescript.yml
@@ -24,7 +23,6 @@ env:
     backend/
     scripts/
     docker-compose.yml
-    Dockerfile
     pyproject.toml
     .github/workflows/test_backend.yml
     .github/workflows/check_backend.yml
