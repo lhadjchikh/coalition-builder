@@ -53,14 +53,12 @@ func (tc *TestConfig) GetTerraformOptions(vars map[string]interface{}) *terrafor
 		"db_allocated_storage": 20,
 		"db_instance_class":    "db.t4g.micro",
 		// Required for some modules but not needed for most tests
-		"route53_zone_id":                 "Z123456789",
-		"domain_name":                     fmt.Sprintf("%s.example.com", tc.UniqueID),
-		"acm_certificate_arn":             fmt.Sprintf("arn:aws:acm:us-east-1:123456789012:certificate/%s", tc.UniqueID),
-		"alert_email":                     "test@example.com",
-		"db_password":                     "testpassword123!",
-		"app_db_password":                 "apppassword123!",
-		"static_assets_upload_policy_arn": "arn:aws:iam::123456789012:policy/test-static-assets-upload",
-		"site_password_secret_arn":        "arn:aws:secretsmanager:us-east-1:123456789012:secret:test-site-password",
+		"route53_zone_id":     "Z123456789",
+		"domain_name":         fmt.Sprintf("%s.example.com", tc.UniqueID),
+		"acm_certificate_arn": fmt.Sprintf("arn:aws:acm:us-east-1:123456789012:certificate/%s", tc.UniqueID),
+		"alert_email":         "test@example.com",
+		"db_password":         "testpassword123!",
+		"app_db_password":     "apppassword123!",
 	}
 
 	// Merge with provided vars (provided vars override defaults)
@@ -100,14 +98,12 @@ func (tc *TestConfig) GetTerraformOptionsForPlanOnly(vars map[string]interface{}
 		"db_allocated_storage": 20,
 		"db_instance_class":    "db.t4g.micro",
 		// Required for some modules but not needed for most tests
-		"route53_zone_id":                 "Z123456789",
-		"domain_name":                     fmt.Sprintf("%s.example.com", tc.UniqueID),
-		"acm_certificate_arn":             fmt.Sprintf("arn:aws:acm:us-east-1:123456789012:certificate/%s", tc.UniqueID),
-		"alert_email":                     "test@example.com",
-		"db_password":                     "testpassword123!",
-		"app_db_password":                 "apppassword123!",
-		"static_assets_upload_policy_arn": "arn:aws:iam::123456789012:policy/test-static-assets-upload",
-		"site_password_secret_arn":        "arn:aws:secretsmanager:us-east-1:123456789012:secret:test-site-password",
+		"route53_zone_id":     "Z123456789",
+		"domain_name":         fmt.Sprintf("%s.example.com", tc.UniqueID),
+		"acm_certificate_arn": fmt.Sprintf("arn:aws:acm:us-east-1:123456789012:certificate/%s", tc.UniqueID),
+		"alert_email":         "test@example.com",
+		"db_password":         "testpassword123!",
+		"app_db_password":     "apppassword123!",
 	}
 
 	// Merge with provided vars (provided vars override defaults)
