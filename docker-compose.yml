@@ -72,6 +72,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - CLOUDFRONT_DOMAIN=${CLOUDFRONT_DOMAIN:-}
+        - BACKEND_DOMAIN=${BACKEND_DOMAIN:-}
     depends_on:
       - api
     # Load .env file if it exists (create from .env.example)
@@ -83,6 +86,9 @@ services:
       - API_URL=http://api:8000
       - NEXT_PUBLIC_API_URL=http://localhost:8000
       - PORT=3000
+      # Image optimization
+      - CLOUDFRONT_DOMAIN=${CLOUDFRONT_DOMAIN:-}
+      - BACKEND_DOMAIN=${BACKEND_DOMAIN:-}
       # Site password protection settings
       - SITE_PASSWORD_ENABLED=${SITE_PASSWORD_ENABLED:-false}
       - SITE_USERNAME=${SITE_USERNAME:-admin}

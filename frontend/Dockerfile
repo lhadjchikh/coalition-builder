@@ -37,6 +37,8 @@ ENV NODE_ENV=production
 # Enable build caching
 ARG NEXT_PUBLIC_API_URL
 ARG API_URL
+ARG CLOUDFRONT_DOMAIN
+ARG BACKEND_DOMAIN
 
 # Build with cache enabled
 # Skip static generation during build since API is not available
