@@ -39,7 +39,7 @@ const Footer: React.FC<FooterProps> = ({
                   href="/"
                   className="mb-3 transition-all duration-300 transform hover:scale-105 block"
                 >
-                  <div className="relative h-10 sm:h-12 lg:h-16 w-32 sm:w-40 lg:w-48">
+                  <div className="relative h-12 sm:h-14 lg:h-20 w-36 sm:w-44 lg:w-56">
                     <Image
                       src={orgInfo.theme.logo_url}
                       alt={
@@ -48,7 +48,7 @@ const Footer: React.FC<FooterProps> = ({
                       }
                       fill
                       className="object-contain"
-                      sizes="(max-width: 640px) 128px, (max-width: 1024px) 160px, 192px"
+                      sizes="(max-width: 640px) 144px, (max-width: 1024px) 176px, 224px"
                       priority
                     />
                   </div>
