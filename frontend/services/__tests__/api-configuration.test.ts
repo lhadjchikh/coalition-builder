@@ -87,7 +87,6 @@ describe("API Service - Configuration", () => {
     });
   });
 
-
   describe("API client export", () => {
     it("should export frontendApiClient", () => {
       expect(frontendApiClient).toBeDefined();

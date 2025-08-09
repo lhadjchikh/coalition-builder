@@ -37,7 +37,7 @@ describe("API Service - Error Handling", () => {
             throw new Error("Invalid JSON");
           },
         };
-        
+
         // Mock all 3 retry attempts
         mockFetch
           .mockResolvedValueOnce(mockResponse)
@@ -132,7 +132,6 @@ describe("API Service - Error Handling", () => {
     });
   });
 
-
   describe("Console logging", () => {
     let consoleErrorSpy: jest.SpyInstance;
     let consoleWarnSpy: jest.SpyInstance;
@@ -163,6 +162,5 @@ describe("API Service - Error Handling", () => {
         error,
       );
     });
-
   });
 });

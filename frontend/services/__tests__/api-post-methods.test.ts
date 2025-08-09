@@ -79,7 +79,6 @@ describe("API Service - POST/PATCH Methods", () => {
         }),
       );
     });
-
   });
 
   describe("patch method", () => {
@@ -113,11 +112,9 @@ describe("API Service - POST/PATCH Methods", () => {
         createMockResponse(null, { ok: false, status: 403 }),
       );
 
-      await expect(API.patch("/api/test/1/", { name: "Updated" })).rejects.toThrow(
-        "HTTP error! status: 403",
-      );
+      await expect(
+        API.patch("/api/test/1/", { name: "Updated" }),
+      ).rejects.toThrow("HTTP error! status: 403");
     });
-
   });
-
 });

@@ -89,10 +89,18 @@ Object.defineProperty(window, "isSecureContext", {
 // Mock window.location - use original method but suppress navigation warnings
 const originalWarn = console.error;
 console.error = (...args: unknown[]) => {
-  if (args[0] && typeof args[0] === 'object' && args[0].message && args[0].message.includes('Not implemented: navigation')) {
+  if (
+    args[0] &&
+    typeof args[0] === "object" &&
+    args[0].message &&
+    args[0].message.includes("Not implemented: navigation")
+  ) {
     return; // Suppress JSDOM navigation warnings
   }
-  if (typeof args[0] === 'string' && args[0].includes('Not implemented: navigation')) {
+  if (
+    typeof args[0] === "string" &&
+    args[0].includes("Not implemented: navigation")
+  ) {
     return; // Suppress JSDOM navigation warnings
   }
   originalWarn(...args);
@@ -394,7 +402,7 @@ describe("SocialShareButtons", () => {
       render(<SocialShareButtons {...defaultProps} />);
 
       const copyButton = screen.getByLabelText("Copy link");
-      
+
       await act(async () => {
         fireEvent.click(copyButton);
       });

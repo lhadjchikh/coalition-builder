@@ -65,7 +65,9 @@ describe("API Service - GET Methods", () => {
         createMockResponse(null, { ok: false, status: 500 }),
       );
 
-      await expect(API.getCampaigns()).rejects.toThrow("HTTP error! status: 500");
+      await expect(API.getCampaigns()).rejects.toThrow(
+        "HTTP error! status: 500",
+      );
     });
 
     it("should handle network failures", async () => {
@@ -76,7 +78,6 @@ describe("API Service - GET Methods", () => {
 
       await expect(API.getCampaigns()).rejects.toThrow("Network error");
     });
-
   });
 
   describe("getEndorsers", () => {
@@ -108,7 +109,9 @@ describe("API Service - GET Methods", () => {
         createMockResponse(null, { ok: false, status: 404 }),
       );
 
-      await expect(API.getEndorsers()).rejects.toThrow("HTTP error! status: 404");
+      await expect(API.getEndorsers()).rejects.toThrow(
+        "HTTP error! status: 404",
+      );
     });
   });
 
@@ -141,7 +144,9 @@ describe("API Service - GET Methods", () => {
         createMockResponse(null, { ok: false, status: 403 }),
       );
 
-      await expect(API.getLegislators()).rejects.toThrow("HTTP error! status: 403");
+      await expect(API.getLegislators()).rejects.toThrow(
+        "HTTP error! status: 403",
+      );
     });
   });
 
@@ -174,7 +179,9 @@ describe("API Service - GET Methods", () => {
         createMockResponse(null, { ok: false, status: 500 }),
       );
 
-      await expect(API.getEndorsements()).rejects.toThrow("HTTP error! status: 500");
+      await expect(API.getEndorsements()).rejects.toThrow(
+        "HTTP error! status: 500",
+      );
     });
   });
 
@@ -219,7 +226,9 @@ describe("API Service - GET Methods", () => {
 
       expect(result).toEqual(mockEndorsements);
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringMatching(/^(http:\/\/localhost:8000)?\/api\/endorsements\//),
+        expect.stringMatching(
+          /^(http:\/\/localhost:8000)?\/api\/endorsements\//,
+        ),
         expect.anything(),
       );
     });
@@ -249,7 +258,9 @@ describe("API Service - GET Methods", () => {
         createMockResponse(null, { ok: false, status: 404 }),
       );
 
-      await expect(API.getCampaignById(1)).rejects.toThrow("HTTP error! status: 404");
+      await expect(API.getCampaignById(1)).rejects.toThrow(
+        "HTTP error! status: 404",
+      );
     });
   });
 
@@ -307,7 +318,9 @@ describe("API Service - GET Methods", () => {
         createMockResponse(null, { ok: false, status: 500 }),
       );
 
-      await expect(API.getHomepage()).rejects.toThrow("HTTP error! status: 500");
+      await expect(API.getHomepage()).rejects.toThrow(
+        "HTTP error! status: 500",
+      );
     });
   });
 });

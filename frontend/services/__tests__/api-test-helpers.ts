@@ -31,7 +31,10 @@ export const createMockResponse = (
 };
 
 // Helper to get expected URL based on environment
-export const getExpectedUrl = (path: string, originalEnv: NodeJS.ProcessEnv): string => {
+export const getExpectedUrl = (
+  path: string,
+  originalEnv: NodeJS.ProcessEnv,
+): string => {
   // The API client is instantiated once when the module loads
   // It will always use localhost:8000 in test environments
   return `http://localhost:8000${path}`;

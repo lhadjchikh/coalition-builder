@@ -61,7 +61,7 @@ class FrontendApiClient extends BaseApiClient {
       }, this.timeout);
 
       let response: Response;
-      
+
       try {
         response = await fetch(url, {
           ...options,
