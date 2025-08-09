@@ -65,7 +65,31 @@ const nextConfig = {
 
   // Images configuration
   images: {
+    // For Next.js 12.3.0+, use remotePatterns for more flexible configuration
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '8000',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'localhost',
+        port: '8000',
+        pathname: '/**',
+      },
+      // Add your production domain here when deployed
+      // {
+      //   protocol: 'https',
+      //   hostname: 'your-backend-domain.com',
+      //   pathname: '/media/**',
+      // },
+    ],
+    // Keep domains for backwards compatibility
     domains: ["localhost"],
+    // Allow dynamic image sizing when dimensions are unknown
+    unoptimized: process.env.NODE_ENV === 'development',
   },
 };
 

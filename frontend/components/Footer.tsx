@@ -37,19 +37,21 @@ const Footer: React.FC<FooterProps> = ({
               {orgInfo.theme?.logo_url ? (
                 <Link
                   href="/"
-                  className="mb-3 transition-all duration-300 transform hover:scale-105"
+                  className="mb-3 transition-all duration-300 transform hover:scale-105 block"
                 >
-                  <Image
-                    src={orgInfo.theme.logo_url}
-                    alt={
-                      orgInfo.theme.logo_alt_text ||
-                      `${orgInfo.organization_name} logo`
-                    }
-                    width={200}
-                    height={64}
-                    className="h-10 sm:h-12 lg:h-16 w-auto max-w-full object-contain"
-                    priority
-                  />
+                  <div className="relative h-10 sm:h-12 lg:h-16 w-32 sm:w-40 lg:w-48">
+                    <Image
+                      src={orgInfo.theme.logo_url}
+                      alt={
+                        orgInfo.theme.logo_alt_text ||
+                        `${orgInfo.organization_name} logo`
+                      }
+                      fill
+                      className="object-contain"
+                      sizes="(max-width: 640px) 128px, (max-width: 1024px) 160px, 192px"
+                      priority
+                    />
+                  </div>
                 </Link>
               ) : (
                 <Link

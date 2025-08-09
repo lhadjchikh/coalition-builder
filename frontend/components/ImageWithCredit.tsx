@@ -16,6 +16,7 @@ interface ImageWithCreditProps {
   width?: number;
   height?: number;
   priority?: boolean;
+  fill?: boolean; // Use fill mode for dynamic dimensions
 }
 
 // Helper function to determine display mode
@@ -48,9 +49,10 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
   creditDisplay = "caption",
   className = "",
   imgClassName = "",
-  width = 800,
-  height = 600,
+  width,
+  height,
   priority = false,
+  fill = false,
 }) => {
   // Use caption if provided, otherwise build credit text from individual fields
   const creditText =
@@ -168,17 +170,34 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
     .filter(Boolean)
     .join(" ");
 
-  return (
-    <div className={containerClasses} data-testid="image-with-credit">
+  // Determine if we should use fill mode or specific dimensions
+  const imageElement = fill || (!width || !height) ? (
+    <div className="relative w-full" style={{ minHeight: '200px' }}>
       <Image
         src={src}
         alt={alt}
-        width={width}
-        height={height}
-        className={imgClassName}
+        fill
+        className={`${imgClassName} object-contain`}
         title={title}
         priority={priority}
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
       />
+    </div>
+  ) : (
+    <Image
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      className={imgClassName}
+      title={title}
+      priority={priority}
+    />
+  );
+
+  return (
+    <div className={containerClasses} data-testid="image-with-credit">
+      {imageElement}
       {renderCredit()}
     </div>
   );

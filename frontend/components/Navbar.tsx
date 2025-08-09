@@ -160,14 +160,16 @@ const Navbar: React.FC<NavbarProps> = ({
               onClick={closeMenu}
             >
               {logoUrl ? (
-                <Image
-                  src={logoUrl}
-                  alt={logoAltText || `${organizationName} logo`}
-                  width={200}
-                  height={64}
-                  className="h-12 sm:h-14 lg:h-16 w-auto max-w-full object-contain"
-                  priority
-                />
+                <div className="relative h-12 sm:h-14 lg:h-16 w-32 sm:w-40 lg:w-48">
+                  <Image
+                    src={logoUrl}
+                    alt={logoAltText || `${organizationName} logo`}
+                    fill
+                    className="object-contain"
+                    sizes="(max-width: 640px) 128px, (max-width: 1024px) 160px, 192px"
+                    priority
+                  />
+                </div>
               ) : (
                 organizationName
               )}
