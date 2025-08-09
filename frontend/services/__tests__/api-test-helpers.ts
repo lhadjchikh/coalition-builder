@@ -17,7 +17,7 @@ export const expectHeaders = (headers: any): boolean => {
 // Helper to create mock response with headers
 export const createMockResponse = (
   body: any,
-  options: { ok?: boolean; status?: number; contentType?: string } = {},
+  options: { ok?: boolean; status?: number; contentType?: string } = {}
 ) => {
   const { ok = true, status = 200, contentType = "application/json" } = options;
   return {
@@ -33,7 +33,7 @@ export const createMockResponse = (
 // Helper to get expected URL based on environment
 export const getExpectedUrl = (
   path: string,
-  originalEnv: NodeJS.ProcessEnv,
+  originalEnv: NodeJS.ProcessEnv
 ): string => {
   // The API client is instantiated once when the module loads
   // It will always use localhost:8000 in test environments
@@ -43,13 +43,13 @@ export const getExpectedUrl = (
 // Helper to create clean environment without CI variables affecting tests
 export const createCleanEnv = (
   originalEnv: NodeJS.ProcessEnv,
-  overrides: Record<string, string | undefined> = {},
+  overrides: Record<string, string | undefined> = {}
 ): NodeJS.ProcessEnv => ({
   ...Object.fromEntries(
     Object.entries(originalEnv).filter(
       ([key]) =>
-        !["CI", "NEXT_PUBLIC_API_URL", "REACT_APP_API_URL"].includes(key),
-    ),
+        !["CI", "NEXT_PUBLIC_API_URL", "REACT_APP_API_URL"].includes(key)
+    )
   ),
   // Ensure required properties are present for NodeJS.ProcessEnv
   NODE_ENV: originalEnv.NODE_ENV || "test",

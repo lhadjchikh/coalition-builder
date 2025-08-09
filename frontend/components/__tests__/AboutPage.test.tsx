@@ -116,7 +116,7 @@ describe("AboutPage", () => {
         orgInfo={mockOrgInfo}
         contentBlocks={mockContentBlocks}
         ContentBlockComponent={MockContentBlockComponent}
-      />,
+      />
     );
 
     expect(screen.getByTestId("page-layout")).toBeInTheDocument();
@@ -132,7 +132,7 @@ describe("AboutPage", () => {
         orgInfo={mockOrgInfo}
         contentBlocks={[]}
         ContentBlockComponent={MockContentBlockComponent}
-      />,
+      />
     );
 
     expect(screen.getByTestId("page-layout")).toBeInTheDocument();
@@ -147,7 +147,7 @@ describe("AboutPage", () => {
         contentBlocks={mockContentBlocks}
         error="Test error"
         ContentBlockComponent={MockContentBlockComponent}
-      />,
+      />
     );
 
     expect(screen.getByTestId("page-layout")).toBeInTheDocument();
@@ -159,7 +159,7 @@ describe("AboutPage", () => {
         contentBlocks={mockContentBlocks}
         error={null}
         ContentBlockComponent={MockContentBlockComponent}
-      />,
+      />
     );
 
     expect(screen.getByTestId("page-layout")).toBeInTheDocument();
@@ -178,7 +178,7 @@ describe("AboutPage", () => {
         NavbarComponent={MockNavbar}
         FooterComponent={MockFooter}
         navItems={navItems}
-      />,
+      />
     );
 
     expect(screen.getByTestId("page-layout")).toBeInTheDocument();

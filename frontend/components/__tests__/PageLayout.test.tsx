@@ -43,7 +43,7 @@ describe("PageLayout", () => {
     render(
       <PageLayout orgInfo={mockOrgInfo} title="Test Page">
         <div data-testid="page-content">Page Content</div>
-      </PageLayout>,
+      </PageLayout>
     );
 
     expect(screen.getByRole("main")).toBeInTheDocument();
@@ -59,7 +59,7 @@ describe("PageLayout", () => {
         subtitle="Test Subtitle"
       >
         <div>Content</div>
-      </PageLayout>,
+      </PageLayout>
     );
 
     expect(screen.getByText("Test Page")).toBeInTheDocument();
@@ -70,7 +70,7 @@ describe("PageLayout", () => {
     render(
       <PageLayout orgInfo={mockOrgInfo} title="Test Page">
         <div>Content</div>
-      </PageLayout>,
+      </PageLayout>
     );
 
     expect(screen.getByText("Test Page")).toBeInTheDocument();
@@ -85,11 +85,11 @@ describe("PageLayout", () => {
         error="Something went wrong"
       >
         <div>Content</div>
-      </PageLayout>,
+      </PageLayout>
     );
 
     expect(
-      screen.getByText("Unable to load test page at this time."),
+      screen.getByText("Unable to load test page at this time.")
     ).toBeInTheDocument();
   });
 
@@ -104,7 +104,7 @@ describe("PageLayout", () => {
         error="Detailed error message"
       >
         <div>Content</div>
-      </PageLayout>,
+      </PageLayout>
     );
 
     expect(screen.getByText("Detailed error message")).toBeInTheDocument();
@@ -123,14 +123,14 @@ describe("PageLayout", () => {
         error="Detailed error message"
       >
         <div>Content</div>
-      </PageLayout>,
+      </PageLayout>
     );
 
     expect(
-      screen.queryByText("Detailed error message"),
+      screen.queryByText("Detailed error message")
     ).not.toBeInTheDocument();
     expect(
-      screen.getByText("Unable to load test page at this time."),
+      screen.getByText("Unable to load test page at this time.")
     ).toBeInTheDocument();
 
     process.env.NODE_ENV = originalEnv;
@@ -140,7 +140,7 @@ describe("PageLayout", () => {
     render(
       <PageLayout orgInfo={mockOrgInfo} title="Test Page">
         <div>Content</div>
-      </PageLayout>,
+      </PageLayout>
     );
 
     expect(screen.queryByText(/Unable to load/)).not.toBeInTheDocument();
@@ -186,7 +186,7 @@ describe("PageLayout", () => {
         navItems={navItems}
       >
         <div>Content</div>
-      </PageLayout>,
+      </PageLayout>
     );
 
     expect(screen.getByTestId("navbar")).toBeInTheDocument();
@@ -195,11 +195,11 @@ describe("PageLayout", () => {
     expect(screen.getByText("About")).toBeInTheDocument();
     expect(screen.getByTestId("logo")).toHaveAttribute(
       "data-src",
-      "https://example.com/logo.png",
+      "https://example.com/logo.png"
     );
     expect(screen.getByTestId("logo")).toHaveAttribute(
       "data-alt",
-      "Organization Logo",
+      "Organization Logo"
     );
   });
 
@@ -207,7 +207,7 @@ describe("PageLayout", () => {
     render(
       <PageLayout orgInfo={mockOrgInfo} title="Test Page">
         <div>Content</div>
-      </PageLayout>,
+      </PageLayout>
     );
 
     expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
@@ -231,7 +231,7 @@ describe("PageLayout", () => {
         FooterComponent={MockFooter}
       >
         <div>Content</div>
-      </PageLayout>,
+      </PageLayout>
     );
 
     expect(screen.getByTestId("footer")).toBeInTheDocument();
@@ -242,7 +242,7 @@ describe("PageLayout", () => {
     render(
       <PageLayout orgInfo={mockOrgInfo} title="Test Page">
         <div>Content</div>
-      </PageLayout>,
+      </PageLayout>
     );
 
     expect(screen.queryByRole("contentinfo")).not.toBeInTheDocument();
@@ -275,17 +275,17 @@ describe("PageLayout", () => {
         NavbarComponent={MockNavbar}
       >
         <div>Content</div>
-      </PageLayout>,
+      </PageLayout>
     );
 
     expect(screen.getByTestId("navbar-with-theme")).toBeInTheDocument();
     expect(screen.getByTestId("logo")).toHaveAttribute(
       "data-src",
-      "https://example.com/logo.png",
+      "https://example.com/logo.png"
     );
     expect(screen.getByTestId("logo")).toHaveAttribute(
       "data-alt",
-      "Organization Logo",
+      "Organization Logo"
     );
   });
 
@@ -316,7 +316,7 @@ describe("PageLayout", () => {
         NavbarComponent={MockNavbar}
       >
         <div>Content</div>
-      </PageLayout>,
+      </PageLayout>
     );
 
     expect(screen.getByTestId("navbar-no-theme")).toBeInTheDocument();
@@ -328,11 +328,11 @@ describe("PageLayout", () => {
     render(
       <PageLayout orgInfo={mockOrgInfo} title="" error="Error occurred">
         <div>Content</div>
-      </PageLayout>,
+      </PageLayout>
     );
 
     expect(
-      screen.getByText("Unable to load content at this time."),
+      screen.getByText("Unable to load content at this time.")
     ).toBeInTheDocument();
   });
 
@@ -343,15 +343,15 @@ describe("PageLayout", () => {
           <h2>Section Title</h2>
           <p>Section content</p>
         </section>
-      </PageLayout>,
+      </PageLayout>
     );
 
     expect(screen.getByRole("main")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      "Test Page",
+      "Test Page"
     );
     expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(
-      "Section Title",
+      "Section Title"
     );
   });
 });

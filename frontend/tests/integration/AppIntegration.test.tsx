@@ -122,7 +122,7 @@ describe("App Integration Test", () => {
     await withSuppressedErrors(["Failed to fetch data"], async () => {
       // Override the mock for this specific test to simulate an error
       (API.getCampaigns as jest.Mock).mockRejectedValueOnce(
-        new Error("Failed to fetch data"),
+        new Error("Failed to fetch data")
       );
 
       // Act - Render the App

@@ -36,7 +36,7 @@ export abstract class BaseApiClient {
 
   protected abstract request<T>(
     endpoint: string,
-    options?: RequestInit,
+    options?: RequestInit
   ): Promise<T>;
 
   // Common API methods that both frontend and SSR need
@@ -50,7 +50,7 @@ export abstract class BaseApiClient {
 
   async getCampaignByName(name: string): Promise<Campaign> {
     return this.request<Campaign>(
-      `/api/campaigns/by-name/${encodeURIComponent(name)}/`,
+      `/api/campaigns/by-name/${encodeURIComponent(name)}/`
     );
   }
 
@@ -72,12 +72,12 @@ export abstract class BaseApiClient {
 
   async getCampaignEndorsements(campaignId: number): Promise<Endorsement[]> {
     return this.request<Endorsement[]>(
-      `/api/endorsements/?campaign_id=${campaignId}`,
+      `/api/endorsements/?campaign_id=${campaignId}`
     );
   }
 
   async createEndorsement(
-    endorsementData: EndorsementCreate,
+    endorsementData: EndorsementCreate
   ): Promise<Endorsement> {
     return this.request<Endorsement>("/api/endorsements/", {
       method: "POST",
@@ -102,15 +102,15 @@ export abstract class BaseApiClient {
 
   async getContentBlocksByPageType(pageType: string): Promise<ContentBlock[]> {
     return this.request<ContentBlock[]>(
-      `/api/content-blocks/?page_type=${pageType}`,
+      `/api/content-blocks/?page_type=${pageType}`
     );
   }
 
   async getContentBlocksByHomepageId(
-    homepageId: number,
+    homepageId: number
   ): Promise<ContentBlock[]> {
     return this.request<ContentBlock[]>(
-      `/api/content-blocks/?homepage_id=${homepageId}`,
+      `/api/content-blocks/?homepage_id=${homepageId}`
     );
   }
 

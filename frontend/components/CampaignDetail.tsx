@@ -79,7 +79,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
   className = "campaign-detail",
 }: CampaignDetailProps) => {
   const [campaign, setCampaign] = useState<Campaign | null>(
-    initialCampaign || null,
+    initialCampaign || null
   );
   const [loading, setLoading] = useState<boolean>(!initialCampaign);
   const [error, setError] = useState<string | null>(null);
@@ -98,7 +98,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
     if (initialCampaign) {
       // Track campaign view for initial campaign
       analytics?.trackCampaignView(
-        initialCampaign.name || `Campaign ${initialCampaign.id}`,
+        initialCampaign.name || `Campaign ${initialCampaign.id}`
       );
       return;
     }
@@ -125,7 +125,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
         }
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Failed to fetch campaign",
+          err instanceof Error ? err.message : "Failed to fetch campaign"
         );
       } finally {
         setLoading(false);
@@ -148,7 +148,7 @@ const CampaignDetail: React.FC<CampaignDetailProps> = ({
 
   const handleEndorsementCountUpdate = (
     count: number,
-    recentCount?: number,
+    recentCount?: number
   ) => {
     setEndorsementCount(count);
     if (recentCount !== undefined) {

@@ -198,7 +198,7 @@ describe("Campaigns Page", () => {
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
     (ssrApiClient.getCampaigns as jest.Mock).mockResolvedValue(mockCampaigns);
     (ssrApiClient.getContentBlocksByPageType as jest.Mock).mockResolvedValue(
-      mockContentBlocks,
+      mockContentBlocks
     );
 
     const TestComponent = await TestCampaigns();
@@ -206,20 +206,20 @@ describe("Campaigns Page", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("org-name")).toHaveTextContent(
-        "Test Coalition",
+        "Test Coalition"
       );
       expect(screen.getByTestId("campaigns-list")).toHaveTextContent(
-        "3 campaigns",
+        "3 campaigns"
       );
       expect(screen.getByTestId("content-blocks")).toHaveTextContent(
-        "2 blocks",
+        "2 blocks"
       );
     });
 
     expect(ssrApiClient.getHomepage).toHaveBeenCalledTimes(1);
     expect(ssrApiClient.getCampaigns).toHaveBeenCalledTimes(1);
     expect(ssrApiClient.getContentBlocksByPageType).toHaveBeenCalledWith(
-      "campaigns",
+      "campaigns"
     );
   });
 
@@ -230,7 +230,7 @@ describe("Campaigns Page", () => {
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
     (ssrApiClient.getCampaigns as jest.Mock).mockResolvedValue(mockCampaigns);
     (ssrApiClient.getContentBlocksByPageType as jest.Mock).mockResolvedValue(
-      mockContentBlocks,
+      mockContentBlocks
     );
 
     // Since the component is async, we can't test intermediate loading states
@@ -244,7 +244,7 @@ describe("Campaigns Page", () => {
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
     (ssrApiClient.getCampaigns as jest.Mock).mockRejectedValue(error);
     (ssrApiClient.getContentBlocksByPageType as jest.Mock).mockResolvedValue(
-      mockContentBlocks,
+      mockContentBlocks
     );
 
     // Mock console.error to prevent test output noise
@@ -261,7 +261,7 @@ describe("Campaigns Page", () => {
 
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching campaigns page data:",
-      error,
+      error
     );
     consoleSpy.mockRestore();
   });
@@ -271,7 +271,7 @@ describe("Campaigns Page", () => {
     (ssrApiClient.getHomepage as jest.Mock).mockRejectedValue(error);
     (ssrApiClient.getCampaigns as jest.Mock).mockRejectedValue(error);
     (ssrApiClient.getContentBlocksByPageType as jest.Mock).mockRejectedValue(
-      error,
+      error
     );
 
     // Mock console.error to prevent test output noise
@@ -287,7 +287,7 @@ describe("Campaigns Page", () => {
 
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching campaigns page data:",
-      error,
+      error
     );
     consoleSpy.mockRestore();
   });
@@ -296,7 +296,7 @@ describe("Campaigns Page", () => {
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
     (ssrApiClient.getCampaigns as jest.Mock).mockResolvedValue([]);
     (ssrApiClient.getContentBlocksByPageType as jest.Mock).mockResolvedValue(
-      mockContentBlocks,
+      mockContentBlocks
     );
 
     const TestComponent = await TestCampaigns();
@@ -304,7 +304,7 @@ describe("Campaigns Page", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("campaigns-list")).toHaveTextContent(
-        "0 campaigns",
+        "0 campaigns"
       );
     });
   });
@@ -313,7 +313,7 @@ describe("Campaigns Page", () => {
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
     (ssrApiClient.getCampaigns as jest.Mock).mockResolvedValue(mockCampaigns);
     (ssrApiClient.getContentBlocksByPageType as jest.Mock).mockResolvedValue(
-      mockContentBlocks,
+      mockContentBlocks
     );
 
     const TestComponent = await TestCampaigns();

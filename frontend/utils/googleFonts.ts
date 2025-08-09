@@ -24,7 +24,7 @@ export function loadGoogleFonts(googleFonts: string[]): void {
           // Use Function constructor to avoid TypeScript static analysis
           const dynamicImport = new Function(
             "moduleName",
-            "return import(moduleName)",
+            "return import(moduleName)"
           );
           cachedWebFontLoader = await dynamicImport("webfontloader");
         }

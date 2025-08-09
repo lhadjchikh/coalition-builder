@@ -123,7 +123,7 @@ describe("EndorsementForm", () => {
 
     // Test confirm_email honeypot field
     const confirmEmailField = screen.getByLabelText(
-      /confirm email.*leave blank/i,
+      /confirm email.*leave blank/i
     );
     fireEvent.change(confirmEmailField, { target: { value: "spam@test.com" } });
     expect(confirmEmailField).toHaveValue("spam@test.com");
@@ -183,14 +183,14 @@ describe("EndorsementForm", () => {
       // Wait for success message
       await waitFor(() => {
         expect(
-          screen.getByText("Thank you for your endorsement!"),
+          screen.getByText("Thank you for your endorsement!")
         ).toBeInTheDocument();
       });
 
       // Check that social share buttons are displayed
       expect(screen.getByTestId("social-share-buttons")).toBeInTheDocument();
       expect(
-        screen.getByText("Help amplify your support by sharing this campaign:"),
+        screen.getByText("Help amplify your support by sharing this campaign:")
       ).toBeInTheDocument();
     });
 
@@ -232,11 +232,11 @@ describe("EndorsementForm", () => {
       // Check the props passed to SocialShareButtons
       expect(
         screen.getByText(
-          `URL: ${window.location.origin}/campaigns/${mockCampaign.name}`,
-        ),
+          `URL: ${window.location.origin}/campaigns/${mockCampaign.name}`
+        )
       ).toBeInTheDocument();
       expect(
-        screen.getByText(`Title: I just endorsed ${mockCampaign.title}!`),
+        screen.getByText(`Title: I just endorsed ${mockCampaign.title}!`)
       ).toBeInTheDocument();
     });
 
@@ -273,14 +273,14 @@ describe("EndorsementForm", () => {
 
       await waitFor(() => {
         expect(analytics.trackEndorsementSubmission).toHaveBeenCalledWith(
-          mockCampaign.name,
+          mockCampaign.name
         );
       });
     });
 
     it("does not show share buttons when submission fails", async () => {
       (API.createEndorsement as jest.Mock).mockRejectedValue(
-        new Error("Submission failed"),
+        new Error("Submission failed")
       );
 
       render(<EndorsementForm campaign={mockCampaign} />);
@@ -319,7 +319,7 @@ describe("EndorsementForm", () => {
 
       // Should not show social share buttons
       expect(
-        screen.queryByTestId("social-share-buttons"),
+        screen.queryByTestId("social-share-buttons")
       ).not.toBeInTheDocument();
     });
 
@@ -328,7 +328,7 @@ describe("EndorsementForm", () => {
         <EndorsementForm
           campaign={mockCampaign}
           onFormInteraction={mockOnFormInteraction}
-        />,
+        />
       );
 
       const firstNameInput = screen.getByTestId("first-name-input");
@@ -347,7 +347,7 @@ describe("EndorsementForm", () => {
         <EndorsementForm
           campaign={mockCampaign}
           onEndorsementSubmitted={mockOnEndorsementSubmitted}
-        />,
+        />
       );
 
       // Fill and submit form
@@ -394,8 +394,8 @@ describe("EndorsementForm", () => {
 
       expect(
         screen.getByText(
-          "This campaign is not currently accepting endorsements.",
-        ),
+          "This campaign is not currently accepting endorsements."
+        )
       ).toBeInTheDocument();
       expect(screen.queryByTestId("submit-button")).not.toBeInTheDocument();
     });
@@ -409,15 +409,15 @@ describe("EndorsementForm", () => {
 
       expect(
         screen.getByText(
-          "By submitting this form, you agree to the following statement:",
-        ),
+          "By submitting this form, you agree to the following statement:"
+        )
       ).toBeInTheDocument();
       // Endorsement statement uses HTML entities for quotation marks
       const blockquote = document.querySelector("blockquote");
       expect(blockquote).toBeInTheDocument();
       // HTML entities are rendered as curly quotes
       expect(blockquote?.textContent).toContain(
-        "We support this important policy change.",
+        "We support this important policy change."
       );
     });
 
@@ -430,7 +430,7 @@ describe("EndorsementForm", () => {
       render(<EndorsementForm campaign={campaignWithInstructions} />);
 
       expect(
-        screen.getByText("Please fill out all required fields."),
+        screen.getByText("Please fill out all required fields.")
       ).toBeInTheDocument();
     });
 

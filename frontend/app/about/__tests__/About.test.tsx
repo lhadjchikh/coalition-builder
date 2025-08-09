@@ -113,20 +113,20 @@ describe("About Page", () => {
   it("should fetch and display data successfully", async () => {
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
     (ssrApiClient.getContentBlocksByPageType as jest.Mock).mockResolvedValue(
-      mockContentBlocks,
+      mockContentBlocks
     );
 
     const jsx = await About();
     render(jsx);
 
     expect(screen.getByTestId("org-name")).toHaveTextContent(
-      "Test Organization",
+      "Test Organization"
     );
     expect(screen.getByTestId("content-blocks")).toHaveTextContent("3 blocks");
 
     expect(ssrApiClient.getHomepage).toHaveBeenCalledTimes(1);
     expect(ssrApiClient.getContentBlocksByPageType).toHaveBeenCalledWith(
-      "about",
+      "about"
     );
   });
 
@@ -134,7 +134,7 @@ describe("About Page", () => {
     const error = new Error("Network error");
     (ssrApiClient.getHomepage as jest.Mock).mockRejectedValue(error);
     (ssrApiClient.getContentBlocksByPageType as jest.Mock).mockResolvedValue(
-      mockContentBlocks,
+      mockContentBlocks
     );
 
     // Mock console.error to prevent test output noise
@@ -145,7 +145,7 @@ describe("About Page", () => {
 
     // Should use fallback homepage
     expect(screen.getByTestId("org-name")).toHaveTextContent(
-      "Fallback Organization",
+      "Fallback Organization"
     );
     expect(screen.getByTestId("content-blocks")).toHaveTextContent("3 blocks");
 
@@ -158,7 +158,7 @@ describe("About Page", () => {
     const error = new Error("Failed to fetch content");
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
     (ssrApiClient.getContentBlocksByPageType as jest.Mock).mockRejectedValue(
-      error,
+      error
     );
 
     // Mock console.error to prevent test output noise
@@ -168,16 +168,16 @@ describe("About Page", () => {
     render(jsx);
 
     expect(screen.getByTestId("org-name")).toHaveTextContent(
-      "Test Organization",
+      "Test Organization"
     );
     expect(screen.getByTestId("error")).toHaveTextContent(
-      "Failed to fetch content",
+      "Failed to fetch content"
     );
     expect(screen.getByTestId("content-blocks")).toHaveTextContent("0 blocks");
 
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching about content blocks:",
-      error,
+      error
     );
     consoleSpy.mockRestore();
   });
@@ -185,14 +185,14 @@ describe("About Page", () => {
   it("should display with empty content blocks", async () => {
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
     (ssrApiClient.getContentBlocksByPageType as jest.Mock).mockResolvedValue(
-      [],
+      []
     );
 
     const jsx = await About();
     render(jsx);
 
     expect(screen.getByTestId("org-name")).toHaveTextContent(
-      "Test Organization",
+      "Test Organization"
     );
     expect(screen.getByTestId("content-blocks")).toHaveTextContent("0 blocks");
   });
@@ -201,7 +201,7 @@ describe("About Page", () => {
     const error = new Error("Network error");
     (ssrApiClient.getHomepage as jest.Mock).mockRejectedValue(error);
     (ssrApiClient.getContentBlocksByPageType as jest.Mock).mockRejectedValue(
-      error,
+      error
     );
 
     // Mock console.error to prevent test output noise
@@ -212,7 +212,7 @@ describe("About Page", () => {
 
     // Should use fallback homepage and show error for content blocks
     expect(screen.getByTestId("org-name")).toHaveTextContent(
-      "Fallback Organization",
+      "Fallback Organization"
     );
     expect(screen.getByTestId("error")).toHaveTextContent("Network error");
     expect(screen.getByTestId("content-blocks")).toHaveTextContent("0 blocks");
@@ -220,7 +220,7 @@ describe("About Page", () => {
     expect(consoleSpy).toHaveBeenCalledWith("Error fetching homepage:", error);
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching about content blocks:",
-      error,
+      error
     );
     consoleSpy.mockRestore();
   });

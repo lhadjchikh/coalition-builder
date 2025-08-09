@@ -31,7 +31,7 @@ describe("API Service - Configuration", () => {
         "env",
         createCleanEnv(originalEnv, {
           REACT_APP_API_URL: "https://react-api.example.com",
-        }),
+        })
       );
       expect(getBaseUrl()).toBe("https://react-api.example.com");
     });
@@ -42,7 +42,7 @@ describe("API Service - Configuration", () => {
         "env",
         createCleanEnv(originalEnv, {
           CI: "true",
-        }),
+        })
       );
       expect(getBaseUrl()).toBe("http://localhost:8000");
     });
@@ -61,7 +61,7 @@ describe("API Service - Configuration", () => {
         expect.any(String),
         expect.objectContaining({
           credentials: "same-origin",
-        }),
+        })
       );
     });
 
@@ -73,7 +73,7 @@ describe("API Service - Configuration", () => {
         expect.any(String),
         expect.objectContaining({
           signal: expect.any(AbortSignal),
-        }),
+        })
       );
     });
 
@@ -114,7 +114,7 @@ describe("API Service - Configuration", () => {
         "env",
         createCleanEnv(originalEnv, {
           REACT_APP_API_URL: "https://api.example.com",
-        }),
+        })
       );
 
       expect(getBaseUrl()).toBe("https://api.example.com");
@@ -130,7 +130,7 @@ describe("API Service - Configuration", () => {
           }),
           credentials: "same-origin",
           signal: expect.any(AbortSignal),
-        }),
+        })
       );
     });
 
@@ -146,7 +146,7 @@ describe("API Service - Configuration", () => {
           }),
           credentials: "same-origin",
           signal: expect.any(AbortSignal),
-        }),
+        })
       );
     });
 
@@ -162,7 +162,7 @@ describe("API Service - Configuration", () => {
           }),
           credentials: "same-origin",
           signal: expect.any(AbortSignal),
-        }),
+        })
       );
     });
   });

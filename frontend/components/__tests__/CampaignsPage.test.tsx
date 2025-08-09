@@ -120,12 +120,12 @@ describe("CampaignsPage", () => {
         campaigns={mockCampaigns}
         contentBlocks={mockContentBlocks}
         ContentBlockComponent={MockContentBlockComponent}
-      />,
+      />
     );
 
     expect(screen.getByText("Our Campaigns")).toBeInTheDocument();
     expect(
-      screen.getByText("Check out our policy campaigns"),
+      screen.getByText("Check out our policy campaigns")
     ).toBeInTheDocument();
   });
 
@@ -141,7 +141,7 @@ describe("CampaignsPage", () => {
         campaigns={mockCampaigns}
         contentBlocks={mockContentBlocks}
         ContentBlockComponent={MockContentBlockComponent}
-      />,
+      />
     );
 
     expect(screen.getByText("Policy Campaigns")).toBeInTheDocument();
@@ -159,12 +159,12 @@ describe("CampaignsPage", () => {
         campaigns={mockCampaigns}
         contentBlocks={mockContentBlocks}
         ContentBlockComponent={MockContentBlockComponent}
-      />,
+      />
     );
 
     expect(screen.getByText("Our Campaigns")).toBeInTheDocument();
     expect(
-      screen.queryByText("Check out our policy campaigns"),
+      screen.queryByText("Check out our policy campaigns")
     ).not.toBeInTheDocument();
   });
 
@@ -175,7 +175,7 @@ describe("CampaignsPage", () => {
         campaigns={mockCampaigns}
         contentBlocks={mockContentBlocks}
         ContentBlockComponent={MockContentBlockComponent}
-      />,
+      />
     );
 
     expect(screen.getByTestId("content-blocks-list")).toBeInTheDocument();
@@ -189,7 +189,7 @@ describe("CampaignsPage", () => {
         campaigns={mockCampaigns}
         contentBlocks={[]}
         ContentBlockComponent={MockContentBlockComponent}
-      />,
+      />
     );
 
     expect(screen.queryByTestId("content-blocks-list")).not.toBeInTheDocument();
@@ -202,7 +202,7 @@ describe("CampaignsPage", () => {
         campaigns={mockCampaigns}
         contentBlocks={mockContentBlocks}
         ContentBlockComponent={MockContentBlockComponent}
-      />,
+      />
     );
 
     expect(screen.getByTestId("campaigns-list")).toBeInTheDocument();
@@ -220,7 +220,7 @@ describe("CampaignsPage", () => {
         contentBlocks={mockContentBlocks}
         onCampaignSelect={onCampaignSelect}
         ContentBlockComponent={MockContentBlockComponent}
-      />,
+      />
     );
 
     fireEvent.click(screen.getByTestId("campaign-1"));
@@ -235,7 +235,7 @@ describe("CampaignsPage", () => {
         contentBlocks={mockContentBlocks}
         campaignsError="Failed to load campaigns"
         ContentBlockComponent={MockContentBlockComponent}
-      />,
+      />
     );
 
     expect(screen.getByTestId("campaigns-list")).toBeInTheDocument();
@@ -249,7 +249,7 @@ describe("CampaignsPage", () => {
         contentBlocks={mockContentBlocks}
         contentError="Failed to load content"
         ContentBlockComponent={MockContentBlockComponent}
-      />,
+      />
     );
 
     expect(screen.getByTestId("content-blocks-list")).toBeInTheDocument();
@@ -273,7 +273,7 @@ describe("CampaignsPage", () => {
         NavbarComponent={MockNavbar}
         FooterComponent={MockFooter}
         navItems={navItems}
-      />,
+      />
     );
 
     expect(screen.getByTestId("navbar")).toBeInTheDocument();
@@ -288,7 +288,7 @@ describe("CampaignsPage", () => {
         campaigns={mockCampaigns}
         contentBlocks={mockContentBlocks}
         ContentBlockComponent={MockContentBlockComponent}
-      />,
+      />
     );
 
     expect(screen.queryByTestId("navbar")).not.toBeInTheDocument();

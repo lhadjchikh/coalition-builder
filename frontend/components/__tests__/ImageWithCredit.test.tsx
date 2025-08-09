@@ -17,14 +17,14 @@ describe("ImageWithCredit", () => {
       // Next.js Image component transforms the src URL
       expect(img).toHaveAttribute("src");
       expect(img.getAttribute("src")).toContain(
-        encodeURIComponent(defaultProps.src),
+        encodeURIComponent(defaultProps.src)
       );
       expect(img).toHaveAttribute("alt", defaultProps.alt);
     });
 
     it("applies custom className to container", () => {
       const { container } = render(
-        <ImageWithCredit {...defaultProps} className="custom-class" />,
+        <ImageWithCredit {...defaultProps} className="custom-class" />
       );
 
       expect(container.firstChild).toHaveClass("custom-class");
@@ -32,7 +32,7 @@ describe("ImageWithCredit", () => {
 
     it("applies custom imgClassName to image", () => {
       render(
-        <ImageWithCredit {...defaultProps} imgClassName="custom-img-class" />,
+        <ImageWithCredit {...defaultProps} imgClassName="custom-img-class" />
       );
 
       const img = screen.getByRole("img");
@@ -64,7 +64,7 @@ describe("ImageWithCredit", () => {
       render(<ImageWithCredit {...defaultProps} license="CC BY 4.0" />);
 
       expect(
-        screen.getByText("is licensed under CC BY 4.0"),
+        screen.getByText("is licensed under CC BY 4.0")
       ).toBeInTheDocument();
     });
 
@@ -75,13 +75,13 @@ describe("ImageWithCredit", () => {
           title="Beautiful Sunset"
           author="John Doe"
           license="CC BY 4.0"
-        />,
+        />
       );
 
       expect(
         screen.getByText(
-          '"Beautiful Sunset" by John Doe is licensed under CC BY 4.0',
-        ),
+          '"Beautiful Sunset" by John Doe is licensed under CC BY 4.0'
+        )
       ).toBeInTheDocument();
     });
 
@@ -92,13 +92,13 @@ describe("ImageWithCredit", () => {
           title="  Beautiful Sunset  "
           author="  John Doe  "
           license="  CC BY 4.0  "
-        />,
+        />
       );
 
       expect(
         screen.getByText(
-          '"Beautiful Sunset" by John Doe is licensed under CC BY 4.0',
-        ),
+          '"Beautiful Sunset" by John Doe is licensed under CC BY 4.0'
+        )
       ).toBeInTheDocument();
     });
 
@@ -109,7 +109,7 @@ describe("ImageWithCredit", () => {
           title=""
           author="John Doe"
           license=""
-        />,
+        />
       );
 
       expect(screen.getByText("by John Doe")).toBeInTheDocument();
@@ -131,7 +131,7 @@ describe("ImageWithCredit", () => {
         const creditDiv = container.querySelector(".mt-1.text-right");
         expect(creditDiv).toBeInTheDocument();
         expect(creditDiv).toHaveTextContent(
-          "by John Doe is licensed under CC BY 4.0",
+          "by John Doe is licensed under CC BY 4.0"
         );
       });
 
@@ -140,7 +140,7 @@ describe("ImageWithCredit", () => {
           <ImageWithCredit
             {...propsWithCredit}
             sourceUrl="https://example.com/source"
-          />,
+          />
         );
 
         const link = screen.getByRole("link");
@@ -154,7 +154,7 @@ describe("ImageWithCredit", () => {
     describe("overlay mode", () => {
       it("displays credit as overlay on image", () => {
         const { container } = render(
-          <ImageWithCredit {...propsWithCredit} creditDisplay="overlay" />,
+          <ImageWithCredit {...propsWithCredit} creditDisplay="overlay" />
         );
 
         expect(container.firstChild).toHaveClass("relative", "inline-block");
@@ -163,7 +163,7 @@ describe("ImageWithCredit", () => {
         expect(overlay).toBeInTheDocument();
         expect(overlay).toHaveClass("bg-black", "bg-opacity-60", "text-white");
         expect(overlay).toHaveTextContent(
-          "by John Doe is licensed under CC BY 4.0",
+          "by John Doe is licensed under CC BY 4.0"
         );
       });
 
@@ -173,7 +173,7 @@ describe("ImageWithCredit", () => {
             {...propsWithCredit}
             creditDisplay="overlay"
             sourceUrl="https://example.com/source"
-          />,
+          />
         );
 
         const link = screen.getByRole("link");
@@ -185,7 +185,7 @@ describe("ImageWithCredit", () => {
     describe("tooltip mode", () => {
       it("displays credit as tooltip on hover", () => {
         const { container } = render(
-          <ImageWithCredit {...propsWithCredit} creditDisplay="tooltip" />,
+          <ImageWithCredit {...propsWithCredit} creditDisplay="tooltip" />
         );
 
         expect(container.firstChild).toHaveClass("relative", "inline-block");
@@ -202,10 +202,10 @@ describe("ImageWithCredit", () => {
           "text-white",
           "px-2",
           "py-1",
-          "rounded",
+          "rounded"
         );
         expect(tooltipContent).toHaveTextContent(
-          "by John Doe is licensed under CC BY 4.0",
+          "by John Doe is licensed under CC BY 4.0"
         );
       });
     });
@@ -213,7 +213,7 @@ describe("ImageWithCredit", () => {
     describe("none mode", () => {
       it("hides credit when creditDisplay is none", () => {
         const { container } = render(
-          <ImageWithCredit {...propsWithCredit} creditDisplay="none" />,
+          <ImageWithCredit {...propsWithCredit} creditDisplay="none" />
         );
 
         expect(container.textContent).toBe("");
@@ -231,7 +231,7 @@ describe("ImageWithCredit", () => {
           author={undefined}
           license={undefined}
           sourceUrl={undefined}
-        />,
+        />
       );
 
       // Should render without errors
@@ -246,7 +246,7 @@ describe("ImageWithCredit", () => {
           title={longText}
           author={longText}
           license={longText}
-        />,
+        />
       );
 
       // Should render without breaking
@@ -260,13 +260,13 @@ describe("ImageWithCredit", () => {
           title='Test & "Quote"'
           author="O'Neill"
           license="CC BY-SA 4.0 <International>"
-        />,
+        />
       );
 
       expect(screen.getByText(/Test & "Quote"/)).toBeInTheDocument();
       expect(screen.getByText(/O'Neill/)).toBeInTheDocument();
       expect(
-        screen.getByText(/CC BY-SA 4.0 <International>/),
+        screen.getByText(/CC BY-SA 4.0 <International>/)
       ).toBeInTheDocument();
     });
   });

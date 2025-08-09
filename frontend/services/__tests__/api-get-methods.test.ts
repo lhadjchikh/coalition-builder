@@ -56,17 +56,17 @@ describe("API Service - GET Methods", () => {
             "Content-Type": "application/json",
           }),
           signal: expect.any(AbortSignal),
-        }),
+        })
       );
     });
 
     it("should handle HTTP error responses", async () => {
       mockFetch.mockResolvedValueOnce(
-        createMockResponse(null, { ok: false, status: 500 }),
+        createMockResponse(null, { ok: false, status: 500 })
       );
 
       await expect(API.getCampaigns()).rejects.toThrow(
-        "HTTP error! status: 500",
+        "HTTP error! status: 500"
       );
     });
 
@@ -100,17 +100,17 @@ describe("API Service - GET Methods", () => {
             "Content-Type": "application/json",
           }),
           signal: expect.any(AbortSignal),
-        }),
+        })
       );
     });
 
     it("should handle HTTP error responses", async () => {
       mockFetch.mockResolvedValueOnce(
-        createMockResponse(null, { ok: false, status: 404 }),
+        createMockResponse(null, { ok: false, status: 404 })
       );
 
       await expect(API.getEndorsers()).rejects.toThrow(
-        "HTTP error! status: 404",
+        "HTTP error! status: 404"
       );
     });
   });
@@ -135,17 +135,17 @@ describe("API Service - GET Methods", () => {
             "Content-Type": "application/json",
           }),
           signal: expect.any(AbortSignal),
-        }),
+        })
       );
     });
 
     it("should handle HTTP error responses", async () => {
       mockFetch.mockResolvedValueOnce(
-        createMockResponse(null, { ok: false, status: 403 }),
+        createMockResponse(null, { ok: false, status: 403 })
       );
 
       await expect(API.getLegislators()).rejects.toThrow(
-        "HTTP error! status: 403",
+        "HTTP error! status: 403"
       );
     });
   });
@@ -170,17 +170,17 @@ describe("API Service - GET Methods", () => {
             "Content-Type": "application/json",
           }),
           signal: expect.any(AbortSignal),
-        }),
+        })
       );
     });
 
     it("should handle HTTP error responses", async () => {
       mockFetch.mockResolvedValueOnce(
-        createMockResponse(null, { ok: false, status: 500 }),
+        createMockResponse(null, { ok: false, status: 500 })
       );
 
       await expect(API.getEndorsements()).rejects.toThrow(
-        "HTTP error! status: 500",
+        "HTTP error! status: 500"
       );
     });
   });
@@ -205,17 +205,17 @@ describe("API Service - GET Methods", () => {
             "Content-Type": "application/json",
           }),
           signal: expect.any(AbortSignal),
-        }),
+        })
       );
     });
 
     it("should handle HTTP error responses", async () => {
       mockFetch.mockResolvedValueOnce(
-        createMockResponse(null, { ok: false, status: 404 }),
+        createMockResponse(null, { ok: false, status: 404 })
       );
 
       await expect(API.getCampaignEndorsements(1)).rejects.toThrow(
-        "HTTP error! status: 404",
+        "HTTP error! status: 404"
       );
     });
 
@@ -227,9 +227,9 @@ describe("API Service - GET Methods", () => {
       expect(result).toEqual(mockEndorsements);
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringMatching(
-          /^(http:\/\/localhost:8000)?\/api\/endorsements\//,
+          /^(http:\/\/localhost:8000)?\/api\/endorsements\//
         ),
-        expect.anything(),
+        expect.anything()
       );
     });
   });
@@ -249,17 +249,17 @@ describe("API Service - GET Methods", () => {
             "Content-Type": "application/json",
           }),
           signal: expect.any(AbortSignal),
-        }),
+        })
       );
     });
 
     it("should handle HTTP error responses", async () => {
       mockFetch.mockResolvedValueOnce(
-        createMockResponse(null, { ok: false, status: 404 }),
+        createMockResponse(null, { ok: false, status: 404 })
       );
 
       await expect(API.getCampaignById(1)).rejects.toThrow(
-        "HTTP error! status: 404",
+        "HTTP error! status: 404"
       );
     });
   });
@@ -279,17 +279,17 @@ describe("API Service - GET Methods", () => {
             "Content-Type": "application/json",
           }),
           signal: expect.any(AbortSignal),
-        }),
+        })
       );
     });
 
     it("should handle HTTP error responses", async () => {
       mockFetch.mockResolvedValueOnce(
-        createMockResponse(null, { ok: false, status: 404 }),
+        createMockResponse(null, { ok: false, status: 404 })
       );
 
       await expect(API.getCampaignByName("non-existent")).rejects.toThrow(
-        "HTTP error! status: 404",
+        "HTTP error! status: 404"
       );
     });
   });
@@ -309,17 +309,17 @@ describe("API Service - GET Methods", () => {
             "Content-Type": "application/json",
           }),
           signal: expect.any(AbortSignal),
-        }),
+        })
       );
     });
 
     it("should handle HTTP error responses", async () => {
       mockFetch.mockResolvedValueOnce(
-        createMockResponse(null, { ok: false, status: 500 }),
+        createMockResponse(null, { ok: false, status: 500 })
       );
 
       await expect(API.getHomepage()).rejects.toThrow(
-        "HTTP error! status: 500",
+        "HTTP error! status: 500"
       );
     });
   });

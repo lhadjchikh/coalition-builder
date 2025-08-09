@@ -76,7 +76,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const campaignId = parseInt(
-              entry.target.getAttribute("data-campaign-id") || "0",
+              entry.target.getAttribute("data-campaign-id") || "0"
             );
             setVisibleCards((prev) => new Set(prev).add(campaignId));
           }
@@ -85,7 +85,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
       {
         threshold: 0.1,
         rootMargin: "50px",
-      },
+      }
     );
 
     // Observe all card elements

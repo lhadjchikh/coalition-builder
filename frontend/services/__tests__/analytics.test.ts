@@ -84,7 +84,7 @@ describe("Analytics Service", () => {
       await analytics.initialize();
 
       expect(mockConsole.debug).not.toHaveBeenCalledWith(
-        expect.stringContaining("Google Analytics initialized"),
+        expect.stringContaining("Google Analytics initialized")
       );
     });
 
@@ -94,7 +94,7 @@ describe("Analytics Service", () => {
       await analytics.initialize();
 
       expect(mockConsole.debug).toHaveBeenCalledWith(
-        "Analytics cookies not enabled, skipping GA initialization",
+        "Analytics cookies not enabled, skipping GA initialization"
       );
     });
 
@@ -103,7 +103,7 @@ describe("Analytics Service", () => {
 
       expect(mockConsole.debug).toHaveBeenCalledWith(
         "Google Analytics initialized with ID:",
-        "G-TEST123456",
+        "G-TEST123456"
       );
     });
   });
@@ -152,7 +152,7 @@ describe("Analytics Service", () => {
           event_category: "engagement",
           event_label: "Test Campaign",
           value: undefined,
-        },
+        }
       );
     });
 
@@ -195,7 +195,7 @@ describe("Analytics Service", () => {
       await analytics.initialize();
 
       expect(mockConsole.debug).toHaveBeenCalledWith(
-        "Analytics cookies not enabled, skipping GA initialization",
+        "Analytics cookies not enabled, skipping GA initialization"
       );
 
       // Consent granted
@@ -204,7 +204,7 @@ describe("Analytics Service", () => {
 
       expect(mockConsole.debug).toHaveBeenCalledWith(
         "Google Analytics initialized with ID:",
-        "G-TEST123456",
+        "G-TEST123456"
       );
     });
   });

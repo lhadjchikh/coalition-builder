@@ -8,7 +8,7 @@ export interface GtagCommand {
   (
     command: "event",
     eventName: string,
-    eventParameters?: Record<string, unknown>,
+    eventParameters?: Record<string, unknown>
   ): void;
   (command: "js", date: Date): void;
 }

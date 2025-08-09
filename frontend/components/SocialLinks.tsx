@@ -52,7 +52,7 @@ const SocialLinks: React.FC<SocialLinksProps> = ({
   ];
 
   const availableLinks = socialLinks.filter(
-    (link) => link.url && link.url.trim() !== "",
+    (link) => link.url && link.url.trim() !== ""
   );
 
   if (availableLinks.length === 0) {

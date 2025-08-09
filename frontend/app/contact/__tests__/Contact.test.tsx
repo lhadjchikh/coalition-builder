@@ -121,21 +121,21 @@ describe("Contact Page", () => {
   it("should fetch and display all data successfully", async () => {
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
     (ssrApiClient.getContentBlocksByPageType as jest.Mock).mockResolvedValue(
-      mockContentBlocks,
+      mockContentBlocks
     );
 
     const jsx = await Contact();
     render(jsx);
 
     expect(screen.getByTestId("org-info")).toHaveTextContent(
-      "Community Coalition",
+      "Community Coalition"
     );
     expect(screen.getByTestId("content-blocks")).toHaveTextContent("4 blocks");
     expect(screen.getByTestId("contact-form")).toBeInTheDocument();
 
     expect(ssrApiClient.getHomepage).toHaveBeenCalledTimes(1);
     expect(ssrApiClient.getContentBlocksByPageType).toHaveBeenCalledWith(
-      "contact",
+      "contact"
     );
   });
 
@@ -143,7 +143,7 @@ describe("Contact Page", () => {
     const error = new Error("Network error");
     (ssrApiClient.getHomepage as jest.Mock).mockRejectedValue(error);
     (ssrApiClient.getContentBlocksByPageType as jest.Mock).mockResolvedValue(
-      mockContentBlocks,
+      mockContentBlocks
     );
 
     // Mock console.error to prevent test output noise
@@ -154,14 +154,14 @@ describe("Contact Page", () => {
 
     // Should use fallback homepage
     expect(screen.getByTestId("org-info")).toHaveTextContent(
-      "Fallback Organization",
+      "Fallback Organization"
     );
     expect(screen.getByTestId("content-blocks")).toHaveTextContent("4 blocks");
     expect(screen.getByTestId("contact-form")).toBeInTheDocument();
 
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching homepage:",
-      "Network error",
+      "Network error"
     );
     expect(getFallbackHomepage).toHaveBeenCalledTimes(1);
     consoleSpy.mockRestore();
@@ -171,7 +171,7 @@ describe("Contact Page", () => {
     const error = new Error("Failed to fetch data");
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
     (ssrApiClient.getContentBlocksByPageType as jest.Mock).mockRejectedValue(
-      error,
+      error
     );
 
     // Mock console.error to prevent test output noise
@@ -181,17 +181,17 @@ describe("Contact Page", () => {
     render(jsx);
 
     expect(screen.getByTestId("org-info")).toHaveTextContent(
-      "Community Coalition",
+      "Community Coalition"
     );
     expect(screen.getByTestId("error")).toHaveTextContent(
-      "Failed to fetch data",
+      "Failed to fetch data"
     );
     expect(screen.getByTestId("content-blocks")).toHaveTextContent("0 blocks");
     expect(screen.getByTestId("contact-form")).toBeInTheDocument();
 
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching contact content blocks:",
-      "Failed to fetch data",
+      "Failed to fetch data"
     );
     consoleSpy.mockRestore();
   });
@@ -199,14 +199,14 @@ describe("Contact Page", () => {
   it("should handle empty content blocks", async () => {
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(mockHomepage);
     (ssrApiClient.getContentBlocksByPageType as jest.Mock).mockResolvedValue(
-      [],
+      []
     );
 
     const jsx = await Contact();
     render(jsx);
 
     expect(screen.getByTestId("org-info")).toHaveTextContent(
-      "Community Coalition",
+      "Community Coalition"
     );
     expect(screen.getByTestId("content-blocks")).toHaveTextContent("0 blocks");
     expect(screen.getByTestId("contact-form")).toBeInTheDocument();
@@ -216,7 +216,7 @@ describe("Contact Page", () => {
     const error = new Error("Network error");
     (ssrApiClient.getHomepage as jest.Mock).mockRejectedValue(error);
     (ssrApiClient.getContentBlocksByPageType as jest.Mock).mockRejectedValue(
-      error,
+      error
     );
 
     // Mock console.error to prevent test output noise
@@ -227,7 +227,7 @@ describe("Contact Page", () => {
 
     // Should use fallback homepage and show error for content blocks
     expect(screen.getByTestId("org-info")).toHaveTextContent(
-      "Fallback Organization",
+      "Fallback Organization"
     );
     expect(screen.getByTestId("error")).toHaveTextContent("Network error");
     expect(screen.getByTestId("content-blocks")).toHaveTextContent("0 blocks");
@@ -235,11 +235,11 @@ describe("Contact Page", () => {
 
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching homepage:",
-      "Network error",
+      "Network error"
     );
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching contact content blocks:",
-      "Network error",
+      "Network error"
     );
     consoleSpy.mockRestore();
   });

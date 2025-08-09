@@ -45,7 +45,7 @@ export default async function RootLayout({
       `${process.env.API_URL || "http://localhost:8000"}/api/homepage/`,
       {
         cache: "no-store", // Disable caching for layout data
-      },
+      }
     );
     if (response.ok) {
       homepage = await response.json();
@@ -56,7 +56,7 @@ export default async function RootLayout({
   } catch (error) {
     console.error(
       "Error fetching homepage for layout:",
-      error instanceof Error ? error.message : "Unknown error",
+      error instanceof Error ? error.message : "Unknown error"
     );
     const fallbackHomepage = getFallbackHomepage();
     organizationName = fallbackHomepage.organization_name;
@@ -69,7 +69,7 @@ export default async function RootLayout({
       `${process.env.API_URL || "http://localhost:8000"}/api/themes/active/`,
       {
         cache: "no-store", // Disable caching for theme data
-      },
+      }
     );
     if (response.ok) {
       const theme = await response.json();
@@ -82,7 +82,7 @@ export default async function RootLayout({
         }/api/themes/active/css/`,
         {
           cache: "no-store",
-        },
+        }
       );
       if (cssResponse.ok) {
         const data = await cssResponse.json();
@@ -99,7 +99,7 @@ export default async function RootLayout({
   } catch (error) {
     console.error(
       "Error fetching theme data:",
-      error instanceof Error ? error.message : "Unknown error",
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 

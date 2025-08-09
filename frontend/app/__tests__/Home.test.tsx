@@ -157,13 +157,13 @@ describe("Home Page", () => {
     render(jsx);
 
     expect(screen.getByTestId("homepage-name")).toHaveTextContent(
-      "Test Organization",
+      "Test Organization"
     );
     expect(screen.getByTestId("campaigns-count")).toHaveTextContent(
-      "2 campaigns",
+      "2 campaigns"
     );
     expect(screen.getByTestId("content-blocks-count")).toHaveTextContent(
-      "2 blocks",
+      "2 blocks"
     );
 
     expect(mockFetchApiResource).toHaveBeenCalledTimes(3);
@@ -183,13 +183,13 @@ describe("Home Page", () => {
 
     // Should use fallback homepage
     expect(screen.getByTestId("homepage-name")).toHaveTextContent(
-      "Coalition Builder",
+      "Coalition Builder"
     );
     expect(screen.getByTestId("homepage-error")).toHaveTextContent(
-      "Failed to fetch homepage",
+      "Failed to fetch homepage"
     );
     expect(screen.getByTestId("campaigns-count")).toHaveTextContent(
-      "2 campaigns",
+      "2 campaigns"
     );
 
     expect(consoleSpy).toHaveBeenCalledWith("Error fetching homepage:", error);
@@ -210,13 +210,13 @@ describe("Home Page", () => {
     render(jsx);
 
     expect(screen.getByTestId("homepage-name")).toHaveTextContent(
-      "Test Organization",
+      "Test Organization"
     );
     expect(screen.getByTestId("campaigns-error")).toHaveTextContent(
-      "Failed to fetch campaigns",
+      "Failed to fetch campaigns"
     );
     expect(screen.getByTestId("content-blocks-count")).toHaveTextContent(
-      "2 blocks",
+      "2 blocks"
     );
 
     expect(consoleSpy).toHaveBeenCalledWith("Error fetching campaigns:", error);
@@ -236,18 +236,18 @@ describe("Home Page", () => {
     render(jsx);
 
     expect(screen.getByTestId("homepage-name")).toHaveTextContent(
-      "Test Organization",
+      "Test Organization"
     );
     expect(screen.getByTestId("campaigns-count")).toHaveTextContent(
-      "2 campaigns",
+      "2 campaigns"
     );
     expect(screen.getByTestId("content-blocks-count")).toHaveTextContent(
-      "0 blocks",
+      "0 blocks"
     );
 
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching homepage content blocks:",
-      error,
+      error
     );
     consoleSpy.mockRestore();
   });
@@ -264,15 +264,15 @@ describe("Home Page", () => {
     render(jsx);
 
     expect(screen.getByTestId("homepage-name")).toHaveTextContent(
-      "Coalition Builder",
+      "Coalition Builder"
     );
     expect(screen.getByTestId("homepage-error")).toHaveTextContent(
-      "Failed to fetch homepage",
+      "Failed to fetch homepage"
     );
 
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching homepage:",
-      "String error",
+      "String error"
     );
     consoleSpy.mockRestore();
   });
@@ -294,16 +294,16 @@ describe("Home Page", () => {
 
     // Should use fallback homepage and show errors
     expect(screen.getByTestId("homepage-name")).toHaveTextContent(
-      "Coalition Builder",
+      "Coalition Builder"
     );
     expect(screen.getByTestId("homepage-error")).toHaveTextContent(
-      "Homepage failed",
+      "Homepage failed"
     );
     expect(screen.getByTestId("campaigns-error")).toHaveTextContent(
-      "Campaigns failed",
+      "Campaigns failed"
     );
     expect(screen.getByTestId("content-blocks-count")).toHaveTextContent(
-      "0 blocks",
+      "0 blocks"
     );
 
     expect(consoleSpy).toHaveBeenCalledTimes(3);
@@ -320,13 +320,13 @@ describe("Home Page", () => {
     render(jsx);
 
     expect(screen.getByTestId("homepage-name")).toHaveTextContent(
-      "Test Organization",
+      "Test Organization"
     );
     expect(screen.getByTestId("campaigns-count")).toHaveTextContent(
-      "0 campaigns",
+      "0 campaigns"
     );
     expect(screen.getByTestId("content-blocks-count")).toHaveTextContent(
-      "0 blocks",
+      "0 blocks"
     );
   });
 });

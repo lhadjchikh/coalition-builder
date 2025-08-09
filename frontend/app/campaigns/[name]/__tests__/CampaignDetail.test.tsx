@@ -85,19 +85,19 @@ describe("CampaignPage", () => {
 
     expect(screen.getByTestId("campaign-page-content")).toBeInTheDocument();
     expect(screen.getByTestId("campaign-title")).toHaveTextContent(
-      "Clean Water Initiative",
+      "Clean Water Initiative"
     );
     expect(screen.getByTestId("campaign-summary")).toHaveTextContent(
-      "Ensuring access to clean water for all communities",
+      "Ensuring access to clean water for all communities"
     );
     expect(screen.getByTestId("campaign-name")).toHaveTextContent(
-      "clean-water",
+      "clean-water"
     );
 
     // Check structured data
     expect(screen.getByTestId("campaign-structured-data")).toBeInTheDocument();
     expect(
-      screen.getByTestId("breadcrumb-structured-data"),
+      screen.getByTestId("breadcrumb-structured-data")
     ).toBeInTheDocument();
 
     expect(apiClient.getCampaignByName).toHaveBeenCalledWith("clean-water");
@@ -115,7 +115,7 @@ describe("CampaignPage", () => {
     await expect(
       CampaignPage({
         params: Promise.resolve({ name: "non-existent" }),
-      }),
+      })
     ).rejects.toThrow("NEXT_NOT_FOUND");
 
     expect(consoleSpy).toHaveBeenCalledWith("Error fetching campaign:", error);
@@ -135,7 +135,7 @@ describe("CampaignPage", () => {
       created_at: "2023-01-01T00:00:00Z",
     };
     (apiClient.getCampaignByName as jest.Mock).mockResolvedValue(
-      minimalCampaign,
+      minimalCampaign
     );
 
     const jsx = await CampaignPage({
@@ -144,13 +144,13 @@ describe("CampaignPage", () => {
     render(jsx);
 
     expect(screen.getByTestId("campaign-title")).toHaveTextContent(
-      "Minimal Campaign",
+      "Minimal Campaign"
     );
     expect(screen.getByTestId("campaign-summary")).toHaveTextContent(
-      "A campaign with minimal data",
+      "A campaign with minimal data"
     );
     expect(screen.getByTestId("campaign-name")).toHaveTextContent(
-      "minimal-campaign",
+      "minimal-campaign"
     );
   });
 
@@ -160,7 +160,7 @@ describe("CampaignPage", () => {
       active: false,
     };
     (apiClient.getCampaignByName as jest.Mock).mockResolvedValue(
-      inactiveCampaign,
+      inactiveCampaign
     );
 
     const jsx = await CampaignPage({
@@ -170,10 +170,10 @@ describe("CampaignPage", () => {
 
     // Inactive campaigns should still be displayed
     expect(screen.getByTestId("campaign-title")).toHaveTextContent(
-      "Clean Water Initiative",
+      "Clean Water Initiative"
     );
     expect(screen.getByTestId("campaign-name")).toHaveTextContent(
-      "clean-water",
+      "clean-water"
     );
   });
 

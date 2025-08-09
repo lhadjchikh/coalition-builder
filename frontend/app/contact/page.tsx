@@ -40,7 +40,7 @@ export default async function ContactPageSSR() {
   } catch (err) {
     console.error(
       "Error fetching homepage:",
-      err instanceof Error ? err.message : "Unknown error",
+      err instanceof Error ? err.message : "Unknown error"
     );
     homepage = getFallbackHomepage();
   }
@@ -50,7 +50,7 @@ export default async function ContactPageSSR() {
   } catch (err) {
     console.error(
       "Error fetching contact content blocks:",
-      err instanceof Error ? err.message : "Unknown error",
+      err instanceof Error ? err.message : "Unknown error"
     );
     error = err instanceof Error ? err.message : "Failed to fetch content";
   }

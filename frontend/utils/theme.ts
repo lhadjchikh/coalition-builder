@@ -112,12 +112,12 @@ export function generateCSSVariables(theme: Theme | null): string {
       --theme-secondary: ${currentTheme.secondary_color};
       --theme-secondary-light: ${lightenColor(
         currentTheme.secondary_color,
-        0.1,
+        0.1
       )};
       --theme-secondary-dark: ${darkenColor(currentTheme.secondary_color, 0.1)};
       --theme-secondary-darker: ${darkenColor(
         currentTheme.secondary_color,
-        0.3,
+        0.3
       )};
       --theme-secondary-rgb: ${secondaryRgbValue};
       
@@ -155,7 +155,7 @@ export function generateCSSVariables(theme: Theme | null): string {
  * Simple color manipulation functions (fallback if polished is not available)
  */
 export function hexToRgb(
-  hex: string,
+  hex: string
 ): { r: number; g: number; b: number } | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
@@ -211,7 +211,7 @@ export function applyThemeToDocument(theme: Theme | null): void {
   }
 
   let styleElement = document.getElementById(
-    "theme-variables",
+    "theme-variables"
   ) as HTMLStyleElement;
 
   if (!styleElement) {

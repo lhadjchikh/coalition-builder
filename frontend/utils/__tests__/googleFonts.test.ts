@@ -217,11 +217,11 @@ describe("loadGoogleFonts", () => {
     activeCallback();
 
     expect(mockConsoleLog).toHaveBeenCalledWith(
-      "Google Fonts loaded successfully",
+      "Google Fonts loaded successfully"
     );
     expect(mockClearTimeout).toHaveBeenCalled();
     expect(document.body.classList.remove).toHaveBeenCalledWith(
-      "fonts-loading",
+      "fonts-loading"
     );
     expect(document.body.classList.add).toHaveBeenCalledWith("fonts-loaded");
   });
@@ -238,11 +238,11 @@ describe("loadGoogleFonts", () => {
     inactiveCallback();
 
     expect(mockConsoleWarn).toHaveBeenCalledWith(
-      "Google Fonts failed to load or timed out",
+      "Google Fonts failed to load or timed out"
     );
     expect(mockClearTimeout).toHaveBeenCalled();
     expect(document.body.classList.remove).toHaveBeenCalledWith(
-      "fonts-loading",
+      "fonts-loading"
     );
     expect(document.body.classList.add).toHaveBeenCalledWith("fonts-loaded");
   });
@@ -260,7 +260,7 @@ describe("loadGoogleFonts", () => {
     timeoutCallback();
 
     expect(document.body.classList.remove).toHaveBeenCalledWith(
-      "fonts-loading",
+      "fonts-loading"
     );
     expect(document.body.classList.add).toHaveBeenCalledWith("fonts-loaded");
   });
@@ -290,11 +290,11 @@ describe("loadGoogleFonts", () => {
 
     expect(mockConsoleWarn).toHaveBeenCalledWith(
       "Failed to load webfontloader:",
-      expect.any(Error),
+      expect.any(Error)
     );
     expect(mockClearTimeout).toHaveBeenCalled();
     expect(document.body.classList.remove).toHaveBeenCalledWith(
-      "fonts-loading",
+      "fonts-loading"
     );
     expect(document.body.classList.add).toHaveBeenCalledWith("fonts-loaded");
   });
@@ -346,7 +346,7 @@ describe("loadGoogleFonts", () => {
 
     expect(mockConsoleWarn).toHaveBeenCalledWith(
       "Failed to load webfontloader:",
-      expect.any(Error),
+      expect.any(Error)
     );
   });
 
@@ -361,7 +361,7 @@ describe("loadGoogleFonts", () => {
 
     expect(mockConsoleWarn).toHaveBeenCalledWith(
       "Webfontloader not available:",
-      expect.any(Error),
+      expect.any(Error)
     );
   });
 });

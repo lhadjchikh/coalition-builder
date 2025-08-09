@@ -36,7 +36,7 @@ function logTest(
   name: string,
   status: "PASSED" | "FAILED",
   result?: any,
-  error?: string,
+  error?: string
 ): void {
   results.push({ name, status, result, error });
   if (status === "PASSED") {
@@ -52,7 +52,7 @@ async function testCampaignRoute(campaignName: string): Promise<void> {
   const testName = `Campaign route test: /campaigns/${campaignName}`;
   try {
     const response = await makeRequest(
-      `${config.SSR_URL}/campaigns/${campaignName}`,
+      `${config.SSR_URL}/campaigns/${campaignName}`
     );
 
     if (response.statusCode === 200) {
@@ -74,7 +74,7 @@ async function testCampaignRoute(campaignName: string): Promise<void> {
           testName,
           "FAILED",
           null,
-          `Missing expected content. SSR marker: ${hasSSRMarker}, Campaign content: ${hasCampaignDetail}`,
+          `Missing expected content. SSR marker: ${hasSSRMarker}, Campaign content: ${hasCampaignDetail}`
         );
       }
     } else if (response.statusCode === 404) {
@@ -85,7 +85,7 @@ async function testCampaignRoute(campaignName: string): Promise<void> {
         testName,
         "FAILED",
         null,
-        `Unexpected status: ${response.statusCode}`,
+        `Unexpected status: ${response.statusCode}`
       );
     }
   } catch (error) {
@@ -93,7 +93,7 @@ async function testCampaignRoute(campaignName: string): Promise<void> {
       testName,
       "FAILED",
       null,
-      error instanceof Error ? error.message : String(error),
+      error instanceof Error ? error.message : String(error)
     );
   }
 }
@@ -109,7 +109,7 @@ async function testCampaignAPIIntegration(): Promise<void> {
         testName,
         "FAILED",
         null,
-        `API returned status ${apiResponse.statusCode}`,
+        `API returned status ${apiResponse.statusCode}`
       );
       return;
     }
@@ -132,7 +132,7 @@ async function testCampaignAPIIntegration(): Promise<void> {
 
     // Now test if we can access this campaign via SSR
     const ssrResponse = await makeRequest(
-      `${config.SSR_URL}/campaigns/${firstCampaign.name}`,
+      `${config.SSR_URL}/campaigns/${firstCampaign.name}`
     );
     const html = ssrResponse.data;
 
@@ -150,7 +150,7 @@ async function testCampaignAPIIntegration(): Promise<void> {
         testName,
         "FAILED",
         null,
-        `Could not find campaign content in SSR response. Status: ${ssrResponse.statusCode}`,
+        `Could not find campaign content in SSR response. Status: ${ssrResponse.statusCode}`
       );
     }
   } catch (error) {
@@ -158,7 +158,7 @@ async function testCampaignAPIIntegration(): Promise<void> {
       testName,
       "FAILED",
       null,
-      error instanceof Error ? error.message : String(error),
+      error instanceof Error ? error.message : String(error)
     );
   }
 }
@@ -167,7 +167,7 @@ async function testNonExistentCampaign(): Promise<void> {
   const testName = "Non-existent campaign returns 404";
   try {
     const response = await makeRequest(
-      `${config.SSR_URL}/campaigns/definitely-does-not-exist-${Date.now()}`,
+      `${config.SSR_URL}/campaigns/definitely-does-not-exist-${Date.now()}`
     );
 
     if (response.statusCode === 404) {
@@ -177,7 +177,7 @@ async function testNonExistentCampaign(): Promise<void> {
         testName,
         "FAILED",
         null,
-        `Expected 404, got ${response.statusCode}`,
+        `Expected 404, got ${response.statusCode}`
       );
     }
   } catch (error) {
@@ -185,7 +185,7 @@ async function testNonExistentCampaign(): Promise<void> {
       testName,
       "FAILED",
       null,
-      error instanceof Error ? error.message : String(error),
+      error instanceof Error ? error.message : String(error)
     );
   }
 }

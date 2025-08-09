@@ -30,7 +30,7 @@ const getVideoMimeType = (url: string | undefined): string => {
  * @returns Returns `true` if the video should load, or `false` if the connection is too slow.
  */
 const shouldLoadVideoForConnection = (
-  effectiveType: string | undefined,
+  effectiveType: string | undefined
 ): boolean => {
   // Load video unless on slow connections
   return (

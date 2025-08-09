@@ -202,11 +202,11 @@ describe("CampaignDetail Share Modal", () => {
         <CampaignDetail
           {...defaultProps}
           initialCampaign={campaignWithoutImage}
-        />,
+        />
       );
 
       expect(
-        screen.queryByLabelText("Share this campaign"),
+        screen.queryByLabelText("Share this campaign")
       ).not.toBeInTheDocument();
     });
 
@@ -246,13 +246,13 @@ describe("CampaignDetail Share Modal", () => {
 
       // Check modal backdrop
       const backdrop = document.querySelector(
-        ".fixed.inset-0.bg-black.bg-opacity-50",
+        ".fixed.inset-0.bg-black.bg-opacity-50"
       );
       expect(backdrop).toBeInTheDocument();
 
       // Check modal content
       const modalContent = document.querySelector(
-        ".bg-white.rounded-xl.shadow-2xl",
+        ".bg-white.rounded-xl.shadow-2xl"
       );
       expect(modalContent).toBeInTheDocument();
     });
@@ -288,7 +288,7 @@ describe("CampaignDetail Share Modal", () => {
       fireEvent.click(shareButton);
 
       const backdrop = document.querySelector(
-        ".fixed.inset-0.bg-black.bg-opacity-50",
+        ".fixed.inset-0.bg-black.bg-opacity-50"
       );
       fireEvent.click(backdrop!);
 
@@ -304,13 +304,13 @@ describe("CampaignDetail Share Modal", () => {
       fireEvent.click(shareButton);
 
       expect(screen.getByTestId("share-url")).toHaveTextContent(
-        "http://localhost/campaigns/test-campaign",
+        "http://localhost/campaigns/test-campaign"
       );
       expect(screen.getByTestId("share-title")).toHaveTextContent(
-        "Test Campaign",
+        "Test Campaign"
       );
       expect(screen.getByTestId("share-description")).toHaveTextContent(
-        "Test campaign summary",
+        "Test campaign summary"
       );
       expect(screen.getByTestId("no-label")).toBeInTheDocument();
     });
@@ -385,7 +385,7 @@ describe("CampaignDetail Share Modal", () => {
         "bg-opacity-90",
         "text-gray-700",
         "rounded-full",
-        "shadow-lg",
+        "shadow-lg"
       );
     });
 
@@ -419,7 +419,7 @@ describe("CampaignDetail Share Modal", () => {
       fireEvent.click(shareButton);
 
       expect(screen.getByTestId("share-title")).toHaveTextContent(
-        "Test Campaign",
+        "Test Campaign"
       );
     });
 
@@ -430,7 +430,7 @@ describe("CampaignDetail Share Modal", () => {
       fireEvent.click(shareButton);
 
       expect(screen.getByTestId("share-description")).toHaveTextContent(
-        "Test campaign summary",
+        "Test campaign summary"
       );
     });
 
@@ -445,14 +445,14 @@ describe("CampaignDetail Share Modal", () => {
         <CampaignDetail
           {...defaultProps}
           initialCampaign={campaignWithoutSummary}
-        />,
+        />
       );
 
       const shareButton = screen.getByLabelText("Share this campaign");
       fireEvent.click(shareButton);
 
       expect(screen.getByTestId("share-description")).toHaveTextContent(
-        "Detailed description",
+        "Detailed description"
       );
     });
   });
@@ -518,14 +518,14 @@ describe("CampaignDetail Share Modal", () => {
         <CampaignDetail
           {...defaultProps}
           initialCampaign={campaignWithoutName}
-        />,
+        />
       );
 
       const shareButton = screen.getByLabelText("Share this campaign");
       fireEvent.click(shareButton);
 
       expect(screen.getByTestId("share-url")).toHaveTextContent(
-        "http://localhost/campaigns/",
+        "http://localhost/campaigns/"
       );
     });
 
@@ -537,7 +537,7 @@ describe("CampaignDetail Share Modal", () => {
 
       expect(screen.getByText("Spread the Word")).toBeInTheDocument();
       expect(screen.getByTestId("share-title")).toHaveTextContent(
-        "Test Campaign",
+        "Test Campaign"
       );
 
       // Update campaign data - the component doesn't have a useEffect to watch for
@@ -545,14 +545,14 @@ describe("CampaignDetail Share Modal", () => {
       const updatedCampaign = { ...mockCampaign, title: "Updated Campaign" };
 
       rerender(
-        <CampaignDetail {...defaultProps} initialCampaign={updatedCampaign} />,
+        <CampaignDetail {...defaultProps} initialCampaign={updatedCampaign} />
       );
 
       // Modal should remain open but still show the original data
       // because the component doesn't update internal state when initialCampaign prop changes
       expect(screen.getByText("Spread the Word")).toBeInTheDocument();
       expect(screen.getByTestId("share-title")).toHaveTextContent(
-        "Test Campaign",
+        "Test Campaign"
       );
     });
   });

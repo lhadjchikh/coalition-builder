@@ -67,7 +67,7 @@ describe("CampaignPage", () => {
 
     it("should render campaign detail when campaign is found", async () => {
       (apiClient.getCampaignByName as jest.Mock).mockResolvedValue(
-        mockCampaigns[0],
+        mockCampaigns[0]
       );
       const mockNotFound = notFound as jest.MockedFunction<typeof notFound>;
       mockNotFound.mockImplementation((): never => {
@@ -77,7 +77,7 @@ describe("CampaignPage", () => {
       const { container } = render(
         await CampaignPage({
           params: Promise.resolve({ name: "test-campaign" }),
-        }),
+        })
       );
 
       expect(apiClient.getCampaignByName).toHaveBeenCalledWith("test-campaign");
@@ -85,7 +85,7 @@ describe("CampaignPage", () => {
       expect(notFound).not.toHaveBeenCalled();
 
       const wrapper = container.querySelector(
-        '[data-testid="campaign-page-content"]',
+        '[data-testid="campaign-page-content"]'
       );
       expect(wrapper).toBeInTheDocument();
       expect(wrapper?.textContent).toBe("Campaign ID: 1");
@@ -94,7 +94,7 @@ describe("CampaignPage", () => {
     it("should call notFound when campaign is not found", async () => {
       await withSuppressedErrors(["Campaign not found"], async () => {
         (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
-          new Error("Campaign not found"),
+          new Error("Campaign not found")
         );
 
         await expect(async () => {
@@ -104,7 +104,7 @@ describe("CampaignPage", () => {
         }).rejects.toThrow("notFound called");
 
         expect(apiClient.getCampaignByName).toHaveBeenCalledWith(
-          "non-existent-campaign",
+          "non-existent-campaign"
         );
         expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
         expect(notFound).toHaveBeenCalled();
@@ -114,7 +114,7 @@ describe("CampaignPage", () => {
     it("should call notFound when API throws error", async () => {
       await withSuppressedErrors(["API Error"], async () => {
         (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
-          new Error("API Error"),
+          new Error("API Error")
         );
 
         await expect(async () => {
@@ -124,7 +124,7 @@ describe("CampaignPage", () => {
         }).rejects.toThrow("notFound called");
 
         expect(apiClient.getCampaignByName).toHaveBeenCalledWith(
-          "test-campaign",
+          "test-campaign"
         );
         expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
         expect(notFound).toHaveBeenCalled();
@@ -165,7 +165,7 @@ describe("CampaignPage", () => {
     it("should return empty array when API throws error", async () => {
       await withSuppressedErrors(["API Error"], async () => {
         (apiClient.getCampaigns as jest.Mock).mockRejectedValue(
-          new Error("API Error"),
+          new Error("API Error")
         );
 
         const params = await generateStaticParams();
@@ -184,7 +184,7 @@ describe("CampaignPage", () => {
 
     it("should return campaign metadata when found", async () => {
       (apiClient.getCampaignByName as jest.Mock).mockResolvedValue(
-        mockCampaigns[0],
+        mockCampaigns[0]
       );
 
       const metadata = await generateMetadata({
@@ -210,7 +210,7 @@ describe("CampaignPage", () => {
     it("should return not found metadata when campaign not found", async () => {
       await withSuppressedErrors(["No campaign found with name:"], async () => {
         (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
-          new Error("No campaign found with name: non-existent-campaign"),
+          new Error("No campaign found with name: non-existent-campaign")
         );
 
         const metadata = await generateMetadata({
@@ -222,7 +222,7 @@ describe("CampaignPage", () => {
           robots: "noindex, nofollow",
         });
         expect(apiClient.getCampaignByName).toHaveBeenCalledWith(
-          "non-existent-campaign",
+          "non-existent-campaign"
         );
         expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
       });
@@ -231,7 +231,7 @@ describe("CampaignPage", () => {
     it("should return default metadata on error", async () => {
       await withSuppressedErrors(["API Error"], async () => {
         (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
-          new Error("API Error"),
+          new Error("API Error")
         );
 
         const metadata = await generateMetadata({
@@ -243,7 +243,7 @@ describe("CampaignPage", () => {
           robots: "noindex, nofollow",
         });
         expect(apiClient.getCampaignByName).toHaveBeenCalledWith(
-          "test-campaign",
+          "test-campaign"
         );
         expect(apiClient.getCampaignByName).toHaveBeenCalledTimes(1);
       });

@@ -16,7 +16,7 @@ class TestApiClient extends BaseApiClient {
 
   protected async request<T>(
     endpoint: string,
-    options?: RequestInit,
+    options?: RequestInit
   ): Promise<T> {
     return this.requestMock(endpoint, options);
   }
@@ -67,7 +67,7 @@ describe("BaseApiClient", () => {
       expect(result).toEqual(mockCampaigns);
       expect(client.requestMock).toHaveBeenCalledWith(
         "/api/campaigns/",
-        undefined,
+        undefined
       );
     });
   });
@@ -82,7 +82,7 @@ describe("BaseApiClient", () => {
       expect(result).toEqual(mockCampaign);
       expect(client.requestMock).toHaveBeenCalledWith(
         "/api/campaigns/1/",
-        undefined,
+        undefined
       );
     });
   });
@@ -100,7 +100,7 @@ describe("BaseApiClient", () => {
       expect(result).toEqual(mockCampaign);
       expect(client.requestMock).toHaveBeenCalledWith(
         "/api/campaigns/by-name/test-campaign/",
-        undefined,
+        undefined
       );
     });
 
@@ -116,7 +116,7 @@ describe("BaseApiClient", () => {
       expect(result).toEqual(mockCampaign);
       expect(client.requestMock).toHaveBeenCalledWith(
         "/api/campaigns/by-name/test%20campaign/",
-        undefined,
+        undefined
       );
     });
   });
@@ -131,7 +131,7 @@ describe("BaseApiClient", () => {
       expect(result).toEqual(mockCampaign);
       expect(client.requestMock).toHaveBeenCalledWith(
         "/api/campaigns/2/",
-        undefined,
+        undefined
       );
     });
   });
@@ -148,7 +148,7 @@ describe("BaseApiClient", () => {
       expect(result).toEqual(mockEndorsers);
       expect(client.requestMock).toHaveBeenCalledWith(
         "/api/endorsers/",
-        undefined,
+        undefined
       );
     });
   });
@@ -165,7 +165,7 @@ describe("BaseApiClient", () => {
       expect(result).toEqual(mockLegislators);
       expect(client.requestMock).toHaveBeenCalledWith(
         "/api/legislators/",
-        undefined,
+        undefined
       );
     });
   });
@@ -182,7 +182,7 @@ describe("BaseApiClient", () => {
       expect(result).toEqual(mockEndorsements);
       expect(client.requestMock).toHaveBeenCalledWith(
         "/api/endorsements/",
-        undefined,
+        undefined
       );
     });
   });
@@ -199,7 +199,7 @@ describe("BaseApiClient", () => {
       expect(result).toEqual(mockEndorsements);
       expect(client.requestMock).toHaveBeenCalledWith(
         "/api/endorsements/?campaign_id=1",
-        undefined,
+        undefined
       );
     });
   });
@@ -257,7 +257,7 @@ describe("BaseApiClient", () => {
       expect(result).toEqual(mockHomepage);
       expect(client.requestMock).toHaveBeenCalledWith(
         "/api/homepage/",
-        undefined,
+        undefined
       );
     });
   });
@@ -275,7 +275,7 @@ describe("BaseApiClient", () => {
       expect(result).toEqual(mockHomepage);
       expect(client.requestMock).toHaveBeenCalledWith(
         "/api/homepage/2/",
-        undefined,
+        undefined
       );
     });
   });
@@ -292,7 +292,7 @@ describe("BaseApiClient", () => {
       expect(result).toEqual(mockBlocks);
       expect(client.requestMock).toHaveBeenCalledWith(
         "/api/content-blocks/",
-        undefined,
+        undefined
       );
     });
   });
@@ -309,7 +309,7 @@ describe("BaseApiClient", () => {
       expect(result).toEqual(mockBlocks);
       expect(client.requestMock).toHaveBeenCalledWith(
         "/api/content-blocks/?page_type=homepage",
-        undefined,
+        undefined
       );
     });
   });
@@ -328,7 +328,7 @@ describe("BaseApiClient", () => {
       expect(result).toEqual(mockDoc);
       expect(client.requestMock).toHaveBeenCalledWith(
         "/api/legal/terms/",
-        undefined,
+        undefined
       );
     });
   });
@@ -347,7 +347,7 @@ describe("BaseApiClient", () => {
       expect(result).toEqual(mockDoc);
       expect(client.requestMock).toHaveBeenCalledWith(
         "/api/legal/privacy/",
-        undefined,
+        undefined
       );
     });
   });

@@ -78,7 +78,7 @@ describe("API Service - Error Handling", () => {
         });
 
         await expect(API.getCampaigns()).rejects.toThrow(
-          "HTTP error! status: 400",
+          "HTTP error! status: 400"
         );
       });
     });
@@ -121,11 +121,11 @@ describe("API Service - Error Handling", () => {
     it("should not retry on non-network errors", async () => {
       await withSuppressedErrors(["HTTP error! status: 400"], async () => {
         mockFetch.mockResolvedValueOnce(
-          createMockResponse({}, { ok: false, status: 400 }),
+          createMockResponse({}, { ok: false, status: 400 })
         );
 
         await expect(API.getCampaigns()).rejects.toThrow(
-          "HTTP error! status: 400",
+          "HTTP error! status: 400"
         );
         expect(mockFetch).toHaveBeenCalledTimes(1);
       });
@@ -159,7 +159,7 @@ describe("API Service - Error Handling", () => {
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         "API request failed for %s:",
         getExpectedUrl("/api/campaigns/", originalEnv),
-        error,
+        error
       );
     });
   });

@@ -16,7 +16,7 @@ class SSRApiClient extends BaseApiClient {
 
   protected async request<T>(
     endpoint: string,
-    options?: RequestInit,
+    options?: RequestInit
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
 

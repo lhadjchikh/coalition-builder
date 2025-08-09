@@ -39,7 +39,7 @@ describe("PrivacyPage", () => {
 
   it("renders privacy policy successfully", async () => {
     (apiClient.getPrivacyPolicy as jest.Mock).mockResolvedValue(
-      mockPrivacyData,
+      mockPrivacyData
     );
 
     const result = await PrivacyPage({});
@@ -53,7 +53,7 @@ describe("PrivacyPage", () => {
 
   it("handles apiClient errors gracefully", async () => {
     (apiClient.getPrivacyPolicy as jest.Mock).mockRejectedValue(
-      new Error("Network error"),
+      new Error("Network error")
     );
 
     const result = await PrivacyPage({});
@@ -61,7 +61,7 @@ describe("PrivacyPage", () => {
 
     expect(container.innerHTML).toContain("Privacy Policy");
     expect(container.innerHTML).toContain(
-      "Error loading privacy policy: Network error",
+      "Error loading privacy policy: Network error"
     );
     expect(container.querySelector(".bg-red-50")).toBeTruthy();
   });
@@ -81,7 +81,7 @@ describe("PrivacyPage", () => {
 
   it("makes correct apiClient calls", async () => {
     (apiClient.getPrivacyPolicy as jest.Mock).mockResolvedValue(
-      mockPrivacyData,
+      mockPrivacyData
     );
 
     await PrivacyPage({});
@@ -91,7 +91,7 @@ describe("PrivacyPage", () => {
 
   it("uses dangerouslySetInnerHTML for content rendering", async () => {
     (apiClient.getPrivacyPolicy as jest.Mock).mockResolvedValue(
-      mockPrivacyData,
+      mockPrivacyData
     );
 
     const result = await PrivacyPage({});

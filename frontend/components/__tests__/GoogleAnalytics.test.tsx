@@ -81,17 +81,17 @@ describe("GoogleAnalytics", () => {
     expect(gaScript).toBeInTheDocument();
     expect(gaScript).toHaveAttribute(
       "data-src",
-      "https://www.googletagmanager.com/gtag/js?id=G-TEST123456",
+      "https://www.googletagmanager.com/gtag/js?id=G-TEST123456"
     );
 
     // Check that the initialization script is rendered
     const initScript = screen.getByTestId("google-analytics");
     expect(initScript).toBeInTheDocument();
     expect(initScript.textContent).toContain(
-      "window.dataLayer = window.dataLayer || []",
+      "window.dataLayer = window.dataLayer || []"
     );
     expect(initScript.textContent).toContain(
-      "function gtag(){dataLayer.push(arguments);}",
+      "function gtag(){dataLayer.push(arguments);}"
     );
   });
 
@@ -135,7 +135,7 @@ describe("GoogleAnalytics", () => {
 
     expect(mockAddEventListener).toHaveBeenCalledWith(
       "cc:onConsentChange",
-      expect.any(Function),
+      expect.any(Function)
     );
   });
 
@@ -162,7 +162,7 @@ describe("GoogleAnalytics", () => {
 
     expect(mockRemoveEventListener).toHaveBeenCalledWith(
       "cc:onConsentChange",
-      handler,
+      handler
     );
   });
 });

@@ -223,7 +223,7 @@ describe("homepage-data", () => {
         "http://localhost:8000/api/homepage/",
         {
           next: { revalidate: 300 },
-        },
+        }
       );
       expect(result).toEqual(mockHomepage);
     });
@@ -242,7 +242,7 @@ describe("homepage-data", () => {
         "https://api.example.com/api/homepage/",
         {
           next: { revalidate: 300 },
-        },
+        }
       );
     });
 
@@ -253,7 +253,7 @@ describe("homepage-data", () => {
       });
 
       await expect(fetchHomepage()).rejects.toThrow(
-        "Failed to fetch homepage: 404",
+        "Failed to fetch homepage: 404"
       );
     });
 
@@ -270,7 +270,7 @@ describe("homepage-data", () => {
       });
 
       await expect(fetchHomepage()).rejects.toThrow(
-        "Failed to fetch homepage: 500",
+        "Failed to fetch homepage: 500"
       );
     });
   });
@@ -307,7 +307,7 @@ describe("homepage-data", () => {
         "http://localhost:8000/api/campaigns/",
         {
           next: { revalidate: 300 },
-        },
+        }
       );
       expect(result).toEqual(mockCampaigns);
     });
@@ -326,7 +326,7 @@ describe("homepage-data", () => {
         "https://api.example.com/api/campaigns/",
         {
           next: { revalidate: 300 },
-        },
+        }
       );
     });
 
@@ -337,7 +337,7 @@ describe("homepage-data", () => {
       });
 
       await expect(fetchCampaigns()).rejects.toThrow(
-        "Failed to fetch campaigns: 403",
+        "Failed to fetch campaigns: 403"
       );
     });
 
@@ -365,7 +365,7 @@ describe("homepage-data", () => {
       });
 
       await expect(fetchCampaigns()).rejects.toThrow(
-        "Failed to fetch campaigns: 503",
+        "Failed to fetch campaigns: 503"
       );
     });
   });

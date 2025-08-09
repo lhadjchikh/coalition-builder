@@ -25,7 +25,7 @@ describe("SSR Integration Tests", () => {
         const response = await fetch(`${API_URL}/api/health`);
         expect(response.ok).toBe(true);
       },
-      timeout,
+      timeout
     );
 
     test(
@@ -37,7 +37,7 @@ describe("SSR Integration Tests", () => {
         const homepage = await response.json();
         expect(homepage).toHaveProperty("organization_name");
       },
-      timeout,
+      timeout
     );
 
     test(
@@ -49,7 +49,7 @@ describe("SSR Integration Tests", () => {
         const campaigns = await response.json();
         expect(Array.isArray(campaigns)).toBe(true);
       },
-      timeout,
+      timeout
     );
   });
 
@@ -63,7 +63,7 @@ describe("SSR Integration Tests", () => {
         const campaigns = await response.json();
         expect(Array.isArray(campaigns)).toBe(true);
       },
-      timeout,
+      timeout
     );
 
     test(
@@ -75,7 +75,7 @@ describe("SSR Integration Tests", () => {
         const homepage = await response.json();
         expect(homepage).toHaveProperty("organization_name");
       },
-      timeout,
+      timeout
     );
 
     test(
@@ -96,7 +96,7 @@ describe("SSR Integration Tests", () => {
           html.includes("Coalition") || html.includes("Mission");
         expect(hasContent).toBe(true);
       },
-      timeout,
+      timeout
     );
 
     test(
@@ -119,7 +119,7 @@ describe("SSR Integration Tests", () => {
 
         while (retries > 0) {
           campaignPageResponse = await fetch(
-            `${NGINX_URL}/campaigns/${testCampaignName}`,
+            `${NGINX_URL}/campaigns/${testCampaignName}`
           );
           expect(campaignPageResponse.ok).toBe(true);
 
@@ -154,7 +154,7 @@ describe("SSR Integration Tests", () => {
         expect(isReal404).toBe(false);
         expect(hasTestCampaignContent).toBe(true);
       },
-      timeout,
+      timeout
     );
 
     test(
@@ -167,7 +167,7 @@ describe("SSR Integration Tests", () => {
         const apiResponse = await fetch(`${NGINX_URL}/api/campaigns/`);
         expect(apiResponse.ok).toBe(true);
         expect(apiResponse.headers.get("content-type")).toMatch(
-          /application\/json/,
+          /application\/json/
         );
 
         // Root path should return HTML
@@ -177,14 +177,14 @@ describe("SSR Integration Tests", () => {
 
         // Campaign path should return HTML
         const campaignResponse = await fetch(
-          `${NGINX_URL}/campaigns/test-campaign`,
+          `${NGINX_URL}/campaigns/test-campaign`
         );
         expect(campaignResponse.ok).toBe(true);
         expect(campaignResponse.headers.get("content-type")).toMatch(
-          /text\/html/,
+          /text\/html/
         );
       },
-      timeout,
+      timeout
     );
   });
 
@@ -198,7 +198,7 @@ describe("SSR Integration Tests", () => {
         const health = await response.json();
         expect(health.status).toBe("healthy");
       },
-      timeout,
+      timeout
     );
 
     test(
@@ -225,11 +225,11 @@ describe("SSR Integration Tests", () => {
         ];
 
         const realDataCount = realDataIndicators.filter((indicator) =>
-          html.includes(indicator),
+          html.includes(indicator)
         ).length;
 
         const fallbackDataCount = fallbackDataIndicators.filter((indicator) =>
-          html.includes(indicator),
+          html.includes(indicator)
         ).length;
 
         // Should have either real data OR sufficient fallback data
@@ -242,11 +242,11 @@ describe("SSR Integration Tests", () => {
           console.log(`✅ Found real data indicators: ${realDataCount}`);
         } else if (hasSufficientFallbackData) {
           console.log(
-            `✅ Found fallback data indicators: ${fallbackDataCount}`,
+            `✅ Found fallback data indicators: ${fallbackDataCount}`
           );
         }
       },
-      timeout,
+      timeout
     );
 
     test(
@@ -270,7 +270,7 @@ describe("SSR Integration Tests", () => {
 
         while (retries > 0) {
           campaignPageResponse = await fetch(
-            `${FRONTEND_URL}/campaigns/${testCampaignName}`,
+            `${FRONTEND_URL}/campaigns/${testCampaignName}`
           );
           expect(campaignPageResponse.ok).toBe(true);
 
@@ -313,7 +313,7 @@ describe("SSR Integration Tests", () => {
         // The campaign should have loaded successfully
         expect(hasTestCampaignContent).toBe(true);
       },
-      timeout,
+      timeout
     );
   });
 
@@ -338,7 +338,7 @@ describe("SSR Integration Tests", () => {
         expect(html).not.toMatch(/Runtime Error/);
         expect(html).not.toMatch(/TypeError/);
       },
-      timeout,
+      timeout
     );
   });
 });

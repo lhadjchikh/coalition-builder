@@ -83,7 +83,7 @@ const nextConfig = {
               protocol: "https",
               hostname: process.env.CLOUDFRONT_DOMAIN.replace(
                 /^https?:\/\//,
-                "",
+                ""
               ),
               pathname: "/**",
             },

@@ -15,7 +15,7 @@
 export async function fetchApiResource<T>(
   url: string,
   options: RequestInit,
-  resourceName: string,
+  resourceName: string
 ): Promise<T> {
   const response = await fetch(url, options);
   if (!response.ok) {

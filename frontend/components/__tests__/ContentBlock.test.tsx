@@ -76,7 +76,7 @@ describe("ContentBlock", () => {
 
       expect(screen.getByText("Content without title")).toBeInTheDocument();
       expect(
-        screen.queryByRole("heading", { level: 3 }),
+        screen.queryByRole("heading", { level: 3 })
       ).not.toBeInTheDocument();
     });
 
@@ -115,7 +115,7 @@ describe("ContentBlock", () => {
       // Next.js Image component transforms the src URL
       expect(image).toHaveAttribute("src");
       expect(image.getAttribute("src")).toContain(
-        encodeURIComponent("https://example.com/image.jpg"),
+        encodeURIComponent("https://example.com/image.jpg")
       );
       expect(screen.getByText("Image caption")).toBeInTheDocument();
     });
@@ -195,7 +195,7 @@ describe("ContentBlock", () => {
 
       expect(screen.getByText("Text Image Block")).toBeInTheDocument();
       expect(
-        screen.getByText("Text content alongside image"),
+        screen.getByText("Text content alongside image")
       ).toBeInTheDocument();
       expect(screen.getByAltText("Side image")).toBeInTheDocument();
     });
@@ -231,7 +231,7 @@ describe("ContentBlock", () => {
         "lg:grid-cols-2",
         "gap-8",
         "lg:gap-12",
-        "items-center",
+        "items-center"
       );
     });
 
@@ -308,7 +308,7 @@ describe("ContentBlock", () => {
       expect(blockquote).toBeInTheDocument();
       // HTML entities are rendered as curly quotes
       expect(blockquote?.textContent).toContain(
-        "This is an inspiring quote about our cause.",
+        "This is an inspiring quote about our cause."
       );
       expect(screen.getByText("— John Doe")).toBeInTheDocument();
     });
@@ -349,7 +349,7 @@ describe("ContentBlock", () => {
         "text-theme-text-body",
         "font-light",
         "leading-relaxed",
-        "mb-6",
+        "mb-6"
       );
     });
   });
@@ -385,7 +385,7 @@ describe("ContentBlock", () => {
         "md:grid-cols-2",
         "lg:grid-cols-3",
         "gap-8",
-        "lg:gap-12",
+        "lg:gap-12"
       );
     });
   });
@@ -415,7 +415,7 @@ describe("ContentBlock", () => {
 
       expect(screen.getByText("Click me")).toBeInTheDocument();
       expect(
-        screen.queryByRole("heading", { level: 3 }),
+        screen.queryByRole("heading", { level: 3 })
       ).not.toBeInTheDocument();
     });
   });
@@ -455,7 +455,7 @@ describe("ContentBlock", () => {
       expect(blockContainer).toHaveClass(
         "w-full",
         "custom-class",
-        "another-class",
+        "another-class"
       );
     });
 
@@ -508,7 +508,7 @@ describe("ContentBlock", () => {
         "max-w-7xl",
         "mx-auto",
         "container-padding",
-        "section-spacing",
+        "section-spacing"
       );
     });
   });
@@ -611,7 +611,7 @@ describe("ContentBlock", () => {
       render(<ContentBlock block={block} />);
 
       const image = screen.getByAltText(
-        "Descriptive alt text for accessibility",
+        "Descriptive alt text for accessibility"
       );
       expect(image).toBeInTheDocument();
     });
@@ -748,7 +748,7 @@ describe("ContentBlock", () => {
       expect(blockContainer).toHaveClass(
         "w-full",
         "content-block-slide-up",
-        "custom-class",
+        "custom-class"
       );
     });
 

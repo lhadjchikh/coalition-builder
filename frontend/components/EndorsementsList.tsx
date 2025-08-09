@@ -39,7 +39,7 @@ const EndorsementsList: React.FC<EndorsementsListProps> = ({
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
         const recentCount = data.filter(
-          (endorsement) => new Date(endorsement.created_at) > oneWeekAgo,
+          (endorsement) => new Date(endorsement.created_at) > oneWeekAgo
         ).length;
 
         // Update parent component with endorsement count and recent count
@@ -48,7 +48,7 @@ const EndorsementsList: React.FC<EndorsementsListProps> = ({
         }
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Failed to fetch endorsements",
+          err instanceof Error ? err.message : "Failed to fetch endorsements"
         );
       } finally {
         setLoading(false);

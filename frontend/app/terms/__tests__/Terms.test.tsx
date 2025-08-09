@@ -50,7 +50,7 @@ describe("Terms", () => {
   it("handles apiClient errors gracefully", async () => {
     const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
     (apiClient.getTermsOfUse as jest.Mock).mockRejectedValue(
-      new Error("Failed to load terms"),
+      new Error("Failed to load terms")
     );
 
     const jsx = await Terms({});
@@ -59,7 +59,7 @@ describe("Terms", () => {
     // Check error message
     expect(screen.getByText("Terms of Use")).toBeInTheDocument();
     expect(
-      screen.getByText("Error loading terms: Failed to load terms"),
+      screen.getByText("Error loading terms: Failed to load terms")
     ).toBeInTheDocument();
 
     consoleErrorSpy.mockRestore();

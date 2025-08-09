@@ -98,13 +98,13 @@ async function runMiddlewareTests(): Promise<boolean> {
 
     try {
       const request = new MockNextRequest(
-        "http://localhost/api/public/something",
+        "http://localhost/api/public/something"
       );
       const response = middleware(request);
 
       if (!(response instanceof NextResponse) || response.status !== 200) {
         throw new Error(
-          "Public API endpoint should bypass auth and return 200",
+          "Public API endpoint should bypass auth and return 200"
         );
       }
     } finally {
@@ -241,7 +241,7 @@ async function runMiddlewareTests(): Promise<boolean> {
 
       if (response.status !== 401) {
         throw new Error(
-          'Should require auth when SITE_PASSWORD_ENABLED is "1"',
+          'Should require auth when SITE_PASSWORD_ENABLED is "1"'
         );
       }
     } finally {
@@ -263,7 +263,7 @@ async function runMiddlewareTests(): Promise<boolean> {
 
       if (response.status !== 401) {
         throw new Error(
-          'Should require auth when SITE_PASSWORD_ENABLED is "TRUE"',
+          'Should require auth when SITE_PASSWORD_ENABLED is "TRUE"'
         );
       }
     } finally {
@@ -285,7 +285,7 @@ async function runMiddlewareTests(): Promise<boolean> {
 
       if (response.status !== 401) {
         throw new Error(
-          'Should require auth when SITE_PASSWORD_ENABLED is "yes"',
+          'Should require auth when SITE_PASSWORD_ENABLED is "yes"'
         );
       }
     } finally {

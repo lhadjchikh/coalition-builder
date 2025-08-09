@@ -57,7 +57,7 @@ class UnifiedAnalyticsService {
     // Check if analytics cookies are enabled
     if (!this.isAnalyticsEnabled()) {
       console.debug(
-        "Analytics cookies not enabled, skipping GA initialization",
+        "Analytics cookies not enabled, skipping GA initialization"
       );
       return;
     }

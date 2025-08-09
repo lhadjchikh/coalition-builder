@@ -130,7 +130,7 @@ describe("HeroSection", () => {
       const heroDiv = container.firstChild as HTMLElement;
       expect(heroDiv).toHaveStyle({
         backgroundImage: expect.stringContaining(
-          "url(https://example.com/image.jpg)",
+          "url(https://example.com/image.jpg)"
         ),
       });
     });
@@ -183,7 +183,7 @@ describe("HeroSection", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByLabelText("Hero background video"),
+          screen.getByLabelText("Hero background video")
         ).toBeInTheDocument();
       });
     });
@@ -199,7 +199,7 @@ describe("HeroSection", () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByLabelText("Hero background video"),
+          screen.queryByLabelText("Hero background video")
         ).not.toBeInTheDocument();
       });
     });
@@ -215,7 +215,7 @@ describe("HeroSection", () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByLabelText("Hero background video"),
+          screen.queryByLabelText("Hero background video")
         ).not.toBeInTheDocument();
       });
     });
@@ -231,7 +231,7 @@ describe("HeroSection", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByLabelText("Hero background video"),
+          screen.getByLabelText("Hero background video")
         ).toBeInTheDocument();
       });
     });
@@ -247,7 +247,7 @@ describe("HeroSection", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByLabelText("Hero background video"),
+          screen.getByLabelText("Hero background video")
         ).toBeInTheDocument();
       });
     });
@@ -263,7 +263,7 @@ describe("HeroSection", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByLabelText("Hero background video"),
+          screen.getByLabelText("Hero background video")
         ).toBeInTheDocument();
       });
     });
@@ -279,7 +279,7 @@ describe("HeroSection", () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByLabelText("Hero background video"),
+          screen.queryByLabelText("Hero background video")
         ).not.toBeInTheDocument();
       });
     });
@@ -295,7 +295,7 @@ describe("HeroSection", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByLabelText("Hero background video"),
+          screen.getByLabelText("Hero background video")
         ).toBeInTheDocument();
       });
     });
@@ -323,7 +323,7 @@ describe("HeroSection", () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByLabelText("Hero background video"),
+          screen.queryByLabelText("Hero background video")
         ).not.toBeInTheDocument();
       });
     });
@@ -345,7 +345,7 @@ describe("HeroSection", () => {
       // Verify the background URL is correct
       expect(backgroundDiv).toHaveAttribute(
         "data-background-url",
-        "https://example.com/poster.jpg",
+        "https://example.com/poster.jpg"
       );
 
       // Verify it has the correct classes

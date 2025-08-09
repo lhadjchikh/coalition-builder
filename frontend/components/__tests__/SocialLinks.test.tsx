@@ -43,19 +43,19 @@ describe("SocialLinks", () => {
 
       expect(screen.getByLabelText("Follow us on Facebook")).toHaveAttribute(
         "href",
-        "https://facebook.com/testorg",
+        "https://facebook.com/testorg"
       );
       expect(screen.getByLabelText("Follow us on X")).toHaveAttribute(
         "href",
-        "https://twitter.com/testorg",
+        "https://twitter.com/testorg"
       );
       expect(screen.getByLabelText("Follow us on Instagram")).toHaveAttribute(
         "href",
-        "https://instagram.com/testorg",
+        "https://instagram.com/testorg"
       );
       expect(screen.getByLabelText("Follow us on LinkedIn")).toHaveAttribute(
         "href",
-        "https://linkedin.com/company/testorg",
+        "https://linkedin.com/company/testorg"
       );
     });
 
@@ -77,7 +77,7 @@ describe("SocialLinks", () => {
 
     it("applies custom className", () => {
       const { container } = render(
-        <SocialLinks orgInfo={defaultOrgInfo} className="custom-class" />,
+        <SocialLinks orgInfo={defaultOrgInfo} className="custom-class" />
       );
 
       const socialLinksContainer = container.firstChild;
@@ -105,14 +105,14 @@ describe("SocialLinks", () => {
       render(<SocialLinks orgInfo={partialOrgInfo} />);
 
       expect(
-        screen.getByLabelText("Follow us on Facebook"),
+        screen.getByLabelText("Follow us on Facebook")
       ).toBeInTheDocument();
       expect(screen.queryByLabelText("Follow us on X")).not.toBeInTheDocument();
       expect(
-        screen.queryByLabelText("Follow us on Instagram"),
+        screen.queryByLabelText("Follow us on Instagram")
       ).not.toBeInTheDocument();
       expect(
-        screen.queryByLabelText("Follow us on LinkedIn"),
+        screen.queryByLabelText("Follow us on LinkedIn")
       ).not.toBeInTheDocument();
     });
 
@@ -173,14 +173,14 @@ describe("SocialLinks", () => {
       render(<SocialLinks orgInfo={defaultOrgInfo} />);
 
       expect(
-        screen.getByLabelText("Follow us on Facebook"),
+        screen.getByLabelText("Follow us on Facebook")
       ).toBeInTheDocument();
       expect(screen.getByLabelText("Follow us on X")).toBeInTheDocument();
       expect(
-        screen.getByLabelText("Follow us on Instagram"),
+        screen.getByLabelText("Follow us on Instagram")
       ).toBeInTheDocument();
       expect(
-        screen.getByLabelText("Follow us on LinkedIn"),
+        screen.getByLabelText("Follow us on LinkedIn")
       ).toBeInTheDocument();
     });
 
@@ -210,15 +210,15 @@ describe("SocialLinks", () => {
 
       expect(screen.getByLabelText("Follow us on Facebook")).toHaveAttribute(
         "href",
-        "http://facebook.com/testorg",
+        "http://facebook.com/testorg"
       );
       expect(screen.getByLabelText("Follow us on X")).toHaveAttribute(
         "href",
-        "https://twitter.com/testorg",
+        "https://twitter.com/testorg"
       );
       expect(screen.getByLabelText("Follow us on Instagram")).toHaveAttribute(
         "href",
-        "//instagram.com/testorg",
+        "//instagram.com/testorg"
       );
     });
 
@@ -235,11 +235,11 @@ describe("SocialLinks", () => {
 
       expect(screen.getByLabelText("Follow us on Facebook")).toHaveAttribute(
         "href",
-        "https://facebook.com/testorg?ref=website",
+        "https://facebook.com/testorg?ref=website"
       );
       expect(screen.getByLabelText("Follow us on X")).toHaveAttribute(
         "href",
-        "https://twitter.com/testorg?utm_source=website",
+        "https://twitter.com/testorg?utm_source=website"
       );
     });
 
@@ -256,11 +256,11 @@ describe("SocialLinks", () => {
 
       expect(screen.getByLabelText("Follow us on Facebook")).toHaveAttribute(
         "href",
-        "https://facebook.com/тест",
+        "https://facebook.com/тест"
       );
       expect(screen.getByLabelText("Follow us on X")).toHaveAttribute(
         "href",
-        "https://twitter.com/測試",
+        "https://twitter.com/測試"
       );
     });
   });
@@ -278,7 +278,7 @@ describe("SocialLinks", () => {
       render(<SocialLinks orgInfo={orgInfo} />);
 
       expect(
-        screen.queryByLabelText("Follow us on Facebook"),
+        screen.queryByLabelText("Follow us on Facebook")
       ).not.toBeInTheDocument();
       expect(screen.queryByLabelText("Follow us on X")).not.toBeInTheDocument();
     });
@@ -297,7 +297,7 @@ describe("SocialLinks", () => {
 
       expect(screen.getByLabelText("Follow us on Facebook")).toHaveAttribute(
         "href",
-        longUrl,
+        longUrl
       );
     });
 
@@ -312,7 +312,7 @@ describe("SocialLinks", () => {
       render(<SocialLinks orgInfo={orgInfo as typeof defaultOrgInfo} />);
 
       expect(
-        screen.getByLabelText("Follow us on Facebook"),
+        screen.getByLabelText("Follow us on Facebook")
       ).toBeInTheDocument();
     });
 
@@ -331,11 +331,11 @@ describe("SocialLinks", () => {
               another_property: number;
             }
           }
-        />,
+        />
       );
 
       expect(
-        screen.getByLabelText("Follow us on Facebook"),
+        screen.getByLabelText("Follow us on Facebook")
       ).toBeInTheDocument();
       expect(screen.getAllByRole("link")).toHaveLength(4);
     });
@@ -354,7 +354,7 @@ describe("SocialLinks", () => {
 
     it("preserves existing CSS classes when custom className is provided", () => {
       const { container } = render(
-        <SocialLinks orgInfo={defaultOrgInfo} className="footer-social" />,
+        <SocialLinks orgInfo={defaultOrgInfo} className="footer-social" />
       );
 
       const socialLinksContainer = container.firstChild;

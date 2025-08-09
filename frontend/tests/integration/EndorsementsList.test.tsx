@@ -94,13 +94,13 @@ describe("EndorsementsList", () => {
     expect(screen.getByText("John Doe")).toBeInTheDocument();
     expect(screen.getByText("Test Organization")).toBeInTheDocument();
     expect(
-      screen.getByText('"This is a great campaign that we fully support!"'),
+      screen.getByText('"This is a great campaign that we fully support!"')
     ).toBeInTheDocument();
 
     expect(screen.getByText("Jane Smith")).toBeInTheDocument();
     expect(screen.getByText("Green Farms Coalition")).toBeInTheDocument();
     expect(
-      screen.getByText('"Essential legislation for our environment."'),
+      screen.getByText('"Essential legislation for our environment."')
     ).toBeInTheDocument();
   });
 
@@ -125,7 +125,7 @@ describe("EndorsementsList", () => {
 
     await waitFor(() => {
       expect(
-        screen.queryByTestId("endorsements-loading"),
+        screen.queryByTestId("endorsements-loading")
       ).not.toBeInTheDocument();
     });
 
@@ -186,7 +186,7 @@ describe("EndorsementsList", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Endorsed on January 15, 2024"),
+        screen.getByText("Endorsed on January 15, 2024")
       ).toBeInTheDocument();
     });
   });
@@ -252,7 +252,7 @@ describe("EndorsementsList", () => {
         <EndorsementsList
           onCountUpdate={mockOnCountUpdate}
           refreshTrigger={0}
-        />,
+        />
       );
 
       await waitFor(() => {
@@ -291,14 +291,14 @@ describe("EndorsementsList", () => {
         <EndorsementsList
           onCountUpdate={mockOnCountUpdate}
           refreshTrigger={1}
-        />,
+        />
       );
 
       await waitFor(() => {
         expect(mockOnCountUpdate).toHaveBeenCalledTimes(2);
         expect(mockOnCountUpdate).toHaveBeenLastCalledWith(
           3,
-          expect.any(Number),
+          expect.any(Number)
         );
       });
     });
@@ -337,7 +337,7 @@ describe("EndorsementsList", () => {
       mockAPI.getCampaignEndorsements.mockResolvedValue([mockEndorsements[0]]);
 
       render(
-        <EndorsementsList campaignId={1} onCountUpdate={mockOnCountUpdate} />,
+        <EndorsementsList campaignId={1} onCountUpdate={mockOnCountUpdate} />
       );
 
       await waitFor(() => {

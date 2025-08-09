@@ -43,7 +43,7 @@ class FrontendApiClient extends BaseApiClient {
 
   protected async request<T>(
     endpoint: string,
-    options: RequestInit = {},
+    options: RequestInit = {}
   ): Promise<T> {
     const url = this.baseURL ? `${this.baseURL}${endpoint}` : endpoint;
 
@@ -83,7 +83,7 @@ class FrontendApiClient extends BaseApiClient {
           console.error(
             "API request timed out for %s after %dms",
             url,
-            duration,
+            duration
           );
           throw new Error("Request timeout");
         }
@@ -130,7 +130,7 @@ class FrontendApiClient extends BaseApiClient {
           url,
           retryDelay,
           attempts,
-          maxRetries,
+          maxRetries
         );
 
         // Wait before retrying
@@ -296,7 +296,7 @@ class FrontendApiClient extends BaseApiClient {
 
   // Override createEndorsement to use CSRF-enabled POST
   async createEndorsement(
-    endorsementData: EndorsementCreate,
+    endorsementData: EndorsementCreate
   ): Promise<Endorsement> {
     return this.post<Endorsement>("/api/endorsements/", endorsementData);
   }

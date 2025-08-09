@@ -71,13 +71,13 @@ describe("CampaignsList", () => {
       render(<CampaignsList {...defaultProps} />);
 
       expect(
-        screen.getByText("Campaign to protect the Chesapeake Bay"),
+        screen.getByText("Campaign to protect the Chesapeake Bay")
       ).toBeInTheDocument();
       expect(
-        screen.getByText("Ensuring clean water for all communities"),
+        screen.getByText("Ensuring clean water for all communities")
       ).toBeInTheDocument();
       expect(
-        screen.getByText("Urgent action on climate change"),
+        screen.getByText("Urgent action on climate change")
       ).toBeInTheDocument();
     });
 
@@ -122,7 +122,7 @@ describe("CampaignsList", () => {
       render(<CampaignsList campaigns={[]} />);
 
       expect(
-        screen.getByText("No campaigns are currently available."),
+        screen.getByText("No campaigns are currently available.")
       ).toBeInTheDocument();
     });
   });
@@ -136,7 +136,7 @@ describe("CampaignsList", () => {
       // Next.js Image component transforms the src URL
       expect(bayImage).toHaveAttribute("src");
       expect(bayImage.getAttribute("src")).toContain(
-        encodeURIComponent("https://example.com/bay.jpg"),
+        encodeURIComponent("https://example.com/bay.jpg")
       );
 
       // Third campaign has image but no credits
@@ -144,7 +144,7 @@ describe("CampaignsList", () => {
       // Next.js Image component transforms the src URL
       expect(climateImage).toHaveAttribute("src");
       expect(climateImage.getAttribute("src")).toContain(
-        encodeURIComponent("https://example.com/climate.jpg"),
+        encodeURIComponent("https://example.com/climate.jpg")
       );
     });
 
@@ -174,7 +174,7 @@ describe("CampaignsList", () => {
 
     it("applies custom card className", () => {
       render(
-        <CampaignsList {...defaultProps} cardClassName="custom-card-class" />,
+        <CampaignsList {...defaultProps} cardClassName="custom-card-class" />
       );
 
       const cards = screen.getAllByRole("button");
@@ -226,7 +226,7 @@ describe("CampaignsList", () => {
       render(<CampaignsList {...defaultProps} />);
 
       expect(
-        screen.queryByRole("heading", { level: 2 }),
+        screen.queryByRole("heading", { level: 2 })
       ).not.toBeInTheDocument();
     });
 
@@ -243,7 +243,7 @@ describe("CampaignsList", () => {
           {...defaultProps}
           showHeading={true}
           headingText="Active Initiatives"
-        />,
+        />
       );
 
       expect(screen.getByText("Active Initiatives")).toBeInTheDocument();
@@ -259,11 +259,11 @@ describe("CampaignsList", () => {
 
       expect(cards[0]).toHaveAttribute(
         "aria-label",
-        "View details for Save the Bay",
+        "View details for Save the Bay"
       );
       expect(cards[1]).toHaveAttribute(
         "aria-label",
-        "View details for Clean Water Initiative",
+        "View details for Clean Water Initiative"
       );
     });
 
@@ -295,7 +295,7 @@ describe("CampaignsList", () => {
         {
           threshold: 0.1,
           rootMargin: "50px",
-        },
+        }
       );
     });
 
@@ -363,7 +363,7 @@ describe("CampaignsList", () => {
               target: card1,
             } as IntersectionObserverEntry,
           ],
-          {} as IntersectionObserver,
+          {} as IntersectionObserver
         );
       });
 
@@ -453,7 +453,7 @@ describe("CampaignsList", () => {
 
       expect(screen.getByText('Campaign & "Testing"')).toBeInTheDocument();
       expect(
-        screen.getByText("Summary with <special> characters & symbols"),
+        screen.getByText("Summary with <special> characters & symbols")
       ).toBeInTheDocument();
     });
 

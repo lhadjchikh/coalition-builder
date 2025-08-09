@@ -24,7 +24,7 @@ export const waitForAsyncUpdates = async () => {
 export const mockAPICall = async <T,>(
   mockFn: jest.MockedFunction<any>,
   returnValue: T,
-  shouldReject = false,
+  shouldReject = false
 ) => {
   if (shouldReject) {
     mockFn.mockRejectedValueOnce(returnValue);
@@ -44,7 +44,7 @@ export const renderWithAsyncUpdates = async (ui: React.ReactElement) => {
 // Utility to resolve promises in tests with proper act() wrapping
 export const resolvePromiseInTest = async <T,>(
   resolveFunction: (value: T) => void,
-  value: T,
+  value: T
 ) => {
   await act(async () => {
     resolveFunction(value);
@@ -54,7 +54,7 @@ export const resolvePromiseInTest = async <T,>(
 // Utility to reject promises in tests with proper act() wrapping
 export const rejectPromiseInTest = async (
   rejectFunction: (reason: any) => void,
-  reason: any,
+  reason: any
 ) => {
   await act(async () => {
     // Call the reject function within act() wrapper
@@ -70,14 +70,14 @@ const ThemeWrapper: React.FC<{ children: React.ReactNode }> = ({
 // Custom render function with theme provider
 export const renderWithTheme = (
   ui: React.ReactElement,
-  options?: Omit<RenderOptions, "wrapper">,
+  options?: Omit<RenderOptions, "wrapper">
 ) => {
   return render(ui, { wrapper: ThemeWrapper, ...options });
 };
 
 // Mock data factories
 export const createMockCampaign = (
-  overrides: Partial<Campaign> = {},
+  overrides: Partial<Campaign> = {}
 ): Campaign => ({
   id: 1,
   name: "test-campaign",
@@ -93,7 +93,7 @@ export const createMockCampaign = (
 });
 
 export const createMockEndorser = (
-  overrides: Partial<Endorser> = {},
+  overrides: Partial<Endorser> = {}
 ): Endorser => ({
   id: 1,
   first_name: "John",
@@ -112,7 +112,7 @@ export const createMockEndorser = (
 });
 
 export const createMockLegislator = (
-  overrides: Partial<Legislator> = {},
+  overrides: Partial<Legislator> = {}
 ): Legislator => ({
   id: 1,
   first_name: "Jane",
@@ -125,7 +125,7 @@ export const createMockLegislator = (
 });
 
 export const createMockEndorsement = (
-  overrides: Partial<Endorsement> = {},
+  overrides: Partial<Endorsement> = {}
 ): Endorsement => ({
   id: 1,
   stakeholder: createMockEndorser() as Stakeholder,
@@ -137,7 +137,7 @@ export const createMockEndorsement = (
 });
 
 export const createMockHomePage = (
-  overrides: Partial<HomePage> = {},
+  overrides: Partial<HomePage> = {}
 ): HomePage => ({
   id: 1,
   organization_name: "Test Organization",
@@ -166,7 +166,7 @@ export const createMockHomePage = (
 });
 
 export const createMockContentBlock = (
-  overrides: Partial<ContentBlock> = {},
+  overrides: Partial<ContentBlock> = {}
 ): ContentBlock => ({
   id: 1,
   title: "Test Block",
@@ -263,7 +263,7 @@ export const mockFetchSuccess = (data: any) => {
     Promise.resolve({
       ok: true,
       json: () => Promise.resolve(data),
-    }),
+    })
   ) as jest.Mock;
 };
 
@@ -273,20 +273,20 @@ export const mockFetchError = (status: number, message?: string) => {
       ok: false,
       status,
       json: () => Promise.resolve({ detail: message || "Error occurred" }),
-    }),
+    })
   ) as jest.Mock;
 };
 
 export const mockFetchNetworkError = () => {
   global.fetch = jest.fn(() =>
-    Promise.reject(new Error("Network error")),
+    Promise.reject(new Error("Network error"))
   ) as jest.Mock;
 };
 
 // Error suppression utilities for cleaner test output
 export const withSuppressedErrors = async (
   expectedPatterns: (string | RegExp)[],
-  testFn: () => Promise<void>,
+  testFn: () => Promise<void>
 ) => {
   const originalConsoleError = console.error;
 

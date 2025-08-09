@@ -180,7 +180,7 @@ describe("Production Environment Variable Handling", () => {
       // Verify supporting configuration
       expect(process.env.ALLOWED_HOSTS).toContain("coalition.org");
       expect(process.env.CSRF_TRUSTED_ORIGINS).toContain(
-        "https://coalition.org",
+        "https://coalition.org"
       );
     });
   });

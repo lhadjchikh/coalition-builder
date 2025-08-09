@@ -87,7 +87,7 @@ describe("Theme CSS Loading", () => {
       homepageOk?: boolean;
       themeCssOk?: boolean;
       themeData?: { google_fonts?: string[] };
-    } = {},
+    } = {}
   ) => {
     const {
       homepageOk = true,
@@ -158,11 +158,11 @@ describe("Theme CSS Loading", () => {
     // Verify fetch was called with correct endpoints
     expect(global.fetch).toHaveBeenCalledWith(
       "http://localhost:8000/api/themes/active/",
-      { cache: "no-store" },
+      { cache: "no-store" }
     );
     expect(global.fetch).toHaveBeenCalledWith(
       "http://localhost:8000/api/themes/active/css/",
-      { cache: "no-store" },
+      { cache: "no-store" }
     );
 
     // Verify ThemeStyles received the correct props
@@ -174,7 +174,7 @@ describe("Theme CSS Loading", () => {
     expect(capturedThemeStylesProps.cssVariables).toContain("Merriweather");
     expect(capturedThemeStylesProps.cssVariables).toContain("Barlow");
     expect(capturedThemeStylesProps.cssVariables).toContain(
-      "--theme-primary: #4A7C59",
+      "--theme-primary: #4A7C59"
     );
   });
 
@@ -198,7 +198,7 @@ describe("Theme CSS Loading", () => {
     // Verify that ThemeStyles received CSS without Google Fonts
     expect(capturedThemeStylesProps.cssVariables).not.toContain("@import url(");
     expect(capturedThemeStylesProps.cssVariables).not.toContain(
-      "https://fonts.googleapis.com/css2?",
+      "https://fonts.googleapis.com/css2?"
     );
   });
 

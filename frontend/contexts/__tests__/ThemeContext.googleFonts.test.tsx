@@ -76,7 +76,7 @@ describe("ThemeContext Google Fonts Integration", () => {
     render(
       <ThemeProvider initialTheme={mockTheme}>
         <TestComponent />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     await waitFor(
@@ -86,7 +86,7 @@ describe("ThemeContext Google Fonts Integration", () => {
           "Barlow",
         ]);
       },
-      { timeout: 1000 },
+      { timeout: 1000 }
     );
   });
 
@@ -99,14 +99,14 @@ describe("ThemeContext Google Fonts Integration", () => {
     render(
       <ThemeProvider initialTheme={themeWithoutFonts}>
         <TestComponent />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     await waitFor(
       () => {
         expect(mockLoadGoogleFonts).not.toHaveBeenCalled();
       },
-      { timeout: 1000 },
+      { timeout: 1000 }
     );
   });
 
@@ -119,7 +119,7 @@ describe("ThemeContext Google Fonts Integration", () => {
     render(
       <ThemeProvider initialTheme={themeWithoutFontsProperty}>
         <TestComponent />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     // Since google_fonts is undefined, loadGoogleFonts should not be called
@@ -127,7 +127,7 @@ describe("ThemeContext Google Fonts Integration", () => {
       () => {
         expect(mockLoadGoogleFonts).not.toHaveBeenCalled();
       },
-      { timeout: 1000 },
+      { timeout: 1000 }
     );
   });
 
@@ -140,7 +140,7 @@ describe("ThemeContext Google Fonts Integration", () => {
     render(
       <ThemeProvider>
         <TestComponent />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     await waitFor(
@@ -150,7 +150,7 @@ describe("ThemeContext Google Fonts Integration", () => {
           "Barlow",
         ]);
       },
-      { timeout: 1000 },
+      { timeout: 1000 }
     );
   });
 
@@ -190,7 +190,7 @@ describe("ThemeContext Google Fonts Integration", () => {
     render(
       <ThemeProvider initialTheme={mockTheme}>
         <TestComponentWithSetter />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     // Verify initial fonts are loaded
@@ -201,7 +201,7 @@ describe("ThemeContext Google Fonts Integration", () => {
           "Barlow",
         ]);
       },
-      { timeout: 1000 },
+      { timeout: 1000 }
     );
 
     // Wait for theme update and verify new fonts are loaded
@@ -212,7 +212,7 @@ describe("ThemeContext Google Fonts Integration", () => {
           "Inter",
         ]);
       },
-      { timeout: 2000 },
+      { timeout: 2000 }
     );
   });
 
@@ -227,7 +227,7 @@ describe("ThemeContext Google Fonts Integration", () => {
     render(
       <ThemeProvider initialTheme={singleFontTheme}>
         <TestComponent />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     await waitFor(() => {
@@ -246,7 +246,7 @@ describe("ThemeContext Google Fonts Integration", () => {
     render(
       <ThemeProvider initialTheme={multiFontTheme}>
         <TestComponent />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     await waitFor(() => {
@@ -262,16 +262,16 @@ describe("ThemeContext Google Fonts Integration", () => {
     render(
       <ThemeProvider initialTheme={mockTheme}>
         <TestComponent />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     await waitFor(() => {
       const root = document.documentElement;
       expect(root.style.getPropertyValue("--theme-font-heading")).toBe(
-        "'Merriweather', serif",
+        "'Merriweather', serif"
       );
       expect(root.style.getPropertyValue("--theme-font-body")).toBe(
-        "'Barlow', sans-serif",
+        "'Barlow', sans-serif"
       );
     });
   });
@@ -282,14 +282,14 @@ describe("ThemeContext Google Fonts Integration", () => {
     render(
       <ThemeProvider>
         <TestComponent />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     await waitFor(
       () => {
         expect(mockLoadGoogleFonts).not.toHaveBeenCalled();
       },
-      { timeout: 1000 },
+      { timeout: 1000 }
     );
   });
 
@@ -302,14 +302,14 @@ describe("ThemeContext Google Fonts Integration", () => {
     render(
       <ThemeProvider>
         <TestComponent />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     await waitFor(
       () => {
         expect(mockLoadGoogleFonts).not.toHaveBeenCalled();
       },
-      { timeout: 1000 },
+      { timeout: 1000 }
     );
   });
 
@@ -345,7 +345,7 @@ describe("ThemeContext Google Fonts Integration", () => {
     render(
       <ThemeProvider>
         <TestComponentWithRefresh />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     // Wait for initial load
@@ -356,7 +356,7 @@ describe("ThemeContext Google Fonts Integration", () => {
           "Barlow",
         ]);
       },
-      { timeout: 1000 },
+      { timeout: 1000 }
     );
 
     // Wait for refresh
@@ -367,7 +367,7 @@ describe("ThemeContext Google Fonts Integration", () => {
           "Source Sans Pro",
         ]);
       },
-      { timeout: 3000 },
+      { timeout: 3000 }
     );
   });
 
@@ -393,7 +393,7 @@ describe("ThemeContext Google Fonts Integration", () => {
     render(
       <ThemeProvider>
         <TestComponentWithSetter />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     await waitFor(() => {
@@ -415,7 +415,7 @@ describe("ThemeContext Google Fonts Integration", () => {
     render(
       <ThemeProvider initialTheme={mockTheme}>
         <TestComponentWithNullTheme />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     // Initial load should happen
@@ -426,7 +426,7 @@ describe("ThemeContext Google Fonts Integration", () => {
           "Barlow",
         ]);
       },
-      { timeout: 1000 },
+      { timeout: 1000 }
     );
 
     // Setting to null should not trigger additional calls

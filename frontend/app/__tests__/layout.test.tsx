@@ -135,7 +135,7 @@ describe("RootLayout", () => {
     const footer = screen.getByTestId("footer");
     expect(footer).toBeInTheDocument();
     expect(footer).toHaveTextContent(
-      `© ${new Date().getFullYear()} Test Organization. All rights reserved.`,
+      `© ${new Date().getFullYear()} Test Organization. All rights reserved.`
     );
 
     // Check for cookie consent
@@ -159,7 +159,7 @@ describe("RootLayout", () => {
 
   it("uses fallback data when homepage fetch fails", async () => {
     (ssrApiClient.getHomepage as jest.Mock).mockRejectedValue(
-      new Error("API Error"),
+      new Error("API Error")
     );
 
     // Mock fetch to fail for homepage
@@ -191,7 +191,7 @@ describe("RootLayout", () => {
     // Should log the error
     expect(consoleSpy).toHaveBeenCalledWith(
       "Error fetching homepage for layout:",
-      "HTTP error! status: 500",
+      "HTTP error! status: 500"
     );
 
     // Should still render with fallback organization name
@@ -213,7 +213,7 @@ describe("RootLayout", () => {
       nav_items: [] as NavItemData[],
     };
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(
-      homepageWithoutNavItems,
+      homepageWithoutNavItems
     );
 
     // Mock fetch for layout's direct API calls
@@ -254,7 +254,7 @@ describe("RootLayout", () => {
       nav_items: null as NavItemData[] | null,
     };
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(
-      homepageWithNullNavItems,
+      homepageWithNullNavItems
     );
 
     // Mock fetch for layout's direct API calls

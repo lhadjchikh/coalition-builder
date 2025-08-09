@@ -23,7 +23,7 @@ interface ImageWithCreditProps {
 const getDisplayMode = (
   captionDisplay: string | undefined,
   caption: string | undefined,
-  creditDisplay: string,
+  creditDisplay: string
 ): string => {
   // If captionDisplay is explicitly set, use it regardless of whether there's a caption
   if (captionDisplay !== undefined) {

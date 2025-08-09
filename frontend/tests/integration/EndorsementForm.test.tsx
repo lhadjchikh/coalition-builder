@@ -35,7 +35,7 @@ describe("EndorsementForm", () => {
 
     expect(screen.getByText("Endorse This Campaign")).toBeInTheDocument();
     expect(
-      screen.getByText('"I support this test campaign"'),
+      screen.getByText('"I support this test campaign"')
     ).toBeInTheDocument();
     expect(screen.getByText("Please fill out all fields")).toBeInTheDocument();
 
@@ -54,8 +54,8 @@ describe("EndorsementForm", () => {
     // Check for the address info message
     expect(
       screen.getByText(
-        /We use your address to identify your legislative districts/,
-      ),
+        /We use your address to identify your legislative districts/
+      )
     ).toBeInTheDocument();
   });
 
@@ -68,9 +68,7 @@ describe("EndorsementForm", () => {
     render(<EndorsementForm campaign={campaignWithoutEndorsements} />);
 
     expect(
-      screen.getByText(
-        "This campaign is not currently accepting endorsements.",
-      ),
+      screen.getByText("This campaign is not currently accepting endorsements.")
     ).toBeInTheDocument();
     expect(screen.queryByTestId("first-name-input")).not.toBeInTheDocument();
     expect(screen.queryByTestId("last-name-input")).not.toBeInTheDocument();
@@ -108,7 +106,7 @@ describe("EndorsementForm", () => {
       <EndorsementForm
         campaign={mockCampaign}
         onEndorsementSubmitted={onEndorsementSubmitted}
-      />,
+      />
     );
 
     // Fill out the form
@@ -197,7 +195,7 @@ describe("EndorsementForm", () => {
   it("shows error message when submission fails", async () => {
     await withSuppressedErrors(["Submission failed"], async () => {
       mockAPI.createEndorsement.mockRejectedValue(
-        new Error("Submission failed"),
+        new Error("Submission failed")
       );
 
       render(<EndorsementForm campaign={mockCampaign} />);
@@ -305,7 +303,7 @@ describe("EndorsementForm", () => {
     expect(zipCodeInput).toHaveAttribute("pattern", "[0-9]{5}(-[0-9]{4})?");
     expect(zipCodeInput).toHaveAttribute(
       "title",
-      "Please enter a valid ZIP code (e.g., 12345 or 12345-6789)",
+      "Please enter a valid ZIP code (e.g., 12345 or 12345-6789)"
     );
 
     // Test that the input accepts valid ZIP codes
@@ -322,7 +320,7 @@ describe("EndorsementForm", () => {
     // The actual validation happens at form submission by the browser
     // We can test that the pattern is present for browser validation
     expect((zipCodeInput as HTMLInputElement).validity.patternMismatch).toBe(
-      true,
+      true
     );
   });
 
@@ -330,7 +328,7 @@ describe("EndorsementForm", () => {
     await withSuppressedErrors(["spam detection"], async () => {
       // Mock API to simulate honeypot detection rejection
       mockAPI.createEndorsement.mockRejectedValue(
-        new Error("Submission rejected due to spam detection"),
+        new Error("Submission rejected due to spam detection")
       );
 
       render(<EndorsementForm campaign={mockCampaign} />);
@@ -384,7 +382,7 @@ describe("EndorsementForm", () => {
               website: "http://spam.com",
               url: "http://malicious.com",
             }),
-          }),
+          })
         );
       });
 
@@ -392,7 +390,7 @@ describe("EndorsementForm", () => {
       await waitFor(() => {
         expect(screen.getByTestId("error-message")).toBeInTheDocument();
         expect(screen.getByTestId("error-message")).toHaveTextContent(
-          /spam detection/i,
+          /spam detection/i
         );
       });
 
@@ -561,7 +559,7 @@ describe("EndorsementForm", () => {
         () => {
           expect(screen.getByTestId("success-message")).toBeInTheDocument();
         },
-        { timeout: 10000 },
+        { timeout: 10000 }
       );
 
       // Should call onFormInteraction(false) after successful submission
@@ -601,7 +599,7 @@ describe("EndorsementForm", () => {
       // Initially, no radio buttons should be visible
       expect(screen.queryByTestId("org-behalf-radio")).not.toBeInTheDocument();
       expect(
-        screen.queryByTestId("org-individual-radio"),
+        screen.queryByTestId("org-individual-radio")
       ).not.toBeInTheDocument();
 
       // Fill in organization
@@ -615,12 +613,12 @@ describe("EndorsementForm", () => {
 
       // Check the text content
       expect(
-        screen.getByText(/I am endorsing on behalf of this organization/),
+        screen.getByText(/I am endorsing on behalf of this organization/)
       ).toBeInTheDocument();
       expect(
         screen.getByText(
-          /I am endorsing as an individual.*affiliated with this organization/,
-        ),
+          /I am endorsing as an individual.*affiliated with this organization/
+        )
       ).toBeInTheDocument();
     });
 
@@ -643,7 +641,7 @@ describe("EndorsementForm", () => {
       // Radio buttons should disappear
       expect(screen.queryByTestId("org-behalf-radio")).not.toBeInTheDocument();
       expect(
-        screen.queryByTestId("org-individual-radio"),
+        screen.queryByTestId("org-individual-radio")
       ).not.toBeInTheDocument();
     });
 
@@ -657,10 +655,10 @@ describe("EndorsementForm", () => {
 
       // Individual radio should be checked by default
       const individualRadio = screen.getByTestId(
-        "org-individual-radio",
+        "org-individual-radio"
       ) as HTMLInputElement;
       const behalfRadio = screen.getByTestId(
-        "org-behalf-radio",
+        "org-behalf-radio"
       ) as HTMLInputElement;
 
       expect(individualRadio.checked).toBe(true);
@@ -676,10 +674,10 @@ describe("EndorsementForm", () => {
       });
 
       const individualRadio = screen.getByTestId(
-        "org-individual-radio",
+        "org-individual-radio"
       ) as HTMLInputElement;
       const behalfRadio = screen.getByTestId(
-        "org-behalf-radio",
+        "org-behalf-radio"
       ) as HTMLInputElement;
 
       // Initially individual is selected

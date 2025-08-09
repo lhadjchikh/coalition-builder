@@ -255,7 +255,7 @@ const Navbar: React.FC<NavbarProps> = ({
                       }}
                       className={getMobileNavItemClasses(
                         item.active || false,
-                        true,
+                        true
                       )}
                     >
                       {item.label}

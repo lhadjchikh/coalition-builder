@@ -27,7 +27,7 @@ export const metrics = {
     return {
       seconds: uptime,
       formatted: `${Math.floor(uptime / 3600)}h ${Math.floor(
-        (uptime % 3600) / 60,
+        (uptime % 3600) / 60
       )}m ${uptime % 60}s`,
     };
   },

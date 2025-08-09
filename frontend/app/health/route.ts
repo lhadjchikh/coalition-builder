@@ -21,7 +21,7 @@ export async function GET() {
       // Don't register as error during startup - API might still be initializing
       console.warn(
         "Health check API connection failed (expected during startup):",
-        error,
+        error
       );
     }
 
@@ -45,7 +45,7 @@ export async function GET() {
         headers: {
           "Cache-Control": "no-store, max-age=0",
         },
-      },
+      }
     );
   } catch (error) {
     registerError();
@@ -60,7 +60,7 @@ export async function GET() {
         headers: {
           "Cache-Control": "no-store, max-age=0",
         },
-      },
+      }
     );
   }
 }

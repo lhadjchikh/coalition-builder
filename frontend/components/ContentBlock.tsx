@@ -61,7 +61,7 @@ const ContentBlock: React.FC<ContentBlockProps> = ({ block }) => {
       {
         threshold: 0.1, // Trigger when 10% of the element is visible
         rootMargin: "50px", // Start animation slightly before element comes into view
-      },
+      }
     );
 
     const element = blockRef.current;

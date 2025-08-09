@@ -81,7 +81,7 @@ describe("EnhancedThemeProvider", () => {
       render(
         <EnhancedThemeProvider>
           <div>Test Content</div>
-        </EnhancedThemeProvider>,
+        </EnhancedThemeProvider>
       );
 
       expect(screen.getByText("Loading theme...")).toBeInTheDocument();
@@ -100,7 +100,7 @@ describe("EnhancedThemeProvider", () => {
       render(
         <EnhancedThemeProvider>
           <div>Test Content</div>
-        </EnhancedThemeProvider>,
+        </EnhancedThemeProvider>
       );
 
       expect(screen.queryByText("Loading theme...")).not.toBeInTheDocument();
@@ -121,12 +121,12 @@ describe("EnhancedThemeProvider", () => {
       render(
         <EnhancedThemeProvider>
           <div>Test Content</div>
-        </EnhancedThemeProvider>,
+        </EnhancedThemeProvider>
       );
 
       const themeProvider = screen.getByTestId("styled-theme-provider");
       const themeData = JSON.parse(
-        themeProvider.getAttribute("data-theme") || "{}",
+        themeProvider.getAttribute("data-theme") || "{}"
       );
 
       expect(themeData.colors.primary).toBe("#2563eb");
@@ -146,12 +146,12 @@ describe("EnhancedThemeProvider", () => {
       render(
         <EnhancedThemeProvider>
           <div>Test Content</div>
-        </EnhancedThemeProvider>,
+        </EnhancedThemeProvider>
       );
 
       const themeProvider = screen.getByTestId("styled-theme-provider");
       const themeData = JSON.parse(
-        themeProvider.getAttribute("data-theme") || "{}",
+        themeProvider.getAttribute("data-theme") || "{}"
       );
 
       expect(themeData.colors.primaryLight).toBe("lighten(0.1, #2563eb)");
@@ -174,12 +174,12 @@ describe("EnhancedThemeProvider", () => {
       render(
         <EnhancedThemeProvider>
           <div>Test Content</div>
-        </EnhancedThemeProvider>,
+        </EnhancedThemeProvider>
       );
 
       const themeProvider = screen.getByTestId("styled-theme-provider");
       const themeData = JSON.parse(
-        themeProvider.getAttribute("data-theme") || "{}",
+        themeProvider.getAttribute("data-theme") || "{}"
       );
 
       // Should have default colors
@@ -202,7 +202,7 @@ describe("EnhancedThemeProvider", () => {
       render(
         <EnhancedThemeProvider>
           <div>Test Content</div>
-        </EnhancedThemeProvider>,
+        </EnhancedThemeProvider>
       );
 
       // Should still render content even with invalid theme data
@@ -224,14 +224,14 @@ describe("EnhancedThemeProvider", () => {
         render(
           <EnhancedThemeProvider>
             <div>Test Content</div>
-          </EnhancedThemeProvider>,
+          </EnhancedThemeProvider>
         );
       });
 
       await act(async () => {
         await waitFor(() => {
           const faviconLink = document.querySelector(
-            "link[rel~='icon']",
+            "link[rel~='icon']"
           ) as HTMLLinkElement;
           expect(faviconLink).toBeTruthy();
           expect(faviconLink.href).toBe("https://example.com/favicon.ico");
@@ -255,14 +255,14 @@ describe("EnhancedThemeProvider", () => {
         render(
           <EnhancedThemeProvider>
             <div>Test Content</div>
-          </EnhancedThemeProvider>,
+          </EnhancedThemeProvider>
         );
       });
 
       await act(async () => {
         await waitFor(() => {
           const faviconLink = document.querySelector(
-            "link[rel~='icon']",
+            "link[rel~='icon']"
           ) as HTMLLinkElement;
           expect(faviconLink).toBeTruthy();
           expect(faviconLink.rel).toBe("icon");
@@ -290,14 +290,14 @@ describe("EnhancedThemeProvider", () => {
         render(
           <EnhancedThemeProvider>
             <div>Test Content</div>
-          </EnhancedThemeProvider>,
+          </EnhancedThemeProvider>
         );
       });
 
       await act(async () => {
         await waitFor(() => {
           const faviconLink = document.querySelector(
-            "link[rel~='icon']",
+            "link[rel~='icon']"
           ) as HTMLLinkElement;
           expect(faviconLink).toBe(existingLink); // Should be the same element
           expect(faviconLink.href).toBe("https://example.com/favicon.ico"); // But with updated href
@@ -319,7 +319,7 @@ describe("EnhancedThemeProvider", () => {
         render(
           <EnhancedThemeProvider>
             <div>Test Content</div>
-          </EnhancedThemeProvider>,
+          </EnhancedThemeProvider>
         );
       });
 
@@ -337,7 +337,7 @@ describe("EnhancedThemeProvider", () => {
         const result = render(
           <EnhancedThemeProvider>
             <div>Test Content</div>
-          </EnhancedThemeProvider>,
+          </EnhancedThemeProvider>
         );
         rerender = result.rerender;
       });
@@ -355,14 +355,14 @@ describe("EnhancedThemeProvider", () => {
         rerender(
           <EnhancedThemeProvider>
             <div>Test Content</div>
-          </EnhancedThemeProvider>,
+          </EnhancedThemeProvider>
         );
       });
 
       await act(async () => {
         await waitFor(() => {
           const faviconLink = document.querySelector(
-            "link[rel~='icon']",
+            "link[rel~='icon']"
           ) as HTMLLinkElement;
           expect(faviconLink.href).toBe("https://example.com/favicon.ico");
         });
@@ -385,17 +385,17 @@ describe("EnhancedThemeProvider", () => {
         rerender(
           <EnhancedThemeProvider>
             <div>Test Content</div>
-          </EnhancedThemeProvider>,
+          </EnhancedThemeProvider>
         );
       });
 
       await act(async () => {
         await waitFor(() => {
           const faviconLink = document.querySelector(
-            "link[rel~='icon']",
+            "link[rel~='icon']"
           ) as HTMLLinkElement;
           expect(faviconLink.href).toBe(
-            "https://new-example.com/new-favicon.ico",
+            "https://new-example.com/new-favicon.ico"
           );
         });
       });
@@ -415,7 +415,7 @@ describe("EnhancedThemeProvider", () => {
       render(
         <EnhancedThemeProvider>
           <div>Test Content</div>
-        </EnhancedThemeProvider>,
+        </EnhancedThemeProvider>
       );
 
       expect(screen.getByTestId("global-style")).toBeInTheDocument();
@@ -427,7 +427,7 @@ describe("EnhancedThemeProvider", () => {
       const { rerender } = render(
         <EnhancedThemeProvider>
           <div>Test Content</div>
-        </EnhancedThemeProvider>,
+        </EnhancedThemeProvider>
       );
 
       mockUseTheme.mockReturnValue({
@@ -441,25 +441,25 @@ describe("EnhancedThemeProvider", () => {
       rerender(
         <EnhancedThemeProvider>
           <div>Test Content 1</div>
-        </EnhancedThemeProvider>,
+        </EnhancedThemeProvider>
       );
 
       const firstThemeData = JSON.parse(
         screen
           .getByTestId("styled-theme-provider")
-          .getAttribute("data-theme") || "{}",
+          .getAttribute("data-theme") || "{}"
       );
 
       rerender(
         <EnhancedThemeProvider>
           <div>Test Content 2</div>
-        </EnhancedThemeProvider>,
+        </EnhancedThemeProvider>
       );
 
       const secondThemeData = JSON.parse(
         screen
           .getByTestId("styled-theme-provider")
-          .getAttribute("data-theme") || "{}",
+          .getAttribute("data-theme") || "{}"
       );
 
       // Theme objects should be structurally the same
@@ -478,13 +478,13 @@ describe("EnhancedThemeProvider", () => {
       const { rerender } = render(
         <EnhancedThemeProvider>
           <div>Test Content</div>
-        </EnhancedThemeProvider>,
+        </EnhancedThemeProvider>
       );
 
       const firstThemeData = JSON.parse(
         screen
           .getByTestId("styled-theme-provider")
-          .getAttribute("data-theme") || "{}",
+          .getAttribute("data-theme") || "{}"
       );
 
       // Change theme
@@ -500,13 +500,13 @@ describe("EnhancedThemeProvider", () => {
       rerender(
         <EnhancedThemeProvider>
           <div>Test Content</div>
-        </EnhancedThemeProvider>,
+        </EnhancedThemeProvider>
       );
 
       const secondThemeData = JSON.parse(
         screen
           .getByTestId("styled-theme-provider")
-          .getAttribute("data-theme") || "{}",
+          .getAttribute("data-theme") || "{}"
       );
 
       expect(firstThemeData.colors.primary).toBe("#2563eb");
@@ -528,7 +528,7 @@ describe("EnhancedThemeProvider", () => {
         render(
           <EnhancedThemeProvider>
             <div>Test Content</div>
-          </EnhancedThemeProvider>,
+          </EnhancedThemeProvider>
         );
       }).not.toThrow();
 
@@ -548,7 +548,7 @@ describe("EnhancedThemeProvider", () => {
         render(
           <EnhancedThemeProvider>
             <div>Test Content</div>
-          </EnhancedThemeProvider>,
+          </EnhancedThemeProvider>
         );
       }).not.toThrow();
 
@@ -568,7 +568,7 @@ describe("EnhancedThemeProvider", () => {
         render(
           <EnhancedThemeProvider>
             <div>Test Content</div>
-          </EnhancedThemeProvider>,
+          </EnhancedThemeProvider>
         );
       }).not.toThrow();
 
@@ -593,7 +593,7 @@ describe("EnhancedThemeProvider", () => {
       render(
         <EnhancedThemeProvider>
           <TestComponent />
-        </EnhancedThemeProvider>,
+        </EnhancedThemeProvider>
       );
 
       expect(screen.getByTestId("test-component")).toBeInTheDocument();
@@ -614,7 +614,7 @@ describe("EnhancedThemeProvider", () => {
           <div>Child 1</div>
           <div>Child 2</div>
           <div>Child 3</div>
-        </EnhancedThemeProvider>,
+        </EnhancedThemeProvider>
       );
 
       expect(screen.getByText("Child 1")).toBeInTheDocument();

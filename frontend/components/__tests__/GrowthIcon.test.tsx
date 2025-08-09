@@ -70,7 +70,7 @@ describe("GrowthIcon", () => {
         color="green"
         className="test-icon"
         style={{ border: "1px solid black" }}
-      />,
+      />
     );
 
     const icon = screen.getByAltText("tree growth stage icon");

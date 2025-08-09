@@ -76,7 +76,7 @@ describe("API Service - POST/PATCH Methods", () => {
             "Content-Type": "application/json",
           }),
           signal: expect.any(AbortSignal),
-        }),
+        })
       );
     });
   });
@@ -101,7 +101,7 @@ describe("API Service - POST/PATCH Methods", () => {
             "Content-Type": "application/json",
           }),
           signal: expect.any(AbortSignal),
-        }),
+        })
       );
     });
 
@@ -109,11 +109,11 @@ describe("API Service - POST/PATCH Methods", () => {
       // Set cookie to avoid CSRF token fetch
       document.cookie = "csrftoken=patch-token";
       mockFetch.mockResolvedValueOnce(
-        createMockResponse(null, { ok: false, status: 403 }),
+        createMockResponse(null, { ok: false, status: 403 })
       );
 
       await expect(
-        API.patch("/api/test/1/", { name: "Updated" }),
+        API.patch("/api/test/1/", { name: "Updated" })
       ).rejects.toThrow("HTTP error! status: 403");
     });
   });

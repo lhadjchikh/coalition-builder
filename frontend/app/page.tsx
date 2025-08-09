@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
   try {
     const response = await fetch(
       `${process.env.API_URL || "http://localhost:8000"}/api/homepage/`,
-      { cache: "no-store" },
+      { cache: "no-store" }
     );
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
@@ -67,17 +67,17 @@ export default async function HomePage() {
       fetchApiResource<HomePageType>(
         `${baseUrl}/api/homepage/`,
         fetchOptions,
-        "homepage",
+        "homepage"
       ),
       fetchApiResource<Campaign[]>(
         `${baseUrl}/api/campaigns/`,
         fetchOptions,
-        "campaigns",
+        "campaigns"
       ),
       fetchApiResource<ContentBlock[]>(
         `${baseUrl}/api/content-blocks/?page_type=homepage`,
         fetchOptions,
-        "content blocks",
+        "content blocks"
       ),
     ]);
 
@@ -109,7 +109,7 @@ export default async function HomePage() {
   } else {
     console.error(
       "Error fetching homepage content blocks:",
-      contentBlocksResult.reason,
+      contentBlocksResult.reason
     );
   }
 

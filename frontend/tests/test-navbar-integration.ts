@@ -108,13 +108,13 @@ async function runNavbarIntegrationTests(): Promise<TestResults> {
 
     // Collect all text content from navigation items
     const navItems = Array.from(navElement.querySelectorAll("li, a")).map(
-      (el) => el.textContent?.trim() || "",
+      (el) => el.textContent?.trim() || ""
     );
 
     // Check for expected navigation items using shared config
     const expectedItems = DEFAULT_NAV_ITEMS.map((item) => item.label);
     const missingItems = expectedItems.filter(
-      (item) => !navItems.includes(item),
+      (item) => !navItems.includes(item)
     );
 
     if (missingItems.length === 0) {

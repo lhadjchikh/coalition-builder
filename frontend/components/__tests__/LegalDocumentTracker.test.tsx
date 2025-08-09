@@ -30,7 +30,7 @@ describe("LegalDocumentTracker", () => {
     render(<LegalDocumentTracker documentType="privacy" />);
 
     expect(mockAnalytics.trackLegalDocumentView).toHaveBeenCalledWith(
-      "privacy",
+      "privacy"
     );
     expect(mockAnalytics.trackLegalDocumentView).toHaveBeenCalledTimes(1);
   });
@@ -51,7 +51,7 @@ describe("LegalDocumentTracker", () => {
     rerender(<LegalDocumentTracker documentType="privacy" />);
 
     expect(mockAnalytics.trackLegalDocumentView).toHaveBeenCalledWith(
-      "privacy",
+      "privacy"
     );
     expect(mockAnalytics.trackLegalDocumentView).toHaveBeenCalledTimes(2);
   });

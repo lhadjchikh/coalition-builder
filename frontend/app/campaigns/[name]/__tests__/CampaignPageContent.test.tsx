@@ -38,13 +38,13 @@ describe("CampaignPageContent", () => {
 
   it("should render CampaignDetail with correct campaign data", () => {
     const { getByTestId } = render(
-      <CampaignPageContent campaign={mockCampaign} />,
+      <CampaignPageContent campaign={mockCampaign} />
     );
 
     const campaignDetail = getByTestId("mock-campaign-detail");
     expect(campaignDetail).toBeInTheDocument();
     expect(campaignDetail).toHaveTextContent(
-      "Campaign Detail Component - ID: 123 - Initial: Test Campaign",
+      "Campaign Detail Component - ID: 123 - Initial: Test Campaign"
     );
   });
 
@@ -57,12 +57,12 @@ describe("CampaignPageContent", () => {
 
     testCampaigns.forEach((campaign) => {
       const { getByTestId, unmount } = render(
-        <CampaignPageContent campaign={campaign} />,
+        <CampaignPageContent campaign={campaign} />
       );
 
       const campaignDetail = getByTestId("mock-campaign-detail");
       expect(campaignDetail).toHaveTextContent(
-        `Campaign Detail Component - ID: ${campaign.id} - Initial: ${campaign.title}`,
+        `Campaign Detail Component - ID: ${campaign.id} - Initial: ${campaign.title}`
       );
 
       // Clean up between test cases to avoid multiple elements

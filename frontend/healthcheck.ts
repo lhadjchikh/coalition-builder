@@ -53,20 +53,20 @@ const req = http.request(options, (res: http.IncomingMessage) => {
             console.log("✅ Health check passed - API connection verified");
           } else {
             console.log(
-              `✅ Health check passed - SSR healthy (API: ${apiStatus})`,
+              `✅ Health check passed - SSR healthy (API: ${apiStatus})`
             );
           }
           process.exit(0);
         } else {
           console.error(
-            `❌ Health check failed - Status: ${healthData.status}, API: ${healthData.api?.status}`,
+            `❌ Health check failed - Status: ${healthData.status}, API: ${healthData.api?.status}`
           );
           process.exit(1);
         }
       } catch (e: unknown) {
         const error = e as Error;
         console.error(
-          `❌ Health check failed - Invalid JSON response: ${error.message}`,
+          `❌ Health check failed - Invalid JSON response: ${error.message}`
         );
         process.exit(1);
       }

@@ -78,7 +78,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           }
         },
       }),
-      [],
+      []
     );
 
     // Handle form interaction events
@@ -104,7 +104,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
 
     const handleStakeholderChange = (
       field: keyof typeof stakeholder,
-      value: string,
+      value: string
     ) => {
       setStakeholder((prev) => ({
         ...prev,
@@ -146,7 +146,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
 
         // Track successful endorsement submission
         analytics.trackEndorsementSubmission(
-          campaign.name || `Campaign ${campaign.id}`,
+          campaign.name || `Campaign ${campaign.id}`
         );
 
         // Hide sticky CTA since form was submitted successfully
@@ -185,7 +185,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
         }
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Failed to submit endorsement",
+          err instanceof Error ? err.message : "Failed to submit endorsement"
         );
       } finally {
         setIsSubmitting(false);
@@ -410,7 +410,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
               onChange={(e) =>
                 handleStakeholderChange(
                   "type",
-                  e.target.value as Stakeholder["type"],
+                  e.target.value as Stakeholder["type"]
                 )
               }
               required
@@ -696,7 +696,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
         </form>
       </div>
     );
-  },
+  }
 );
 
 EndorsementForm.displayName = "EndorsementForm";

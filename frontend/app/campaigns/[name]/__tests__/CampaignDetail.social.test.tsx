@@ -199,7 +199,7 @@ describe("CampaignDetail Social Sharing Features", () => {
   describe("Social Share Section", () => {
     it("renders social share section after campaign loads", async () => {
       render(
-        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />,
+        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />
       );
 
       await waitFor(() => {
@@ -218,7 +218,7 @@ describe("CampaignDetail Social Sharing Features", () => {
 
     it("passes correct props to SocialShareButtons in share modal", async () => {
       render(
-        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />,
+        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />
       );
 
       await waitFor(() => {
@@ -235,22 +235,22 @@ describe("CampaignDetail Social Sharing Features", () => {
       // Check props passed to the modal share buttons
       const shareButtons = screen.getByTestId("social-share-buttons");
       const urlElement = shareButtons.querySelector(
-        '[data-testid="share-url"]',
+        '[data-testid="share-url"]'
       );
       const titleElement = shareButtons.querySelector(
-        '[data-testid="share-title"]',
+        '[data-testid="share-title"]'
       );
       const descriptionElement = shareButtons.querySelector(
-        '[data-testid="share-description"]',
+        '[data-testid="share-description"]'
       );
       const hashtagsElement = shareButtons.querySelector(
-        '[data-testid="share-hashtags"]',
+        '[data-testid="share-hashtags"]'
       );
       const campaignNameElement = shareButtons.querySelector(
-        '[data-testid="share-campaign-name"]',
+        '[data-testid="share-campaign-name"]'
       );
       const showLabelElement = shareButtons.querySelector(
-        '[data-testid="share-show-label"]',
+        '[data-testid="share-show-label"]'
       );
 
       expect(urlElement?.textContent).toContain("/campaigns/clean-water");
@@ -266,11 +266,11 @@ describe("CampaignDetail Social Sharing Features", () => {
     it("uses campaign description as fallback when summary is not available", async () => {
       const campaignWithoutSummary = { ...mockCampaign, summary: null };
       (apiClient.getCampaignByName as jest.Mock).mockResolvedValue(
-        campaignWithoutSummary,
+        campaignWithoutSummary
       );
 
       render(
-        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />,
+        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />
       );
 
       await waitFor(() => {
@@ -286,7 +286,7 @@ describe("CampaignDetail Social Sharing Features", () => {
 
       const shareButtons = screen.getByTestId("social-share-buttons");
       const descriptionElement = shareButtons.querySelector(
-        '[data-testid="share-description"]',
+        '[data-testid="share-description"]'
       );
       expect(descriptionElement?.textContent).toBe(mockCampaign.description);
     });
@@ -295,12 +295,12 @@ describe("CampaignDetail Social Sharing Features", () => {
   describe("Share Modal Functionality", () => {
     it("shows share button on hero image when image is present", async () => {
       render(
-        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />,
+        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />
       );
 
       await waitFor(() => {
         expect(
-          screen.getByLabelText("Share this campaign"),
+          screen.getByLabelText("Share this campaign")
         ).toBeInTheDocument();
       });
 
@@ -310,12 +310,12 @@ describe("CampaignDetail Social Sharing Features", () => {
 
     it("opens share modal when share button is clicked", async () => {
       render(
-        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />,
+        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />
       );
 
       await waitFor(() => {
         expect(
-          screen.getByLabelText("Share this campaign"),
+          screen.getByLabelText("Share this campaign")
         ).toBeInTheDocument();
       });
 
@@ -329,12 +329,12 @@ describe("CampaignDetail Social Sharing Features", () => {
 
     it("closes share modal when close button is clicked", async () => {
       render(
-        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />,
+        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />
       );
 
       await waitFor(() => {
         expect(
-          screen.getByLabelText("Share this campaign"),
+          screen.getByLabelText("Share this campaign")
         ).toBeInTheDocument();
       });
 
@@ -354,12 +354,12 @@ describe("CampaignDetail Social Sharing Features", () => {
 
     it("passes correct props to modal share buttons", async () => {
       render(
-        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />,
+        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />
       );
 
       await waitFor(() => {
         expect(
-          screen.getByLabelText("Share this campaign"),
+          screen.getByLabelText("Share this campaign")
         ).toBeInTheDocument();
       });
 
@@ -373,13 +373,13 @@ describe("CampaignDetail Social Sharing Features", () => {
       const shareButtons = screen.getByTestId("social-share-buttons");
 
       const urlElement = shareButtons.querySelector(
-        '[data-testid="share-url"]',
+        '[data-testid="share-url"]'
       );
       const titleElement = shareButtons.querySelector(
-        '[data-testid="share-title"]',
+        '[data-testid="share-title"]'
       );
       const campaignNameElement = shareButtons.querySelector(
-        '[data-testid="share-campaign-name"]',
+        '[data-testid="share-campaign-name"]'
       );
 
       expect(urlElement?.textContent).toContain("/campaigns/clean-water");
@@ -391,11 +391,11 @@ describe("CampaignDetail Social Sharing Features", () => {
   describe("Error Handling", () => {
     it("does not render share button when campaign fails to load", async () => {
       (apiClient.getCampaignByName as jest.Mock).mockRejectedValue(
-        new Error("Failed to load"),
+        new Error("Failed to load")
       );
 
       render(
-        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />,
+        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />
       );
 
       await waitFor(() => {
@@ -403,7 +403,7 @@ describe("CampaignDetail Social Sharing Features", () => {
       });
 
       expect(
-        screen.queryByLabelText("Share this campaign"),
+        screen.queryByLabelText("Share this campaign")
       ).not.toBeInTheDocument();
     });
 
@@ -411,7 +411,7 @@ describe("CampaignDetail Social Sharing Features", () => {
       (apiClient.getCampaignByName as jest.Mock).mockResolvedValue(null);
 
       render(
-        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />,
+        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />
       );
 
       await waitFor(() => {
@@ -419,7 +419,7 @@ describe("CampaignDetail Social Sharing Features", () => {
       });
 
       expect(
-        screen.queryByLabelText("Share this campaign"),
+        screen.queryByLabelText("Share this campaign")
       ).not.toBeInTheDocument();
     });
   });
@@ -431,11 +431,11 @@ describe("CampaignDetail Social Sharing Features", () => {
         name: "clean-water-2024",
       };
       (apiClient.getCampaignByName as jest.Mock).mockResolvedValue(
-        campaignWithSpecialName,
+        campaignWithSpecialName
       );
 
       render(
-        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />,
+        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />
       );
 
       await waitFor(() => {
@@ -451,7 +451,7 @@ describe("CampaignDetail Social Sharing Features", () => {
 
       const shareButtons = screen.getByTestId("social-share-buttons");
       const hashtagsElement = shareButtons.querySelector(
-        '[data-testid="share-hashtags"]',
+        '[data-testid="share-hashtags"]'
       );
 
       // Hyphens should be removed from the campaign name in hashtags
@@ -460,7 +460,7 @@ describe("CampaignDetail Social Sharing Features", () => {
 
     it("generates correct share URL based on campaign name", async () => {
       render(
-        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />,
+        <CampaignDetail campaignName="clean-water" apiClient={apiClient} />
       );
 
       await waitFor(() => {
@@ -476,7 +476,7 @@ describe("CampaignDetail Social Sharing Features", () => {
 
       const shareButtons = screen.getByTestId("social-share-buttons");
       const urlElement = shareButtons.querySelector(
-        '[data-testid="share-url"]',
+        '[data-testid="share-url"]'
       );
 
       // Should contain the campaign name in the URL

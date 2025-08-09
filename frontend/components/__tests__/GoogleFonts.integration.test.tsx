@@ -107,17 +107,17 @@ describe("Google Fonts Integration in Components", () => {
     // Check that CSS custom properties are set correctly in the style element
     const styleElement = document.getElementById("theme-variables");
     expect(styleElement?.textContent).toContain(
-      "--theme-font-heading: 'Merriweather', serif",
+      "--theme-font-heading: 'Merriweather', serif"
     );
     expect(styleElement?.textContent).toContain(
-      "--theme-font-body: 'Barlow', sans-serif",
+      "--theme-font-body: 'Barlow', sans-serif"
     );
     expect(styleElement?.textContent).toContain("--theme-font-size-base: 1rem");
     expect(styleElement?.textContent).toContain(
-      "--theme-font-size-small: 0.875rem",
+      "--theme-font-size-small: 0.875rem"
     );
     expect(styleElement?.textContent).toContain(
-      "--theme-font-size-large: 1.125rem",
+      "--theme-font-size-large: 1.125rem"
     );
 
     // Verify components are rendered
@@ -136,7 +136,7 @@ describe("Google Fonts Integration in Components", () => {
     render(
       <ThemeProvider initialTheme={theme} isServer={false}>
         <FontTestComponent />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     await waitFor(() => {
@@ -146,10 +146,10 @@ describe("Google Fonts Integration in Components", () => {
     // Check that CSS custom properties are set correctly in the style element
     const styleElement = document.getElementById("theme-variables");
     expect(styleElement?.textContent).toContain(
-      "--theme-font-heading: 'Inter', sans-serif",
+      "--theme-font-heading: 'Inter', sans-serif"
     );
     expect(styleElement?.textContent).toContain(
-      "--theme-font-body: 'Inter', sans-serif",
+      "--theme-font-body: 'Inter', sans-serif"
     );
   });
 
@@ -163,21 +163,21 @@ describe("Google Fonts Integration in Components", () => {
     render(
       <ThemeProvider initialTheme={theme} isServer={false}>
         <FontTestComponent />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     await waitFor(
       () => {
         expect(mockLoadGoogleFonts).not.toHaveBeenCalled();
       },
-      { timeout: 1000 },
+      { timeout: 1000 }
     );
 
     // Check that CSS custom properties are set correctly in the style element
     const styleElement = document.getElementById("theme-variables");
     expect(styleElement?.textContent).toContain("--theme-font-heading: serif");
     expect(styleElement?.textContent).toContain(
-      "--theme-font-body: sans-serif",
+      "--theme-font-body: sans-serif"
     );
   });
 
@@ -194,7 +194,7 @@ describe("Google Fonts Integration in Components", () => {
     render(
       <ThemeProvider initialTheme={theme} isServer={false}>
         <FontTestComponent />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     await waitFor(() => {
@@ -204,13 +204,13 @@ describe("Google Fonts Integration in Components", () => {
     // Check that CSS custom properties are set correctly in the style element
     const styleElement = document.getElementById("theme-variables");
     expect(styleElement?.textContent).toContain(
-      "--theme-font-size-base: 1.2rem",
+      "--theme-font-size-base: 1.2rem"
     );
     expect(styleElement?.textContent).toContain(
-      "--theme-font-size-small: 1rem",
+      "--theme-font-size-small: 1rem"
     );
     expect(styleElement?.textContent).toContain(
-      "--theme-font-size-large: 1.5rem",
+      "--theme-font-size-large: 1.5rem"
     );
   });
 
@@ -224,7 +224,7 @@ describe("Google Fonts Integration in Components", () => {
     render(
       <ThemeProvider initialTheme={theme} isServer={false}>
         <FontTestComponent />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     await waitFor(() => {
@@ -238,10 +238,10 @@ describe("Google Fonts Integration in Components", () => {
     // Check that CSS custom properties are set correctly in the style element
     const styleElement = document.getElementById("theme-variables");
     expect(styleElement?.textContent).toContain(
-      "--theme-font-heading: 'Playfair Display', serif",
+      "--theme-font-heading: 'Playfair Display', serif"
     );
     expect(styleElement?.textContent).toContain(
-      "--theme-font-body: 'Source Sans Pro', sans-serif",
+      "--theme-font-body: 'Source Sans Pro', sans-serif"
     );
   });
 
@@ -277,7 +277,7 @@ describe("Google Fonts Integration in Components", () => {
     render(
       <ThemeProvider initialTheme={initialTheme}>
         <ThemeUpdateComponent />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     // Verify initial fonts are loaded
@@ -285,7 +285,7 @@ describe("Google Fonts Integration in Components", () => {
       () => {
         expect(mockLoadGoogleFonts).toHaveBeenCalledWith(["Roboto"]);
       },
-      { timeout: 1000 },
+      { timeout: 1000 }
     );
 
     // Wait for theme update and verify new fonts are loaded
@@ -296,16 +296,16 @@ describe("Google Fonts Integration in Components", () => {
           "Montserrat",
         ]);
       },
-      { timeout: 2000 },
+      { timeout: 2000 }
     );
 
     // Check that CSS custom properties are set correctly in the style element
     const styleElement = document.getElementById("theme-variables");
     expect(styleElement?.textContent).toContain(
-      "--theme-font-heading: 'Montserrat', sans-serif",
+      "--theme-font-heading: 'Montserrat', sans-serif"
     );
     expect(styleElement?.textContent).toContain(
-      "--theme-font-body: 'Lato', sans-serif",
+      "--theme-font-body: 'Lato', sans-serif"
     );
   });
 
@@ -322,7 +322,7 @@ describe("Google Fonts Integration in Components", () => {
     render(
       <ThemeProvider initialTheme={theme} isServer={false}>
         <FontTestComponent />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     await waitFor(() => {
@@ -332,13 +332,13 @@ describe("Google Fonts Integration in Components", () => {
     // Check that CSS custom properties are set correctly in the style element
     const styleElement = document.getElementById("theme-variables");
     expect(styleElement?.textContent).toContain(
-      "--theme-font-size-base: 1.125rem",
+      "--theme-font-size-base: 1.125rem"
     );
     expect(styleElement?.textContent).toContain(
-      "--theme-font-size-small: 0.875rem",
+      "--theme-font-size-small: 0.875rem"
     );
     expect(styleElement?.textContent).toContain(
-      "--theme-font-size-large: 1.5rem",
+      "--theme-font-size-large: 1.5rem"
     );
   });
 
@@ -358,7 +358,7 @@ describe("Google Fonts Integration in Components", () => {
     render(
       <ThemeProvider isServer={false}>
         <FontTestComponent />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     await waitFor(() => {
@@ -368,10 +368,10 @@ describe("Google Fonts Integration in Components", () => {
     // Check that CSS custom properties are set correctly in the style element
     const styleElement = document.getElementById("theme-variables");
     expect(styleElement?.textContent).toContain(
-      "--theme-font-heading: 'Poppins', sans-serif",
+      "--theme-font-heading: 'Poppins', sans-serif"
     );
     expect(styleElement?.textContent).toContain(
-      "--theme-font-body: 'Poppins', sans-serif",
+      "--theme-font-body: 'Poppins', sans-serif"
     );
   });
 
@@ -388,7 +388,7 @@ describe("Google Fonts Integration in Components", () => {
     render(
       <ThemeProvider initialTheme={theme} isServer={false}>
         <FontTestComponent />
-      </ThemeProvider>,
+      </ThemeProvider>
     );
 
     await waitFor(() => {
@@ -398,10 +398,10 @@ describe("Google Fonts Integration in Components", () => {
     // Even if fonts fail to load, CSS properties should still be set
     const styleElement = document.getElementById("theme-variables");
     expect(styleElement?.textContent).toContain(
-      "--theme-font-heading: 'InvalidFont', sans-serif",
+      "--theme-font-heading: 'InvalidFont', sans-serif"
     );
     expect(styleElement?.textContent).toContain(
-      "--theme-font-body: 'InvalidFont', sans-serif",
+      "--theme-font-body: 'InvalidFont', sans-serif"
     );
 
     mockConsoleWarn.mockRestore();

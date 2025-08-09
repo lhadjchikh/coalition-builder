@@ -139,7 +139,7 @@ describe("SocialShareButtons", () => {
 
     it("renders with custom className", () => {
       const { container } = render(
-        <SocialShareButtons {...defaultProps} className="custom-class" />,
+        <SocialShareButtons {...defaultProps} className="custom-class" />
       );
 
       expect(container.querySelector(".custom-class")).toBeInTheDocument();
@@ -155,7 +155,7 @@ describe("SocialShareButtons", () => {
       render(<SocialShareButtons {...defaultProps} showLabel={false} />);
 
       expect(
-        screen.queryByText("Share this campaign:"),
+        screen.queryByText("Share this campaign:")
       ).not.toBeInTheDocument();
     });
   });
@@ -170,7 +170,7 @@ describe("SocialShareButtons", () => {
       expect(mockOpen).toHaveBeenCalledWith(
         "https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fexample.com%2Fcampaign",
         "_blank",
-        "width=600,height=400",
+        "width=600,height=400"
       );
     });
 
@@ -183,7 +183,7 @@ describe("SocialShareButtons", () => {
       expect(mockOpen).toHaveBeenCalledWith(
         "https://www.linkedin.com/sharing/share-offsite/?url=http%3A%2F%2Fexample.com%2Fcampaign",
         "_blank",
-        "width=600,height=400",
+        "width=600,height=400"
       );
     });
 
@@ -196,7 +196,7 @@ describe("SocialShareButtons", () => {
       expect(mockOpen).toHaveBeenCalledWith(
         "https://bsky.app/intent/compose?text=Test%20Campaign%20http%3A%2F%2Fexample.com%2Fcampaign",
         "_blank",
-        "width=600,height=400",
+        "width=600,height=400"
       );
     });
 
@@ -209,7 +209,7 @@ describe("SocialShareButtons", () => {
       expect(mockOpen).toHaveBeenCalledWith(
         "https://twitter.com/intent/tweet?text=Test%20Campaign&url=http%3A%2F%2Fexample.com%2Fcampaign&hashtags=test,campaign",
         "_blank",
-        "width=600,height=400",
+        "width=600,height=400"
       );
     });
 
@@ -222,7 +222,7 @@ describe("SocialShareButtons", () => {
       expect(mockOpen).toHaveBeenCalledWith(
         "mailto:?subject=Test%20Campaign&body=Test%20Description%0A%0Ahttp%3A%2F%2Fexample.com%2Fcampaign",
         "_blank",
-        "width=600,height=400",
+        "width=600,height=400"
       );
     });
   });
@@ -244,7 +244,7 @@ describe("SocialShareButtons", () => {
       // Wait for the promise to resolve
       await waitFor(() => {
         expect(mockWriteText).toHaveBeenCalledWith(
-          "http://example.com/campaign",
+          "http://example.com/campaign"
         );
       });
     });
@@ -267,7 +267,7 @@ describe("SocialShareButtons", () => {
         () => {
           expect(screen.getByText("Copied!")).toBeInTheDocument();
         },
-        { timeout: 3000 },
+        { timeout: 3000 }
       );
 
       // Check that the button attributes reflect the copied state
@@ -276,7 +276,7 @@ describe("SocialShareButtons", () => {
           expect(copyButton).toHaveAttribute("data-copied", "true");
           expect(copyButton).toHaveAttribute("title", "Copied!");
         },
-        { timeout: 3000 },
+        { timeout: 3000 }
       );
     });
 
@@ -333,7 +333,7 @@ describe("SocialShareButtons", () => {
       await waitFor(() => {
         expect(consoleSpy).toHaveBeenCalledWith(
           "Failed to copy link:",
-          expect.any(Error),
+          expect.any(Error)
         );
       });
 
@@ -426,7 +426,7 @@ describe("SocialShareButtons", () => {
       expect(mockOpen).toHaveBeenCalledWith(
         expect.stringContaining("body=%0A%0A"),
         "_blank",
-        "width=600,height=400",
+        "width=600,height=400"
       );
     });
 
@@ -440,7 +440,7 @@ describe("SocialShareButtons", () => {
       expect(mockOpen).toHaveBeenCalledWith(
         expect.not.stringContaining("hashtags="),
         "_blank",
-        "width=600,height=400",
+        "width=600,height=400"
       );
     });
 
@@ -459,7 +459,7 @@ describe("SocialShareButtons", () => {
       expect(mockOpen).toHaveBeenCalledWith(
         expect.stringContaining("Test%20%26%20Campaign%20%3Cspecial%3E"),
         "_blank",
-        "width=600,height=400",
+        "width=600,height=400"
       );
     });
   });

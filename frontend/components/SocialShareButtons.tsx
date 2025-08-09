@@ -92,13 +92,13 @@ const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({
           } else {
             // Inform user that copy failed - they can manually copy the URL
             console.warn(
-              "Unable to copy to clipboard. Please copy the link manually.",
+              "Unable to copy to clipboard. Please copy the link manually."
             );
           }
         } catch (err) {
           console.error(
             "Failed to copy link. Browser may not support automatic copying:",
-            err,
+            err
           );
           // Could show a user-friendly message here if needed
         } finally {

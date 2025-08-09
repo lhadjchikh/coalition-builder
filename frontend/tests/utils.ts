@@ -52,7 +52,7 @@ interface RetryOptions {
  */
 function makeRequest(
   url: string,
-  options: RequestOptions = {},
+  options: RequestOptions = {}
 ): Promise<ResponseData> {
   return new Promise((resolve, reject) => {
     try {
@@ -90,7 +90,7 @@ function makeRequest(
               reject(new Error(`Failed to process response: ${err.message}`));
             }
           });
-        },
+        }
       );
 
       // Handle request errors
@@ -124,7 +124,7 @@ async function waitForService(
     timeout = 60000,
     initialDelay = 1000,
     maxDelay = 8000,
-  }: WaitForServiceOptions = {},
+  }: WaitForServiceOptions = {}
 ): Promise<boolean> {
   console.log(`Waiting for service at ${url}...`);
 
@@ -141,7 +141,7 @@ async function waitForService(
         return true;
       } else {
         console.log(
-          `⚠️ Service at ${url} returned status ${response.statusCode}, waiting...`,
+          `⚠️ Service at ${url} returned status ${response.statusCode}, waiting...`
         );
       }
     } catch (error) {
@@ -168,7 +168,7 @@ async function waitForService(
   throw new Error(
     `Service at ${url} not ready after ${attempts} attempts or ${
       Date.now() - startTime
-    }ms`,
+    }ms`
   );
 }
 
@@ -181,7 +181,7 @@ async function waitForService(
  */
 async function fetchCompatible(
   url: string,
-  options: RequestOptions = {},
+  options: RequestOptions = {}
 ): Promise<FetchResponse> {
   try {
     const response = await makeRequest(url, options);
@@ -212,7 +212,7 @@ async function fetchCompatible(
 async function fetchWithRetry(
   url: string,
   options: RequestOptions = {},
-  { retryCount = 5, initialDelay = 3000, maxDelay = 10000 }: RetryOptions = {},
+  { retryCount = 5, initialDelay = 3000, maxDelay = 10000 }: RetryOptions = {}
 ): Promise<FetchResponse> {
   let retryDelay = initialDelay;
 
@@ -228,7 +228,7 @@ async function fetchWithRetry(
       console.log(
         `Request failed (attempt ${i + 1}/${retryCount}): ${
           err.message
-        }, retrying...`,
+        }, retrying...`
       );
 
       // Exponential backoff with jitter
@@ -248,7 +248,7 @@ async function fetchWithRetry(
  */
 function createAuthenticatedRequestOptions(): RequestOptions {
   const sitePasswordEnabled = ["true", "1", "yes"].includes(
-    (process.env.SITE_PASSWORD_ENABLED || "").toLowerCase(),
+    (process.env.SITE_PASSWORD_ENABLED || "").toLowerCase()
   );
 
   const requestOptions: RequestOptions = {};
@@ -259,7 +259,7 @@ function createAuthenticatedRequestOptions(): RequestOptions {
 
     if (password) {
       const credentials = Buffer.from(`${username}:${password}`).toString(
-        "base64",
+        "base64"
       );
       requestOptions.headers = {
         Authorization: `Basic ${credentials}`,

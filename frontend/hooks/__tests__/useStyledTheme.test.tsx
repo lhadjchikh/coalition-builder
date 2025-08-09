@@ -43,7 +43,7 @@ describe("useStyledTheme", () => {
           primary: "#2563eb",
           secondary: "#64748b",
           accent: "#059669",
-        }),
+        })
       );
     });
 
@@ -57,7 +57,7 @@ describe("useStyledTheme", () => {
           lg: "1024px",
           xl: "1280px",
           "2xl": "1536px",
-        }),
+        })
       );
     });
 
@@ -70,7 +70,7 @@ describe("useStyledTheme", () => {
           sizes: mockTheme.typography.sizes,
           weights: mockTheme.typography.weights,
           lineHeights: mockTheme.typography.lineHeights,
-        }),
+        })
       );
     });
 
@@ -85,7 +85,7 @@ describe("useStyledTheme", () => {
           2: "0.5rem",
           4: "1rem",
           8: "2rem",
-        }),
+        })
       );
     });
 
@@ -99,7 +99,7 @@ describe("useStyledTheme", () => {
           md: expect.any(String),
           lg: expect.any(String),
           xl: expect.any(String),
-        }),
+        })
       );
     });
   });
@@ -109,13 +109,13 @@ describe("useStyledTheme", () => {
       const { result } = renderHook(() => useStyledTheme(), { wrapper });
 
       expect(result.current.colors.getPrimaryVariant("light")).toBe(
-        "lighten(0.1, #2563eb)",
+        "lighten(0.1, #2563eb)"
       );
       expect(result.current.colors.getPrimaryVariant("dark")).toBe(
-        "darken(0.1, #2563eb)",
+        "darken(0.1, #2563eb)"
       );
       expect(result.current.colors.getPrimaryVariant("transparent")).toBe(
-        "transparentize(0.1, #2563eb)",
+        "transparentize(0.1, #2563eb)"
       );
     });
 
@@ -123,13 +123,13 @@ describe("useStyledTheme", () => {
       const { result } = renderHook(() => useStyledTheme(), { wrapper });
 
       expect(result.current.colors.getSecondaryVariant("light")).toBe(
-        "lighten(0.1, #64748b)",
+        "lighten(0.1, #64748b)"
       );
       expect(result.current.colors.getSecondaryVariant("dark")).toBe(
-        "darken(0.1, #64748b)",
+        "darken(0.1, #64748b)"
       );
       expect(result.current.colors.getSecondaryVariant("transparent")).toBe(
-        "transparentize(0.1, #64748b)",
+        "transparentize(0.1, #64748b)"
       );
     });
 
@@ -137,13 +137,13 @@ describe("useStyledTheme", () => {
       const { result } = renderHook(() => useStyledTheme(), { wrapper });
 
       expect(result.current.colors.getAccentVariant("light")).toBe(
-        "lighten(0.1, #059669)",
+        "lighten(0.1, #059669)"
       );
       expect(result.current.colors.getAccentVariant("dark")).toBe(
-        "darken(0.1, #059669)",
+        "darken(0.1, #059669)"
       );
       expect(result.current.colors.getAccentVariant("transparent")).toBe(
-        "transparentize(0.1, #059669)",
+        "transparentize(0.1, #059669)"
       );
     });
 
@@ -151,13 +151,13 @@ describe("useStyledTheme", () => {
       const { result } = renderHook(() => useStyledTheme(), { wrapper });
 
       expect(result.current.colors.getPrimaryVariant("light", 0.2)).toBe(
-        "lighten(0.2, #2563eb)",
+        "lighten(0.2, #2563eb)"
       );
       expect(result.current.colors.getPrimaryVariant("dark", 0.3)).toBe(
-        "darken(0.3, #2563eb)",
+        "darken(0.3, #2563eb)"
       );
       expect(result.current.colors.getPrimaryVariant("transparent", 0.5)).toBe(
-        "transparentize(0.5, #2563eb)",
+        "transparentize(0.5, #2563eb)"
       );
     });
 
@@ -165,7 +165,7 @@ describe("useStyledTheme", () => {
       const { result } = renderHook(() => useStyledTheme(), { wrapper });
 
       expect(result.current.colors.getPrimaryVariant("invalid" as any)).toBe(
-        "#2563eb",
+        "#2563eb"
       );
     });
 
@@ -173,7 +173,7 @@ describe("useStyledTheme", () => {
       const { result } = renderHook(() => useStyledTheme(), { wrapper });
 
       expect(result.current.colors.createRgba("#ff0000", 0.5)).toBe(
-        "rgba(#ff0000, 0.5)",
+        "rgba(#ff0000, 0.5)"
       );
     });
   });
@@ -183,19 +183,19 @@ describe("useStyledTheme", () => {
       const { result } = renderHook(() => useStyledTheme(), { wrapper });
 
       expect(result.current.breakpoints.up("sm")).toBe(
-        "@media (min-width: 640px)",
+        "@media (min-width: 640px)"
       );
       expect(result.current.breakpoints.up("md")).toBe(
-        "@media (min-width: 768px)",
+        "@media (min-width: 768px)"
       );
       expect(result.current.breakpoints.up("lg")).toBe(
-        "@media (min-width: 1024px)",
+        "@media (min-width: 1024px)"
       );
       expect(result.current.breakpoints.up("xl")).toBe(
-        "@media (min-width: 1280px)",
+        "@media (min-width: 1280px)"
       );
       expect(result.current.breakpoints.up("2xl")).toBe(
-        "@media (min-width: 1536px)",
+        "@media (min-width: 1536px)"
       );
     });
 
@@ -203,19 +203,19 @@ describe("useStyledTheme", () => {
       const { result } = renderHook(() => useStyledTheme(), { wrapper });
 
       expect(result.current.breakpoints.down("sm")).toBe(
-        "@media (max-width: 639px)",
+        "@media (max-width: 639px)"
       );
       expect(result.current.breakpoints.down("md")).toBe(
-        "@media (max-width: 767px)",
+        "@media (max-width: 767px)"
       );
       expect(result.current.breakpoints.down("lg")).toBe(
-        "@media (max-width: 1023px)",
+        "@media (max-width: 1023px)"
       );
       expect(result.current.breakpoints.down("xl")).toBe(
-        "@media (max-width: 1279px)",
+        "@media (max-width: 1279px)"
       );
       expect(result.current.breakpoints.down("2xl")).toBe(
-        "@media (max-width: 1535px)",
+        "@media (max-width: 1535px)"
       );
     });
   });
@@ -272,10 +272,10 @@ describe("useStyledTheme", () => {
 
       const responsiveSpacing8 = result.current.spacing.getResponsiveSpacing(8);
       expect(responsiveSpacing8["@media (max-width: 640px)"].padding).toBe(
-        "calc(2rem * 0.75)",
+        "calc(2rem * 0.75)"
       );
       expect(responsiveSpacing8["@media (min-width: 1024px)"].padding).toBe(
-        "calc(2rem * 1.25)",
+        "calc(2rem * 1.25)"
       );
     });
   });
@@ -362,13 +362,13 @@ describe("useStyledTheme", () => {
 
       const lightShadow = result.current.shadows.getColoredShadow(
         "#ff0000",
-        "light",
+        "light"
       );
       expect(lightShadow).toBe("0 4px 12px rgba(#ff0000, 0.1)");
 
       const heavyShadow = result.current.shadows.getColoredShadow(
         "#ff0000",
-        "heavy",
+        "heavy"
       );
       expect(heavyShadow).toBe("0 4px 12px rgba(#ff0000, 0.3)");
     });
@@ -439,13 +439,13 @@ describe("useStyledTheme", () => {
       });
 
       expect(result.current.colors.getPrimaryVariant("light")).toBe(
-        "lighten(0.1, #ff0000)",
+        "lighten(0.1, #ff0000)"
       );
       expect(result.current.colors.getSecondaryVariant("dark")).toBe(
-        "darken(0.1, #00ff00)",
+        "darken(0.1, #00ff00)"
       );
       expect(result.current.colors.getAccentVariant("transparent")).toBe(
-        "transparentize(0.1, #0000ff)",
+        "transparentize(0.1, #0000ff)"
       );
     });
 

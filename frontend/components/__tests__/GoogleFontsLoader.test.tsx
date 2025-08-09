@@ -16,7 +16,7 @@ describe("GoogleFontsLoader", () => {
 
   it("returns Google Fonts links for single font", () => {
     const { container } = render(
-      <GoogleFontsLoader googleFonts={["Roboto"]} />,
+      <GoogleFontsLoader googleFonts={["Roboto"]} />
     );
 
     // Check stylesheet link - this is the most important part
@@ -24,7 +24,7 @@ describe("GoogleFontsLoader", () => {
     expect(stylesheetLink).toBeInTheDocument();
     expect(stylesheetLink).toHaveAttribute(
       "href",
-      "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap",
+      "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap"
     );
 
     // In real environment, there would also be preconnect links,
@@ -35,43 +35,43 @@ describe("GoogleFontsLoader", () => {
 
   it("returns Google Fonts links for multiple fonts", () => {
     const { container } = render(
-      <GoogleFontsLoader googleFonts={["Open Sans", "Lato", "Montserrat"]} />,
+      <GoogleFontsLoader googleFonts={["Open Sans", "Lato", "Montserrat"]} />
     );
 
     const stylesheetLink = container.querySelector('link[rel="stylesheet"]');
     expect(stylesheetLink).toHaveAttribute(
       "href",
-      "https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Lato:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap",
+      "https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Lato:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap"
     );
   });
 
   it("handles fonts with spaces correctly", () => {
     const { container } = render(
-      <GoogleFontsLoader googleFonts={["Open Sans", "Roboto Slab"]} />,
+      <GoogleFontsLoader googleFonts={["Open Sans", "Roboto Slab"]} />
     );
 
     const stylesheetLink = container.querySelector('link[rel="stylesheet"]');
     expect(stylesheetLink).toHaveAttribute(
       "href",
-      "https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Roboto+Slab:wght@400;500;600;700&display=swap",
+      "https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Roboto+Slab:wght@400;500;600;700&display=swap"
     );
   });
 
   it("filters out empty font names", () => {
     const { container } = render(
-      <GoogleFontsLoader googleFonts={["Roboto", "", "  ", "Lato"]} />,
+      <GoogleFontsLoader googleFonts={["Roboto", "", "  ", "Lato"]} />
     );
 
     const stylesheetLink = container.querySelector('link[rel="stylesheet"]');
     expect(stylesheetLink).toHaveAttribute(
       "href",
-      "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Lato:wght@400;500;600;700&display=swap",
+      "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Lato:wght@400;500;600;700&display=swap"
     );
   });
 
   it("returns null when all font names are empty", () => {
     const { container } = render(
-      <GoogleFontsLoader googleFonts={["", "  ", "   "]} />,
+      <GoogleFontsLoader googleFonts={["", "  ", "   "]} />
     );
     expect(container.firstChild).toBeNull();
   });

@@ -42,7 +42,7 @@ describe("ApiClient", () => {
         "http://localhost:8000/api/campaigns/by-name/test-campaign/",
         expect.objectContaining({
           headers: { "Content-Type": "application/json" },
-        }),
+        })
       );
       expect(result).toEqual(mockCampaigns[0]);
     });
@@ -57,7 +57,7 @@ describe("ApiClient", () => {
 
       expect(fetch).toHaveBeenCalledWith(
         "http://localhost:8000/api/campaigns/by-name/test%20campaign%20with%20spaces/",
-        expect.any(Object),
+        expect.any(Object)
       );
     });
 
@@ -68,7 +68,7 @@ describe("ApiClient", () => {
       });
 
       await expect(
-        apiClient.getCampaignByName("non-existent-campaign"),
+        apiClient.getCampaignByName("non-existent-campaign")
       ).rejects.toThrow("HTTP error! status: 404");
     });
 
@@ -80,7 +80,7 @@ describe("ApiClient", () => {
         });
 
         await expect(
-          apiClient.getCampaignByName("test-campaign"),
+          apiClient.getCampaignByName("test-campaign")
         ).rejects.toThrow("HTTP error! status: 500");
       });
     });
@@ -90,7 +90,7 @@ describe("ApiClient", () => {
         (fetch as jest.Mock).mockRejectedValueOnce(new Error("Network error"));
 
         await expect(
-          apiClient.getCampaignByName("test-campaign"),
+          apiClient.getCampaignByName("test-campaign")
         ).rejects.toThrow("Network error");
       });
     });
@@ -113,12 +113,12 @@ describe("ApiClient", () => {
       });
 
       await expect(apiClient.getCampaignByName("")).rejects.toThrow(
-        "HTTP error! status: 404",
+        "HTTP error! status: 404"
       );
 
       expect(fetch).toHaveBeenCalledWith(
         "http://localhost:8000/api/campaigns/by-name//",
-        expect.any(Object),
+        expect.any(Object)
       );
     });
   });

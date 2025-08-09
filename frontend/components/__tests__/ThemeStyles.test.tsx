@@ -25,7 +25,7 @@ describe("ThemeStyles", () => {
     const cssVariables = ":root { --theme-primary: #ff0000; }";
     const customCss = ".custom { color: red; }";
     const { container } = render(
-      <ThemeStyles cssVariables={cssVariables} customCss={customCss} />,
+      <ThemeStyles cssVariables={cssVariables} customCss={customCss} />
     );
 
     const styleTags = container.querySelectorAll("style");
