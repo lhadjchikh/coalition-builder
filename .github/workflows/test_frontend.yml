@@ -32,6 +32,7 @@ jobs:
           cd frontend && docker buildx build \
             --cache-from=type=local,src=/tmp/.buildx-cache-unit \
             --cache-to=type=local,dest=/tmp/.buildx-cache-unit-new,mode=max \
+            --no-cache-filter=frontend-builder \
             --load \
             --target=frontend-builder \
             -t coalition_frontend_test:latest \
