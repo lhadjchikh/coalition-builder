@@ -7,7 +7,6 @@ from pydantic import Field, validator
 from coalition.stakeholders.validators import AddressValidator
 
 if TYPE_CHECKING:
-
     from coalition.content.models import ContentBlock, HomePage, Theme
 
 # Import models for ModelSchema

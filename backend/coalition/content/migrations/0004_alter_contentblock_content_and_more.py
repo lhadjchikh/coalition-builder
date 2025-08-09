@@ -5,7 +5,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("content", "0003_remove_contentblock_homepage_and_more"),
     ]

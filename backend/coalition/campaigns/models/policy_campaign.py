@@ -78,7 +78,6 @@ class PolicyCampaign(models.Model):
         return self.title
 
     def current_bills(self) -> "models.QuerySet[Bill]":
-
         session = f"{((timezone.now().date().year - 1789) // 2) + 1}th"
         return self.bills.filter(session=session)
 

@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("content", "0005_homepage_hero_overlay_color_and_more"),
     ]

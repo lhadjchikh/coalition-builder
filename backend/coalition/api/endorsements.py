@@ -369,9 +369,12 @@ def create_endorsement(
 ) -> Endorsement:
     """Create a new endorsement with stakeholder deduplication and spam prevention"""
     # Validate campaign and prepare data for spam checks
-    campaign, ip_address, stakeholder_data, form_data = (
-        _validate_and_prepare_endorsement_data(request, data)
-    )
+    (
+        campaign,
+        ip_address,
+        stakeholder_data,
+        form_data,
+    ) = _validate_and_prepare_endorsement_data(request, data)
 
     # Perform comprehensive spam checks
     _perform_spam_checks(
