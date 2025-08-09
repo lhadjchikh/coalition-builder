@@ -92,7 +92,7 @@ jobs:
         run: |
           mkdir -p docs/api
           cp -r backend/docs/_build/html/* docs/api/
-      
+
       - name: Copy frontend docs to site
         run: |
           mkdir -p docs/frontend

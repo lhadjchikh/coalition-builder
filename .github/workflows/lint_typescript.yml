@@ -32,5 +32,3 @@ jobs:
           # Run typecheck with the build config that excludes test files
           npx tsc --noEmit -p tsconfig.build.json
         working-directory: frontend
-
-
