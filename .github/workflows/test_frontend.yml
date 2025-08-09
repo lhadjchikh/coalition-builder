@@ -29,14 +29,13 @@ jobs:
       # Build a lightweight image just for frontend unit tests
       - name: Build frontend test image
         run: |
-          docker buildx build \
+          cd frontend && docker buildx build \
             --cache-from=type=local,src=/tmp/.buildx-cache-unit \
             --cache-to=type=local,dest=/tmp/.buildx-cache-unit-new,mode=max \
             --load \
             --target=frontend-builder \
             -t coalition_frontend_test:latest \
-            -f Dockerfile \
-            frontend/
+            .
 
       # Temp fix for cache
       - name: Move cache
