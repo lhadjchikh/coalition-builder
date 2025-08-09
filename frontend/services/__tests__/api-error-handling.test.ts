@@ -1,5 +1,5 @@
 import API from "../api";
-import { withSuppressedErrors } from "../../tests/utils/testUtils";
+import { withSuppressedErrors } from "@/tests/utils/testUtils";
 import {
   createMockResponse,
   getExpectedUrl,

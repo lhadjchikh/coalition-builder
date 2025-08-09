@@ -3,7 +3,7 @@ import { render } from "@testing-library/react";
 import { notFound } from "next/navigation";
 import CampaignPage, { generateStaticParams, generateMetadata } from "../page";
 import { apiClient } from "../../../../lib/api";
-import { withSuppressedErrors } from "../../../../tests/utils/testUtils";
+import { withSuppressedErrors } from "@/tests/utils/testUtils";
 
 // Mock dependencies
 jest.mock("next/navigation", () => ({

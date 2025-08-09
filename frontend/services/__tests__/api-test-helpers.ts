@@ -35,8 +35,12 @@ export const getExpectedUrl = (
   path: string,
   originalEnv: NodeJS.ProcessEnv
 ): string => {
-  // The API client is instantiated once when the module loads
-  // It will always use localhost:8000 in test environments
+  // Check if window is defined (browser/jsdom environment)
+  if (typeof window !== "undefined") {
+    // Browser environment uses relative URLs
+    return path;
+  }
+  // SSR/Node environment uses full URLs
   return `http://localhost:8000${path}`;
 };
 
