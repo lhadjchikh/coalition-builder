@@ -473,10 +473,14 @@ describe("CampaignsList", () => {
 
       // Verify the image with full credits
       const bayImage = screen.getByAltText("Chesapeake Bay");
-      const imageContainer = bayImage.closest(".w-full.h-full");
-
+      
+      // The image should have the imgClassName classes
+      expect(bayImage).toHaveClass("object-cover", "object-center");
+      
+      // The container should have the className classes
+      const imageContainer = bayImage.closest('[data-testid="image-with-credit"]');
       expect(imageContainer).toBeInTheDocument();
-      expect(bayImage).toHaveClass("w-full", "h-full", "object-cover");
+      expect(imageContainer).toHaveClass("w-full", "h-full");
     });
 
     it("uses campaign title as fallback for image alt text", () => {
