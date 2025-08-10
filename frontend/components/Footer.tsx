@@ -75,7 +75,7 @@ const Footer: React.FC<FooterProps> = ({
           <div className="lg:col-span-1">
             {showSocialLinks && (
               <div className="flex flex-col items-center lg:items-start">
-                <h4 className="text-white font-semibold mb-4 text-center lg:text-left text-lg leading-none">
+                <h4 className="section-header text-white font-semibold mb-4 text-center lg:text-left text-lg leading-tight">
                   Follow Us
                 </h4>
                 <SocialLinks
@@ -89,7 +89,7 @@ const Footer: React.FC<FooterProps> = ({
 
           {/* Site Navigation Column */}
           <div className="lg:col-span-1">
-            <h4 className="text-white font-semibold mb-4 text-center lg:text-left text-base sm:text-lg leading-none">
+            <h4 className="section-header text-white font-semibold mb-4 text-center lg:text-left text-base sm:text-lg leading-tight">
               Site Navigation
             </h4>
             <nav aria-label="Footer navigation">
@@ -132,7 +132,7 @@ const Footer: React.FC<FooterProps> = ({
 
           {/* Support & Legal Column */}
           <div className="lg:col-span-1">
-            <h4 className="text-white font-semibold mb-4 text-center lg:text-left text-base sm:text-lg leading-none">
+            <h4 className="section-header text-white font-semibold mb-4 text-center lg:text-left text-base sm:text-lg leading-tight">
               Support & Legal
             </h4>
             {showLegalLinks && (
