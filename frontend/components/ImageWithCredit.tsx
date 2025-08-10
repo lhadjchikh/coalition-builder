@@ -54,6 +54,51 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
   priority = false,
   fill = false,
 }) => {
+  // Helper function to render fill mode image
+  const renderFillImage = () => (
+    <div className="relative w-full h-full">
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        className={imgClassName}
+        title={title}
+        priority={priority}
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, (max-width: 1280px) 1280px, 100vw"
+      />
+    </div>
+  );
+
+  // Helper function to render responsive image without explicit dimensions
+  const renderResponsiveImage = () => (
+    <div className="relative w-full">
+      <Image
+        src={src}
+        alt={alt}
+        width={1200}
+        height={800}
+        className={`${imgClassName} w-full h-auto`}
+        title={title}
+        priority={priority}
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, (max-width: 1280px) 1280px, 100vw"
+        style={{ width: "100%", height: "auto" }}
+      />
+    </div>
+  );
+
+  // Helper function to render fixed dimension image
+  const renderFixedImage = () => (
+    <Image
+      src={src}
+      alt={alt}
+      width={width!}
+      height={height!}
+      className={imgClassName}
+      title={title}
+      priority={priority}
+    />
+  );
+
   // Use caption if provided, otherwise build credit text from individual fields
   const creditText =
     caption?.trim() ||
@@ -170,33 +215,12 @@ const ImageWithCredit: React.FC<ImageWithCreditProps> = ({
     .filter(Boolean)
     .join(" ");
 
-  // Determine if we should use fill mode or specific dimensions
-  const imageElement =
-    fill || !width || !height ? (
-      <div className="relative w-full">
-        <Image
-          src={src}
-          alt={alt}
-          width={1200}
-          height={800}
-          className={`${imgClassName} w-full h-auto`}
-          title={title}
-          priority={priority}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, (max-width: 1280px) 1280px, 100vw"
-          style={{ width: "100%", height: "auto" }}
-        />
-      </div>
-    ) : (
-      <Image
-        src={src}
-        alt={alt}
-        width={width}
-        height={height}
-        className={imgClassName}
-        title={title}
-        priority={priority}
-      />
-    );
+  // Determine which image rendering function to use
+  const imageElement = fill
+    ? renderFillImage()
+    : !width || !height
+      ? renderResponsiveImage()
+      : renderFixedImage();
 
   return (
     <div className={containerClasses} data-testid="image-with-credit">

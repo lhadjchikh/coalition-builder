@@ -40,6 +40,10 @@ ARG API_URL
 ARG CLOUDFRONT_DOMAIN
 ARG BACKEND_DOMAIN
 
+# Set environment variables from build args for Next.js build
+ENV CLOUDFRONT_DOMAIN=$CLOUDFRONT_DOMAIN
+ENV BACKEND_DOMAIN=$BACKEND_DOMAIN
+
 # Build with cache enabled
 # Skip static generation during build since API is not available
 ENV SKIP_STATIC_GENERATION=true

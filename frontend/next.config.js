@@ -115,8 +115,9 @@ const nextConfig = {
         ? [process.env.BACKEND_DOMAIN.replace(/^https?:\/\//, "")]
         : []),
     ].filter(Boolean),
-    // Allow dynamic image sizing when dimensions are unknown
-    unoptimized: process.env.NODE_ENV === "development",
+    // Enable image optimization in both development and production
+    // This ensures consistent behavior and allows testing optimization during development
+    unoptimized: false,
   },
 };
 

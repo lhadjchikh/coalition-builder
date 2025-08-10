@@ -57,7 +57,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
 
     if (campaignCount === 1) {
       // Single card: center on all screen sizes with max width
-      return "grid grid-cols-1 gap-6 lg:gap-8 justify-items-center max-w-md mx-auto";
+      return "flex justify-center";
     } else {
       // Multiple cards: responsive grid
       return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8";
@@ -144,6 +144,7 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
                   campaign-card-animate ${
                     isVisible ? "campaign-card-visible" : ""
                   }
+                  ${campaigns.length === 1 ? "max-w-lg w-full" : ""}
                   ${cardClassName}
                 `}
                 data-testid={`campaign-${campaign.id}`}
@@ -172,18 +173,19 @@ const CampaignsList: React.FC<CampaignsListProps> = ({
                       caption={campaign.image_caption}
                       captionDisplay={campaign.image_caption_display}
                       creditDisplay="overlay"
-                      imgClassName="w-full h-full object-cover"
+                      imgClassName="object-cover object-center"
                       className="w-full h-full"
+                      fill={true}
                     />
                   </div>
                 )}
 
                 <div className="p-5 sm:p-6">
-                  <h3 className="h4 text-theme-heading mb-3 break-normal">
+                  <h3 className="h4 text-theme-heading mb-3 break-normal text-balance">
                     {campaign.title}
                   </h3>
 
-                  <p className="text-body text-theme-text-body mb-6 break-normal hyphens-none">
+                  <p className="text-body text-theme-text-body mb-6 break-normal hyphens-none text-balance">
                     {campaign.summary}
                   </p>
 
