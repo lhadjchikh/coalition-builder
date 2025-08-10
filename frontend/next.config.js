@@ -65,7 +65,7 @@ const nextConfig = {
   images: {
     // Disable optimization in production as workaround for CloudFront fetch issues
     // TODO: Re-enable once container networking to CloudFront is resolved
-    unoptimized: process.env.NODE_ENV === "production",
+    unoptimized: true,
     // For Next.js 12.3.0+, use remotePatterns for more flexible configuration
     remotePatterns: [
       // Only allow localhost in development
