@@ -411,21 +411,13 @@ article p,
   -ms-hyphens: auto;
 }
 
-/* Footer and section headers - prevent unwanted text wrapping */
+/* Footer and section headers - proper line height and text wrapping */
 .section-header {
   line-height: 1.25; /* Same as Tailwind's leading-tight */
-  white-space: nowrap; /* Prevent wrapping on single-line headers */
   hyphens: none;
   -webkit-hyphens: none;
   -moz-hyphens: none;
   -ms-hyphens: none;
-}
-
-/* Allow wrapping on very small screens if needed */
-@media (max-width: 399px) {
-  .section-header {
-    white-space: normal; /* Allow wrapping on very small screens */
-  }
 }
 
 /* Ensure proper text flow on very small screens */
