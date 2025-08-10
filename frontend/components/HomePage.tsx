@@ -96,14 +96,14 @@ const HomePage: React.FC<HomePageProps> = ({
 
         {/* Dynamic Content Blocks */}
         {contentBlocks && contentBlocks.length > 0 && ContentBlockComponent && (
-          <>
+          <div className="content-blocks-wrapper">
             {contentBlocks
               .filter((block) => block.is_visible)
               .sort((a, b) => a.order - b.order)
               .map((block) => (
                 <ContentBlockComponent key={block.id} block={block} />
               ))}
-          </>
+          </div>
         )}
 
         {/* Campaigns Section */}
