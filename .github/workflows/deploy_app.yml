@@ -312,6 +312,7 @@ jobs:
           build-args: |
             BUILDKIT_INLINE_CACHE=1
             API_URL=http://localhost:8000
+            CLOUDFRONT_DOMAIN=${{ vars.CLOUDFRONT_DOMAIN }}
           platforms: linux/amd64
 
       # Move cache to prevent it from growing indefinitely
