@@ -360,10 +360,11 @@ select,
 body {
   word-break: normal;
   overflow-wrap: break-word;
-  hyphens: auto;
-  -webkit-hyphens: auto;
-  -moz-hyphens: auto;
-  -ms-hyphens: auto;
+  /* Disable automatic hyphenation - too aggressive for headers/nav */
+  hyphens: none;
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  -ms-hyphens: none;
 }
 
 /* Prevent breaking of common UI elements */
@@ -386,17 +387,29 @@ nav a {
 }
 
 /* Auto-protect common proper nouns and place names from breaking */
-:is(h1, h2, h3, .hero-title, .hero-subtitle, .h1, .h2, .h3) {
-  /* Use CSS hyphenation rules that respect proper nouns */
-  hyphens: manual;
-  -webkit-hyphens: manual;
-  -moz-hyphens: manual;
+:is(h1, h2, h3, h4, h5, h6, .hero-title, .hero-subtitle, .h1, .h2, .h3) {
+  /* Disable hyphenation for headers - no breaking words */
+  hyphens: none;
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  -ms-hyphens: none;
   /* Prevent awkward breaks in titles */
   text-wrap: balance;
   word-spacing: 0.1em;
   /* Additional protection for proper nouns */
   word-break: normal;
   overflow-wrap: break-word;
+}
+
+/* Enable hyphenation only for long-form content where it's beneficial */
+article p,
+.prose p,
+.content-block p,
+.description {
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  -ms-hyphens: auto;
 }
 
 /* Ensure proper text flow on very small screens */
