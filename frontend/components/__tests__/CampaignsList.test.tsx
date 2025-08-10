@@ -473,12 +473,14 @@ describe("CampaignsList", () => {
 
       // Verify the image with full credits
       const bayImage = screen.getByAltText("Chesapeake Bay");
-      
+
       // The image should have the imgClassName classes
       expect(bayImage).toHaveClass("object-cover", "object-center");
-      
+
       // The container should have the className classes
-      const imageContainer = bayImage.closest('[data-testid="image-with-credit"]');
+      const imageContainer = bayImage.closest(
+        '[data-testid="image-with-credit"]'
+      );
       expect(imageContainer).toBeInTheDocument();
       expect(imageContainer).toHaveClass("w-full", "h-full");
     });
