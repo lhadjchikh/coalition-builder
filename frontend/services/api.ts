@@ -42,7 +42,9 @@ class FrontendApiClient extends BaseApiClient {
 
   constructor() {
     super({
-      baseURL: "", // Don't set a fixed base URL
+      // Set to empty string - actual URL is determined dynamically in request()
+      // This prevents build-time URL from being baked into the bundle
+      baseURL: "",
       timeout: 30000,
     });
   }
@@ -51,7 +53,8 @@ class FrontendApiClient extends BaseApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    // Get the base URL dynamically each time to ensure correct URL
+    // Override parent's baseURL usage - get URL dynamically each time
+    // This ensures SSR uses internal URLs while browser uses relative URLs
     const baseUrl = getBaseUrl();
     const url = baseUrl ? `${baseUrl}${endpoint}` : endpoint;
 
