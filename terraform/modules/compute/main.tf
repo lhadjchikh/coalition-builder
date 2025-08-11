@@ -33,6 +33,10 @@ locals {
       value = "False"
     },
     {
+      name  = "USE_S3_DIRECT_URLS"
+      value = "true" # Use S3 URLs for VPC endpoint access (enables Next.js image optimization)
+    },
+    {
       name  = "ALLOWED_HOSTS"
       value = "${var.allowed_hosts},${var.alb_dns_name},${var.domain_name},www.${var.domain_name}"
     },

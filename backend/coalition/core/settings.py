@@ -641,7 +641,14 @@ AWS_S3_SESSION_TOKEN = None
 AWS_S3_SIGNATURE_VERSION = "s3v4"
 
 # Use CloudFront domain for generating URLs when available
-if CLOUDFRONT_DOMAIN:
+# unless USE_S3_DIRECT_URLS is set (for VPC endpoint access in ECS)
+USE_S3_DIRECT_URLS = os.getenv("USE_S3_DIRECT_URLS", "false").lower() == "true"
+
+if USE_S3_DIRECT_URLS or not CLOUDFRONT_DOMAIN:
+    # Use S3 URLs directly (works with VPC endpoints)
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+elif CLOUDFRONT_DOMAIN:
+    # Use CloudFront for public access
     AWS_S3_CUSTOM_DOMAIN = CLOUDFRONT_DOMAIN
 else:
     AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
