@@ -650,7 +650,7 @@ if USE_S3_DIRECT_URLS or not CLOUDFRONT_DOMAIN:
 elif CLOUDFRONT_DOMAIN:
     # Use CloudFront for public access
     AWS_S3_CUSTOM_DOMAIN = CLOUDFRONT_DOMAIN
-else:
+else:  # pragma: no cover
     AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 
 # S3 File Settings
