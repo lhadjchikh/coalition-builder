@@ -177,7 +177,7 @@ const Footer: React.FC<FooterProps> = ({
               </span>{" "}
               <span className="copyright-text">All rights reserved.</span>
             </p>
-            <p className="text-gray-500 footer-attribution">
+            <p className="text-gray-500 text-sm sm:text-base footer-attribution">
               Powered by{" "}
               <a
                 href="https://github.com/lhadjchikh/coalition-builder"
