@@ -63,9 +63,7 @@ const nextConfig = {
 
   // Images configuration
   images: {
-    // Disable optimization in production as workaround for CloudFront fetch issues
-    // TODO: Re-enable once container networking to CloudFront is resolved
-    unoptimized: true,
+    unoptimized: false,
     // For Next.js 12.3.0+, use remotePatterns for more flexible configuration
     remotePatterns: [
       // Only allow localhost in development
@@ -103,6 +101,16 @@ const nextConfig = {
             {
               protocol: "https",
               hostname: process.env.BACKEND_DOMAIN.replace(/^https?:\/\//, ""),
+              pathname: "/**",
+            },
+          ]
+        : []),
+      // Allow S3 URLs for VPC endpoint access
+      ...(process.env.AWS_STORAGE_BUCKET_NAME
+        ? [
+            {
+              protocol: "https",
+              hostname: `${process.env.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com`,
               pathname: "/**",
             },
           ]
