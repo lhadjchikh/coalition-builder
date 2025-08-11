@@ -19,13 +19,19 @@ export function getBaseUrl(): string {
     return "http://localhost:8000";
   }
 
-  // For development, check if we're in browser context
+  // For browser context, always use relative URLs
   if (typeof window !== "undefined") {
-    // Browser environment - use relative URLs or current origin
+    // Browser environment - use relative URLs to avoid CORS
     return "";
   }
 
-  // SSR environment - fallback to localhost
+  // SSR environment in production - use internal API URL or relative
+  if (process.env.NODE_ENV === "production") {
+    // Use API_URL for SSR fetches, or empty string for relative URLs
+    return process.env.API_URL || "";
+  }
+
+  // Development SSR - fallback to localhost
   return "http://localhost:8000";
 }
 
@@ -36,7 +42,7 @@ class FrontendApiClient extends BaseApiClient {
 
   constructor() {
     super({
-      baseURL: getBaseUrl(),
+      baseURL: "", // Don't set a fixed base URL
       timeout: 30000,
     });
   }
@@ -45,7 +51,9 @@ class FrontendApiClient extends BaseApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = this.baseURL ? `${this.baseURL}${endpoint}` : endpoint;
+    // Get the base URL dynamically each time to ensure correct URL
+    const baseUrl = getBaseUrl();
+    const url = baseUrl ? `${baseUrl}${endpoint}` : endpoint;
 
     let attempts = 0;
     const maxRetries = 3;
