@@ -244,7 +244,7 @@ variable "health_check_path_api" {
 variable "health_check_path_app" {
   description = "Path for app container and load balancer health checks"
   type        = string
-  default     = "/health"
+  default     = "/health/"
 }
 
 variable "allowed_hosts" {
