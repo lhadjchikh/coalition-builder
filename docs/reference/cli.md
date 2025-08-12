@@ -535,16 +535,16 @@ cd frontend && npm run type-check
 
 ```bash
 # Check backend health
-curl http://localhost:8000/health/
+curl http://localhost:8000/api/health/
 
 # Check SSR health
-curl http://localhost:3000/health
+curl http://localhost:3000/health/
 
 # Check database connectivity
 docker compose exec backend poetry run python manage.py dbshell -c "SELECT 1;"
 
 # Check all services
-curl http://localhost:8000/health/ && \
+curl http://localhost:8000/api/health/ && \
 curl http://localhost:3000/health/ && \
 echo "All services healthy"
 ```
