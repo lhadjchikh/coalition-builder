@@ -36,6 +36,13 @@ def api_health_check(request: HttpRequest) -> JsonResponse:
     return health_check_view(request)
 
 
+@api.get("/health/", tags=["Health"], include_in_schema=False)
+def api_health_check_slash(request: HttpRequest) -> JsonResponse:
+    """Health check endpoint with trailing slash for compatibility"""
+    # Re-use the Django view health check function
+    return health_check_view(request)
+
+
 @api.get("/csrf-token/", tags=["Auth"])
 def get_csrf_token(request: HttpRequest) -> dict:
     """Get CSRF token for API requests"""
