@@ -5,7 +5,13 @@ import { BaseApiClient } from "./api-client";
 import type { Endorsement, EndorsementCreate } from "../types";
 
 export function getBaseUrl(): string {
-  // Check environment variables in order of precedence
+  // For browser context, always use relative URLs to avoid CORS
+  if (typeof window !== "undefined") {
+    // Browser environment - use relative URLs
+    return "";
+  }
+
+  // Check environment variables in order of precedence (for SSR only)
   if (process.env.REACT_APP_API_URL) {
     return process.env.REACT_APP_API_URL;
   }
@@ -17,12 +23,6 @@ export function getBaseUrl(): string {
   // In CI environments, default to localhost
   if (process.env.CI === "true") {
     return "http://localhost:8000";
-  }
-
-  // For browser context, always use relative URLs
-  if (typeof window !== "undefined") {
-    // Browser environment - use relative URLs to avoid CORS
-    return "";
   }
 
   // SSR environment in production - use internal API URL or relative

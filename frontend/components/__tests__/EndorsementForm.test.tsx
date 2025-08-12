@@ -2,11 +2,11 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import EndorsementForm from "../EndorsementForm";
 import { Campaign } from "../../types/index";
-import API from "../../lib/api";
+import API from "../../services/api";
 import analytics from "../../services/analytics";
 
 // Mock API and analytics
-jest.mock("../../lib/api", () => ({
+jest.mock("../../services/api", () => ({
   __esModule: true,
   default: {
     getHomepage: jest.fn(),

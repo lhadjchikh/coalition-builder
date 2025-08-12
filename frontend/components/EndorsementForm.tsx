@@ -4,7 +4,7 @@ import React, {
   forwardRef,
   useImperativeHandle,
 } from "react";
-import API from "../lib/api";
+import API from "../services/api";
 import analytics from "../services/analytics";
 import { Campaign, EndorsementCreate, Stakeholder } from "../types/index";
 import SocialShareButtons from "./SocialShareButtons";
