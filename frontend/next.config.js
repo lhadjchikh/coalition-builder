@@ -119,16 +119,6 @@ const nextConfig = {
           ]
         : []),
     ],
-    // Keep domains for backwards compatibility and CloudFront
-    domains: [
-      "localhost",
-      ...(process.env.CLOUDFRONT_DOMAIN
-        ? [process.env.CLOUDFRONT_DOMAIN.replace(/^https?:\/\//, "")]
-        : []),
-      ...(process.env.BACKEND_DOMAIN
-        ? [process.env.BACKEND_DOMAIN.replace(/^https?:\/\//, "")]
-        : []),
-    ].filter(Boolean),
     // Enable image optimization in both development and production
     // This ensures consistent behavior and allows testing optimization during development
     unoptimized: false,
