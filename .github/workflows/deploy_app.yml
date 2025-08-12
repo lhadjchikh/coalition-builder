@@ -311,7 +311,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache-app-new,mode=max
           build-args: |
             BUILDKIT_INLINE_CACHE=1
-            API_URL=${{ vars.BACKEND_API_URL || 'http://api:8000' }}
+            API_URL=${{ vars.BACKEND_API_URL || 'http://localhost:8000' }}
             CLOUDFRONT_DOMAIN=${{ vars.CLOUDFRONT_DOMAIN }}
           platforms: linux/amd64
 
