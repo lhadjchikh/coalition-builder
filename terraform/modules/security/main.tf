@@ -128,8 +128,8 @@ resource "aws_security_group" "alb_sg" {
 
 # Add cross-references separately to avoid circular dependencies
 
-# Allow ALB to send traffic to App containers (egress from ALB)
-resource "aws_vpc_security_group_egress_rule" "alb_to_app" {
+# Allow ALB to send traffic to api containers (egress from ALB)
+resource "aws_vpc_security_group_egress_rule" "alb_to_api" {
   security_group_id            = aws_security_group.alb_sg.id
   referenced_security_group_id = aws_security_group.app_sg.id
   from_port                    = 8000
@@ -138,8 +138,8 @@ resource "aws_vpc_security_group_egress_rule" "alb_to_app" {
   description                  = "ALB to application containers on port 8000"
 }
 
-# Allow ALB to send traffic to SSR containers (egress from ALB)
-resource "aws_vpc_security_group_egress_rule" "alb_to_app_ssr" {
+# Allow ALB to send traffic to app containers (egress from ALB)
+resource "aws_vpc_security_group_egress_rule" "alb_to_app" {
   security_group_id            = aws_security_group.alb_sg.id
   referenced_security_group_id = aws_security_group.app_sg.id
   from_port                    = 3000
@@ -148,8 +148,8 @@ resource "aws_vpc_security_group_egress_rule" "alb_to_app_ssr" {
   description                  = "ALB to SSR container on port 3000"
 }
 
-# Allow App containers to receive traffic from ALB (ingress to app)
-resource "aws_vpc_security_group_ingress_rule" "app_from_alb" {
+# Allow api containers to receive traffic from ALB (ingress to api)
+resource "aws_vpc_security_group_ingress_rule" "api_from_alb" {
   security_group_id            = aws_security_group.app_sg.id
   referenced_security_group_id = aws_security_group.alb_sg.id
   from_port                    = 8000
@@ -158,8 +158,8 @@ resource "aws_vpc_security_group_ingress_rule" "app_from_alb" {
   description                  = "Accept traffic from ALB on port 8000"
 }
 
-# Allow App containers to receive SSR traffic from ALB (ingress to app)
-resource "aws_vpc_security_group_ingress_rule" "app_from_alb_ssr" {
+# Allow app containers to receive SSR traffic from ALB (ingress to app)
+resource "aws_vpc_security_group_ingress_rule" "app_from_alb" {
   security_group_id            = aws_security_group.app_sg.id
   referenced_security_group_id = aws_security_group.alb_sg.id
   from_port                    = 3000
