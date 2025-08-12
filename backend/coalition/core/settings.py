@@ -650,7 +650,7 @@ if USE_S3_DIRECT_URLS or not CLOUDFRONT_DOMAIN:
 elif CLOUDFRONT_DOMAIN:
     # Use CloudFront for public access
     AWS_S3_CUSTOM_DOMAIN = CLOUDFRONT_DOMAIN
-else:  # pragma: no cover
+else:
     AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 
 # S3 File Settings
@@ -662,9 +662,10 @@ AWS_DEFAULT_ACL = "public-read"  # Make uploaded files publicly readable
 AWS_S3_VERIFY_SSL = True
 
 # Media files configuration
-# Use CloudFront CDN when available for better performance and security
-if CLOUDFRONT_DOMAIN:
-    MEDIA_URL = f"https://{CLOUDFRONT_DOMAIN}/media/"
-else:
+# Use S3 URLs directly when USE_S3_DIRECT_URLS is set (for VPC endpoint access)
+# Otherwise use CloudFront CDN when available for better performance and security
+if USE_S3_DIRECT_URLS or not CLOUDFRONT_DOMAIN:
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+else:
+    MEDIA_URL = f"https://{CLOUDFRONT_DOMAIN}/media/"
 MEDIA_ROOT = "/media/"
