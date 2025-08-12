@@ -400,15 +400,28 @@ nav a {
   overflow-wrap: break-word;
 }
 
-/* Enable hyphenation only for long-form content where it's beneficial */
+/* Disable hyphenation by default for long-form content */
 article p,
 .prose p,
 .content-block p,
 .description {
-  hyphens: auto;
-  -webkit-hyphens: auto;
-  -moz-hyphens: auto;
-  -ms-hyphens: auto;
+  hyphens: none;
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  -ms-hyphens: none;
+}
+
+/* Enable hyphenation only on mobile where space is limited */
+@media (max-width: 768px) {
+  article p,
+  .prose p,
+  .content-block p,
+  .description {
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    -ms-hyphens: auto;
+  }
 }
 
 /* Footer and section headers - proper line height and text wrapping */
