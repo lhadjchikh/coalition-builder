@@ -5,6 +5,9 @@ const nextConfig = {
   // Enable standalone output for Docker
   output: "standalone",
 
+  // Preserve trailing slashes to match Django URL patterns
+  trailingSlash: true,
+
   // Webpack configuration
   webpack: (config) => {
     config.resolve.alias = {
