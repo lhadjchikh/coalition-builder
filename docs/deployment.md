@@ -137,9 +137,8 @@ docker compose run --rm api python manage.py loaddata sample_data/fixtures.json
 
 All deployments include health check endpoints:
 
-- `/health/` - Application health
-- `/api/health/` - API health
-- `/health` - Next.js frontend health check
+- `/health/` - Next.js frontend health check
+- `/api/health/` - Django API health check
 - `/metrics/` - Prometheus metrics
 
 ## Security Checklist

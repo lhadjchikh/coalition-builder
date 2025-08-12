@@ -545,7 +545,7 @@ docker compose exec backend poetry run python manage.py dbshell -c "SELECT 1;"
 
 # Check all services
 curl http://localhost:8000/health/ && \
-curl http://localhost:3000/health && \
+curl http://localhost:3000/health/ && \
 echo "All services healthy"
 ```
 

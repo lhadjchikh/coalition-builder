@@ -19,7 +19,7 @@ interface HealthResponse {
 const options: http.RequestOptions = {
   hostname: os.hostname() || "localhost",
   port: parseInt(process.env.PORT || "3000"),
-  path: "/health",
+  path: "/health/",
   method: "GET",
   timeout: 3000,
   headers: {
