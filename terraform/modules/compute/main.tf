@@ -34,7 +34,7 @@ locals {
     },
     {
       name  = "USE_S3_DIRECT_URLS"
-      value = "true" # Use S3 URLs for VPC endpoint access (enables Next.js image optimization)
+      value = "true" # Use S3 URLs via VPC endpoints instead of CloudFront
     },
     {
       name  = "ALLOWED_HOSTS"

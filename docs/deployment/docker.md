@@ -304,7 +304,7 @@ import requests
 
 def check_health():
     try:
-        response = requests.get('http://localhost:8000/health/', timeout=5)
+        response = requests.get('http://localhost:8000/api/health/', timeout=5)
         if response.status_code == 200:
             print("Backend health check passed")
             sys.exit(0)
@@ -328,7 +328,7 @@ const http = require("http");
 const options = {
   hostname: "localhost",
   port: 3000,
-  path: "/health",
+  path: "/health/",
   method: "GET",
   timeout: 5000,
 };

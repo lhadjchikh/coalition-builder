@@ -192,7 +192,7 @@ describe("SSR Integration Tests", () => {
     test(
       "SSR health endpoint reports healthy status",
       async () => {
-        const response = await fetch(`${FRONTEND_URL}/health`);
+        const response = await fetch(`${FRONTEND_URL}/health/`);
         expect(response.ok).toBe(true);
 
         const health = await response.json();
