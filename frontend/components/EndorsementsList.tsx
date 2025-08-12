@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import API from "../lib/api";
+import API from "../services/api";
 import { Endorsement } from "../types/index";
 import "../styles/Endorsements.css";
 
