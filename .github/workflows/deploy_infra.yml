@@ -74,7 +74,7 @@ jobs:
         id: wait_for_tests
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: Terraform Check
+          checkName: Check App / Terraform Check
           ref: ${{ github.event.after || github.sha }}
           timeoutSeconds: 1800 # 30 minutes timeout
           intervalSeconds: 60 # Check every minute
@@ -264,5 +264,85 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           cd terraform
-          # Add timeout and more verbose options
-          timeout 15m terraform apply -auto-approve -input=false || (echo "Terraform apply timed out or failed" && exit 1)
+
+          # Use unique filename to avoid conflicts between concurrent workflows
+          TF_APPLY_OUTPUT_FILE="/tmp/terraform_apply_output_${GITHUB_RUN_ID}_${GITHUB_RUN_ATTEMPT}.txt"
+
+          # Function to handle apply with better error reporting
+          run_apply() {
+            local output_file="$TF_APPLY_OUTPUT_FILE"
+            
+            echo "Starting Terraform apply..."
+            if timeout 15m terraform apply -auto-approve -input=false 2>&1 | tee "$output_file"; then
+              echo "✅ Terraform apply completed successfully"
+              return 0
+            else
+              local exit_code=$?
+              echo "❌ Terraform apply failed with exit code: $exit_code"
+              
+              # Check for specific error patterns
+              if grep -q "Error acquiring the state lock" "$output_file"; then
+                echo "::error::🔒 STATE LOCK ERROR: Terraform state is locked. Another operation may be in progress."
+                echo "::error::To force unlock, run: terraform force-unlock <LOCK_ID>"
+                echo "::error::Check the DynamoDB table 'terraform-state-lock' for stuck locks"
+                
+                # Extract lock ID if present
+                if grep -q "Lock Info:" "$output_file"; then
+                  echo "::error::Lock details:"
+                  grep -A 5 "Lock Info:" "$output_file"
+                fi
+              elif grep -q "timeout" "$output_file" || [ "$exit_code" -eq 124 ]; then
+                echo "::error::⏱️ TIMEOUT ERROR: Terraform apply took longer than 15 minutes"
+                echo "::error::This may indicate a state lock issue or a complex infrastructure change"
+              elif grep -q "Error: " "$output_file"; then
+                echo "::error::Terraform errors detected:"
+                grep "Error: " "$output_file" | head -10
+              fi
+              
+              return $exit_code
+            fi
+          }
+
+          # Run apply with error handling
+          if ! run_apply; then
+            echo "::error::Terraform apply failed. Check the logs above for details."
+            
+            # Create job summary for better visibility
+            echo "## ❌ Terraform Apply Failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Store the exit code from run_apply
+            local apply_exit_code=$?
+            
+            # Check for common error patterns and add to summary
+            if grep -q "Error acquiring the state lock" "$TF_APPLY_OUTPUT_FILE" 2>/dev/null; then
+              echo "### 🔒 State Lock Error Detected" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "The Terraform state is currently locked. This usually means:" >> $GITHUB_STEP_SUMMARY
+              echo "- Another Terraform operation is in progress" >> $GITHUB_STEP_SUMMARY
+              echo "- A previous operation was interrupted and didn't release the lock" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "**To resolve:**" >> $GITHUB_STEP_SUMMARY
+              echo "1. Wait for any running operations to complete" >> $GITHUB_STEP_SUMMARY
+              echo "2. If no operations are running, manually unlock with: \`terraform force-unlock <LOCK_ID>\`" >> $GITHUB_STEP_SUMMARY
+              echo "3. Check the DynamoDB table \`terraform-state-lock\` for stuck locks" >> $GITHUB_STEP_SUMMARY
+            elif grep -q "timeout" "$TF_APPLY_OUTPUT_FILE" 2>/dev/null || [ "$apply_exit_code" -eq 124 ]; then
+              echo "### ⏱️ Timeout Error" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "The operation timed out after 15 minutes. This could indicate:" >> $GITHUB_STEP_SUMMARY
+              echo "- A state lock that couldn't be acquired" >> $GITHUB_STEP_SUMMARY
+              echo "- A complex infrastructure change taking too long" >> $GITHUB_STEP_SUMMARY
+              echo "- Network connectivity issues" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "### Error Details" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "Check the workflow logs for specific error messages." >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            exit 1
+          fi
+
+          # Add success summary
+          echo "## ✅ Terraform Apply Successful" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Infrastructure changes have been successfully applied to production." >> $GITHUB_STEP_SUMMARY
