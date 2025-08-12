@@ -181,6 +181,23 @@ resource "aws_lb_listener_rule" "app_health" {
   }
 }
 
+# API Health check routing - /api/health endpoint for Django API
+resource "aws_lb_listener_rule" "api_health" {
+  listener_arn = aws_lb_listener.https.arn
+  priority     = 550
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.api.arn
+  }
+
+  condition {
+    path_pattern {
+      values = [var.health_check_path_api]
+    }
+  }
+}
+
 # Lower Priority: App Metrics routing (for monitoring tools)
 resource "aws_lb_listener_rule" "app_metrics" {
   listener_arn = aws_lb_listener.https.arn
