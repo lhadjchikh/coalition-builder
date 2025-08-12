@@ -69,16 +69,17 @@ jobs:
           echo "Waiting for all services to be ready..."
           sleep 30
 
-          # Check if backend is responding
+          # Check if backend is responding using the health endpoint
           timeout=60
-          until curl -s http://localhost:8000/api/ || [ $timeout -le 0 ]; do
+          until curl -s http://localhost:8000/api/health || [ $timeout -le 0 ]; do
             echo "Waiting for backend API to be ready..."
             sleep 5
             timeout=$((timeout-5))
           done
           if [ $timeout -le 0 ]; then
             echo "Backend API failed to start in time"
-            # Continue anyway, as we'll see test failures if API isn't available
+            docker compose logs api
+            exit 1
           fi
 
           # IMPORTANT: Test health check with localhost (like ECS does)
@@ -87,6 +88,8 @@ jobs:
             echo "✅ Health check passed - ECS health checks should work"
           else
             echo "❌ Health check failed - ECS health checks will fail in production!"
+            echo "Checking API logs for issues:"
+            docker compose logs api
             echo "This indicates ALLOWED_HOSTS configuration drift between docker-compose and terraform"
             exit 1
           fi
