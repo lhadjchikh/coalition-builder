@@ -32,6 +32,7 @@ ignore:
   - "backend/*/migrations/*"
   - "backend/staticfiles/*"
   - "backend/htmlcov/*"
+  - "backend/coalition/core/settings.py"
   - "frontend/build/*"
   - "frontend/coverage/*"
   - "frontend/.next/*"
