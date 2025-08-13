@@ -95,6 +95,19 @@ h3,
   }
 }
 
+/* Disable text-wrap: balance on mobile to prevent unnecessary wrapping */
+@media (max-width: 768px) {
+  h1,
+  .h1,
+  h2,
+  .h2,
+  h3,
+  .h3 {
+    text-wrap: unset;
+    white-space: normal;
+  }
+}
+
 h4,
 .h4 {
   font-size: var(--font-size-2xl);
