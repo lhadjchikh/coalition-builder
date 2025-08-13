@@ -310,29 +310,58 @@ ANALYZE=true
 
 ### Image Optimization Configuration
 
-| Variable            | Description                                                     | Default | Required |
-| ------------------- | --------------------------------------------------------------- | ------- | -------- |
-| `CLOUDFRONT_DOMAIN` | CloudFront CDN domain for serving optimized images              | -       | No       |
-| `BACKEND_DOMAIN`    | Backend domain for direct image serving (if different from CDN) | -       | No       |
+| Variable                  | Description                                                      | Default | Required |
+| ------------------------- | ---------------------------------------------------------------- | ------- | -------- |
+| `CLOUDFRONT_DOMAIN`       | CloudFront CDN domain (used when backend serves CloudFront URLs) | -       | See note |
+| `AWS_STORAGE_BUCKET_NAME` | S3 bucket name (used when backend serves direct S3 URLs)         | -       | See note |
+| `BACKEND_DOMAIN`          | Backend domain for direct image serving (if different from CDN)  | -       | No       |
+| `USE_S3_DIRECT_URLS`      | Backend setting: whether to serve S3 URLs directly vs CloudFront | `false` | No       |
 
-**Notes:**
+**How Image URLs Work:**
 
-- Next.js automatically optimizes images served through these domains
-- Supports dynamic image dimensions from backend storage
-- Protocol (http/https) is automatically stripped if included
-- Images are served with responsive sizing and WebP format when supported
+The backend (Django) generates image URLs based on its configuration:
+
+1. **When using CloudFront (recommended for production)**:
+   - Backend has `CLOUDFRONT_DOMAIN` set and `USE_S3_DIRECT_URLS=false`
+   - Image URLs look like: `https://d123456789.cloudfront.net/media/images/logo.jpg`
+   - Next.js needs `CLOUDFRONT_DOMAIN` in build environment to allow these URLs
+
+2. **When using S3 directly**:
+   - Backend has `USE_S3_DIRECT_URLS=true` OR no `CLOUDFRONT_DOMAIN` set
+   - Image URLs look like: `https://coalition-static-assets-a4853294.s3.amazonaws.com/media/images/logo.jpg`
+   - Next.js needs `AWS_STORAGE_BUCKET_NAME` in build environment to allow these URLs
+
+**Important Build-Time Requirements:**
+
+- Both `CLOUDFRONT_DOMAIN` and `AWS_STORAGE_BUCKET_NAME` should be provided at **build time**
+- This ensures Next.js can optimize images regardless of which URL pattern the backend uses
+- These are configured as GitHub repository variables for CI/CD deployments
+
+**GitHub Actions Configuration:**
+
+To enable image optimization in production deployments:
+
+1. Go to your GitHub repository → Settings → Secrets and variables → Actions
+2. Click on the "Variables" tab
+3. Add these repository variables:
+   - `CLOUDFRONT_DOMAIN`: Your CloudFront distribution domain (if using CDN)
+   - `AWS_STORAGE_BUCKET_NAME`: Your S3 bucket name (from Terraform outputs)
+
+Both should be set to handle all scenarios. The backend configuration determines which URLs are actually generated, but Next.js needs to be prepared for both patterns.
 
 **Example:**
 
 ```bash
-# CloudFront CDN (recommended for production)
+# Both should be set for maximum compatibility
 CLOUDFRONT_DOMAIN=d123456789.cloudfront.net
-
-# Or with custom domain
-CLOUDFRONT_DOMAIN=cdn.yourdomain.com
+AWS_STORAGE_BUCKET_NAME=coalition-static-assets-a4853294
 
 # Optional: Direct backend serving
 BACKEND_DOMAIN=api.yourdomain.com
+
+# Backend configuration (in ECS/production)
+USE_S3_DIRECT_URLS=false  # Use CloudFront URLs (recommended)
+# USE_S3_DIRECT_URLS=true  # Use S3 URLs directly (for VPC endpoints)
 ```
 
 ## Terraform/Deployment Variables
@@ -478,9 +507,10 @@ NEXT_PUBLIC_API_URL=https://yourdomain.com
 NODE_ENV=production
 NEXT_TELEMETRY_DISABLED=1
 
-# Image Sources
-CLOUDFRONT_DOMAIN=${CLOUDFRONT_DOMAIN}  # e.g., d123456789.cloudfront.net
-BACKEND_DOMAIN=${BACKEND_DOMAIN}        # Optional: api.yourdomain.com
+# Image Sources (Required for Next.js image optimization)
+CLOUDFRONT_DOMAIN=${CLOUDFRONT_DOMAIN}          # e.g., d123456789.cloudfront.net
+AWS_STORAGE_BUCKET_NAME=${S3_BUCKET_NAME}       # e.g., coalition-static-assets-a4853294
+BACKEND_DOMAIN=${BACKEND_DOMAIN}                # Optional: api.yourdomain.com
 
 # Monitoring
 LOG_LEVEL=INFO

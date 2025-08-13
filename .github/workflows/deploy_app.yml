@@ -312,6 +312,7 @@ jobs:
           build-args: |
             BUILDKIT_INLINE_CACHE=1
             CLOUDFRONT_DOMAIN=${{ vars.CLOUDFRONT_DOMAIN }}
+            AWS_STORAGE_BUCKET_NAME=${{ vars.AWS_STORAGE_BUCKET_NAME }}
           platforms: linux/amd64
 
       # Move cache to prevent it from growing indefinitely
