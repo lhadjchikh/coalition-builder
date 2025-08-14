@@ -1,12 +1,11 @@
 import logging
+import os
 from typing import TYPE_CHECKING
 
-from django.conf import settings
+import boto3
+from botocore.exceptions import ClientError, NoCredentialsError
 from django.contrib.gis.geos import Point
 from django.core.exceptions import ValidationError
-from django.db import connection
-from geopy.exc import GeocoderServiceError, GeocoderTimedOut
-from geopy.geocoders import Nominatim
 
 from coalition.regions.models import Region
 from coalition.stakeholders.constants import DistrictType
@@ -23,8 +22,24 @@ class GeocodingService:
     """Service for geocoding addresses and assigning legislative districts"""
 
     def __init__(self) -> None:
-        # Initialize Nominatim geocoder as fallback
-        self.nominatim = Nominatim(user_agent="coalition-builder")
+        # Initialize AWS Location Service client
+        self.location_client = None
+        self.place_index_name = os.environ.get("AWS_LOCATION_PLACE_INDEX_NAME")
+
+        if self.place_index_name:
+            try:
+                self.location_client = boto3.client(
+                    "location",
+                    region_name=os.environ.get("AWS_REGION", "us-east-1"),
+                )
+                logger.info(
+                    f"AWS Location initialized: {self.place_index_name}",
+                )
+            except (NoCredentialsError, ClientError) as e:
+                logger.error(f"Failed to initialize AWS Location Service: {e}")
+                self.location_client = None
+        else:
+            logger.warning("AWS_LOCATION_PLACE_INDEX_NAME not configured")
 
     def geocode_address(
         self,
@@ -46,19 +61,17 @@ class GeocodingService:
                 zip_code,
             )
 
-            # Try PostGIS Tiger geocoder first (most accurate for US addresses)
-            point = self._geocode_with_tiger(validated)
-            if point:
-                logger.info(f"Successfully geocoded with Tiger: {validated}")
-                return point
+            # Use AWS Location Service for geocoding
+            if self.location_client and self.place_index_name:
+                point = self._geocode_with_aws_location(validated)
+                if point:
+                    logger.info(f"Successfully geocoded with AWS Location: {validated}")
+                    return point
+                else:
+                    logger.warning(f"AWS Location failed to geocode: {validated}")
+            else:
+                logger.error("AWS Location Service not available for geocoding")
 
-            # Fall back to Nominatim
-            point = self._geocode_with_nominatim(validated)
-            if point:
-                logger.info(f"Successfully geocoded with Nominatim: {validated}")
-                return point
-
-            logger.warning(f"Failed to geocode address: {validated}")
             return None
 
         except ValidationError as e:
@@ -68,65 +81,10 @@ class GeocodingService:
             logger.error(f"Geocoding error: {e}")
             return None
 
-    def _geocode_with_tiger(self, address_parts: dict[str, str]) -> Point | None:
-        """Use PostGIS Tiger geocoder for US addresses"""
+    def _geocode_with_aws_location(self, address_parts: dict[str, str]) -> Point | None:
+        """Use AWS Location Service for geocoding (works via VPC endpoint)"""
         try:
-            with connection.cursor() as cursor:
-                # Check if geocode function exists before using it
-                cursor.execute(
-                    """
-                    SELECT EXISTS(
-                        SELECT 1 FROM information_schema.routines 
-                        WHERE routine_name = 'geocode' 
-                        AND routine_schema = 'tiger'
-                    )
-                    """,
-                )
-                if not cursor.fetchone()[0]:
-                    logger.info("Tiger geocode function not available")
-                    return None
-
-                # Format address for Tiger geocoder
-                address_string = (
-                    f"{address_parts['street_address']}, "
-                    f"{address_parts['city']}, "
-                    f"{address_parts['state']} "
-                    f"{address_parts['zip_code']}"
-                )
-
-                # Use PostGIS geocode function
-                cursor.execute(
-                    """
-                    SELECT 
-                        ST_X(geomout) as longitude, 
-                        ST_Y(geomout) as latitude,
-                        rating
-                    FROM geocode(%s, 1)
-                    WHERE rating >= 0
-                    ORDER BY rating 
-                    LIMIT 1
-                """,
-                    [address_string],
-                )
-
-                result = cursor.fetchone()
-                if result:
-                    longitude, latitude, rating = result
-                    # Only accept results with reasonable confidence
-                    # Tiger rating: lower is better (0 = exact match, 100 = no match)
-                    if rating <= settings.TIGER_GEOCODING_CONFIDENCE_THRESHOLD:
-                        return Point(longitude, latitude, srid=4326)
-
-            return None
-
-        except Exception as e:
-            logger.warning(f"Tiger geocoding failed: {e}")
-            return None
-
-    def _geocode_with_nominatim(self, address_parts: dict[str, str]) -> Point | None:
-        """Use Nominatim as fallback geocoder"""
-        try:
-            # Format address for Nominatim
+            # Format address for AWS Location
             address_string = AddressValidator.format_address(
                 address_parts["street_address"],
                 address_parts["city"],
@@ -134,25 +92,49 @@ class GeocodingService:
                 address_parts["zip_code"],
             )
 
-            # Add country for better results
-            address_string += ", USA"
-
-            location = self.nominatim.geocode(
-                address_string,
-                timeout=10,
-                country_codes=["us"],
+            # Search for the address using AWS Location Service
+            assert self.location_client is not None  # Type narrowing for mypy
+            response = self.location_client.search_place_index_for_text(
+                IndexName=self.place_index_name,
+                Text=address_string,
+                MaxResults=1,
+                FilterCountries=["USA"],
+                Language="en",
             )
 
-            if location:
-                return Point(location.longitude, location.latitude, srid=4326)
+            # Check if we got results
+            if response.get("Results"):
+                result = response["Results"][0]
+                place = result.get("Place", {})
+                geometry = place.get("Geometry", {})
+                point = geometry.get("Point")
+
+                if point and len(point) >= 2:
+                    # AWS Location returns [longitude, latitude]
+                    longitude, latitude = point[0], point[1]
+
+                    # Check confidence score if available
+                    relevance = result.get("Relevance", 1.0)
+                    if relevance >= 0.7:  # 70% confidence threshold
+                        return Point(longitude, latitude, srid=4326)
+                    else:
+                        logger.info(
+                            f"AWS Location result confidence too low: {relevance}",
+                        )
 
             return None
 
-        except (GeocoderTimedOut, GeocoderServiceError) as e:
-            logger.warning(f"Nominatim geocoding failed: {e}")
+        except ClientError as e:
+            error_code = e.response.get("Error", {}).get("Code", "Unknown")
+            if error_code == "ResourceNotFoundException":
+                logger.error(
+                    f"AWS Location place index not found: {self.place_index_name}",
+                )
+            else:
+                logger.warning(f"AWS Location geocoding failed: {e}")
             return None
         except Exception as e:
-            logger.error(f"Unexpected Nominatim error: {e}")
+            logger.error(f"Unexpected AWS Location error: {e}")
             return None
 
     def assign_legislative_districts(self, point: Point) -> dict[str, Region | None]:

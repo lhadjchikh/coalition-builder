@@ -10,6 +10,12 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+variable "environment" {
+  description = "Environment name (e.g., dev, staging, prod)"
+  type        = string
+  default     = "prod"
+}
+
 variable "tags" {
   description = "Default tags to apply to all resources"
   type        = map(string)

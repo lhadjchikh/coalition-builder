@@ -47,6 +47,10 @@ locals {
     {
       name  = "CACHE_URL"
       value = "redis://localhost:6379/1"
+    },
+    {
+      name  = "AWS_LOCATION_PLACE_INDEX_NAME"
+      value = var.aws_location_place_index_name
     }
   ]
 
