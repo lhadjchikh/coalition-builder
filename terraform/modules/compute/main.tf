@@ -307,9 +307,9 @@ resource "aws_iam_role_policy_attachment" "ecs_task_s3_policy_attachment" {
   policy_arn = var.static_assets_upload_policy_arn
 }
 
-# Attach AWS Location policy if provided
+# Attach AWS Location policy
+# This is always created when the aws_location module is included in the main configuration
 resource "aws_iam_role_policy_attachment" "ecs_task_location_policy_attachment" {
-  count      = var.aws_location_policy_arn != "" ? 1 : 0
   role       = aws_iam_role.ecs_task_role.name
   policy_arn = var.aws_location_policy_arn
 }
