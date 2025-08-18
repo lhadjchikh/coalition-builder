@@ -48,13 +48,12 @@ module "networking" {
 module "aws_location" {
   source = "./modules/aws-location"
 
-  prefix             = var.prefix
-  environment        = var.environment
-  aws_region         = var.aws_region
-  vpc_id             = module.networking.vpc_id
-  vpc_cidr           = var.vpc_cidr
-  private_subnet_id  = module.networking.private_subnet_ids[0] # Single AZ for cost savings
-  ecs_task_role_name = module.compute.ecs_task_role_name
+  prefix            = var.prefix
+  environment       = var.environment
+  aws_region        = var.aws_region
+  vpc_id            = module.networking.vpc_id
+  vpc_cidr          = var.vpc_cidr
+  private_subnet_id = module.networking.private_subnet_ids[0] # Single AZ for cost savings
 }
 
 # Security Module
@@ -156,6 +155,7 @@ module "compute" {
   static_assets_bucket_name       = module.storage.static_assets_bucket_name
   cloudfront_domain_name          = module.storage.cloudfront_distribution_domain_name
   aws_location_place_index_name   = module.aws_location.place_index_name
+  aws_location_policy_arn         = module.aws_location.location_policy_arn
 
   # Make sure load balancer and secrets are created first
   depends_on = [

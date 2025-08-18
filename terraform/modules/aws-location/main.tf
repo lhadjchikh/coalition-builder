@@ -2,9 +2,9 @@
 
 # Create a place index for geocoding
 resource "aws_location_place_index" "geocoding" {
-  index_name   = "${var.prefix}-geocoding-index"
-  data_source  = var.location_data_source # Configurable data source (default: Esri for US coverage)
-  pricing_plan = "RequestBasedUsage"      # Pay per request, no commitment
+  index_name  = "${var.prefix}-geocoding-index"
+  data_source = var.location_data_source # Configurable data source (default: Esri for US coverage)
+  # Note: pricing_plan removed as it's deprecated - AWS now uses pay-per-request by default
 
   tags = {
     Name        = "${var.prefix}-geocoding-index"
@@ -72,14 +72,11 @@ resource "aws_iam_policy" "location_access" {
           "geo:SearchPlaceIndexForSuggestions",
           "geo:GetPlace"
         ]
-        Resource = aws_location_place_index.geocoding.arn
+        Resource = aws_location_place_index.geocoding.index_arn
       }
     ]
   })
 }
 
-# Attach the policy to the ECS task execution role
-resource "aws_iam_role_policy_attachment" "ecs_location_access" {
-  role       = var.ecs_task_role_name
-  policy_arn = aws_iam_policy.location_access.arn
-}
+# NOTE: The policy attachment is handled in the compute module to avoid circular dependency
+# The compute module will attach this policy to the ECS task role

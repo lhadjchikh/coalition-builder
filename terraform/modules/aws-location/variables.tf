@@ -28,10 +28,8 @@ variable "private_subnet_id" {
   type        = string
 }
 
-variable "ecs_task_role_name" {
-  description = "Name of the ECS task IAM role to grant Location Service access"
-  type        = string
-}
+# Removed ecs_task_role_name variable to avoid circular dependency
+# The compute module will handle attaching the policy to the ECS task role
 
 variable "location_data_source" {
   description = "The data source for AWS Location Place Index. Valid values: 'Esri', 'Here', 'Grab'."

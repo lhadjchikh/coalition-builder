@@ -5,7 +5,7 @@ output "place_index_name" {
 
 output "place_index_arn" {
   description = "ARN of the AWS Location place index"
-  value       = aws_location_place_index.geocoding.arn
+  value       = aws_location_place_index.geocoding.index_arn
 }
 
 output "vpc_endpoint_id" {
