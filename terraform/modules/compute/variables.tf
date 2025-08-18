@@ -9,6 +9,18 @@ variable "aws_region" {
   type        = string
 }
 
+variable "aws_location_place_index_name" {
+  description = "Name of the AWS Location place index for geocoding"
+  type        = string
+  default     = ""
+}
+
+variable "aws_location_policy_arn" {
+  description = "ARN of the AWS Location IAM policy to attach to the ECS task role"
+  type        = string
+  default     = ""
+}
+
 variable "task_cpu" {
   description = "CPU units for the task (256, 512, 1024, 2048, 4096)"
   type        = number

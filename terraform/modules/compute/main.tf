@@ -47,6 +47,10 @@ locals {
     {
       name  = "CACHE_URL"
       value = "redis://localhost:6379/1"
+    },
+    {
+      name  = "AWS_LOCATION_PLACE_INDEX_NAME"
+      value = var.aws_location_place_index_name
     }
   ]
 
@@ -301,6 +305,13 @@ resource "aws_iam_role_policy_attachment" "ecs_task_policy_attachment" {
 resource "aws_iam_role_policy_attachment" "ecs_task_s3_policy_attachment" {
   role       = aws_iam_role.ecs_task_role.name
   policy_arn = var.static_assets_upload_policy_arn
+}
+
+# Attach AWS Location policy
+# This is always created when the aws_location module is included in the main configuration
+resource "aws_iam_role_policy_attachment" "ecs_task_location_policy_attachment" {
+  role       = aws_iam_role.ecs_task_role.name
+  policy_arn = var.aws_location_policy_arn
 }
 
 # ECS Task Definition with both Django and Node.js SSR

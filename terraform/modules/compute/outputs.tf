@@ -42,3 +42,8 @@ output "bastion_public_ip" {
   description = "Public IP address of the bastion host (Elastic IP)"
   value       = aws_eip.bastion.public_ip
 }
+
+output "ecs_task_role_name" {
+  description = "Name of the ECS task IAM role"
+  value       = aws_iam_role.ecs_task_role.name
+}

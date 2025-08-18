@@ -5,6 +5,7 @@ from ninja import NinjaAPI
 from coalition.core.views import health_check as health_check_view
 
 from . import (
+    address,
     campaigns,
     content_blocks,
     endorsements,
@@ -19,6 +20,7 @@ from . import (
 # This protects admin endpoints from CSRF attacks
 api = NinjaAPI(version="1.0", csrf=True)
 
+api.add_router("/address/", address.router)
 api.add_router("/campaigns/", campaigns.router)
 api.add_router("/stakeholders/", stakeholders.router)
 api.add_router("/endorsements/", endorsements.router)

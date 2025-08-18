@@ -44,6 +44,18 @@ module "networking" {
   enable_single_az_endpoints = var.enable_single_az_endpoints
 }
 
+# AWS Location Service Module
+module "aws_location" {
+  source = "./modules/aws-location"
+
+  prefix            = var.prefix
+  environment       = var.environment
+  aws_region        = var.aws_region
+  vpc_id            = module.networking.vpc_id
+  vpc_cidr          = var.vpc_cidr
+  private_subnet_id = module.networking.private_subnet_ids[0] # Single AZ for cost savings
+}
+
 # Security Module
 module "security" {
   source = "./modules/security"
@@ -142,12 +154,15 @@ module "compute" {
   static_assets_upload_policy_arn = module.storage.static_assets_upload_policy_arn
   static_assets_bucket_name       = module.storage.static_assets_bucket_name
   cloudfront_domain_name          = module.storage.cloudfront_distribution_domain_name
+  aws_location_place_index_name   = module.aws_location.place_index_name
+  aws_location_policy_arn         = module.aws_location.location_policy_arn
 
   # Make sure load balancer and secrets are created first
   depends_on = [
     module.loadbalancer,
     module.secrets,
-    module.storage
+    module.storage,
+    module.aws_location
   ]
 }
 
