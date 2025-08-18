@@ -1,5 +1,5 @@
 from typing import Any
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 
 from django.contrib.gis.geos import Point
 from django.test import TestCase
@@ -84,15 +84,28 @@ class TestGeocodingService(TestCase):
         )
         assert result is None
 
-    @patch("coalition.stakeholders.services.connection")
-    def test_geocode_with_tiger_success(self, mock_connection: Any) -> None:
-        """Test successful geocoding with TIGER geocoder"""
-        # Mock cursor and result
-        mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = (-97.7431, 30.2672, 10)  # lon, lat, rating
-        mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
+    @patch("coalition.stakeholders.services.boto3")
+    def test_geocode_with_aws_location_success(self, mock_boto3: Any) -> None:
+        """Test successful geocoding with AWS Location Service"""
+        # Mock AWS Location client
+        mock_client = MagicMock()
+        mock_boto3.client.return_value = mock_client
 
-        result = self.geocoding_service._geocode_with_tiger(
+        # Mock successful response
+        mock_client.search_place_index_for_text.return_value = {
+            "Results": [
+                {
+                    "Place": {"Geometry": {"Point": [-97.7431, 30.2672]}},
+                    "Relevance": 0.95,
+                },
+            ],
+        }
+
+        # Set up service with mock
+        self.geocoding_service.location_client = mock_client
+        self.geocoding_service.place_index_name = "test-index"
+
+        result = self.geocoding_service._geocode_with_aws_location(
             {
                 "street_address": "100 Congress Ave",
                 "city": "Austin",
@@ -106,15 +119,28 @@ class TestGeocodingService(TestCase):
         assert result.y == 30.2672  # latitude
         assert result.srid == 4326
 
-    @patch("coalition.stakeholders.services.connection")
-    def test_geocode_with_tiger_low_confidence(self, mock_connection: Any) -> None:
-        """Test TIGER geocoder rejects low confidence results"""
-        # Mock cursor with poor rating
-        mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = (-97.7431, 30.2672, 25)  # rating > 20
-        mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
+    @patch("coalition.stakeholders.services.boto3")
+    def test_geocode_with_aws_location_low_confidence(self, mock_boto3: Any) -> None:
+        """Test AWS Location rejects low confidence results"""
+        # Mock AWS Location client
+        mock_client = MagicMock()
+        mock_boto3.client.return_value = mock_client
 
-        result = self.geocoding_service._geocode_with_tiger(
+        # Mock low confidence response
+        mock_client.search_place_index_for_text.return_value = {
+            "Results": [
+                {
+                    "Place": {"Geometry": {"Point": [-97.7431, 30.2672]}},
+                    "Relevance": 0.5,  # Below threshold
+                },
+            ],
+        }
+
+        # Set up service with mock
+        self.geocoding_service.location_client = mock_client
+        self.geocoding_service.place_index_name = "test-index"
+
+        result = self.geocoding_service._geocode_with_aws_location(
             {
                 "street_address": "100 Congress Ave",
                 "city": "Austin",
@@ -125,30 +151,30 @@ class TestGeocodingService(TestCase):
 
         assert result is None
 
-    def test_geocode_with_nominatim_success(self) -> None:
-        """Test successful geocoding with Nominatim"""
-        # Mock Nominatim response
-        mock_location = Mock()
-        mock_location.longitude = -97.7431
-        mock_location.latitude = 30.2672
+    @patch("coalition.stakeholders.services.boto3")
+    def test_geocode_with_aws_location_no_results(self, mock_boto3: Any) -> None:
+        """Test AWS Location handling when no results found"""
+        # Mock AWS Location client
+        mock_client = MagicMock()
+        mock_boto3.client.return_value = mock_client
 
-        with patch.object(
-            self.geocoding_service.nominatim,
-            "geocode",
-            return_value=mock_location,
-        ):
-            result = self.geocoding_service._geocode_with_nominatim(
-                {
-                    "street_address": "100 Congress Ave",
-                    "city": "Austin",
-                    "state": "TX",
-                    "zip_code": "78701",
-                },
-            )
+        # Mock empty response
+        mock_client.search_place_index_for_text.return_value = {"Results": []}
 
-            assert isinstance(result, Point)
-            assert result.x == -97.7431
-            assert result.y == 30.2672
+        # Set up service with mock
+        self.geocoding_service.location_client = mock_client
+        self.geocoding_service.place_index_name = "test-index"
+
+        result = self.geocoding_service._geocode_with_aws_location(
+            {
+                "street_address": "100 Congress Ave",
+                "city": "Austin",
+                "state": "TX",
+                "zip_code": "78701",
+            },
+        )
+
+        assert result is None
 
     def test_assign_legislative_districts(self) -> None:
         """Test district assignment for a point"""
@@ -172,13 +198,26 @@ class TestGeocodingService(TestCase):
         assert districts["state_senate_district"] is None
         assert districts["state_house_district"] is None
 
-    @patch("coalition.stakeholders.services.connection")
-    def test_geocode_and_assign_districts_success(self, mock_connection: Any) -> None:
+    @patch("coalition.stakeholders.services.boto3")
+    def test_geocode_and_assign_districts_success(self, mock_boto3: Any) -> None:
         """Test full geocoding and district assignment process"""
-        # Mock successful TIGER geocoding
-        mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = (-97.7431, 30.2672, 10)
-        mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
+        # Mock AWS Location client
+        mock_client = MagicMock()
+        mock_boto3.client.return_value = mock_client
+
+        # Mock successful response
+        mock_client.search_place_index_for_text.return_value = {
+            "Results": [
+                {
+                    "Place": {"Geometry": {"Point": [-97.7431, 30.2672]}},
+                    "Relevance": 0.95,
+                },
+            ],
+        }
+
+        # Set up service with mock
+        self.geocoding_service.location_client = mock_client
+        self.geocoding_service.place_index_name = "test-index"
 
         success = self.geocoding_service.geocode_and_assign_districts(
             self.sample_stakeholder,
@@ -193,30 +232,96 @@ class TestGeocodingService(TestCase):
         assert self.sample_stakeholder.state_senate_district.abbrev == "TX-SD-14"
         assert self.sample_stakeholder.state_house_district.abbrev == "TX-HD-46"
 
-    @patch("coalition.stakeholders.services.connection")
-    def test_geocode_address_fallback_to_nominatim(self, mock_connection: Any) -> None:
-        """Test fallback to Nominatim when TIGER fails"""
-        # Mock TIGER failure
-        mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = None
-        mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
+    @patch("coalition.stakeholders.services.boto3")
+    def test_geocode_address_with_aws_location(self, mock_boto3: Any) -> None:
+        """Test geocoding address using AWS Location Service"""
+        # Mock AWS Location client
+        mock_client = MagicMock()
+        mock_boto3.client.return_value = mock_client
 
-        # Mock Nominatim success
-        mock_location = Mock()
-        mock_location.longitude = -97.7431
-        mock_location.latitude = 30.2672
+        # Mock successful response
+        mock_client.search_place_index_for_text.return_value = {
+            "Results": [
+                {
+                    "Place": {"Geometry": {"Point": [-97.7431, 30.2672]}},
+                    "Relevance": 0.95,
+                },
+            ],
+        }
 
-        with patch.object(
-            self.geocoding_service.nominatim,
-            "geocode",
-            return_value=mock_location,
-        ):
-            result = self.geocoding_service.geocode_address(
-                street_address="100 Congress Ave",
-                city="Austin",
-                state="TX",
-                zip_code="78701",
-            )
+        # Set up service with mock
+        self.geocoding_service.location_client = mock_client
+        self.geocoding_service.place_index_name = "test-index"
 
-            assert isinstance(result, Point)
-            assert result.x == -97.7431
+        result = self.geocoding_service.geocode_address(
+            street_address="100 Congress Ave",
+            city="Austin",
+            state="TX",
+            zip_code="78701",
+        )
+
+        assert isinstance(result, Point)
+        assert result.x == -97.7431
+        assert result.y == 30.2672
+
+    @patch("coalition.stakeholders.services.boto3")
+    def test_get_address_suggestions(self, mock_boto3: Any) -> None:
+        """Test getting address suggestions for autocomplete"""
+        # Mock AWS Location client
+        mock_client = MagicMock()
+        mock_boto3.client.return_value = mock_client
+
+        # Mock suggestions response
+        mock_client.search_place_index_for_suggestions.return_value = {
+            "Results": [
+                {"Text": "100 Congress Ave, Austin, TX 78701", "PlaceId": "place123"},
+                {"Text": "100 Congress St, Austin, TX 78701", "PlaceId": "place456"},
+            ],
+        }
+
+        # Set up service with mock
+        self.geocoding_service.location_client = mock_client
+        self.geocoding_service.place_index_name = "test-index"
+
+        suggestions = self.geocoding_service.get_address_suggestions(
+            "100 Congress",
+            max_results=2,
+        )
+
+        assert len(suggestions) == 2
+        assert suggestions[0]["text"] == "100 Congress Ave, Austin, TX 78701"
+        assert suggestions[0]["place_id"] == "place123"
+        assert suggestions[1]["text"] == "100 Congress St, Austin, TX 78701"
+        assert suggestions[1]["place_id"] == "place456"
+
+    @patch("coalition.stakeholders.services.boto3")
+    def test_get_place_details(self, mock_boto3: Any) -> None:
+        """Test getting detailed address components from place ID"""
+        # Mock AWS Location client
+        mock_client = MagicMock()
+        mock_boto3.client.return_value = mock_client
+
+        # Mock place details response
+        mock_client.get_place.return_value = {
+            "Place": {
+                "AddressNumber": "100",
+                "Street": "Congress Ave",
+                "Municipality": "Austin",
+                "Region": "TX",
+                "PostalCode": "78701",
+                "Country": "USA",
+            },
+        }
+
+        # Set up service with mock
+        self.geocoding_service.location_client = mock_client
+        self.geocoding_service.place_index_name = "test-index"
+
+        details = self.geocoding_service.get_place_details("place123")
+
+        assert details is not None
+        assert details["street_address"] == "100 Congress Ave"
+        assert details["city"] == "Austin"
+        assert details["state"] == "TX"
+        assert details["zip_code"] == "78701"
+        assert details["country"] == "USA"
