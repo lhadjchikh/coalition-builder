@@ -21,6 +21,7 @@ interface AddressAutocompleteProps {
   placeholder?: string;
   required?: boolean;
   testId?: string;
+  debounceDelay?: number;
 }
 
 export default function AddressAutocomplete({
@@ -29,6 +30,7 @@ export default function AddressAutocomplete({
   placeholder = "Start typing your address...",
   required = false,
   testId = "address-autocomplete",
+  debounceDelay = 300,
 }: AddressAutocompleteProps) {
   const [query, setQuery] = useState(initialValue);
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
@@ -81,8 +83,8 @@ export default function AddressAutocomplete({
       } finally {
         setLoading(false);
       }
-    }, 300),
-    []
+    }, debounceDelay),
+    [debounceDelay]
   );
 
   // Handle input change

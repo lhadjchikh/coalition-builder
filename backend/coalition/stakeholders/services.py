@@ -21,6 +21,11 @@ logger = logging.getLogger(__name__)
 class GeocodingService:
     """Service for geocoding addresses and assigning legislative districts"""
 
+    # Minimum confidence score for accepting AWS Location results (0.0 to 1.0)
+    AWS_LOCATION_CONFIDENCE_THRESHOLD = float(
+        os.environ.get("AWS_LOCATION_CONFIDENCE_THRESHOLD", "0.7"),
+    )
+
     def __init__(self) -> None:
         # Initialize AWS Location Service client
         self.location_client = None
@@ -175,7 +180,10 @@ class GeocodingService:
             )
 
             # Search for the address using AWS Location Service
-            assert self.location_client is not None  # Type narrowing for mypy
+            if self.location_client is None:
+                logger.warning("AWS Location client not available for geocoding")
+                return None
+
             response = self.location_client.search_place_index_for_text(
                 IndexName=self.place_index_name,
                 Text=address_string,
@@ -197,7 +205,7 @@ class GeocodingService:
 
                     # Check confidence score if available
                     relevance = result.get("Relevance", 1.0)
-                    if relevance >= 0.7:  # 70% confidence threshold
+                    if relevance >= self.AWS_LOCATION_CONFIDENCE_THRESHOLD:
                         return Point(longitude, latitude, srid=4326)
                     else:
                         logger.info(

@@ -3,8 +3,8 @@
 # Create a place index for geocoding
 resource "aws_location_place_index" "geocoding" {
   index_name   = "${var.prefix}-geocoding-index"
-  data_source  = "Esri"              # Esri provides good US address coverage
-  pricing_plan = "RequestBasedUsage" # Pay per request, no commitment
+  data_source  = var.location_data_source # Configurable data source (default: Esri for US coverage)
+  pricing_plan = "RequestBasedUsage"      # Pay per request, no commitment
 
   tags = {
     Name        = "${var.prefix}-geocoding-index"
