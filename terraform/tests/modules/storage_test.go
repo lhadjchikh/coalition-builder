@@ -12,12 +12,13 @@ import (
 func TestStorageModule(t *testing.T) {
 	common.SkipIfShortTest(t)
 
-	testConfig := common.NewTestConfig("../../../modules/storage")
+	testConfig := common.NewTestConfig("../../modules/storage")
 
 	testVars := common.GetDefaultStorageTestVars()
 	testVars["prefix"] = testConfig.Prefix
+	testVars["domain_name"] = "test.example.com"
 
-	terraformOptions := testConfig.GetModuleTerraformOptions("../../../modules/storage", testVars)
+	terraformOptions := testConfig.GetModuleTerraformOptions("../../modules/storage", testVars)
 
 	defer common.CleanupResources(t, terraformOptions)
 
@@ -61,10 +62,11 @@ func TestStorageModule(t *testing.T) {
 func TestStorageModuleWithDefaultCORS(t *testing.T) {
 	common.SkipIfShortTest(t)
 
-	testConfig := common.NewTestConfig("../../../modules/storage")
+	testConfig := common.NewTestConfig("../../modules/storage")
 
 	testVars := map[string]interface{}{
 		"prefix":                 testConfig.Prefix,
+		"domain_name":            "test-cors.example.com",
 		"alb_dns_name":           "test-alb-cors-123456789.us-east-1.elb.amazonaws.com",
 		"force_destroy":          true,
 		"cors_allowed_origins":   []string{"*"}, // Test with wildcard
@@ -72,7 +74,7 @@ func TestStorageModuleWithDefaultCORS(t *testing.T) {
 		"enable_lifecycle_rules": false,
 	}
 
-	terraformOptions := testConfig.GetModuleTerraformOptions("../../../modules/storage", testVars)
+	terraformOptions := testConfig.GetModuleTerraformOptions("../../modules/storage", testVars)
 
 	defer common.CleanupResources(t, terraformOptions)
 
@@ -89,16 +91,17 @@ func TestStorageModuleWithDefaultCORS(t *testing.T) {
 func TestStorageModuleMinimalConfig(t *testing.T) {
 	common.SkipIfShortTest(t)
 
-	testConfig := common.NewTestConfig("../../../modules/storage")
+	testConfig := common.NewTestConfig("../../modules/storage")
 
 	// Test with minimal configuration
 	testVars := map[string]interface{}{
 		"prefix":        testConfig.Prefix,
+		"domain_name":   "test-minimal.example.com",
 		"alb_dns_name":  "test-alb-minimal-123456789.us-east-1.elb.amazonaws.com",
 		"force_destroy": true, // Required for test cleanup
 	}
 
-	terraformOptions := testConfig.GetModuleTerraformOptions("../../../modules/storage", testVars)
+	terraformOptions := testConfig.GetModuleTerraformOptions("../../modules/storage", testVars)
 
 	defer common.CleanupResources(t, terraformOptions)
 

@@ -500,6 +500,7 @@ func GetMonitoringTestVars() map[string]interface{} {
 // GetDefaultStorageTestVars returns default test variables for storage module
 func GetDefaultStorageTestVars() map[string]interface{} {
 	return map[string]interface{}{
+		"domain_name":            "test.example.com",
 		"alb_dns_name":           "test-alb-123456789.us-east-1.elb.amazonaws.com",
 		"force_destroy":          true,
 		"cors_allowed_origins":   []string{"https://example.com"},
