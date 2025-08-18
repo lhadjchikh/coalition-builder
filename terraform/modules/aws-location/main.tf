@@ -68,7 +68,9 @@ resource "aws_iam_policy" "location_access" {
         Effect = "Allow"
         Action = [
           "geo:SearchPlaceIndexForText",
-          "geo:SearchPlaceIndexForPosition"
+          "geo:SearchPlaceIndexForPosition",
+          "geo:SearchPlaceIndexForSuggestions",
+          "geo:GetPlace"
         ]
         Resource = aws_location_place_index.geocoding.arn
       }

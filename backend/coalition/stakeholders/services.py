@@ -81,6 +81,88 @@ class GeocodingService:
             logger.error(f"Geocoding error: {e}")
             return None
 
+    def get_address_suggestions(
+        self,
+        text: str,
+        max_results: int = 5,
+    ) -> list[dict[str, str]]:
+        """
+        Get address suggestions for autocomplete using AWS Location Service.
+        Returns a list of suggested addresses with structured components.
+        """
+        if not self.location_client or not self.place_index_name:
+            logger.warning("AWS Location Service not available for suggestions")
+            return []
+
+        try:
+            response = self.location_client.search_place_index_for_suggestions(
+                IndexName=self.place_index_name,
+                Text=text,
+                MaxResults=max_results,
+                FilterCountries=["USA"],
+                Language="en",
+            )
+
+            suggestions = []
+            for result in response.get("Results", []):
+                suggestion = {
+                    "text": result.get("Text", ""),
+                    "place_id": result.get("PlaceId", ""),
+                }
+                suggestions.append(suggestion)
+
+            return suggestions
+
+        except ClientError as e:
+            logger.error(f"Failed to get address suggestions: {e}")
+            return []
+        except Exception as e:
+            logger.error(f"Unexpected error getting suggestions: {e}")
+            return []
+
+    def get_place_details(self, place_id: str) -> dict[str, str] | None:
+        """
+        Get detailed address components for a specific place ID.
+        Used after user selects a suggestion.
+        """
+        if not self.location_client or not self.place_index_name:
+            logger.warning("AWS Location Service not available for place details")
+            return None
+
+        try:
+            response = self.location_client.get_place(
+                IndexName=self.place_index_name,
+                PlaceId=place_id,
+                Language="en",
+            )
+
+            place = response.get("Place", {})
+
+            # Extract address components
+            address_components = {
+                "street_address": place.get("AddressNumber", "")
+                + " "
+                + place.get("Street", ""),
+                "city": place.get("Municipality", ""),
+                "state": place.get("Region", ""),
+                "zip_code": place.get("PostalCode", ""),
+                "country": place.get("Country", "USA"),
+            }
+
+            # Clean up street address
+            address_components["street_address"] = address_components[
+                "street_address"
+            ].strip()
+
+            return address_components
+
+        except ClientError as e:
+            logger.error(f"Failed to get place details: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Unexpected error getting place details: {e}")
+            return None
+
     def _geocode_with_aws_location(self, address_parts: dict[str, str]) -> Point | None:
         """Use AWS Location Service for geocoding (works via VPC endpoint)"""
         try:

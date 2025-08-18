@@ -8,6 +8,7 @@ import API from "../services/api";
 import analytics from "../services/analytics";
 import { Campaign, EndorsementCreate, Stakeholder } from "../types/index";
 import SocialShareButtons from "./SocialShareButtons";
+import AddressAutocomplete from "./AddressAutocomplete";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import "../styles/Endorsements.css";
@@ -543,64 +544,94 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           </div>
 
           <div className="form-group">
-            <label htmlFor="street-address">Street Address *</label>
-            <input
-              id="street-address"
-              type="text"
-              value={stakeholder.street_address}
-              onChange={(e) =>
-                handleStakeholderChange("street_address", e.target.value)
-              }
-              required
-              data-testid="street-address-input"
+            <label htmlFor="address-autocomplete">Address *</label>
+            <AddressAutocomplete
+              onAddressSelect={(components) => {
+                setStakeholder((prev) => ({
+                  ...prev,
+                  street_address: components.street_address,
+                  city: components.city,
+                  state: components.state,
+                  zip_code: components.zip_code,
+                }));
+              }}
+              placeholder="Start typing your address..."
+              required={true}
+              testId="address-autocomplete"
             />
+            <small className="form-help-text">
+              Start typing your address and select from the suggestions
+            </small>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="city">City *</label>
-            <input
-              id="city"
-              type="text"
-              value={stakeholder.city}
-              onChange={(e) => handleStakeholderChange("city", e.target.value)}
-              required
-              data-testid="city-input"
-            />
-          </div>
+          {/* Show the populated address fields (editable) after selection */}
+          {stakeholder.street_address && (
+            <>
+              <div className="form-group">
+                <label htmlFor="street-address">Street Address</label>
+                <input
+                  id="street-address"
+                  type="text"
+                  value={stakeholder.street_address}
+                  onChange={(e) =>
+                    handleStakeholderChange("street_address", e.target.value)
+                  }
+                  required
+                  data-testid="street-address-input"
+                />
+              </div>
 
-          <div className="form-group">
-            <label htmlFor="state">State *</label>
-            <select
-              id="state"
-              value={stakeholder.state}
-              onChange={(e) => handleStakeholderChange("state", e.target.value)}
-              required
-              data-testid="state-select"
-            >
-              <option value="">Select a state</option>
-              {stateAbbreviations.map((state) => (
-                <option key={state} value={state}>
-                  {state}
-                </option>
-              ))}
-            </select>
-          </div>
+              <div className="form-group">
+                <label htmlFor="city">City</label>
+                <input
+                  id="city"
+                  type="text"
+                  value={stakeholder.city}
+                  onChange={(e) =>
+                    handleStakeholderChange("city", e.target.value)
+                  }
+                  required
+                  data-testid="city-input"
+                />
+              </div>
 
-          <div className="form-group">
-            <label htmlFor="zip-code">ZIP Code *</label>
-            <input
-              id="zip-code"
-              type="text"
-              value={stakeholder.zip_code}
-              onChange={(e) =>
-                handleStakeholderChange("zip_code", e.target.value)
-              }
-              required
-              pattern="[0-9]{5}(-[0-9]{4})?"
-              title="Please enter a valid ZIP code (e.g., 12345 or 12345-6789)"
-              data-testid="zip-code-input"
-            />
-          </div>
+              <div className="form-group">
+                <label htmlFor="state">State</label>
+                <select
+                  id="state"
+                  value={stakeholder.state}
+                  onChange={(e) =>
+                    handleStakeholderChange("state", e.target.value)
+                  }
+                  required
+                  data-testid="state-select"
+                >
+                  <option value="">Select a state</option>
+                  {stateAbbreviations.map((state) => (
+                    <option key={state} value={state}>
+                      {state}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="zip-code">ZIP Code</label>
+                <input
+                  id="zip-code"
+                  type="text"
+                  value={stakeholder.zip_code}
+                  onChange={(e) =>
+                    handleStakeholderChange("zip_code", e.target.value)
+                  }
+                  required
+                  pattern="[0-9]{5}(-[0-9]{4})?"
+                  title="Please enter a valid ZIP code (e.g., 12345 or 12345-6789)"
+                  data-testid="zip-code-input"
+                />
+              </div>
+            </>
+          )}
 
           <div className="form-group">
             <label htmlFor="statement">
