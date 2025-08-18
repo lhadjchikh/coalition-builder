@@ -17,14 +17,14 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# Minimum confidence score for accepting AWS Location results (0.0 to 1.0)
+AWS_LOCATION_CONFIDENCE_THRESHOLD = float(
+    os.environ.get("AWS_LOCATION_CONFIDENCE_THRESHOLD", "0.7"),
+)
+
 
 class GeocodingService:
     """Service for geocoding addresses and assigning legislative districts"""
-
-    # Minimum confidence score for accepting AWS Location results (0.0 to 1.0)
-    AWS_LOCATION_CONFIDENCE_THRESHOLD = float(
-        os.environ.get("AWS_LOCATION_CONFIDENCE_THRESHOLD", "0.7"),
-    )
 
     def __init__(self) -> None:
         # Initialize AWS Location Service client
@@ -144,20 +144,19 @@ class GeocodingService:
             place = response.get("Place", {})
 
             # Extract address components
+            street_parts = [
+                part
+                for part in [place.get("AddressNumber", ""), place.get("Street", "")]
+                if part
+            ]
+
             address_components = {
-                "street_address": place.get("AddressNumber", "")
-                + " "
-                + place.get("Street", ""),
+                "street_address": " ".join(street_parts),
                 "city": place.get("Municipality", ""),
                 "state": place.get("Region", ""),
                 "zip_code": place.get("PostalCode", ""),
                 "country": place.get("Country", "USA"),
             }
-
-            # Clean up street address
-            address_components["street_address"] = address_components[
-                "street_address"
-            ].strip()
 
             return address_components
 
@@ -205,7 +204,7 @@ class GeocodingService:
 
                     # Check confidence score if available
                     relevance = result.get("Relevance", 1.0)
-                    if relevance >= self.AWS_LOCATION_CONFIDENCE_THRESHOLD:
+                    if relevance >= AWS_LOCATION_CONFIDENCE_THRESHOLD:
                         return Point(longitude, latitude, srid=4326)
                     else:
                         logger.info(

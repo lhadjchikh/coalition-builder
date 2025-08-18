@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
-import debounce from "lodash/debounce";
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import { debounce } from "lodash";
 
 interface AddressSuggestion {
   text: string;
@@ -56,34 +56,35 @@ export default function AddressAutocomplete({
   }, []);
 
   // Debounced search function
-  const searchAddresses = useCallback(
-    debounce(async (searchQuery: string) => {
-      if (searchQuery.length < 3) {
-        setSuggestions([]);
-        return;
-      }
-
-      setLoading(true);
-      try {
-        const response = await fetch(
-          `/api/address/suggestions?q=${encodeURIComponent(searchQuery)}&limit=5`
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          setSuggestions(data.suggestions || []);
-          setShowSuggestions(true);
-        } else {
-          console.error("Failed to fetch suggestions");
+  const searchAddresses = useMemo(
+    () =>
+      debounce(async (searchQuery: string) => {
+        if (searchQuery.length < 3) {
           setSuggestions([]);
+          return;
         }
-      } catch (error) {
-        console.error("Error fetching address suggestions:", error);
-        setSuggestions([]);
-      } finally {
-        setLoading(false);
-      }
-    }, debounceDelay),
+
+        setLoading(true);
+        try {
+          const response = await fetch(
+            `/api/address/suggestions?q=${encodeURIComponent(searchQuery)}&limit=5`
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            setSuggestions(data.suggestions || []);
+            setShowSuggestions(true);
+          } else {
+            console.error("Failed to fetch suggestions");
+            setSuggestions([]);
+          }
+        } catch (error) {
+          console.error("Error fetching address suggestions:", error);
+          setSuggestions([]);
+        } finally {
+          setLoading(false);
+        }
+      }, debounceDelay),
     [debounceDelay]
   );
 
