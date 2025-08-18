@@ -89,7 +89,76 @@ jest.mock("../SocialShareButtons", () => {
   };
 });
 
+// Mock AddressAutocomplete component to immediately populate address fields
+jest.mock("../AddressAutocomplete", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const React = require("react");
+  return function MockAddressAutocomplete(props: {
+    onAddressSelect: (components: {
+      street_address: string;
+      city: string;
+      state: string;
+      zip_code: string;
+    }) => void;
+    [key: string]: unknown;
+  }) {
+    // Use a ref to ensure we only call once
+    const hasCalledRef = React.useRef(false);
+
+    React.useEffect(() => {
+      if (!hasCalledRef.current) {
+        hasCalledRef.current = true;
+        // Populate with a non-empty street address to trigger field visibility
+        props.onAddressSelect({
+          street_address: "placeholder", // Non-empty to trigger conditional rendering
+          city: "placeholder",
+          state: "",
+          zip_code: "",
+        });
+      }
+    }, [props]);
+
+    return (
+      <div data-testid="address-autocomplete">
+        <input
+          type="text"
+          placeholder={props.placeholder || "Start typing your address..."}
+          data-testid={props.testId || "address-autocomplete"}
+        />
+      </div>
+    );
+  };
+});
+
 describe("EndorsementForm", () => {
+  // Helper function to fill address fields after waiting for them to appear
+  const fillAddressFields = async () => {
+    // Wait for address fields to appear after AddressAutocomplete mock populates them
+    await waitFor(
+      () => {
+        expect(screen.getByTestId("street-address-input")).toBeInTheDocument();
+        expect(screen.getByTestId("city-input")).toBeInTheDocument();
+        expect(screen.getByTestId("state-select")).toBeInTheDocument();
+        expect(screen.getByTestId("zip-code-input")).toBeInTheDocument();
+      },
+      { timeout: 3000 }
+    );
+
+    // Set the actual values we want
+    fireEvent.change(screen.getByTestId("street-address-input"), {
+      target: { value: "123 Main St" },
+    });
+    fireEvent.change(screen.getByTestId("city-input"), {
+      target: { value: "Springfield" },
+    });
+    fireEvent.change(screen.getByTestId("state-select"), {
+      target: { value: "IL" },
+    });
+    fireEvent.change(screen.getByTestId("zip-code-input"), {
+      target: { value: "62701" },
+    });
+  };
+
   const mockCampaign: Campaign = {
     id: 1,
     name: "test-campaign",
@@ -163,6 +232,12 @@ describe("EndorsementForm", () => {
       fireEvent.change(screen.getByTestId("email-input"), {
         target: { value: "john@example.com" },
       });
+
+      // Wait for address fields to appear after AddressAutocomplete mock populates them
+      await waitFor(() => {
+        expect(screen.getByTestId("street-address-input")).toBeInTheDocument();
+      });
+
       fireEvent.change(screen.getByTestId("street-address-input"), {
         target: { value: "123 Main St" },
       });
@@ -210,18 +285,8 @@ describe("EndorsementForm", () => {
       fireEvent.change(screen.getByTestId("email-input"), {
         target: { value: "john@example.com" },
       });
-      fireEvent.change(screen.getByTestId("street-address-input"), {
-        target: { value: "123 Main St" },
-      });
-      fireEvent.change(screen.getByTestId("city-input"), {
-        target: { value: "Springfield" },
-      });
-      fireEvent.change(screen.getByTestId("state-select"), {
-        target: { value: "IL" },
-      });
-      fireEvent.change(screen.getByTestId("zip-code-input"), {
-        target: { value: "62701" },
-      });
+
+      await fillAddressFields();
       fireEvent.click(screen.getByTestId("terms-checkbox"));
       fireEvent.click(screen.getByTestId("submit-button"));
 
@@ -256,18 +321,8 @@ describe("EndorsementForm", () => {
       fireEvent.change(screen.getByTestId("email-input"), {
         target: { value: "john@example.com" },
       });
-      fireEvent.change(screen.getByTestId("street-address-input"), {
-        target: { value: "123 Main St" },
-      });
-      fireEvent.change(screen.getByTestId("city-input"), {
-        target: { value: "Springfield" },
-      });
-      fireEvent.change(screen.getByTestId("state-select"), {
-        target: { value: "IL" },
-      });
-      fireEvent.change(screen.getByTestId("zip-code-input"), {
-        target: { value: "62701" },
-      });
+
+      await fillAddressFields();
       fireEvent.click(screen.getByTestId("terms-checkbox"));
       fireEvent.click(screen.getByTestId("submit-button"));
 
@@ -298,18 +353,8 @@ describe("EndorsementForm", () => {
       fireEvent.change(screen.getByTestId("email-input"), {
         target: { value: "john@example.com" },
       });
-      fireEvent.change(screen.getByTestId("street-address-input"), {
-        target: { value: "123 Main St" },
-      });
-      fireEvent.change(screen.getByTestId("city-input"), {
-        target: { value: "Springfield" },
-      });
-      fireEvent.change(screen.getByTestId("state-select"), {
-        target: { value: "IL" },
-      });
-      fireEvent.change(screen.getByTestId("zip-code-input"), {
-        target: { value: "62701" },
-      });
+
+      await fillAddressFields();
       fireEvent.click(screen.getByTestId("terms-checkbox"));
       fireEvent.click(screen.getByTestId("submit-button"));
 
@@ -363,18 +408,8 @@ describe("EndorsementForm", () => {
       fireEvent.change(screen.getByTestId("email-input"), {
         target: { value: "john@example.com" },
       });
-      fireEvent.change(screen.getByTestId("street-address-input"), {
-        target: { value: "123 Main St" },
-      });
-      fireEvent.change(screen.getByTestId("city-input"), {
-        target: { value: "Springfield" },
-      });
-      fireEvent.change(screen.getByTestId("state-select"), {
-        target: { value: "IL" },
-      });
-      fireEvent.change(screen.getByTestId("zip-code-input"), {
-        target: { value: "62701" },
-      });
+
+      await fillAddressFields();
       fireEvent.click(screen.getByTestId("terms-checkbox"));
       fireEvent.click(screen.getByTestId("submit-button"));
 
