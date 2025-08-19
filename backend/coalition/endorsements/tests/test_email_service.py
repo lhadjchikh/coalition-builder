@@ -7,25 +7,24 @@ from unittest.mock import Mock, patch
 
 from django.core import mail
 from django.template.exceptions import TemplateDoesNotExist
-from django.test import TestCase
 
 from coalition.campaigns.models import PolicyCampaign
-from coalition.stakeholders.models import Stakeholder
+from coalition.test_base import BaseTestCase
 
 from ..email_service import EndorsementEmailService
 from ..models import Endorsement
 
 
-class EndorsementEmailServiceTest(TestCase):
+class EndorsementEmailServiceTest(BaseTestCase):
     """Test email service functionality"""
 
     def setUp(self) -> None:
-        self.stakeholder = Stakeholder.objects.create(
+        super().setUp()
+        self.stakeholder = self.create_stakeholder(
             first_name="Test",
             last_name="User",
             organization="Test Org",
             email="test@example.com",
-            state="MD",
             type="individual",
         )
 

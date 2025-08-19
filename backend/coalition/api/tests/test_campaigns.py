@@ -2,15 +2,17 @@
 Tests for campaign API endpoints.
 """
 
-from django.test import Client, TestCase
+from django.test import Client
 
 from coalition.campaigns.models import PolicyCampaign
+from coalition.test_base import BaseTestCase
 
 
-class PolicyCampaignAPITest(TestCase):
+class PolicyCampaignAPITest(BaseTestCase):
     """Test the campaign API endpoints with endorsement fields"""
 
     def setUp(self) -> None:
+        super().setUp()
         self.client = Client()
         self.campaign = PolicyCampaign.objects.create(
             name="test-api-campaign",

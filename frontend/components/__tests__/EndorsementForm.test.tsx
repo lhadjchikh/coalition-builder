@@ -152,7 +152,7 @@ describe("EndorsementForm", () => {
       target: { value: "Springfield" },
     });
     fireEvent.change(screen.getByTestId("state-select"), {
-      target: { value: "IL" },
+      target: { value: "Illinois" },
     });
     fireEvent.change(screen.getByTestId("zip-code-input"), {
       target: { value: "62701" },
@@ -245,7 +245,7 @@ describe("EndorsementForm", () => {
         target: { value: "Springfield" },
       });
       fireEvent.change(screen.getByTestId("state-select"), {
-        target: { value: "IL" },
+        target: { value: "Illinois" },
       });
       fireEvent.change(screen.getByTestId("zip-code-input"), {
         target: { value: "62701" },

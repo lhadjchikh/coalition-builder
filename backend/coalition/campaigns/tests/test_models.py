@@ -1,15 +1,13 @@
 from django.core.exceptions import ValidationError
-from django.test import TestCase
 
 from coalition.endorsements.models import Endorsement
 from coalition.legislators.models import Legislator
-from coalition.regions.models import Region
-from coalition.stakeholders.models import Stakeholder
+from coalition.test_base import BaseTestCase
 
 from ..models import Bill, PolicyCampaign
 
 
-class PolicyCampaignModelTest(TestCase):
+class PolicyCampaignModelTest(BaseTestCase):
     """Test the PolicyCampaign model including endorsement fields"""
 
     def setUp(self) -> None:
@@ -87,12 +85,11 @@ class PolicyCampaignModelTest(TestCase):
         campaign = PolicyCampaign.objects.create(**self.campaign_data)
 
         # Create stakeholder and endorsement
-        stakeholder = Stakeholder.objects.create(
+        stakeholder = self.create_stakeholder(
             first_name="Test",
             last_name="Supporter",
             organization="Test Organization",
             email="supporter@test.org",
-            state="MD",
             type="nonprofit",
         )
 
@@ -165,22 +162,18 @@ class PolicyCampaignModelTest(TestCase):
         assert current_bills.first().session == current_session
 
 
-class BillModelTest(TestCase):
+class BillModelTest(BaseTestCase):
     """Test the Bill model for both federal and state bills"""
 
     def setUp(self) -> None:
+        super().setUp()
         self.campaign = PolicyCampaign.objects.create(
             name="test-campaign",
             title="Test Campaign",
             summary="A test campaign for bills",
         )
 
-        # Create a test state region
-        self.california = Region.objects.create(
-            name="California",
-            type="state",
-            geoid="06",
-        )
+        # California is already loaded from fixture in BaseTestCase
 
     def test_create_federal_bill(self) -> None:
         """Test creating a federal bill"""

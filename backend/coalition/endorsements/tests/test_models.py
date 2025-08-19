@@ -3,23 +3,23 @@ Tests for Endorsement model functionality.
 """
 
 from django.db import IntegrityError
-from django.test import TestCase
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.stakeholders.models import Stakeholder
+from coalition.test_base import BaseTestCase
 
 from ..models import Endorsement
 
 
-class EndorsementModelTest(TestCase):
+class EndorsementModelTest(BaseTestCase):
     def setUp(self) -> None:
-        # Create a stakeholder
-        self.stakeholder = Stakeholder.objects.create(
+        super().setUp()
+        # Create a stakeholder using the fixture
+        self.stakeholder = self.create_stakeholder(
             first_name="Test",
             last_name="Farmer",
             organization="Test Farm",
             email="test@farm.com",
-            state="MD",
             type="farmer",
         )
 
@@ -176,15 +176,13 @@ class EndorsementModelTest(TestCase):
 
     def test_statement_empty_or_none_handling(self) -> None:
         """Test that empty or None statements are handled gracefully"""
-        from coalition.stakeholders.models import Stakeholder
-
         # Create another stakeholder to avoid unique constraint
-        stakeholder2 = Stakeholder.objects.create(
+        stakeholder2 = self.create_stakeholder(
             first_name="Jane",
             last_name="Smith",
             organization="Test Org 2",
             email="jane@example.com",
-            state="CA",
+            state=self.california,  # Use fixture
             type="individual",
         )
 

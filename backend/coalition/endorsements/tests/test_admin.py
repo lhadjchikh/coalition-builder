@@ -7,20 +7,20 @@ from unittest.mock import Mock, patch
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
 from django.http import HttpRequest
-from django.test import TestCase
 
 from coalition.campaigns.models import PolicyCampaign
-from coalition.stakeholders.models import Stakeholder
+from coalition.test_base import BaseTestCase
 
 from ..admin import EndorsementAdmin
 from ..email_service import EndorsementEmailService
 from ..models import Endorsement
 
 
-class EndorsementAdminTest(TestCase):
+class EndorsementAdminTest(BaseTestCase):
     """Test endorsement admin interface functionality"""
 
     def setUp(self) -> None:
+        super().setUp()
         self.site = AdminSite()
         self.admin = EndorsementAdmin(Endorsement, self.site)
 
@@ -30,12 +30,11 @@ class EndorsementAdminTest(TestCase):
             password="testpass",
         )
 
-        self.stakeholder = Stakeholder.objects.create(
+        self.stakeholder = self.create_stakeholder(
             first_name="Test",
             last_name="User",
             organization="Test Org",
             email="test@example.com",
-            state="MD",
             type="individual",
         )
 

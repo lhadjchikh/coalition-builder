@@ -1,11 +1,11 @@
 from django.contrib.gis.geos import Point
-from django.test import TestCase
 
 from coalition.regions.models import Region
 from coalition.stakeholders.models import Stakeholder
+from coalition.test_base import BaseTestCase
 
 
-class TestStakeholderModel(TestCase):
+class TestStakeholderModel(BaseTestCase):
     """Test suite for Stakeholder model with new address and location fields"""
 
     def test_stakeholder_creation_with_address(self) -> None:
@@ -17,21 +17,21 @@ class TestStakeholderModel(TestCase):
             email="john@example.com",
             street_address="123 Main St",
             city="Baltimore",
-            state="MD",
+            state=self.maryland,  # Use fixture
             zip_code="21201",
-            county="Baltimore",
             location=Point(-76.6122, 39.2904),
             type="individual",
         )
 
         assert stakeholder.street_address == "123 Main St"
         assert stakeholder.city == "Baltimore"
-        assert stakeholder.state == "MD"
+        assert stakeholder.state.abbrev == "MD"
         assert stakeholder.zip_code == "21201"
         assert stakeholder.full_address == "123 Main St, Baltimore, MD 21201"
 
     def test_stakeholder_normalization(self) -> None:
-        """Test that email and state are normalized on save"""
+        """Test that email is normalized on save"""
+        texas = Region.objects.get(abbrev="TX")
         stakeholder = Stakeholder.objects.create(
             first_name="Test",
             last_name="Doe",
@@ -39,14 +39,14 @@ class TestStakeholderModel(TestCase):
             email="JANE@EXAMPLE.COM",
             street_address="456 Oak Ave",
             city="Austin",
-            state="tx",
+            state=texas,
             zip_code="78701",
             location=Point(-97.7431, 30.2672),
             type="individual",
         )
 
         assert stakeholder.email == "jane@example.com"  # Lowercase
-        assert stakeholder.state == "TX"  # Uppercase
+        assert stakeholder.state.abbrev == "TX"
 
     def test_location_properties(self) -> None:
         """Test latitude and longitude properties"""
@@ -59,7 +59,7 @@ class TestStakeholderModel(TestCase):
             email="location@example.com",
             street_address="123 Main St",
             city="Baltimore",
-            state="MD",
+            state=self.maryland,
             zip_code="21201",
             location=point,
             type="individual",
@@ -99,7 +99,7 @@ class TestStakeholderModel(TestCase):
             email="district@example.com",
             street_address="789 Pine St",
             city="Baltimore",
-            state="MD",
+            state=self.maryland,
             zip_code="21202",
             location=Point(-76.6122, 39.2904),
             type="individual",
@@ -122,7 +122,7 @@ class TestStakeholderModel(TestCase):
             email="test@example.com",
             street_address="123 Main St",
             city="Baltimore",
-            state="MD",
+            state=self.maryland,
             zip_code="21201",
             location=Point(-76.6122, 39.2904),
             type="individual",
@@ -209,7 +209,7 @@ class TestStakeholderModel(TestCase):
             email="test@example.com",
             street_address="123 Main St",
             city="Baltimore",
-            state="MD",
+            state=self.maryland,
             zip_code="  21201  ",  # Extra whitespace
             type="individual",
         )
@@ -223,7 +223,7 @@ class TestStakeholderModel(TestCase):
             email="optional@example.com",
             street_address="123 Main St",
             city="Baltimore",
-            state="MD",
+            state=self.maryland,
             zip_code="21201",
             type="individual",
             # Optional fields not provided
@@ -234,7 +234,7 @@ class TestStakeholderModel(TestCase):
         # Check optional fields are None/empty
         assert stakeholder.organization == ""  # blank=True means empty string, not None
         assert stakeholder.role == ""
-        assert stakeholder.county == ""
+        assert stakeholder.county is None  # ForeignKey defaults to None
         assert stakeholder.location is None
         assert stakeholder.congressional_district is None
         assert stakeholder.state_senate_district is None

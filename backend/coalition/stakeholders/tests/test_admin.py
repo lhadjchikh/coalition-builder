@@ -5,16 +5,17 @@ Tests for stakeholder Django admin interface.
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
 from django.http import HttpRequest
-from django.test import TestCase
 
 from coalition.stakeholders.admin import StakeholderAdmin
 from coalition.stakeholders.models import Stakeholder
+from coalition.test_base import BaseTestCase
 
 
-class StakeholderAdminTest(TestCase):
+class StakeholderAdminTest(BaseTestCase):
     """Test stakeholder admin interface functionality"""
 
     def setUp(self) -> None:
+        super().setUp()
         self.site = AdminSite()
         self.admin = StakeholderAdmin(Stakeholder, self.site)
 
@@ -24,18 +25,13 @@ class StakeholderAdminTest(TestCase):
             password="testpass",
         )
 
-        self.stakeholder = Stakeholder.objects.create(
+        self.stakeholder = self.create_stakeholder(
             first_name="Test",
             last_name="Stakeholder",
             organization="Test Organization",
             role="Director",
             email="test@example.com",
             type="organization",
-            street_address="123 Test St",
-            city="Test City",
-            state="MD",
-            zip_code="12345",
-            county="Test County",
             email_updates=True,
         )
 
@@ -53,7 +49,7 @@ class StakeholderAdminTest(TestCase):
             email="new@example.com",
             type="individual",
             city="New City",
-            state="VA",
+            state=self.virginia,  # Use Region object from fixture
             zip_code="54321",
         )
 

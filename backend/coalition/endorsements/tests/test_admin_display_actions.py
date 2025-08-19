@@ -4,12 +4,11 @@ Tests for admin actions related to display_publicly functionality.
 
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
-from django.test import TestCase
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.admin import EndorsementAdmin
 from coalition.endorsements.models import Endorsement
-from coalition.stakeholders.models import Stakeholder
+from coalition.test_base import BaseTestCase
 
 
 class MockRequest:
@@ -23,10 +22,11 @@ class MockRequest:
         return self._messages
 
 
-class AdminDisplayActionsTest(TestCase):
+class AdminDisplayActionsTest(BaseTestCase):
     """Test admin actions for display_publicly management"""
 
     def setUp(self) -> None:
+        super().setUp()
         self.site = AdminSite()
         self.admin = EndorsementAdmin(Endorsement, self.site)
 
@@ -47,13 +47,13 @@ class AdminDisplayActionsTest(TestCase):
         # Create test stakeholders and endorsements
         self.endorsements = []
         for i in range(5):
-            stakeholder = Stakeholder.objects.create(
+            stakeholder = self.create_stakeholder(
                 first_name=f"User{i}",
                 last_name="Test",
                 email=f"user{i}@example.com",
                 street_address="123 Main St",
                 city="Anytown",
-                state="CA",
+                state=self.california,  # Use Region object from fixture
                 zip_code="12345",
                 type="individual",
             )

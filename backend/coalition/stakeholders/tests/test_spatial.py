@@ -1,16 +1,17 @@
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
-from django.test import TestCase
 
 from coalition.regions.models import Region
 from coalition.stakeholders.models import Stakeholder
 from coalition.stakeholders.spatial import SpatialQueryUtils
+from coalition.test_base import BaseTestCase
 
 
-class TestSpatialQueryUtils(TestCase):
+class TestSpatialQueryUtils(BaseTestCase):
     """Test suite for SpatialQueryUtils methods"""
 
     def setUp(self) -> None:
         """Set up test data with regions and stakeholders"""
+        super().setUp()
         # Create test regions with known geometry
         self.congressional_district = Region.objects.create(
             geoid="2403",
@@ -67,6 +68,9 @@ class TestSpatialQueryUtils(TestCase):
         )
 
         # Create test stakeholders
+        # Get Texas region for the outside stakeholder
+        texas = Region.objects.get(abbrev="TX")
+
         self.stakeholder_inside = Stakeholder.objects.create(
             first_name="Inside",
             last_name="Stakeholder",
@@ -74,7 +78,7 @@ class TestSpatialQueryUtils(TestCase):
             email="inside@example.com",
             street_address="123 Main St",
             city="Baltimore",
-            state="MD",
+            state=self.maryland,  # Use fixture
             zip_code="21201",
             location=Point(-76.6, 39.25),  # Inside all districts
             type="individual",
@@ -90,7 +94,7 @@ class TestSpatialQueryUtils(TestCase):
             email="outside@example.com",
             street_address="456 Oak Ave",
             city="Austin",
-            state="TX",
+            state=texas,  # Use fixture
             zip_code="78701",
             location=Point(-97.7431, 30.2672),  # Outside districts
             type="individual",
@@ -207,6 +211,8 @@ class TestSpatialQueryUtils(TestCase):
     def test_get_unassigned_stakeholders(self) -> None:
         """Test getting stakeholders with location but no district assignment"""
         # Create stakeholder with location but no congressional district
+        # Use Texas from fixture (even though city is Denver)
+        texas = Region.objects.get(abbrev="TX")
         unassigned = Stakeholder.objects.create(
             first_name="Unassigned",
             last_name="Stakeholder",
@@ -214,7 +220,7 @@ class TestSpatialQueryUtils(TestCase):
             email="unassigned@example.com",
             street_address="789 Pine St",
             city="Denver",
-            state="CO",
+            state=texas,  # Use Texas from fixture
             zip_code="80202",
             location=Point(-104.9903, 39.7392),
             type="individual",

@@ -2,17 +2,16 @@
 Tests for the display_publicly field and admin display selection functionality.
 """
 
-from django.test import TestCase
-
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.models import Endorsement
-from coalition.stakeholders.models import Stakeholder
+from coalition.test_base import BaseTestCase
 
 
-class DisplayPubliclyTest(TestCase):
+class DisplayPubliclyTest(BaseTestCase):
     """Test the display_publicly field functionality"""
 
     def setUp(self) -> None:
+        super().setUp()
         # Create test campaign
         self.campaign = PolicyCampaign.objects.create(
             name="test-campaign",
@@ -22,13 +21,13 @@ class DisplayPubliclyTest(TestCase):
         )
 
         # Create test stakeholder
-        self.stakeholder = Stakeholder.objects.create(
+        self.stakeholder = self.create_stakeholder(
             first_name="Test",
             last_name="Doe",
             email="john@example.com",
             street_address="123 Main St",
             city="Anytown",
-            state="CA",
+            state=self.california,  # Use Region object from fixture
             zip_code="12345",
             type="individual",
         )

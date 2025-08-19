@@ -59,6 +59,17 @@ def _validate_stakeholder_data_match(
 
     Raises HttpError if data doesn't match to prevent unauthorized overwriting.
     """
+    # Compare state - handle both name and abbreviation
+    state_matches = False
+    if existing_stakeholder.state:
+        submitted_state = submitted_data["state"].upper()
+        state_matches = (
+            existing_stakeholder.state.abbrev == submitted_state
+            or existing_stakeholder.state.name.upper() == submitted_state
+        )
+    else:
+        state_matches = not submitted_data.get("state")
+
     data_matches = (
         existing_stakeholder.first_name.lower() == submitted_data["first_name"].lower()
         and existing_stakeholder.last_name.lower()
@@ -67,9 +78,7 @@ def _validate_stakeholder_data_match(
         == (submitted_data.get("organization") or "").lower()
         and (existing_stakeholder.role or "").lower()
         == (submitted_data.get("role") or "").lower()
-        and existing_stakeholder.state.upper() == submitted_data["state"].upper()
-        and (existing_stakeholder.county or "").lower()
-        == (submitted_data.get("county") or "").lower()
+        and state_matches
         and existing_stakeholder.type == submitted_data["type"]
         and (existing_stakeholder.street_address or "").lower()
         == (submitted_data.get("street_address") or "").lower()
@@ -103,6 +112,12 @@ def _get_or_create_stakeholder(
 
     Prevents unauthorized overwriting of existing stakeholder data.
     """
+    # Find state region from the submitted state string
+    geocoding_service = GeocodingService()
+    state_region = geocoding_service.find_state_region(
+        stakeholder_data.get("state", ""),
+    )
+
     stakeholder, created = Stakeholder.objects.get_or_create(
         email__iexact=stakeholder_data["email"],  # Case-insensitive lookup
         defaults={
@@ -113,9 +128,9 @@ def _get_or_create_stakeholder(
             "email": stakeholder_data["email"].lower(),  # Normalized in save()
             "street_address": stakeholder_data.get("street_address", ""),
             "city": stakeholder_data.get("city", ""),
-            "state": stakeholder_data["state"].upper(),
+            "state": state_region,  # Foreign key to Region
             "zip_code": stakeholder_data.get("zip_code", ""),
-            "county": stakeholder_data.get("county", ""),
+            # County will be set during geocoding
             "type": stakeholder_data["type"],
         },
     )
@@ -646,9 +661,21 @@ def export_endorsements_csv(
                 sanitize_csv_field(endorsement.stakeholder.email),
                 sanitize_csv_field(endorsement.stakeholder.street_address),
                 sanitize_csv_field(endorsement.stakeholder.city),
-                sanitize_csv_field(endorsement.stakeholder.state),
+                sanitize_csv_field(
+                    (
+                        endorsement.stakeholder.state.abbrev or ""
+                        if endorsement.stakeholder.state
+                        else ""
+                    ),
+                ),
                 sanitize_csv_field(endorsement.stakeholder.zip_code),
-                sanitize_csv_field(endorsement.stakeholder.county),
+                sanitize_csv_field(
+                    (
+                        endorsement.stakeholder.county.name or ""
+                        if endorsement.stakeholder.county
+                        else ""
+                    ),
+                ),
                 endorsement.stakeholder.latitude or "",  # Numeric, safe
                 endorsement.stakeholder.longitude or "",  # Numeric, safe
                 sanitize_csv_field(
@@ -749,9 +776,17 @@ def export_endorsements_json(
                     "email": endorsement.stakeholder.email,
                     "street_address": endorsement.stakeholder.street_address,
                     "city": endorsement.stakeholder.city,
-                    "state": endorsement.stakeholder.state,
+                    "state": (
+                        endorsement.stakeholder.state.abbrev
+                        if endorsement.stakeholder.state
+                        else None
+                    ),
                     "zip_code": endorsement.stakeholder.zip_code,
-                    "county": endorsement.stakeholder.county,
+                    "county": (
+                        endorsement.stakeholder.county.name
+                        if endorsement.stakeholder.county
+                        else None
+                    ),
                     "latitude": endorsement.stakeholder.latitude,
                     "longitude": endorsement.stakeholder.longitude,
                     "congressional_district": (
