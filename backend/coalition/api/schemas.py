@@ -395,8 +395,11 @@ class StakeholderCreateSchema(Schema):
 
     @validator("state")
     def validate_state(cls, v: str) -> str:  # noqa: N805
-        """Validate US state abbreviation"""
-        return AddressValidator.validate_state(v)
+        """Validate state - accepts both abbreviations and full names"""
+        if not v:
+            raise ValueError("State is required")
+        # Just strip whitespace, let the API handle conversion to Region
+        return v.strip()
 
     @validator("zip_code")
     def validate_zip_code(cls, v: str) -> str:  # noqa: N805
