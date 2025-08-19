@@ -15,6 +15,11 @@ class BaseTestCase(TestCase):
 
     fixtures = ["regions.json"]
 
+    # Declare class attributes for type checking
+    maryland: Region
+    virginia: Region
+    california: Region
+
     @classmethod
     def setUpTestData(cls) -> None:
         """Set up test data for the entire test class."""
@@ -45,6 +50,11 @@ class BaseTransactionTestCase(TransactionTestCase):
     """Base transaction test case that loads common fixtures."""
 
     fixtures = ["regions.json"]
+
+    # Declare instance attributes for type checking
+    maryland: Region
+    virginia: Region
+    california: Region
 
     def setUp(self) -> None:
         """Set up test data for each test."""
