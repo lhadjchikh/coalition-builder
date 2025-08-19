@@ -270,14 +270,23 @@ class GeocodingService:
         if not state_str:
             return None
 
+        state_str = state_str.strip()
+
         # Try to find by abbreviation first (if it looks like an abbreviation)
         if len(state_str) == 2:
-            state = Region.objects.filter(
-                type="state",
-                abbrev=state_str.upper(),
-            ).first()
-            if state:
-                return state
+            # Validate the state code if it's 2 characters
+            try:
+                validated_state = AddressValidator.validate_state(state_str)
+                state = Region.objects.filter(
+                    type="state",
+                    abbrev=validated_state,
+                ).first()
+                if state:
+                    return state
+            except ValidationError:
+                logger.warning(f"Invalid state code: {state_str}")
+                # Continue to try by name
+                pass
 
         # Try to find by name
         return Region.objects.filter(type="state", name__iexact=state_str).first()

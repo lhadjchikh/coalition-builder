@@ -757,3 +757,74 @@ class TestGeocodingService(BaseTestCase):
 
         assert details is not None
         assert details["zip_code"] == "02110"  # Leading zero preserved
+
+    def test_find_state_region_by_abbreviation(self) -> None:
+        """Test finding state region by 2-letter abbreviation"""
+        # Test valid abbreviation
+        region = self.geocoding_service.find_state_region("MD")
+        assert region is not None
+        assert region.abbrev == "MD"
+        assert region.name == "Maryland"
+        assert region.type == "state"
+
+        # Test lowercase abbreviation
+        region = self.geocoding_service.find_state_region("ca")
+        assert region is not None
+        assert region.abbrev == "CA"
+        assert region.name == "California"
+
+        # Test with whitespace
+        region = self.geocoding_service.find_state_region("  TX  ")
+        assert region is not None
+        assert region.abbrev == "TX"
+
+    def test_find_state_region_by_full_name(self) -> None:
+        """Test finding state region by full state name"""
+        # Test full name
+        region = self.geocoding_service.find_state_region("Maryland")
+        assert region is not None
+        assert region.abbrev == "MD"
+        assert region.name == "Maryland"
+
+        # Test case insensitive
+        region = self.geocoding_service.find_state_region("california")
+        assert region is not None
+        assert region.abbrev == "CA"
+
+        # Test with mixed case
+        region = self.geocoding_service.find_state_region("New York")
+        assert region is not None
+        assert region.abbrev == "NY"
+
+    def test_find_state_region_invalid(self) -> None:
+        """Test finding state region with invalid input"""
+        # Test invalid abbreviation
+        region = self.geocoding_service.find_state_region("ZZ")
+        assert region is None
+
+        # Test invalid state name
+        region = self.geocoding_service.find_state_region("NotAState")
+        assert region is None
+
+        # Test empty string
+        region = self.geocoding_service.find_state_region("")
+        assert region is None
+
+        # Test None
+        region = self.geocoding_service.find_state_region(None)
+        assert region is None
+
+    def test_find_state_region_validation_for_abbreviations(self) -> None:
+        """Test that 2-letter codes are validated"""
+        # Test that invalid 2-letter codes are rejected
+        region = self.geocoding_service.find_state_region("XX")
+        assert region is None
+
+        # Test that valid but non-existent in DB returns None
+        # (This would happen if regions.json doesn't have all states)
+        with patch(
+            "coalition.stakeholders.services.Region.objects.filter",
+        ) as mock_filter:
+            mock_filter.return_value.first.return_value = None
+            region = self.geocoding_service.find_state_region("WY")
+            assert region is None
