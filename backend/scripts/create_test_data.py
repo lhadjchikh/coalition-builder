@@ -22,6 +22,7 @@ def create_test_data() -> int:
         from coalition.content.models import ContentBlock, HomePage
         from coalition.endorsements.models import Endorsement
         from coalition.legislators.models import Legislator
+        from coalition.regions.models import Region
         from coalition.stakeholders.models import Stakeholder
 
         # Create or update the test campaign
@@ -40,14 +41,19 @@ def create_test_data() -> int:
 
         # Create a test stakeholder if none exists
         if not Stakeholder.objects.exists():
+            # Get or create Maryland state region
+            state_region = Region.objects.filter(type="state", abbrev="MD").first()
+
             stakeholder = Stakeholder.objects.create(
                 first_name="Test",
                 last_name="Stakeholder",
                 organization="Test Organization",
                 role="Test Role",
                 email="test@example.com",
-                state="MD",
-                county="Test County",
+                street_address="123 Test St",
+                city="Baltimore",
+                state=state_region,  # Foreign key to Region
+                zip_code="21201",
                 type="other",
             )
             print("Created test stakeholder")

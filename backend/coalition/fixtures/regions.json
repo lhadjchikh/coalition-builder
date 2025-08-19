@@ -1,0 +1,92 @@
+[
+  {
+    "model": "regions.region",
+    "pk": 1,
+    "fields": {
+      "parent": null,
+      "geoid": "24",
+      "name": "Maryland",
+      "label": "Maryland",
+      "abbrev": "MD",
+      "type": "state",
+      "coords": null,
+      "geom": null,
+      "geojson": null
+    }
+  },
+  {
+    "model": "regions.region",
+    "pk": 2,
+    "fields": {
+      "parent": null,
+      "geoid": "51",
+      "name": "Virginia",
+      "label": "Virginia",
+      "abbrev": "VA",
+      "type": "state",
+      "coords": null,
+      "geom": null,
+      "geojson": null
+    }
+  },
+  {
+    "model": "regions.region",
+    "pk": 3,
+    "fields": {
+      "parent": null,
+      "geoid": "06",
+      "name": "California",
+      "label": "California",
+      "abbrev": "CA",
+      "type": "state",
+      "coords": null,
+      "geom": null,
+      "geojson": null
+    }
+  },
+  {
+    "model": "regions.region",
+    "pk": 4,
+    "fields": {
+      "parent": null,
+      "geoid": "36",
+      "name": "New York",
+      "label": "New York",
+      "abbrev": "NY",
+      "type": "state",
+      "coords": null,
+      "geom": null,
+      "geojson": null
+    }
+  },
+  {
+    "model": "regions.region",
+    "pk": 5,
+    "fields": {
+      "parent": null,
+      "geoid": "48",
+      "name": "Texas",
+      "label": "Texas",
+      "abbrev": "TX",
+      "type": "state",
+      "coords": null,
+      "geom": null,
+      "geojson": null
+    }
+  },
+  {
+    "model": "regions.region",
+    "pk": 6,
+    "fields": {
+      "parent": null,
+      "geoid": "17",
+      "name": "Illinois",
+      "label": "Illinois",
+      "abbrev": "IL",
+      "type": "state",
+      "coords": null,
+      "geom": null,
+      "geojson": null
+    }
+  }
+]

@@ -1,16 +1,17 @@
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
-from django.test import TestCase
 
 from coalition.regions.models import Region
 from coalition.stakeholders.models import Stakeholder
 from coalition.stakeholders.spatial import SpatialQueryUtils
+from coalition.test_base import BaseTestCase
 
 
-class TestSpatialQueryUtils(TestCase):
+class TestSpatialQueryUtils(BaseTestCase):
     """Test suite for SpatialQueryUtils methods"""
 
     def setUp(self) -> None:
         """Set up test data with regions and stakeholders"""
+        super().setUp()
         # Create test regions with known geometry
         self.congressional_district = Region.objects.create(
             geoid="2403",
@@ -67,6 +68,9 @@ class TestSpatialQueryUtils(TestCase):
         )
 
         # Create test stakeholders
+        # Get Texas region for the outside stakeholder
+        texas = Region.objects.get(abbrev="TX")
+
         self.stakeholder_inside = Stakeholder.objects.create(
             first_name="Inside",
             last_name="Stakeholder",
@@ -74,7 +78,7 @@ class TestSpatialQueryUtils(TestCase):
             email="inside@example.com",
             street_address="123 Main St",
             city="Baltimore",
-            state="MD",
+            state=self.maryland,  # Use fixture
             zip_code="21201",
             location=Point(-76.6, 39.25),  # Inside all districts
             type="individual",
@@ -90,7 +94,7 @@ class TestSpatialQueryUtils(TestCase):
             email="outside@example.com",
             street_address="456 Oak Ave",
             city="Austin",
-            state="TX",
+            state=texas,  # Use fixture
             zip_code="78701",
             location=Point(-97.7431, 30.2672),  # Outside districts
             type="individual",

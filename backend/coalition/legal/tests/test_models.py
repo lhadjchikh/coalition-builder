@@ -7,16 +7,16 @@ import uuid
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.db.models import ProtectedError
-from django.test import TestCase
 from django.utils import timezone
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.models import Endorsement
 from coalition.legal.models import LegalDocument, TermsAcceptance
 from coalition.stakeholders.models import Stakeholder
+from coalition.test_base import BaseTestCase
 
 
-class LegalDocumentTest(TestCase):
+class LegalDocumentTest(BaseTestCase):
     """Test LegalDocument model functionality"""
 
     def setUp(self) -> None:
@@ -201,16 +201,16 @@ class LegalDocumentTest(TestCase):
         assert docs[1] == doc1  # Older
 
 
-class TermsAcceptanceTest(TestCase):
+class TermsAcceptanceTest(BaseTestCase):
     """Test TermsAcceptance model functionality"""
 
     def setUp(self) -> None:
-        self.stakeholder = Stakeholder.objects.create(
+        super().setUp()
+        self.stakeholder = self.create_stakeholder(
             first_name="Test",
             last_name="Stakeholder",
             email="stakeholder@example.com",
             type="individual",
-            state="MD",
         )
 
         self.campaign = PolicyCampaign.objects.create(
