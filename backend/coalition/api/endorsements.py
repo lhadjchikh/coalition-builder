@@ -663,7 +663,7 @@ def export_endorsements_csv(
                 sanitize_csv_field(endorsement.stakeholder.city),
                 sanitize_csv_field(
                     (
-                        endorsement.stakeholder.state.abbrev
+                        endorsement.stakeholder.state.abbrev or ""
                         if endorsement.stakeholder.state
                         else ""
                     ),
@@ -671,7 +671,7 @@ def export_endorsements_csv(
                 sanitize_csv_field(endorsement.stakeholder.zip_code),
                 sanitize_csv_field(
                     (
-                        endorsement.stakeholder.county.name
+                        endorsement.stakeholder.county.name or ""
                         if endorsement.stakeholder.county
                         else ""
                     ),
