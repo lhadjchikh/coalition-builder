@@ -776,9 +776,17 @@ def export_endorsements_json(
                     "email": endorsement.stakeholder.email,
                     "street_address": endorsement.stakeholder.street_address,
                     "city": endorsement.stakeholder.city,
-                    "state": endorsement.stakeholder.state,
+                    "state": (
+                        endorsement.stakeholder.state.abbrev
+                        if endorsement.stakeholder.state
+                        else None
+                    ),
                     "zip_code": endorsement.stakeholder.zip_code,
-                    "county": endorsement.stakeholder.county,
+                    "county": (
+                        endorsement.stakeholder.county.name
+                        if endorsement.stakeholder.county
+                        else None
+                    ),
                     "latitude": endorsement.stakeholder.latitude,
                     "longitude": endorsement.stakeholder.longitude,
                     "congressional_district": (

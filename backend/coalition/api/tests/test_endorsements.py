@@ -277,21 +277,26 @@ class EndorsementAPITest(BaseTestCase):
 
     def test_duplicate_endorsement_updates_existing(self) -> None:
         """Test that duplicate endorsement updates the existing one"""
+        stakeholder_data = {
+            "first_name": self.stakeholder.first_name,
+            "last_name": self.stakeholder.last_name,
+            "organization": self.stakeholder.organization,
+            "role": self.stakeholder.role,
+            "email": self.stakeholder.email,
+            "street_address": self.stakeholder.street_address,
+            "city": self.stakeholder.city,
+            "state": self.stakeholder.state.abbrev if self.stakeholder.state else None,
+            "zip_code": self.stakeholder.zip_code,
+            "type": self.stakeholder.type,
+        }
+
+        # Only include county if it exists
+        if self.stakeholder.county:
+            stakeholder_data["county"] = self.stakeholder.county.name
+
         endorsement_data = {
             "campaign_id": self.campaign.id,
-            "stakeholder": {
-                "first_name": self.stakeholder.first_name,
-                "last_name": self.stakeholder.last_name,
-                "organization": self.stakeholder.organization,
-                "role": self.stakeholder.role,
-                "email": self.stakeholder.email,
-                "street_address": self.stakeholder.street_address,
-                "city": self.stakeholder.city,
-                "state": self.stakeholder.state,
-                "zip_code": self.stakeholder.zip_code,
-                "county": self.stakeholder.county,
-                "type": self.stakeholder.type,
-            },
+            "stakeholder": stakeholder_data,
             "statement": "Updated statement for existing endorsement",
             "public_display": False,
             "terms_accepted": True,
