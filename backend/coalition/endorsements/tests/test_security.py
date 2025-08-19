@@ -12,24 +12,29 @@ from unittest.mock import patch
 
 from django.core.cache import cache
 from django.http import HttpRequest
-from django.test import Client, TestCase
+from django.test import Client
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.models import Endorsement
-from coalition.stakeholders.models import Stakeholder
+from coalition.regions.models import Region
+from coalition.test_base import BaseTestCase
 
 from .utils import get_valid_form_metadata
 
 
-class SecurityVulnerabilityTests(TestCase):
+class SecurityVulnerabilityTests(BaseTestCase):
     """Test security fixes for data overwriting and rate limiting vulnerabilities"""
 
     def setUp(self) -> None:
+        super().setUp()
         cache.clear()  # Clear rate limiting cache between tests
         self.client = Client()
 
+        # Get New York from fixture
+        self.new_york = Region.objects.get(abbrev="NY")
+
         # Create existing stakeholder
-        self.existing_stakeholder = Stakeholder.objects.create(
+        self.existing_stakeholder = self.create_stakeholder(
             first_name="John",
             last_name="Doe",
             organization="Acme Corp",
@@ -37,9 +42,8 @@ class SecurityVulnerabilityTests(TestCase):
             email="john@acme.com",
             street_address="123 Business Blvd",
             city="New York",
-            state="NY",
+            state=self.new_york,  # Use Region object
             zip_code="10001",
-            county="Manhattan",
             type="business",
         )
 
@@ -169,10 +173,11 @@ class SecurityVulnerabilityTests(TestCase):
     # Rate limiting IP spoofing test moved to RateLimitingIntegrationTests class
 
 
-class RedisIntegrationTests(TestCase):
+class RedisIntegrationTests(BaseTestCase):
     """Test Redis cache integration for rate limiting"""
 
     def setUp(self) -> None:
+        super().setUp()
         # Clear cache before testing
         from django.core.cache import cache
 
@@ -200,7 +205,7 @@ class RedisIntegrationTests(TestCase):
         assert result["allowed"] is True
 
 
-class RateLimitingIntegrationTests(TestCase):
+class RateLimitingIntegrationTests(BaseTestCase):
     """
     Integration tests for rate limiting functionality.
 
@@ -209,6 +214,7 @@ class RateLimitingIntegrationTests(TestCase):
     """
 
     def setUp(self) -> None:
+        super().setUp()
         # Clear cache before each test to ensure clean state
         from django.core.cache import cache
 

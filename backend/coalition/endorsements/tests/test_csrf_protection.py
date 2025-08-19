@@ -3,19 +3,20 @@ Test CSRF protection for endorsement admin endpoints.
 """
 
 from django.contrib.auth.models import User
-from django.test import Client, TestCase
+from django.test import Client
 from django.test.utils import override_settings
 
 from coalition.campaigns.models import PolicyCampaign
-from coalition.stakeholders.models import Stakeholder
+from coalition.test_base import BaseTestCase
 
 from ..models import Endorsement
 
 
-class CSRFProtectionTest(TestCase):
+class CSRFProtectionTest(BaseTestCase):
     """Test CSRF protection for admin endpoints"""
 
     def setUp(self) -> None:
+        super().setUp()
         self.client = Client(enforce_csrf_checks=True)
 
         # Create admin user
@@ -27,12 +28,11 @@ class CSRFProtectionTest(TestCase):
         )
 
         # Create test data
-        self.stakeholder = Stakeholder.objects.create(
+        self.stakeholder = self.create_stakeholder(
             first_name="Test",
             last_name="User",
             organization="Test Org",
             email="test@example.com",
-            state="MD",
             type="individual",
         )
 

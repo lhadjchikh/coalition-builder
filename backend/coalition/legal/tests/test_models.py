@@ -12,7 +12,6 @@ from django.utils import timezone
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.models import Endorsement
 from coalition.legal.models import LegalDocument, TermsAcceptance
-from coalition.stakeholders.models import Stakeholder
 from coalition.test_base import BaseTestCase
 
 
@@ -283,12 +282,12 @@ class TermsAcceptanceTest(BaseTestCase):
         )
 
         # Create another stakeholder and campaign for second acceptance
-        stakeholder2 = Stakeholder.objects.create(
+        stakeholder2 = self.create_stakeholder(
             first_name="Test",
             last_name="Stakeholder 2",
             email="stakeholder2@example.com",
             type="individual",
-            state="VA",
+            state=self.virginia,  # Use Region object from fixture
         )
 
         campaign2 = PolicyCampaign.objects.create(
@@ -358,12 +357,12 @@ class TermsAcceptanceTest(BaseTestCase):
         )
 
         # Create another stakeholder and campaign for second acceptance
-        stakeholder2 = Stakeholder.objects.create(
+        stakeholder2 = self.create_stakeholder(
             first_name="Test",
             last_name="Stakeholder 2",
             email="stakeholder2@example.com",
             type="individual",
-            state="VA",
+            state=self.virginia,  # Use Region object from fixture
         )
 
         campaign2 = PolicyCampaign.objects.create(
