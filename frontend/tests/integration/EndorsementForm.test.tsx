@@ -135,7 +135,7 @@ describe("EndorsementForm", () => {
       target: { value: "Baltimore" },
     });
     fireEvent.change(screen.getByTestId("state-select"), {
-      target: { value: "MD" },
+      target: { value: "Maryland" },
     });
     fireEvent.change(screen.getByTestId("zip-code-input"), {
       target: { value: "21201" },
