@@ -413,6 +413,95 @@ class EndorsementAPITest(BaseTestCase):
             assert Stakeholder.objects.count() == initial_stakeholder_count
             assert not Stakeholder.objects.filter(email="new@example.com").exists()
 
+    def test_create_endorsement_with_full_state_name(self) -> None:
+        """Test POST /api/endorsements/ with full state name instead of abbreviation"""
+        endorsement_data = {
+            "campaign_id": self.campaign.id,
+            "stakeholder": {
+                "first_name": "Alice",
+                "last_name": "Williams",
+                "organization": "Williams Consulting",
+                "role": "Principal",
+                "email": "alice@williams.com",
+                "street_address": "456 Main St",
+                "city": "Baltimore",
+                "state": "Maryland",  # Full state name instead of "MD"
+                "zip_code": "21201",
+                "type": "business",
+            },
+            "statement": "I support this campaign",
+            "public_display": True,
+            "terms_accepted": True,
+            "org_authorized": True,
+            "form_metadata": get_valid_form_metadata(),
+        }
+
+        response = self.client.post(
+            "/api/endorsements/",
+            data=json.dumps(endorsement_data),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 200
+
+        # Verify stakeholder was created with correct state
+        stakeholder = Stakeholder.objects.get(email="alice@williams.com")
+        assert stakeholder.state is not None
+        assert stakeholder.state.abbrev == "MD"
+        assert stakeholder.state.name == "Maryland"
+
+    def test_create_endorsement_with_mixed_case_state(self) -> None:
+        """Test POST /api/endorsements/ with mixed case state names"""
+        # Clear cache to avoid rate limiting
+        from django.core.cache import cache
+
+        cache.clear()
+
+        test_cases = [
+            ("california", "CA", "California"),
+            ("VIRGINIA", "VA", "Virginia"),
+            ("maryland", "MD", "Maryland"),
+            ("CA", "CA", "California"),  # Uppercase abbreviation
+            ("md", "MD", "Maryland"),  # Lowercase abbreviation
+        ]
+
+        for i, (input_state, expected_abbrev, expected_name) in enumerate(test_cases):
+            endorsement_data = {
+                "campaign_id": self.campaign.id,
+                "stakeholder": {
+                    "first_name": f"Test{i}",
+                    "last_name": "User",
+                    "organization": f"Org{i}",
+                    "email": f"test{i}@example.com",
+                    "street_address": "789 Test Ave",
+                    "city": "Test City",
+                    "state": input_state,
+                    "zip_code": "12345",
+                    "type": "individual",
+                },
+                "statement": "Test endorsement",
+                "public_display": True,
+                "terms_accepted": True,
+                "org_authorized": True,
+                "form_metadata": get_valid_form_metadata(),
+            }
+
+            # Use unique IP for each request to avoid rate limiting
+            response = self.client.post(
+                "/api/endorsements/",
+                data=json.dumps(endorsement_data),
+                content_type="application/json",
+                REMOTE_ADDR=f"192.168.1.{100 + i}",
+            )
+
+            assert response.status_code == 200, f"Failed for state: {input_state}"
+
+            # Verify correct state assignment
+            stakeholder = Stakeholder.objects.get(email=f"test{i}@example.com")
+            assert stakeholder.state is not None
+            assert stakeholder.state.abbrev == expected_abbrev
+            assert stakeholder.state.name == expected_name
+
 
 class EndorsementAPIEnhancedTest(BaseTestCase):
     """Test enhanced API endpoints for verification and admin functionality"""
