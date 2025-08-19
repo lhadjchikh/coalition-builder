@@ -3,19 +3,23 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 from django.contrib.gis.geos import Point
-from django.test import TestCase
 
 from coalition.regions.models import Region
 from coalition.stakeholders.models import Stakeholder
 from coalition.stakeholders.services import GeocodingService
+from coalition.test_base import BaseTestCase
 
 
-class TestGeocodingService(TestCase):
+class TestGeocodingService(BaseTestCase):
     """Test suite for GeocodingService"""
 
     def setUp(self) -> None:
         """Set up test data"""
+        super().setUp()
         self.geocoding_service = GeocodingService()
+
+        # Get Texas from fixture
+        self.texas = Region.objects.get(abbrev="TX")
 
         # Create a sample stakeholder with complete address
         self.sample_stakeholder = Stakeholder.objects.create(
@@ -25,7 +29,7 @@ class TestGeocodingService(TestCase):
             email="test@example.com",
             street_address="100 Congress Ave",
             city="Austin",
-            state="TX",
+            state=self.texas,  # Use Region object
             zip_code="78701",
             location=Point(-97.7431, 30.2672),
             type="individual",

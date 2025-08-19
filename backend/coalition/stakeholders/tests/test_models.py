@@ -234,7 +234,7 @@ class TestStakeholderModel(BaseTestCase):
         # Check optional fields are None/empty
         assert stakeholder.organization == ""  # blank=True means empty string, not None
         assert stakeholder.role == ""
-        assert stakeholder.county == ""
+        assert stakeholder.county is None  # ForeignKey defaults to None
         assert stakeholder.location is None
         assert stakeholder.congressional_district is None
         assert stakeholder.state_senate_district is None

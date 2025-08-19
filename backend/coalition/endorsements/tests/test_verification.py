@@ -5,25 +5,24 @@ Tests for endorsement verification and workflow functionality.
 from datetime import timedelta
 
 from django.contrib.auth.models import User
-from django.test import TestCase
 from django.utils import timezone
 
 from coalition.campaigns.models import PolicyCampaign
-from coalition.stakeholders.models import Stakeholder
+from coalition.test_base import BaseTestCase
 
 from ..models import Endorsement
 
 
-class EndorsementVerificationTest(TestCase):
+class EndorsementVerificationTest(BaseTestCase):
     """Test endorsement model features (email verification, status, etc.)"""
 
     def setUp(self) -> None:
-        self.stakeholder = Stakeholder.objects.create(
+        super().setUp()
+        self.stakeholder = self.create_stakeholder(
             first_name="Test",
             last_name="User",
             organization="Test Org",
             email="test@example.com",
-            state="MD",
             type="individual",
         )
 
@@ -63,12 +62,12 @@ class EndorsementVerificationTest(TestCase):
         )
 
         # Create another stakeholder and campaign
-        stakeholder2 = Stakeholder.objects.create(
+        stakeholder2 = self.create_stakeholder(
             first_name="Test",
             last_name="User 2",
             organization="Test Org 2",
             email="test2@example.com",
-            state="VA",
+            state=self.virginia,  # Use Region object from fixture
             type="business",
         )
         campaign2 = PolicyCampaign.objects.create(

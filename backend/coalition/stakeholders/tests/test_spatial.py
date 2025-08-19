@@ -211,6 +211,8 @@ class TestSpatialQueryUtils(BaseTestCase):
     def test_get_unassigned_stakeholders(self) -> None:
         """Test getting stakeholders with location but no district assignment"""
         # Create stakeholder with location but no congressional district
+        # Use Texas from fixture (even though city is Denver)
+        texas = Region.objects.get(abbrev="TX")
         unassigned = Stakeholder.objects.create(
             first_name="Unassigned",
             last_name="Stakeholder",
@@ -218,7 +220,7 @@ class TestSpatialQueryUtils(BaseTestCase):
             email="unassigned@example.com",
             street_address="789 Pine St",
             city="Denver",
-            state="CO",
+            state=texas,  # Use Texas from fixture
             zip_code="80202",
             location=Point(-104.9903, 39.7392),
             type="individual",

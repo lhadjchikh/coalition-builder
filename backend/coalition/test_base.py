@@ -28,6 +28,10 @@ class BaseTestCase(TestCase):
         cls.virginia = Region.objects.get(abbrev="VA")
         cls.california = Region.objects.get(abbrev="CA")
 
+    def setUp(self) -> None:
+        """Set up method for compatibility with child classes."""
+        super().setUp()
+
     def create_stakeholder(self, **kwargs: Any) -> "Stakeholder":
         """Helper to create a stakeholder with defaults."""
         from coalition.stakeholders.models import Stakeholder

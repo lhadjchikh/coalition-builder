@@ -49,7 +49,7 @@ class StakeholderAdminTest(BaseTestCase):
             email="new@example.com",
             type="individual",
             city="New City",
-            state="VA",
+            state=self.virginia,  # Use Region object from fixture
             zip_code="54321",
         )
 
