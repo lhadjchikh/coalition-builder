@@ -383,7 +383,7 @@ class StakeholderCreateSchema(Schema):
         description="Street address",
     )
     city: str = Field(max_length=100, description="City")
-    state: str = Field(max_length=2, description="State abbreviation")
+    state: str = Field(max_length=100, description="State name or abbreviation")
     zip_code: str = Field(max_length=10, description="ZIP code")
     county: str = Field(default="", max_length=100, description="County name")
 
