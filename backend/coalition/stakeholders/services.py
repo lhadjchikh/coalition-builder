@@ -150,11 +150,15 @@ class GeocodingService:
                 if part
             ]
 
+            # Format and validate zip code
+            raw_zip = place.get("PostalCode", "")
+            zip_code = self._format_zip_code(raw_zip)
+
             address_components = {
                 "street_address": " ".join(street_parts),
                 "city": place.get("Municipality", ""),
                 "state": place.get("Region", ""),
-                "zip_code": place.get("PostalCode", ""),
+                "zip_code": zip_code,
                 "country": place.get("Country", "USA"),
             }
 
@@ -166,6 +170,33 @@ class GeocodingService:
         except Exception as e:
             logger.error(f"Unexpected error getting place details: {e}")
             return None
+
+    @staticmethod
+    def _format_zip_code(raw_zip: str) -> str:
+        """
+        Format ZIP code from AWS Location Service.
+        Handles both 5-digit and ZIP+4 formats.
+
+        AWS Location typically returns ZIP codes in these formats:
+        - "12345" (5-digit)
+        - "123456789" or "12345 6789" (ZIP+4 without dash)
+        - "12345-6789" (already formatted ZIP+4)
+        """
+        if not raw_zip:
+            return ""
+
+        # Keep only digits
+        digits = "".join(c for c in raw_zip if c.isdigit())
+
+        # Format based on length
+        if len(digits) == 5:
+            return digits
+        elif len(digits) == 9:
+            return f"{digits[:5]}-{digits[5:]}"
+        else:
+            # Log unexpected format but return what we have
+            logger.debug(f"Unexpected ZIP format from AWS: '{raw_zip}'")
+            return raw_zip.strip()  # Return original, just trimmed
 
     def _geocode_with_aws_location(self, address_parts: dict[str, str]) -> Point | None:
         """Use AWS Location Service for geocoding (works via VPC endpoint)"""
