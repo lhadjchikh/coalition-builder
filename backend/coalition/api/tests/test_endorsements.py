@@ -8,12 +8,13 @@ from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.test import Client, TestCase
+from django.test import Client
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.models import Endorsement
 from coalition.legal.models import LegalDocument, TermsAcceptance
 from coalition.stakeholders.models import Stakeholder
+from coalition.test_base import BaseTestCase
 
 
 def get_valid_form_metadata() -> dict[str, str]:
@@ -27,10 +28,11 @@ def get_valid_form_metadata() -> dict[str, str]:
     }
 
 
-class EndorsementAPITest(TestCase):
+class EndorsementAPITest(BaseTestCase):
     """Test basic endorsement API endpoints"""
 
     def setUp(self) -> None:
+        super().setUp()
         cache.clear()  # Clear rate limiting cache between tests
         self.client = Client()
 
@@ -45,8 +47,8 @@ class EndorsementAPITest(TestCase):
             endorsement_form_instructions="Please fill out all fields",
         )
 
-        # Create test stakeholder
-        self.stakeholder = Stakeholder.objects.create(
+        # Create test stakeholder using helper
+        self.stakeholder = self.create_stakeholder(
             first_name="Jane",
             last_name="Smith",
             organization="Green Farms Coalition",
@@ -54,9 +56,8 @@ class EndorsementAPITest(TestCase):
             email="jane@greenfarms.org",
             street_address="123 Green St",
             city="Alexandria",
-            state="VA",
+            state=self.virginia,  # Use Region object from fixture
             zip_code="22301",
-            county="Fairfax County",
             type="nonprofit",
         )
 
@@ -207,7 +208,7 @@ class EndorsementAPITest(TestCase):
         assert (
             stakeholder.organization == "Green Farms Coalition"
         )  # Original data preserved
-        assert stakeholder.state == "VA"  # Original data preserved
+        assert stakeholder.state.abbrev == "VA"  # Original data preserved
 
         # Should still only have one stakeholder with this email
         assert Stakeholder.objects.filter(email="jane@greenfarms.org").count() == 1
@@ -330,12 +331,12 @@ class EndorsementAPITest(TestCase):
         self.endorsement.save()
 
         # Create private endorsement (also approved and verified)
-        private_stakeholder = Stakeholder.objects.create(
+        private_stakeholder = self.create_stakeholder(
             first_name="Test",
             last_name="Person",
             organization="Private Org",
             email="private@example.com",
-            state="CA",
+            state=self.california,  # Use Region object from fixture
             type="individual",
         )
 
@@ -408,10 +409,11 @@ class EndorsementAPITest(TestCase):
             assert not Stakeholder.objects.filter(email="new@example.com").exists()
 
 
-class EndorsementAPIEnhancedTest(TestCase):
+class EndorsementAPIEnhancedTest(BaseTestCase):
     """Test enhanced API endpoints for verification and admin functionality"""
 
     def setUp(self) -> None:
+        super().setUp()
         cache.clear()  # Clear rate limiting cache between tests
         self.client = Client()
 
@@ -422,12 +424,11 @@ class EndorsementAPIEnhancedTest(TestCase):
             is_staff=True,
         )
 
-        self.stakeholder = Stakeholder.objects.create(
+        self.stakeholder = self.create_stakeholder(
             first_name="Test",
             last_name="User",
             organization="Test Org",
             email="test@example.com",
-            state="MD",
             type="individual",
         )
 
@@ -652,12 +653,12 @@ class EndorsementAPIEnhancedTest(TestCase):
     def test_export_endorsements_csv_injection_protection(self) -> None:
         """Test CSV export sanitizes dangerous formula characters"""
         # Create stakeholder with potentially dangerous CSV data
-        malicious_stakeholder = Stakeholder.objects.create(
+        malicious_stakeholder = self.create_stakeholder(
             first_name="=cmd|' /C calc'!A0",  # Excel formula injection attempt
             last_name="User",
             organization="@SUM(1+1)*cmd|' /C calc'!A0",  # Another injection attempt
             email="evil@example.com",
-            state="CA",
+            state=self.california,  # Use Region object from fixture
             type="individual",
         )
 
@@ -740,12 +741,12 @@ class EndorsementAPIEnhancedTest(TestCase):
         self.client.force_login(self.user)
 
         # Create another pending endorsement
-        stakeholder2 = Stakeholder.objects.create(
+        stakeholder2 = self.create_stakeholder(
             first_name="Test",
             last_name="User",
             organization="Another Org",
             email="another@example.com",
-            state="CA",
+            state=self.california,  # Use Region object from fixture
             type="individual",
         )
         endorsement2 = Endorsement.objects.create(
@@ -798,10 +799,11 @@ class EndorsementAPIEnhancedTest(TestCase):
         assert response.status_code == 403
 
 
-class TermsAcceptanceIntegrationTest(TestCase):
+class TermsAcceptanceIntegrationTest(BaseTestCase):
     """Test automatic creation of TermsAcceptance records during endorsement."""
 
     def setUp(self) -> None:
+        super().setUp()
         cache.clear()  # Clear rate limiting cache between tests
         self.client = Client()
 
@@ -973,14 +975,14 @@ class TermsAcceptanceIntegrationTest(TestCase):
     def test_terms_acceptance_with_existing_stakeholder(self) -> None:
         """Test TermsAcceptance creation when using existing stakeholder"""
         # Create an existing stakeholder
-        existing_stakeholder = Stakeholder.objects.create(
+        existing_stakeholder = self.create_stakeholder(
             first_name="Existing",
             last_name="User",
             organization="Existing Org",
             email="existing@test.com",
             street_address="456 Existing St",
             city="Norfolk",
-            state="VA",
+            state=self.virginia,  # Use Region object from fixture
             zip_code="23510",
             type="business",
         )

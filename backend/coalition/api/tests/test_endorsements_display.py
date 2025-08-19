@@ -2,17 +2,18 @@
 Tests for endorsement display API functionality.
 """
 
-from django.test import Client, TestCase
+from django.test import Client
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.models import Endorsement
-from coalition.stakeholders.models import Stakeholder
+from coalition.test_base import BaseTestCase
 
 
-class EndorsementDisplayAPITest(TestCase):
+class EndorsementDisplayAPITest(BaseTestCase):
     """Test endorsement display filtering in API"""
 
     def setUp(self) -> None:
+        super().setUp()
         self.client = Client()
 
         # Create test campaign
@@ -26,13 +27,13 @@ class EndorsementDisplayAPITest(TestCase):
         # Create multiple stakeholders
         self.stakeholders = []
         for i in range(5):
-            stakeholder = Stakeholder.objects.create(
+            stakeholder = self.create_stakeholder(
                 first_name=f"User{i}",
                 last_name="Test",
                 email=f"user{i}@example.com",
                 street_address="123 Main St",
                 city="Anytown",
-                state="CA",
+                state=self.california,  # Use Region object from fixture
                 zip_code="12345",
                 type="individual",
             )

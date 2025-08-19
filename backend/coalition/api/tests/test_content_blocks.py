@@ -1,14 +1,15 @@
 from unittest.mock import patch
 
-from django.test import TestCase
 from django.test.client import Client
 
 from coalition.content.models import ContentBlock, HomePage, Image, Theme
+from coalition.test_base import BaseTestCase
 
 
-class ContentBlockAPITest(TestCase):
+class ContentBlockAPITest(BaseTestCase):
     def setUp(self) -> None:
         """Set up test data"""
+        super().setUp()
         self.client = Client()
 
         # Mock S3 URLs for image properties

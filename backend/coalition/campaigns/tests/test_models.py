@@ -2,7 +2,6 @@ from django.core.exceptions import ValidationError
 
 from coalition.endorsements.models import Endorsement
 from coalition.legislators.models import Legislator
-from coalition.regions.models import Region
 from coalition.test_base import BaseTestCase
 
 from ..models import Bill, PolicyCampaign
@@ -167,18 +166,14 @@ class BillModelTest(BaseTestCase):
     """Test the Bill model for both federal and state bills"""
 
     def setUp(self) -> None:
+        super().setUp()
         self.campaign = PolicyCampaign.objects.create(
             name="test-campaign",
             title="Test Campaign",
             summary="A test campaign for bills",
         )
 
-        # Create a test state region
-        self.california = Region.objects.create(
-            name="California",
-            type="state",
-            geoid="06",
-        )
+        # California is already loaded from fixture in BaseTestCase
 
     def test_create_federal_bill(self) -> None:
         """Test creating a federal bill"""
