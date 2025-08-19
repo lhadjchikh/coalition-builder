@@ -9,6 +9,10 @@ media/
 .env
 *.log
 
+# Organization-specific files
+backend/local/
+*.local.md
+
 # Node/React
 node_modules/
 npm-debug.log*
