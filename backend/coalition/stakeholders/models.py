@@ -60,15 +60,26 @@ class Stakeholder(models.Model):
         help_text="Street address including number and street name",
     )
     city = models.CharField(max_length=100, help_text="City or town name")
-    state = models.CharField(
-        max_length=2,
-        help_text="Two-letter state abbreviation (e.g., 'CA', 'NY')",
-    )
     zip_code = models.CharField(max_length=10, help_text="ZIP or postal code")
-    county = models.CharField(
-        max_length=100,
+
+    # Foreign key relationships for geographic regions
+    state = models.ForeignKey(
+        "regions.Region",
+        on_delete=models.SET_NULL,
+        null=True,
         blank=True,
-        help_text="County name (optional, auto-populated when possible)",
+        related_name="state_stakeholders",
+        limit_choices_to={"type": "state"},
+        help_text="State region",
+    )
+    county = models.ForeignKey(
+        "regions.Region",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="county_stakeholders",
+        limit_choices_to={"type": "county"},
+        help_text="County region (auto-populated based on geocoding)",
     )
 
     # Geographic coordinates
@@ -129,11 +140,9 @@ class Stakeholder(models.Model):
     )
 
     def save(self, *args: Any, **kwargs: Any) -> None:
-        """Normalize email and state to consistent format"""
+        """Normalize email and zip code to consistent format"""
         if self.email:
             self.email = self.email.lower()
-        if self.state:
-            self.state = self.state.upper()
         if self.zip_code:
             self.zip_code = self.zip_code.strip()
         super().save(*args, **kwargs)
@@ -158,10 +167,11 @@ class Stakeholder(models.Model):
         if self.city:
             parts.append(self.city)
         if self.state:
-            state_zip = self.state
+            # Use state abbreviation if available, otherwise state name
+            state_str = self.state.abbrev if self.state.abbrev else self.state.name
             if self.zip_code:
-                state_zip += f" {self.zip_code}"
-            parts.append(state_zip)
+                state_str += f" {self.zip_code}"
+            parts.append(state_str)
         return ", ".join(parts)
 
     @property
