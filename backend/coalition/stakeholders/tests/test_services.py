@@ -653,3 +653,103 @@ class TestGeocodingService(TestCase):
 
         assert details is not None
         assert details["street_address"] == "Congress Ave"  # No number, just street
+
+    def test_format_zip_code_standard_five_digit(self) -> None:
+        """Test formatting standard 5-digit ZIP codes"""
+        # Regular ZIP
+        assert GeocodingService._format_zip_code("78701") == "78701"
+
+        # New England ZIP with leading zero
+        assert GeocodingService._format_zip_code("01234") == "01234"
+
+        # Connecticut ZIP with double leading zeros
+        assert GeocodingService._format_zip_code("00501") == "00501"
+
+    def test_format_zip_code_zip_plus_four(self) -> None:
+        """Test formatting ZIP+4 codes"""
+        # Standard ZIP+4 without dash
+        assert GeocodingService._format_zip_code("787014321") == "78701-4321"
+
+        # New England ZIP+4 without dash
+        assert GeocodingService._format_zip_code("012345678") == "01234-5678"
+
+        # Already formatted with dash
+        assert GeocodingService._format_zip_code("78701-4321") == "78701-4321"
+
+        # With spaces (as AWS might return)
+        assert GeocodingService._format_zip_code("78701 4321") == "78701-4321"
+        assert GeocodingService._format_zip_code("01234 5678") == "01234-5678"
+
+    def test_format_zip_code_edge_cases(self) -> None:
+        """Test edge cases for ZIP code formatting"""
+        # Empty string
+        assert GeocodingService._format_zip_code("") == ""
+
+        # None-like input (shouldn't happen but good to test)
+        assert GeocodingService._format_zip_code("   ") == ""
+
+        # Invalid lengths (not 5 or 9 digits)
+        assert GeocodingService._format_zip_code("123") == "123"  # Too short
+        assert GeocodingService._format_zip_code("1234567") == "1234567"  # 7 digits
+        assert (
+            GeocodingService._format_zip_code("12345678901") == "12345678901"
+        )  # Too long
+
+        # With non-numeric characters that should be stripped
+        assert GeocodingService._format_zip_code("MA 01234") == "01234"
+        assert GeocodingService._format_zip_code("78701-USA") == "78701"
+
+    @patch("coalition.stakeholders.services.boto3")
+    def test_get_place_details_with_zip_plus_four(self, mock_boto3: Any) -> None:
+        """Test getting place details with ZIP+4 formatting"""
+        mock_client = MagicMock()
+        mock_boto3.client.return_value = mock_client
+
+        # Mock place details response with ZIP+4 without dash
+        mock_client.get_place.return_value = {
+            "Place": {
+                "AddressNumber": "123",
+                "Street": "Main St",
+                "Municipality": "Springfield",
+                "Region": "Massachusetts",
+                "PostalCode": "012345678",  # ZIP+4 without dash
+                "Country": "USA",
+            },
+        }
+
+        self.geocoding_service.location_client = mock_client
+        self.geocoding_service.place_index_name = "test-index"
+
+        details = self.geocoding_service.get_place_details("place123")
+
+        assert details is not None
+        assert details["street_address"] == "123 Main St"
+        assert details["city"] == "Springfield"
+        assert details["state"] == "Massachusetts"
+        assert details["zip_code"] == "01234-5678"  # Properly formatted with dash
+
+    @patch("coalition.stakeholders.services.boto3")
+    def test_get_place_details_with_new_england_zip(self, mock_boto3: Any) -> None:
+        """Test getting place details with New England ZIP code (leading zero)"""
+        mock_client = MagicMock()
+        mock_boto3.client.return_value = mock_client
+
+        # Mock place details response with New England ZIP
+        mock_client.get_place.return_value = {
+            "Place": {
+                "AddressNumber": "1",
+                "Street": "Federal St",
+                "Municipality": "Boston",
+                "Region": "Massachusetts",
+                "PostalCode": "02110",  # Boston ZIP with leading zero
+                "Country": "USA",
+            },
+        }
+
+        self.geocoding_service.location_client = mock_client
+        self.geocoding_service.place_index_name = "test-index"
+
+        details = self.geocoding_service.get_place_details("place123")
+
+        assert details is not None
+        assert details["zip_code"] == "02110"  # Leading zero preserved
