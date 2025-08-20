@@ -6,7 +6,7 @@ import ssl
 import tempfile
 import zipfile
 from typing import Any
-from urllib.request import urlopen, urlretrieve
+from urllib.request import urlopen
 
 try:
     from django.contrib.gis.gdal import DataSource
@@ -338,14 +338,8 @@ class Command(BaseCommand):
         # Download to temporary file with SSL certificate handling
         with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as temp_file:
             try:
-                # Create SSL context that doesn't verify certificates
-                # This is needed for Census.gov on some macOS systems
-                ssl_context = ssl.create_default_context()
-                ssl_context.check_hostname = False
-                ssl_context.verify_mode = ssl.CERT_NONE
-
-                # Download the file
-                with urlopen(url, context=ssl_context) as response:
+                # Try downloading with standard SSL verification first
+                with urlopen(url) as response:
                     temp_file.write(response.read())
                 zip_path = temp_file.name
             except Exception:
@@ -353,24 +347,22 @@ class Command(BaseCommand):
                 # Try alternative approaches
                 self.stdout.write(
                     self.style.WARNING(
-                        "SSL verification failed, trying alternative download method...",
+                        "SSL verification failed, trying alternative method...",
                     ),
                 )
 
                 try:
-                    # Method 2: Use unverified context (less secure but works)
-                    import ssl as ssl_module
-
-                    ssl_module._create_default_https_context = (
-                        ssl_module._create_unverified_context
-                    )
-                    urlretrieve(url, temp_file.name)
+                    # Method 2: Use a local unverified SSL context as fallback
+                    # This avoids modifying the global SSL context
+                    unverified_context = ssl._create_unverified_context()
+                    with urlopen(url, context=unverified_context) as response:
+                        temp_file.write(response.read())
                     zip_path = temp_file.name
                     self.stdout.write(
                         self.style.WARNING(
-                            "Downloaded without SSL verification. "
-                            "Consider installing certificates: "
-                            "pip install certifi",
+                            "Downloaded with relaxed SSL verification. "
+                            "This is necessary for Census.gov on some macOS systems. "
+                            "Consider: pip install --upgrade certifi",
                         ),
                     )
                 except Exception as download_error:
@@ -467,10 +459,9 @@ class Command(BaseCommand):
         )
 
         imported_count = 0
-        total_features = len(tiger_layer)
 
         with transaction.atomic():
-            for idx, feature in enumerate(tiger_layer, 1):
+            for _idx, feature in enumerate(tiger_layer, 1):
                 try:
                     # Extract TIGER/Line geometry for full resolution
                     tiger_geom = GEOSGeometry(feature.geom.wkt, srid=4326)
@@ -515,7 +506,7 @@ class Command(BaseCommand):
                         )
                     else:
                         # Create or update region
-                        # Use internal point coordinates from TIGER/Line data if available
+                        # Use internal point coordinates from TIGER data
                         try:
                             # Try different field name patterns for internal point
                             intlat = feature.get("INTPTLAT") or feature.get(
@@ -528,12 +519,12 @@ class Command(BaseCommand):
                             if intlat and intlon:
                                 coords = Point(float(intlon), float(intlat), srid=4326)
                             else:
-                                # Fallback to point_on_surface if internal point not available
+                                # Fallback to point_on_surface
                                 coords = tiger_geom.point_on_surface
-                        except Exception as coord_error:
+                        except Exception:
                             self.stdout.write(
                                 self.style.WARNING(
-                                    f"  Failed to get coordinates for {region_data['geoid']}: {coord_error}, using point_on_surface",
+                                    f"  Failed coords for {region_data['geoid']}: err",
                                 ),
                             )
                             coords = tiger_geom.point_on_surface
@@ -547,7 +538,7 @@ class Command(BaseCommand):
                                 "abbrev": region_data.get("abbrev", ""),
                                 "coords": coords,
                                 "geom": tiger_geom,  # Full resolution geometry
-                                "geojson": geojson_data,  # Cartographic boundary or full geometry
+                                "geojson": geojson_data,  # Carto boundary or full
                             },
                         )
 
