@@ -54,7 +54,10 @@ export default function CampaignPageContent({
           <div className="cta-icon cta-icon--primary">
             <FontAwesomeIcon
               icon={faBullhorn}
-              style={{ fontSize: "56px", color: "#7C4DFF" }}
+              style={{
+                fontSize: "56px",
+                color: "var(--theme-accent, #f59e0b)",
+              }}
             />
           </div>
           <h3 className="cta-heading cta-heading--primary">
