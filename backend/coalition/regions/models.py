@@ -47,11 +47,11 @@ class Region(models.Model):
         help_text="Alternative display label for the region",
     )
     abbrev = models.CharField(
-        max_length=10,
+        max_length=50,
         blank=True,
         null=True,
         db_index=True,
-        help_text="Abbreviation for the region (e.g., 'MD', 'CA-12')",
+        help_text="Abbreviation for the region (e.g., 'MD', 'CA-12', 'MD-Montgomery')",
     )
     type = models.CharField(
         choices=REGION_TYPE_CHOICES,
