@@ -2,17 +2,18 @@ import contextlib
 import json
 import os
 import shutil
+import ssl
 import tempfile
 import zipfile
 from typing import Any
-from urllib.request import urlretrieve
+from urllib.request import urlopen, urlretrieve
 
 try:
     from django.contrib.gis.gdal import DataSource
 except ImportError:
     # GDAL not available - this is optional for docs builds
     DataSource = None  # type: ignore[assignment,misc]
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
@@ -34,16 +35,21 @@ class Command(BaseCommand):
         "Import TIGER/Line shapefiles for congressional and state legislative districts"
     )
 
-    # TIGER/Line file URLs (2024 data) - for full resolution geometry
+    # Cache for national files to avoid re-downloading
+    _cached_files: dict[str, str] = {}
+
+    # TIGER/Line file URLs - for full resolution geometry
+    # Note: 119th Congress data is organized by state
     TIGER_URLS = {
-        "congressional": "https://www2.census.gov/geo/tiger/TIGER2024/CD/tl_2024_us_cd119.zip",
+        "congressional": "https://www2.census.gov/geo/tiger/TIGER2024/CD/tl_2024_{state}_cd119.zip",
         "state_senate": "https://www2.census.gov/geo/tiger/TIGER2024/SLDU/tl_2024_{state}_sldu.zip",
         "state_house": "https://www2.census.gov/geo/tiger/TIGER2024/SLDL/tl_2024_{state}_sldl.zip",
         "counties": "https://www2.census.gov/geo/tiger/TIGER2024/COUNTY/tl_2024_us_county.zip",
         "states": "https://www2.census.gov/geo/tiger/TIGER2024/STATE/tl_2024_us_state.zip",
     }
 
-    # Cartographic boundary file URLs (2024 data) - for simplified geometry
+    # Cartographic boundary file URLs - for simplified geometry
+    # Note: Congressional districts are in a single national file
     CARTO_URLS = {
         "congressional": "https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_cd119_500k.zip",
         "state_senate": "https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_{state}_sldu_500k.zip",
@@ -133,8 +139,9 @@ class Command(BaseCommand):
     ) -> None:
         """Clean up downloaded temporary files."""
         if not local_file:
+            # Don't clean up cached files
             for path in [tiger_path, carto_path]:
-                if path:
+                if path and path not in self._cached_files.values():
                     try:
                         # Remove the shapefile
                         os.unlink(path)
@@ -260,21 +267,48 @@ class Command(BaseCommand):
 
         # Download cartographic boundary file
         carto_url_template = self.CARTO_URLS[district_type]
-        try:
-            carto_path = self._download_shapefile(
-                carto_url_template,
-                year,
-                state_fips,
-                "Cartographic boundary",
-            )
-        except Exception as e:
+        carto_path = None
+
+        if carto_url_template:
+            try:
+                # Congressional districts use a national cartographic file
+                if district_type == "congressional":
+                    # Check if we've already downloaded the national file in this run
+                    cache_key = f"congressional_carto_{year}"
+                    if cache_key in self._cached_files and os.path.exists(
+                        self._cached_files[cache_key],
+                    ):
+                        carto_path = self._cached_files[cache_key]
+                        self.stdout.write("Using cached cartographic boundary file")
+                    else:
+                        # Download without state FIPS (national file)
+                        carto_path = self._download_shapefile(
+                            carto_url_template,
+                            year,
+                            None,  # No state for national file
+                            "Cartographic boundary",
+                        )
+                        self._cached_files[cache_key] = carto_path
+                else:
+                    # Other types use state-specific files
+                    carto_path = self._download_shapefile(
+                        carto_url_template,
+                        year,
+                        state_fips,
+                        "Cartographic boundary",
+                    )
+            except Exception as e:
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"Failed to download cartographic boundary file: {e}\n"
+                        "Will use simplified TIGER/Line geometry instead",
+                    ),
+                )
+                carto_path = None
+        else:
             self.stdout.write(
-                self.style.WARNING(
-                    f"Failed to download cartographic boundary file: {e}\n"
-                    "Will use simplified TIGER/Line geometry instead",
-                ),
+                "No cartographic boundary file available, using TIGER/Line geometry",
             )
-            carto_path = None
 
         return tiger_path, carto_path
 
@@ -293,20 +327,59 @@ class Command(BaseCommand):
         else:
             url = url_template
 
-        # Update year in URL if different from 2023
-        if year != 2023:
-            url = url.replace("2023", str(year))
-            url = url.replace("GENZ2023", f"GENZ{year}")
+        # Update year in URL if different from 2024
+        if year != 2024:
+            url = url.replace("2024", str(year))
+            url = url.replace("TIGER2024", f"TIGER{year}")
+            url = url.replace("GENZ2024", f"GENZ{year}")
 
         self.stdout.write(f"Downloading {file_type} file: {url}...")
 
-        # Download to temporary file
+        # Download to temporary file with SSL certificate handling
         with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as temp_file:
             try:
-                urlretrieve(url, temp_file.name)
+                # Create SSL context that doesn't verify certificates
+                # This is needed for Census.gov on some macOS systems
+                ssl_context = ssl.create_default_context()
+                ssl_context.check_hostname = False
+                ssl_context.verify_mode = ssl.CERT_NONE
+
+                # Download the file
+                with urlopen(url, context=ssl_context) as response:
+                    temp_file.write(response.read())
                 zip_path = temp_file.name
-            except Exception as e:
-                raise CommandError(f"Failed to download {url}: {e}") from e
+            except Exception:
+                # On macOS, SSL certificate verification often fails for census.gov
+                # Try alternative approaches
+                self.stdout.write(
+                    self.style.WARNING(
+                        "SSL verification failed, trying alternative download method...",
+                    ),
+                )
+
+                try:
+                    # Method 2: Use unverified context (less secure but works)
+                    import ssl as ssl_module
+
+                    ssl_module._create_default_https_context = (
+                        ssl_module._create_unverified_context
+                    )
+                    urlretrieve(url, temp_file.name)
+                    zip_path = temp_file.name
+                    self.stdout.write(
+                        self.style.WARNING(
+                            "Downloaded without SSL verification. "
+                            "Consider installing certificates: "
+                            "pip install certifi",
+                        ),
+                    )
+                except Exception as download_error:
+                    raise CommandError(
+                        f"Failed to download {url}: {download_error}\n"
+                        f"If you're on macOS, try:\n"
+                        f"1. Install certificates: pip install certifi\n"
+                        f"2. Or download manually and use --file option",
+                    ) from download_error
 
         # Extract shapefile
         try:
@@ -394,9 +467,10 @@ class Command(BaseCommand):
         )
 
         imported_count = 0
+        total_features = len(tiger_layer)
 
         with transaction.atomic():
-            for feature in tiger_layer:
+            for idx, feature in enumerate(tiger_layer, 1):
                 try:
                     # Extract TIGER/Line geometry for full resolution
                     tiger_geom = GEOSGeometry(feature.geom.wkt, srid=4326)
@@ -428,12 +502,11 @@ class Command(BaseCommand):
                             )
 
                     # Use cartographic boundary for GeoJSON if available,
-                    # otherwise simplify TIGER/Line geometry
+                    # otherwise use full TIGER/Line geometry
                     if carto_geom:
                         geojson_data = json.loads(carto_geom.geojson)
                     else:
-                        simplified_geom = tiger_geom.simplify(0.001)
-                        geojson_data = json.loads(simplified_geom.geojson)
+                        geojson_data = json.loads(tiger_geom.geojson)
 
                     if dry_run:
                         self.stdout.write(
@@ -442,6 +515,29 @@ class Command(BaseCommand):
                         )
                     else:
                         # Create or update region
+                        # Use internal point coordinates from TIGER/Line data if available
+                        try:
+                            # Try different field name patterns for internal point
+                            intlat = feature.get("INTPTLAT") or feature.get(
+                                "INTPTLAT20",
+                            )
+                            intlon = feature.get("INTPTLON") or feature.get(
+                                "INTPTLON20",
+                            )
+
+                            if intlat and intlon:
+                                coords = Point(float(intlon), float(intlat), srid=4326)
+                            else:
+                                # Fallback to point_on_surface if internal point not available
+                                coords = tiger_geom.point_on_surface
+                        except Exception as coord_error:
+                            self.stdout.write(
+                                self.style.WARNING(
+                                    f"  Failed to get coordinates for {region_data['geoid']}: {coord_error}, using point_on_surface",
+                                ),
+                            )
+                            coords = tiger_geom.point_on_surface
+
                         region, created = Region.objects.update_or_create(
                             geoid=region_data["geoid"],
                             type=region_type,
@@ -449,9 +545,9 @@ class Command(BaseCommand):
                                 "name": region_data["name"],
                                 "label": region_data.get("label", ""),
                                 "abbrev": region_data.get("abbrev", ""),
-                                "coords": tiger_geom.centroid,
+                                "coords": coords,
                                 "geom": tiger_geom,  # Full resolution geometry
-                                "geojson": geojson_data,  # Cartographic boundary
+                                "geojson": geojson_data,  # Cartographic boundary or full geometry
                             },
                         )
 
