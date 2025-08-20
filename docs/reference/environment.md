@@ -361,7 +361,7 @@ BACKEND_DOMAIN=api.yourdomain.com
 
 # Backend configuration (in ECS/production)
 USE_S3_DIRECT_URLS=false  # Use CloudFront URLs (recommended)
-# USE_S3_DIRECT_URLS=true  # Use S3 URLs directly (for VPC endpoints)
+# USE_S3_DIRECT_URLS=true  # Use S3 URLs directly
 ```
 
 ## Terraform/Deployment Variables

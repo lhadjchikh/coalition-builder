@@ -38,22 +38,15 @@ module "networking" {
   db_subnet_ids            = var.db_subnet_ids
   private_db_subnet_a_cidr = var.private_db_subnet_a_cidr
   private_db_subnet_b_cidr = var.private_db_subnet_b_cidr
-
-  # VPC Endpoints for private subnet internet access
-  create_vpc_endpoints       = true
-  enable_single_az_endpoints = var.enable_single_az_endpoints
 }
 
 # AWS Location Service Module
 module "aws_location" {
   source = "./modules/aws-location"
 
-  prefix            = var.prefix
-  environment       = var.environment
-  aws_region        = var.aws_region
-  vpc_id            = module.networking.vpc_id
-  vpc_cidr          = var.vpc_cidr
-  private_subnet_id = module.networking.private_subnet_ids[0] # Single AZ for cost savings
+  prefix      = var.prefix
+  environment = var.environment
+  aws_region  = var.aws_region
 }
 
 # Security Module
@@ -129,7 +122,7 @@ module "compute" {
 
   prefix                          = var.prefix
   aws_region                      = var.aws_region
-  private_subnet_ids              = module.networking.private_subnet_ids
+  public_subnet_ids               = module.networking.public_subnet_ids
   public_subnet_id                = module.networking.public_subnet_ids[0]
   app_security_group_id           = module.security.app_security_group_id
   bastion_security_group_id       = module.security.bastion_security_group_id

@@ -13,20 +13,6 @@ variable "aws_region" {
   type        = string
 }
 
-variable "vpc_id" {
-  description = "VPC ID where the endpoint will be created"
-  type        = string
-}
-
-variable "vpc_cidr" {
-  description = "VPC CIDR block for security group rules"
-  type        = string
-}
-
-variable "private_subnet_id" {
-  description = "Single private subnet ID for the VPC endpoint (cost optimization)"
-  type        = string
-}
 
 # Removed ecs_task_role_name variable to avoid circular dependency
 # The compute module will handle attaching the policy to the ECS task role

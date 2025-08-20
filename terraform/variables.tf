@@ -265,12 +265,6 @@ variable "csrf_trusted_origins" {
   default     = ""
 }
 
-variable "enable_single_az_endpoints" {
-  description = "Deploy VPC endpoints in a single AZ to reduce costs (saves ~50% on endpoint costs)"
-  type        = bool
-  default     = true
-}
-
 # Site Password Protection Variables
 variable "site_password_enabled" {
   description = "Enable password protection for the entire site during development"

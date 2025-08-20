@@ -34,7 +34,7 @@ locals {
     },
     {
       name  = "USE_S3_DIRECT_URLS"
-      value = "true" # Use S3 URLs via VPC endpoints instead of CloudFront
+      value = "true" # Use S3 URLs directly instead of CloudFront
     },
     {
       name  = "ALLOWED_HOSTS"
@@ -491,9 +491,9 @@ resource "aws_ecs_service" "app" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets          = var.private_subnet_ids
+    subnets          = var.public_subnet_ids
     security_groups  = [var.app_security_group_id]
-    assign_public_ip = false # Changed from true to improve security
+    assign_public_ip = true # Required for Fargate tasks in public subnets
   }
 
   # Load balancer configuration for Django API

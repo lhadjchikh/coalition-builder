@@ -254,13 +254,11 @@ resource "aws_route_table_association" "private_db_b" {
 
 # VPC Endpoint for S3 - allows private resources to access S3 without internet
 resource "aws_vpc_endpoint" "s3" {
-  count = var.create_vpc_endpoints ? 1 : 0
-
   vpc_id            = local.vpc_id
   service_name      = "com.amazonaws.${var.aws_region}.s3"
   vpc_endpoint_type = "Gateway"
   route_table_ids = compact([
-    var.create_private_subnets ? aws_route_table.private_app[0].id : null,
+    var.create_public_subnets ? aws_route_table.public[0].id : null,
     var.create_db_subnets ? aws_route_table.private_db[0].id : null
   ])
 
@@ -269,83 +267,3 @@ resource "aws_vpc_endpoint" "s3" {
   }
 }
 
-# Security Group for Interface VPC Endpoints
-resource "aws_security_group" "ecs_endpoints" {
-  count = var.create_vpc_endpoints && var.existing_endpoints_security_group_id == "" ? 1 : 0
-
-  name   = "${var.prefix}-endpoints-sg"
-  vpc_id = local.vpc_id
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = [local.vpc_cidr_block]
-    description = "Allow HTTPS from within VPC"
-  }
-
-  egress {
-    from_port   = 1024
-    to_port     = 65535
-    protocol    = "tcp"
-    cidr_blocks = [local.vpc_cidr_block]
-    description = "Restrict egress to VPC for return traffic"
-  }
-
-  egress {
-    from_port   = 53
-    to_port     = 53
-    protocol    = "udp"
-    cidr_blocks = [local.vpc_cidr_block]
-    description = "Allow DNS queries to VPC resolver"
-  }
-
-  tags = {
-    Name = "${var.prefix}-endpoints-sg"
-  }
-}
-
-locals {
-  # Use a local for the security group ID, which could be either the created one or an existing one
-  endpoints_security_group_id = var.existing_endpoints_security_group_id != "" ? var.existing_endpoints_security_group_id : (length(aws_security_group.ecs_endpoints) > 0 ? aws_security_group.ecs_endpoints[0].id : "")
-
-  # Safely determine subnet IDs for VPC endpoints with validation
-  endpoint_subnet_ids = var.enable_single_az_endpoints ? (
-    length(local.private_subnet_ids) > 0 ?
-    slice(sort(local.private_subnet_ids), 0, 1) :
-    [] # Empty list will cause clear error if no subnets available
-  ) : local.private_subnet_ids
-
-  vpc_endpoints = {
-    ecr_api = {
-      service_name = "com.amazonaws.${var.aws_region}.ecr.api"
-      tag_name     = "${var.prefix}-ecr-api-endpoint"
-    },
-    ecr_dkr = {
-      service_name = "com.amazonaws.${var.aws_region}.ecr.dkr"
-      tag_name     = "${var.prefix}-ecr-dkr-endpoint"
-    },
-    logs = {
-      service_name = "com.amazonaws.${var.aws_region}.logs"
-      tag_name     = "${var.prefix}-logs-endpoint"
-    },
-    secretsmanager = {
-      service_name = "com.amazonaws.${var.aws_region}.secretsmanager"
-      tag_name     = "${var.prefix}-secretsmanager-endpoint"
-    }
-  }
-}
-
-resource "aws_vpc_endpoint" "interface" {
-  for_each            = var.create_vpc_endpoints ? local.vpc_endpoints : {}
-  vpc_id              = local.vpc_id
-  service_name        = each.value.service_name
-  vpc_endpoint_type   = "Interface"
-  subnet_ids          = local.endpoint_subnet_ids
-  security_group_ids  = [local.endpoints_security_group_id]
-  private_dns_enabled = true
-
-  tags = {
-    Name = each.value.tag_name
-  }
-}
