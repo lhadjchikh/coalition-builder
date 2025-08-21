@@ -52,7 +52,11 @@ if __name__ == "__main__":
         password = calculate_ses_smtp_password(secret_key, region)
         # Output must be valid JSON with string values only
         # Using 'value' as key name to avoid exposing sensitive field names in logs
+        # WARNING: The following output contains sensitive information (SMTP password).
+        # This output is intended for Terraform external data source consumption only.
+        # Ensure stdout is not redirected to logs in production environments.
         print(json.dumps({"value": password}))
-    except Exception as e:
-        print(json.dumps({"error": str(e)}))
+    except Exception:
+        # Do not leak sensitive values in error output
+        print(json.dumps({"error": "Failed to generate SMTP password"}))
         sys.exit(1)
