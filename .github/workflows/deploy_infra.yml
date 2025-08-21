@@ -46,6 +46,10 @@ env:
   TF_VAR_ses_from_email: ${{ vars.SES_FROM_EMAIL }}
   TF_VAR_ses_verify_domain: ${{ vars.SES_VERIFY_DOMAIN }}
   TF_VAR_ses_notification_email: ${{ vars.SES_NOTIFICATION_EMAIL }}
+  # Organization and Admin Email Configuration
+  TF_VAR_contact_email: ${{ vars.CONTACT_EMAIL }}
+  TF_VAR_admin_notification_emails: ${{ vars.ADMIN_NOTIFICATION_EMAILS }}
+  TF_VAR_organization_name: ${{ vars.ORGANIZATION_NAME }}
 
 jobs:
   # Wait for terraform tests to complete successfully before deploying to production

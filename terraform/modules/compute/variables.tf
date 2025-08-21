@@ -248,6 +248,24 @@ variable "ses_smtp_secret_arn" {
   default     = ""
 }
 
+variable "contact_email" {
+  description = "Contact email address for the organization"
+  type        = string
+  default     = "info@example.org"
+}
+
+variable "admin_notification_emails" {
+  description = "Comma-separated list of admin emails for endorsement notifications"
+  type        = string
+  default     = ""
+}
+
+variable "organization_name" {
+  description = "Name of the organization"
+  type        = string
+  default     = "Coalition Builder"
+}
+
 variable "static_assets_upload_policy_arn" {
   description = "ARN of the IAM policy for uploading to static assets bucket"
   type        = string

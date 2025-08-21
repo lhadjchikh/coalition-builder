@@ -14,11 +14,16 @@ This guide explains how to configure GitHub environment variables for AWS SES em
 
 Add the following **Environment variables** (not secrets):
 
-| Variable Name            | Example Value            | Description                              |
-| ------------------------ | ------------------------ | ---------------------------------------- |
-| `SES_FROM_EMAIL`         | `noreply@yourdomain.com` | Default sender email address             |
-| `SES_VERIFY_DOMAIN`      | `true`                   | Whether to verify entire domain          |
-| `SES_NOTIFICATION_EMAIL` | `admin@yourdomain.com`   | Email for bounce/complaint notifications |
+#### Email Configuration Variables
+
+| Variable Name               | Example Value                         | Description                                   |
+| --------------------------- | ------------------------------------- | --------------------------------------------- |
+| `SES_FROM_EMAIL`            | `noreply@yourdomain.com`              | Default sender email address                  |
+| `SES_VERIFY_DOMAIN`         | `true`                                | Whether to verify entire domain               |
+| `SES_NOTIFICATION_EMAIL`    | `admin@yourdomain.com`                | Email for bounce/complaint notifications      |
+| `CONTACT_EMAIL`             | `info@yourdomain.com`                 | Organization contact email                    |
+| `ADMIN_NOTIFICATION_EMAILS` | `admin1@domain.com,admin2@domain.com` | Comma-separated admin emails for endorsements |
+| `ORGANIZATION_NAME`         | `Your Organization Name`              | Organization name for email templates         |
 
 ### 3. How to Add Variables
 
@@ -34,6 +39,9 @@ Add the following **Environment variables** (not secrets):
 SES_FROM_EMAIL: noreply@example.com
 SES_VERIFY_DOMAIN: true
 SES_NOTIFICATION_EMAIL: admin@example.com
+CONTACT_EMAIL: info@example.com
+ADMIN_NOTIFICATION_EMAILS: admin1@example.com,admin2@example.com
+ORGANIZATION_NAME: Coalition for Climate Action
 ```
 
 ## How It Works
@@ -51,6 +59,20 @@ The `deploy_infra.yml` workflow automatically:
    - Configures ECS to use the credentials
 
 ## Important Notes
+
+### Admin Notification Emails
+
+The `ADMIN_NOTIFICATION_EMAILS` variable is crucial for:
+
+- Receiving notifications when new endorsements are submitted
+- Getting alerts about endorsements requiring moderation
+- System notifications about potential spam or issues
+
+Make sure to:
+
+- Use verified email addresses
+- Separate multiple emails with commas (no spaces)
+- Monitor these inboxes regularly
 
 ### Domain Verification
 

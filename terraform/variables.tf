@@ -377,3 +377,22 @@ variable "ses_enable_notifications" {
   type        = bool
   default     = true
 }
+
+# Email and Organization Configuration
+variable "contact_email" {
+  description = "Contact email address for the organization"
+  type        = string
+  default     = "info@example.org"
+}
+
+variable "admin_notification_emails" {
+  description = "Comma-separated list of admin emails for endorsement notifications"
+  type        = string
+  default     = ""
+}
+
+variable "organization_name" {
+  description = "Name of the organization"
+  type        = string
+  default     = "Coalition Builder"
+}
