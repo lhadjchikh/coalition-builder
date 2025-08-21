@@ -43,13 +43,13 @@ CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 
 ### Organization Configuration
 
-| Variable            | Description                      | Default                          | Required |
-| ------------------- | -------------------------------- | -------------------------------- | -------- |
-| `ORGANIZATION_NAME` | Organization name (fallback)     | `Coalition Builder`              | No       |
-| `ORG_TAGLINE`       | Organization tagline (fallback)  | `Building advocacy partnerships` | No       |
-| `CONTACT_EMAIL`     | Primary contact email (fallback) | -                                | No       |
+| Variable            | Description                               | Default                          | Required |
+| ------------------- | ----------------------------------------- | -------------------------------- | -------- |
+| `ORGANIZATION_NAME` | Organization name for emails and branding | `Coalition Builder`              | Yes      |
+| `ORG_TAGLINE`       | Organization tagline (fallback)           | `Building advocacy partnerships` | No       |
+| `CONTACT_EMAIL`     | Primary contact email address             | `info@example.org`               | Yes      |
 
-**Note:** These serve as fallbacks when no active homepage configuration exists in the database.
+**Note:** `ORGANIZATION_NAME` and `CONTACT_EMAIL` are required for proper email functionality. These also serve as fallbacks when no active homepage configuration exists in the database.
 
 **Example:**
 
@@ -86,20 +86,20 @@ AWS_REGION="us-west-2"
 
 **Note**: When deployed on AWS ECS, email credentials are automatically pulled from AWS Secrets Manager if configured via Terraform. See [Email Configuration](../email-configuration.md) for automated AWS SES setup.
 
-| Variable                             | Description                           | Default                              | Required |
-| ------------------------------------ | ------------------------------------- | ------------------------------------ | -------- |
-| `EMAIL_BACKEND`                      | Django email backend                  | `SafeSMTPBackend` (production)       | No       |
-| `EMAIL_HOST`                         | SMTP host                             | `email-smtp.us-east-1.amazonaws.com` | No       |
-| `EMAIL_PORT`                         | SMTP port                             | `587`                                | No       |
-| `EMAIL_USE_TLS`                      | Use TLS encryption                    | `True`                               | No       |
-| `EMAIL_HOST_USER`                    | SMTP username                         | Auto from Secrets Manager            | No       |
-| `EMAIL_HOST_PASSWORD`                | SMTP password                         | Auto from Secrets Manager            | No       |
-| `DEFAULT_FROM_EMAIL`                 | Default sender email                  | -                                    | No       |
-| `ADMIN_NOTIFICATION_EMAILS`          | Comma-separated admin emails          | -                                    | No       |
-| `AUTO_APPROVE_VERIFIED_ENDORSEMENTS` | Auto-approve after email verification | `true`                               | No       |
-| `AKISMET_SECRET_API_KEY`             | Akismet API key for spam detection    | -                                    | No       |
-| `SITE_URL`                           | Base URL for email links              | -                                    | Yes      |
-| `API_URL`                            | Backend API URL (for admin links)     | `http://localhost:8000`              | No       |
+| Variable                             | Description                                                | Default                              | Required |
+| ------------------------------------ | ---------------------------------------------------------- | ------------------------------------ | -------- |
+| `EMAIL_BACKEND`                      | Django email backend                                       | `SafeSMTPBackend` (production)       | No       |
+| `EMAIL_HOST`                         | SMTP host                                                  | `email-smtp.us-east-1.amazonaws.com` | No       |
+| `EMAIL_PORT`                         | SMTP port                                                  | `587`                                | No       |
+| `EMAIL_USE_TLS`                      | Use TLS encryption                                         | `True`                               | No       |
+| `EMAIL_HOST_USER`                    | SMTP username                                              | Auto from Secrets Manager            | No       |
+| `EMAIL_HOST_PASSWORD`                | SMTP password                                              | Auto from Secrets Manager            | No       |
+| `DEFAULT_FROM_EMAIL`                 | Default sender email                                       | -                                    | Yes      |
+| `ADMIN_NOTIFICATION_EMAILS`          | Comma-separated admin emails for endorsement notifications | -                                    | Yes      |
+| `AUTO_APPROVE_VERIFIED_ENDORSEMENTS` | Auto-approve after email verification                      | `true`                               | No       |
+| `AKISMET_SECRET_API_KEY`             | Akismet API key for spam detection                         | -                                    | No       |
+| `SITE_URL`                           | Base URL for email links                                   | -                                    | Yes      |
+| `API_URL`                            | Backend API URL (for admin links)                          | `http://localhost:8000`              | No       |
 
 **Email Template Configuration:**
 
@@ -383,6 +383,8 @@ USE_S3_DIRECT_URLS=false  # Use CloudFront URLs (recommended)
 
 ## Terraform/Deployment Variables
 
+**Note:** When using GitHub Actions for deployment, these variables are configured as GitHub environment variables and automatically passed to Terraform. See [GitHub Environment Setup](../deployment/github-environment-setup.md) for details.
+
 ### AWS Configuration
 
 | Variable                | Description                | Default             | Required |
@@ -418,6 +420,28 @@ TF_VAR_route53_zone_id=Z1D633PJN98FT9
 | `TF_VAR_db_master_username`  | Master database username      | `coalition_master` | No       |
 | `TF_VAR_db_username`         | Application database username | `coalition_app`    | No       |
 | `TF_VAR_use_secrets_manager` | Use AWS Secrets Manager       | `true`             | No       |
+
+### Email Configuration (SES)
+
+| Variable                           | Description                                   | Default               | Required |
+| ---------------------------------- | --------------------------------------------- | --------------------- | -------- |
+| `TF_VAR_ses_from_email`            | Default sender email for SES                  | `noreply@example.com` | Yes      |
+| `TF_VAR_ses_verify_domain`         | Whether to verify entire domain in SES        | `true`                | No       |
+| `TF_VAR_ses_notification_email`    | Email for SES bounce/complaint notifications  | -                     | No       |
+| `TF_VAR_contact_email`             | Organization contact email                    | `info@example.org`    | Yes      |
+| `TF_VAR_admin_notification_emails` | Comma-separated admin emails for endorsements | -                     | Yes      |
+| `TF_VAR_organization_name`         | Organization name for email templates         | `Coalition Builder`   | Yes      |
+
+**Example:**
+
+```bash
+TF_VAR_ses_from_email=noreply@yourdomain.com
+TF_VAR_ses_verify_domain=true
+TF_VAR_ses_notification_email=admin@yourdomain.com
+TF_VAR_contact_email=info@yourdomain.com
+TF_VAR_admin_notification_emails=admin1@yourdomain.com,admin2@yourdomain.com
+TF_VAR_organization_name="Your Organization Name"
+```
 
 ### Monitoring and Alerts
 

@@ -51,6 +51,18 @@ locals {
     {
       name  = "AWS_LOCATION_PLACE_INDEX_NAME"
       value = var.aws_location_place_index_name
+    },
+    {
+      name  = "CONTACT_EMAIL"
+      value = var.contact_email
+    },
+    {
+      name  = "ADMIN_NOTIFICATION_EMAILS"
+      value = var.admin_notification_emails
+    },
+    {
+      name  = "ORGANIZATION_NAME"
+      value = var.organization_name
     }
   ]
 

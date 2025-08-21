@@ -164,6 +164,9 @@ module "compute" {
   aws_location_place_index_name   = module.aws_location.place_index_name
   aws_location_policy_arn         = module.aws_location.location_policy_arn
   ses_smtp_secret_arn             = module.ses.ses_smtp_secret_arn
+  contact_email                   = var.contact_email
+  admin_notification_emails       = var.admin_notification_emails
+  organization_name               = var.organization_name
 
   # Make sure load balancer and secrets are created first
   depends_on = [

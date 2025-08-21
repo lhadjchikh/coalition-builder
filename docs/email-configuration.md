@@ -20,9 +20,14 @@ Add these variables to your `terraform.tfvars`:
 
 ```hcl
 # Email configuration
-ses_from_email         = "noreply@yourdomain.com"
-ses_verify_domain      = true
-ses_notification_email = "admin@yourdomain.com"  # For bounce notifications
+ses_from_email            = "noreply@yourdomain.com"
+ses_verify_domain         = true
+ses_notification_email    = "admin@yourdomain.com"  # For bounce notifications
+
+# Application email settings
+contact_email             = "info@yourdomain.com"  # Organization contact email
+admin_notification_emails = "admin1@yourdomain.com,admin2@yourdomain.com"  # Comma-separated admin emails
+organization_name         = "Your Organization Name"
 ```
 
 The module will:
@@ -93,6 +98,11 @@ EMAIL_USE_TLS=True
 EMAIL_HOST_USER=<Your SES SMTP Username>
 EMAIL_HOST_PASSWORD=<Your SES SMTP Password>
 DEFAULT_FROM_EMAIL=noreply@yourdomain.com
+
+# Application settings
+CONTACT_EMAIL=info@yourdomain.com
+ADMIN_NOTIFICATION_EMAILS=admin1@yourdomain.com,admin2@yourdomain.com
+ORGANIZATION_NAME=Your Organization Name
 ```
 
 For other regions, replace `us-east-1` with your region:
