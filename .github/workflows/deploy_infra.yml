@@ -53,7 +53,7 @@ jobs:
   wait_for_tests:
     name: Wait for Terraform Tests
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout to check for terraform changes
         uses: actions/checkout@v4
@@ -63,8 +63,12 @@ jobs:
       - name: Check if terraform tests should be running
         id: check_terraform_changes
         run: |
+          # Skip waiting for tests on workflow_dispatch
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "terraform_changed=false" >> $GITHUB_OUTPUT
+            echo "Manual trigger - skipping test wait"
           # Check if there are terraform changes in this push
-          if git diff --name-only HEAD~1 HEAD | grep -E '^terraform/'; then
+          elif git diff --name-only HEAD~1 HEAD | grep -E '^terraform/'; then
             echo "terraform_changed=true" >> $GITHUB_OUTPUT
             echo "Terraform files changed - will wait for tests"
           else
@@ -73,7 +77,7 @@ jobs:
           fi
 
       - name: Wait for Terraform Tests workflow
-        if: steps.check_terraform_changes.outputs.terraform_changed == 'true'
+        if: github.event_name == 'push' && steps.check_terraform_changes.outputs.terraform_changed == 'true'
         uses: fountainhead/action-wait-for-check@v1.2.0
         id: wait_for_tests
         with:
@@ -84,7 +88,7 @@ jobs:
           intervalSeconds: 60 # Check every minute
 
       - name: Check terraform tests result
-        if: steps.check_terraform_changes.outputs.terraform_changed == 'true' && steps.wait_for_tests.outputs.conclusion != 'success'
+        if: github.event_name == 'push' && steps.check_terraform_changes.outputs.terraform_changed == 'true' && steps.wait_for_tests.outputs.conclusion != 'success'
         run: |
           echo "Terraform tests did not complete successfully: ${{ steps.wait_for_tests.outputs.conclusion }}"
           exit 1
@@ -94,7 +98,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: prod
     needs: [wait_for_tests]
-    if: always() && (needs.wait_for_tests.result == 'success' || github.event_name == 'workflow_dispatch')
+    if: always() && (needs.wait_for_tests.result == 'success' || needs.wait_for_tests.result == 'skipped')
     outputs:
       terraform_plan: ${{ steps.plan.outputs.stdout || steps.skip_plan.outputs.stdout }}
       plan_success: ${{ steps.plan.outputs.plan_success || steps.skip_plan.outputs.plan_success }}
