@@ -39,21 +39,20 @@ flowchart TB
         subgraph public["Public Subnets"]
             alb
             bastion[Bastion Host]
-        end
-
-        %% Private Subnets
-        subgraph private["Private Subnets"]
             subgraph ecs_cluster["ECS Cluster"]
-                api[Django API Container]
-                app[Next.js Frontend Container]
+                api[Django API Container<br/>Public IP]
+                app[Next.js Frontend Container<br/>Public IP]
                 redis[Redis Cache]
             end
         end
 
         %% Database Subnets
-        subgraph db_subnets["Database Subnets"]
+        subgraph db_subnets["Private Database Subnets"]
             rds[(RDS PostgreSQL<br/>with PostGIS)]
         end
+
+        %% S3 Gateway Endpoint
+        s3_endpoint[S3 Gateway Endpoint<br/>Free]
     end
 
     %% External Services
@@ -62,6 +61,7 @@ flowchart TB
         ecr[ECR Repositories]
         cloudwatch[CloudWatch Logs]
         s3_assets
+        location[AWS Location Service]
     end
 
     %% Connections
@@ -75,24 +75,29 @@ flowchart TB
     %% CloudFront connections
     cloudfront --> alb
 
-    %% Service connections
+    %% Service connections via Internet
     api --> secrets
     app --> secrets
     api --> cloudwatch
     app --> cloudwatch
     redis --> cloudwatch
+    api --> location
 
-    %% ECR
+    %% ECR connections via Internet
     ecr --> api
     ecr --> app
     ecr --> redis
+
+    %% S3 via Gateway Endpoint
+    api -.-> s3_endpoint
+    app -.-> s3_endpoint
+    s3_endpoint -.-> s3_assets
 ```
 
-The infrastructure uses a layered security model with:
+The infrastructure uses a cost-optimized security model with:
 
-- **Public Subnets**: Load balancer and bastion host
-- **Private Subnets**: ECS containers (Django API + Next.js Frontend)
-- **Database Subnets**: RDS PostgreSQL with PostGIS
+- **Public Subnets**: ALB, bastion host, and ECS containers with public IPs
+- **Private Database Subnets**: RDS PostgreSQL with PostGIS (isolated)
 - **Security Groups**: Component isolation with least privilege
 - **Secrets Manager**: Secure credential storage
 - **CloudWatch**: Logging and monitoring

@@ -1,16 +1,15 @@
 # Networking Module
 
-Terraform module for creating secure, cost-optimized VPC infrastructure with VPC endpoints instead of NAT Gateway.
+Terraform module for creating secure, cost-optimized VPC infrastructure for Coalition Builder.
 
 **For complete deployment guide, see: [AWS Deployment Guide](../../../docs/deployment/aws.md)**
 
 ## Key Features
 
-- **Cost-Optimized Design**: VPC endpoints instead of NAT Gateway (~$45/month savings)
-- **Multi-AZ Subnets**: Public, private app, and database subnets
-- **No Internet Access**: Private subnets use VPC endpoints for AWS services
-- **VPC Endpoints**: S3 Gateway + Interface endpoints (ECR, CloudWatch, Secrets Manager)
-- **Security Groups**: Dedicated endpoint security group configuration
+- **Cost-Optimized Design**: ECS runs in public subnets with public IPs, eliminating NAT Gateway costs
+- **Multi-AZ Subnets**: Public subnets for ALB and ECS, private database subnets for RDS
+- **S3 Gateway Endpoint**: Free, efficient access to S3 for all VPC resources
+- **Secure Architecture**: ECS tasks protected by security groups, only accessible through ALB
 
 ## Quick Start
 
@@ -30,34 +29,40 @@ module "networking" {
 
 ## Network Architecture
 
-### Private Subnet Design
+### Subnet Design
 
-Private application subnets are configured for **VPC endpoints only** networking:
+The module creates three types of subnets:
 
-- **No default route (0.0.0.0/0)** to the internet
-- **No NAT Gateway required** - saving ~$45/month per AZ
-- All AWS service communication goes through VPC endpoints
-- Load balancers can still reach private subnet resources directly
+1. **Public Subnets** (2 AZs):
+   - Used by Application Load Balancer (ALB)
+   - Used by ECS Fargate tasks with public IP assignment
+   - Direct internet access via Internet Gateway
+   - CIDR: 10.0.1.0/24 and 10.0.2.0/24
 
-### VPC Endpoints
+2. **Private App Subnets** (2 AZs):
+   - Currently unused (ECS runs in public subnets)
+   - Reserved for future use if needed
+   - CIDR: 10.0.3.0/24 and 10.0.4.0/24
 
-The module creates the following VPC endpoints to allow private resources to access AWS services:
+3. **Private Database Subnets** (2 AZs):
+   - Used by RDS PostgreSQL instances
+   - No internet access for maximum security
+   - CIDR: 10.0.5.0/24 and 10.0.6.0/24
 
-1. **S3 Gateway Endpoint**: For ECR image layers and static content
-2. **Interface Endpoints**:
-   - **ECR API**: For container registry authentication
-   - **ECR DKR**: For Docker registry operations
-   - **CloudWatch Logs**: For application logging
-   - **Secrets Manager**: For secure credential access
+### S3 Gateway Endpoint
 
-A dedicated security group controls interface endpoint access:
+The module creates a free S3 Gateway endpoint that provides:
 
-- Inbound: HTTPS (443) from within the VPC
-- Outbound: Return traffic and DNS queries within the VPC
+- Direct, efficient access to S3 without traversing the internet
+- No data transfer costs for S3 access
+- Available to all subnets in the VPC
 
-### Important: No Internet Access
+### Security Model
 
-Resources in private subnets **cannot reach the internet** and must use VPC endpoints for all AWS service communication. This design prioritizes security and cost savings over general internet connectivity.
+- **ECS Tasks**: Run in public subnets with public IPs but are protected by security groups
+- **ALB**: Public-facing, handles all incoming traffic
+- **Security Groups**: Ensure ECS tasks only accept traffic from ALB
+- **Database**: Isolated in private subnets, only accessible from ECS tasks and bastion
 
 ## Inputs
 
@@ -65,18 +70,17 @@ See `variables.tf` for a complete list of input parameters.
 
 ## Outputs
 
-| Name                        | Description                                 |
-| --------------------------- | ------------------------------------------- |
-| vpc_id                      | The ID of the VPC                           |
-| vpc_cidr                    | The CIDR block of the VPC                   |
-| public_subnet_ids           | List of public subnet IDs                   |
-| private_subnet_ids          | List of private app subnet IDs              |
-| private_db_subnet_ids       | List of private database subnet IDs         |
-| app_subnet_cidrs            | List of private app subnet CIDR blocks      |
-| db_subnet_cidrs             | List of private database subnet CIDR blocks |
-| s3_endpoint_id              | ID of the S3 VPC endpoint                   |
-| s3_endpoint_prefix_list_id  | Prefix list ID of the S3 VPC endpoint       |
-| endpoints_security_group_id | ID of the security group for VPC endpoints  |
+| Name                       | Description                                 |
+| -------------------------- | ------------------------------------------- |
+| vpc_id                     | The ID of the VPC                           |
+| vpc_cidr                   | The CIDR block of the VPC                   |
+| public_subnet_ids          | List of public subnet IDs                   |
+| private_subnet_ids         | List of private app subnet IDs              |
+| private_db_subnet_ids      | List of private database subnet IDs         |
+| app_subnet_cidrs           | List of private app subnet CIDR blocks      |
+| db_subnet_cidrs            | List of private database subnet CIDR blocks |
+| s3_endpoint_id             | ID of the S3 VPC endpoint                   |
+| s3_endpoint_prefix_list_id | Prefix list ID of the S3 VPC endpoint       |
 
 ## Complete Documentation
 

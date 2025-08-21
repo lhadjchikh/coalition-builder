@@ -74,8 +74,8 @@ variable "desired_count" {
   default     = 1
 }
 
-variable "private_subnet_ids" {
-  description = "List of private subnet IDs for the ECS service"
+variable "public_subnet_ids" {
+  description = "List of public subnet IDs for the ECS service"
   type        = list(string)
 }
 
