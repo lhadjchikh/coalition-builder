@@ -51,7 +51,7 @@ resource "aws_route53_record" "spf" {
 
 # DMARC record for domain
 resource "aws_route53_record" "dmarc" {
-  count   = var.verify_domain && var.route53_zone_id != "" && var.create_dmarc_record ? 1 : 0
+  count   = var.verify_domain && var.route53_zone_id != "" && var.create_dmarc_record && var.dmarc_email != "" ? 1 : 0
   zone_id = var.route53_zone_id
   name    = "_dmarc.${var.domain_name}"
   type    = "TXT"
@@ -120,8 +120,8 @@ locals {
   # For SMTP username, use the access key ID directly
   smtp_username = aws_iam_access_key.ses_smtp.id
 
-  # The calculated SMTP password
-  smtp_password = data.external.smtp_password.result.password
+  # The calculated SMTP password from the external data source
+  smtp_password = data.external.smtp_password.result.value
 }
 
 # Store SMTP credentials in Secrets Manager
@@ -139,13 +139,6 @@ resource "aws_secretsmanager_secret" "ses_smtp" {
 # Configuration set for tracking
 resource "aws_ses_configuration_set" "main" {
   name = "${var.prefix}-config-set"
-}
-
-# Enable reputation tracking
-resource "aws_ses_configuration_set" "main_reputation" {
-  name = aws_ses_configuration_set.main.name
-
-  reputation_tracking_enabled = true
 }
 
 # Event destination for bounce/complaint notifications

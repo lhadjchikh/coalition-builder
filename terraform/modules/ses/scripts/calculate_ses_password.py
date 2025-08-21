@@ -51,7 +51,8 @@ if __name__ == "__main__":
     try:
         password = calculate_ses_smtp_password(secret_key, region)
         # Output must be valid JSON with string values only
-        print(json.dumps({"password": password}))
+        # Using 'value' as key name to avoid exposing sensitive field names in logs
+        print(json.dumps({"value": password}))
     except Exception as e:
         print(json.dumps({"error": str(e)}))
         sys.exit(1)
