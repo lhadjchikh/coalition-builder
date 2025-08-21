@@ -181,7 +181,7 @@ resource "aws_secretsmanager_secret_version" "ses_smtp" {
     EMAIL_PORT          = "587"
     EMAIL_USE_TLS       = "True"
     EMAIL_HOST_USER     = local.smtp_username
-    EMAIL_HOST_PASSWORD = local.smtp_password # Automatically calculated!
+    EMAIL_HOST_PASSWORD = local.smtp_password
     DEFAULT_FROM_EMAIL  = var.from_email
     # Also store raw IAM credentials if needed for SDK
     AWS_ACCESS_KEY_ID     = aws_iam_access_key.ses_smtp.id
