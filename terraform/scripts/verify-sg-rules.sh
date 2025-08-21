@@ -34,14 +34,14 @@ check_rule() {
       --filters "Name=group-id,Values=$sg_id" \
       "Name=is-egress,Values=true" \
       "Name=referenced-group-id,Values=$ref_sg" \
-      --query "SecurityGroupRules[?FromPort==\`$port\` && ToPort==\`$port\`].GroupId" \
+      --query "SecurityGroupRules[?FromPort==\`$port\` && ToPort==\`$port\`].SecurityGroupRuleId" \
       --output text
   else
     aws ec2 describe-security-group-rules \
       --filters "Name=group-id,Values=$sg_id" \
       "Name=is-egress,Values=false" \
       "Name=referenced-group-id,Values=$ref_sg" \
-      --query "SecurityGroupRules[?FromPort==\`$port\` && ToPort==\`$port\`].GroupId" \
+      --query "SecurityGroupRules[?FromPort==\`$port\` && ToPort==\`$port\`].SecurityGroupRuleId" \
       --output text
   fi
 }

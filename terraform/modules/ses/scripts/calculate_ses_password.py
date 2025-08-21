@@ -56,7 +56,8 @@ if __name__ == "__main__":
         # This output is intended for Terraform external data source consumption only.
         # Ensure stdout is not redirected to logs in production environments.
         print(json.dumps({"value": password}))
-    except Exception:
+    except (ValueError, TypeError, UnicodeDecodeError) as e:
         # Do not leak sensitive values in error output
+        # These are the expected exceptions from HMAC/base64 operations
         print(json.dumps({"error": "Failed to generate SMTP password"}))
         sys.exit(1)
