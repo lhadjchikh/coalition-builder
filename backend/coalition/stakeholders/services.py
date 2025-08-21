@@ -154,8 +154,13 @@ class GeocodingService:
             raw_zip = place.get("PostalCode", "")
             zip_code = self._format_zip_code(raw_zip)
 
+            # Clean up street address by normalizing whitespace
+            street_address = " ".join(street_parts)
+            # Remove extra spaces that might occur with abbreviations like "Main  Rd"
+            street_address = " ".join(street_address.split())
+
             address_components = {
-                "street_address": " ".join(street_parts),
+                "street_address": street_address,
                 "city": place.get("Municipality", ""),
                 "state": place.get("Region", ""),
                 "zip_code": zip_code,
