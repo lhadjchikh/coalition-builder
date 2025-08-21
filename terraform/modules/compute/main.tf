@@ -287,6 +287,14 @@ resource "aws_iam_policy" "ecs_task_policy" {
           "${aws_cloudwatch_log_group.ecs_logs.arn}:*",
           aws_cloudwatch_log_group.ecs_logs.arn
         ]
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "ses:SendEmail",
+          "ses:SendRawEmail"
+        ],
+        Resource = "*" # SES requires * for sending emails
       }
     ]
   })
@@ -359,7 +367,32 @@ resource "aws_ecs_task_definition" "app" {
           name      = "SITE_PASSWORD",
           valueFrom = "${var.site_password_secret_arn}:password::"
         }
-      ])
+        ], var.ses_smtp_secret_arn != "" ? [
+        {
+          name      = "EMAIL_HOST",
+          valueFrom = "${var.ses_smtp_secret_arn}:EMAIL_HOST::"
+        },
+        {
+          name      = "EMAIL_PORT",
+          valueFrom = "${var.ses_smtp_secret_arn}:EMAIL_PORT::"
+        },
+        {
+          name      = "EMAIL_USE_TLS",
+          valueFrom = "${var.ses_smtp_secret_arn}:EMAIL_USE_TLS::"
+        },
+        {
+          name      = "EMAIL_HOST_USER",
+          valueFrom = "${var.ses_smtp_secret_arn}:EMAIL_HOST_USER::"
+        },
+        {
+          name      = "EMAIL_HOST_PASSWORD",
+          valueFrom = "${var.ses_smtp_secret_arn}:EMAIL_HOST_PASSWORD::"
+        },
+        {
+          name      = "DEFAULT_FROM_EMAIL",
+          valueFrom = "${var.ses_smtp_secret_arn}:DEFAULT_FROM_EMAIL::"
+        }
+      ] : [])
       healthCheck = {
         command = [
           "CMD-SHELL",

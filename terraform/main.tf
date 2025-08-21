@@ -116,6 +116,21 @@ module "secrets" {
   site_password   = var.site_password
 }
 
+# SES Module for Email
+module "ses" {
+  source = "./modules/ses"
+
+  prefix               = var.prefix
+  aws_region           = var.aws_region
+  domain_name          = var.domain_name
+  from_email           = var.ses_from_email
+  verify_domain        = var.ses_verify_domain
+  route53_zone_id      = var.route53_zone_id
+  dmarc_email          = var.ses_notification_email
+  notification_email   = var.ses_notification_email
+  enable_notifications = var.ses_enable_notifications
+}
+
 module "compute" {
   source = "./modules/compute"
 
@@ -148,13 +163,15 @@ module "compute" {
   cloudfront_domain_name          = module.storage.cloudfront_distribution_domain_name
   aws_location_place_index_name   = module.aws_location.place_index_name
   aws_location_policy_arn         = module.aws_location.location_policy_arn
+  ses_smtp_secret_arn             = module.ses.ses_smtp_secret_arn
 
   # Make sure load balancer and secrets are created first
   depends_on = [
     module.loadbalancer,
     module.secrets,
     module.storage,
-    module.aws_location
+    module.aws_location,
+    module.ses
   ]
 }
 

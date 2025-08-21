@@ -129,6 +129,7 @@ Comprehensive guides for managing your coalition platform:
 - **[Development Setup](development/setup.md)** - Detailed environment setup including automated tooling
 - **[Testing Guide](development/testing.md)** - Comprehensive testing with pytest, Jest, and Go
 - **[Site Password Protection](development/automated-protection.md)** - Configure site-wide authentication for development and production
+- **[Email Configuration](email-configuration.md)** - Set up AWS SES for transactional emails
 
 ## Documentation
 
