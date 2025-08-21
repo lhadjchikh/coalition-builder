@@ -31,31 +31,31 @@ module "ses" {
 
 ## Variables
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|----------|
-| `prefix` | Prefix for resource names | `string` | - | yes |
-| `aws_region` | AWS region | `string` | - | yes |
-| `domain_name` | Domain name for sending emails | `string` | - | yes |
-| `from_email` | Default from email address | `string` | - | yes |
-| `verify_domain` | Whether to verify the entire domain | `bool` | `true` | no |
-| `verify_email` | Whether to verify individual email (fallback) | `bool` | `false` | no |
-| `route53_zone_id` | Route53 zone ID for automatic DNS verification | `string` | `""` | no |
-| `create_spf_record` | Whether to create SPF record | `bool` | `true` | no |
-| `create_dmarc_record` | Whether to create DMARC record | `bool` | `true` | no |
-| `dmarc_email` | Email for DMARC reports | `string` | `""` | no |
-| `enable_notifications` | Enable SNS notifications for SES events | `bool` | `true` | no |
-| `notification_email` | Email for receiving SES notifications | `string` | `""` | no |
+| Name                   | Description                                    | Type     | Default | Required |
+| ---------------------- | ---------------------------------------------- | -------- | ------- | -------- |
+| `prefix`               | Prefix for resource names                      | `string` | -       | yes      |
+| `aws_region`           | AWS region                                     | `string` | -       | yes      |
+| `domain_name`          | Domain name for sending emails                 | `string` | -       | yes      |
+| `from_email`           | Default from email address                     | `string` | -       | yes      |
+| `verify_domain`        | Whether to verify the entire domain            | `bool`   | `true`  | no       |
+| `verify_email`         | Whether to verify individual email (fallback)  | `bool`   | `false` | no       |
+| `route53_zone_id`      | Route53 zone ID for automatic DNS verification | `string` | `""`    | no       |
+| `create_spf_record`    | Whether to create SPF record                   | `bool`   | `true`  | no       |
+| `create_dmarc_record`  | Whether to create DMARC record                 | `bool`   | `true`  | no       |
+| `dmarc_email`          | Email for DMARC reports                        | `string` | `""`    | no       |
+| `enable_notifications` | Enable SNS notifications for SES events        | `bool`   | `true`  | no       |
+| `notification_email`   | Email for receiving SES notifications          | `string` | `""`    | no       |
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| `ses_smtp_secret_arn` | ARN of the Secrets Manager secret containing SMTP credentials |
-| `ses_smtp_secret_name` | Name of the Secrets Manager secret |
-| `ses_domain_identity` | The verified SES domain identity |
-| `ses_smtp_username` | SMTP username (sensitive) |
-| `smtp_endpoint` | SES SMTP endpoint |
-| `smtp_port` | SES SMTP port (587) |
+| Name                   | Description                                                   |
+| ---------------------- | ------------------------------------------------------------- |
+| `ses_smtp_secret_arn`  | ARN of the Secrets Manager secret containing SMTP credentials |
+| `ses_smtp_secret_name` | Name of the Secrets Manager secret                            |
+| `ses_domain_identity`  | The verified SES domain identity                              |
+| `ses_smtp_username`    | SMTP username (sensitive)                                     |
+| `smtp_endpoint`        | SES SMTP endpoint                                             |
+| `smtp_port`            | SES SMTP port (587)                                           |
 
 ## How It Works
 
@@ -84,7 +84,7 @@ This is handled automatically by the `calculate_ses_password.py` script.
 
 ## Manual Steps Required
 
-1. **Request Production Access**: 
+1. **Request Production Access**:
    - New SES accounts start in sandbox mode
    - Request production access in AWS Console → SES → Account dashboard
    - Takes ~24 hours for approval
@@ -111,16 +111,19 @@ ses_notification_email = "admin@example.com"
 ## Troubleshooting
 
 ### Domain Not Verifying
+
 - Ensure Route53 zone ID is correct
 - Check DNS propagation (can take up to 72 hours)
 - Verify records manually in Route53 console
 
 ### SMTP Authentication Failing
+
 - Check Secrets Manager for correct credentials
 - Ensure ECS task role has permission to read secrets
 - Verify you're using the correct AWS region endpoint
 
 ### Emails Not Sending
+
 - Check if you're still in SES sandbox mode
 - Verify recipient addresses if in sandbox
 - Check CloudWatch logs for error messages
