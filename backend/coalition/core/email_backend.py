@@ -69,7 +69,9 @@ class SafeSMTPBackend(SMTPBackend):
             return super().send_messages(email_messages)
         except Exception as e:
             logger.error(f"Failed to send email via SMTP: {e}")
-            # In production, we should not silently fail
-            # but for now, fall back to console to prevent blocking
+            # In production, raise the exception to avoid silent failure
+            # In development/testing, fall back to console
+            if not settings.DEBUG and not getattr(settings, "TESTING", False):
+                raise
             logger.info("Falling back to console email output")
             return self.console_backend.send_messages(email_messages)

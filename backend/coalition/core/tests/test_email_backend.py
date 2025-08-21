@@ -6,6 +6,7 @@ import socket
 from typing import Any
 from unittest.mock import MagicMock, patch
 
+import pytest
 from django.core.mail import EmailMessage
 from django.test import override_settings
 
@@ -137,9 +138,10 @@ class TestSafeSMTPBackend:
         assert result == 1
         mock_console.assert_called_once()
 
+    @override_settings(DEBUG=True)
     @patch("coalition.core.email_backend.SMTPBackend.send_messages")
     def test_send_messages_smtp_exception_falls_back(self, mock_send: Any) -> None:
-        """Test fallback when SMTP sending fails"""
+        """Test fallback when SMTP sending fails in DEBUG mode"""
         mock_send.side_effect = Exception("SMTP Error")
 
         backend = SafeSMTPBackend(host="smtp.example.com", port=587)
@@ -156,6 +158,26 @@ class TestSafeSMTPBackend:
 
         assert result == 1
         mock_console.assert_called_once()
+
+    @override_settings(DEBUG=False)
+    @patch("coalition.core.email_backend.SMTPBackend.send_messages")
+    def test_send_messages_smtp_exception_raises_in_production(
+        self,
+        mock_send: Any,
+    ) -> None:
+        """Test that SMTP exceptions are raised in production"""
+        mock_send.side_effect = Exception("SMTP Error")
+
+        backend = SafeSMTPBackend(host="smtp.example.com", port=587)
+        message = EmailMessage("Test", "Body", "from@example.com", ["to@example.com"])
+
+        with patch("socket.socket") as mock_socket:
+            mock_sock_instance = MagicMock()
+            mock_sock_instance.connect_ex.return_value = 0  # Connection OK
+            mock_socket.return_value.__enter__.return_value = mock_sock_instance
+
+            with pytest.raises(Exception, match="SMTP Error"):
+                backend.send_messages([message])
 
     def test_send_multiple_messages(self) -> None:
         """Test sending multiple messages"""
