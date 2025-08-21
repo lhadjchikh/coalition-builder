@@ -184,6 +184,11 @@ domain_name = "yourdomain.com"
 route53_zone_id = "Z1234567890ABC"
 acm_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/..."
 alert_email = "admin@yourdomain.com"
+
+# Email configuration (AWS SES)
+ses_from_email = "noreply@yourdomain.com"
+ses_verify_domain = true
+ses_notification_email = "admin@yourdomain.com"
 EOF
 
 # Plan the deployment
@@ -202,6 +207,7 @@ Each module has its own README with detailed configuration options:
 - [Compute](modules/compute/README.md) - ECS Fargate configuration
 - [Storage](modules/storage/README.md) - S3 and CloudFront CDN
 - [Security](modules/security/README.md) - Security groups and WAF
+- [SES](modules/ses/README.md) - Email configuration with AWS SES
 
 ## Testing
 

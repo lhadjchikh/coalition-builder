@@ -232,6 +232,7 @@ def run_prettier(project_root: Path) -> tuple[bool, bool]:
             project_files_result = run_command(
                 ["npx", "prettier", "--write", 
                  "../docs/**/*.md", 
+                 "../terraform/**/*.md",  # Include Terraform module docs
                  "../*.{json,yml,yaml,md}",
                  "../.github/workflows/*.yml",
                  "--ignore-path", "../.prettierignore",

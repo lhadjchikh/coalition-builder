@@ -242,6 +242,12 @@ variable "site_username" {
   default     = "admin"
 }
 
+variable "ses_smtp_secret_arn" {
+  description = "ARN of the SES SMTP credentials secret"
+  type        = string
+  default     = ""
+}
+
 variable "static_assets_upload_policy_arn" {
   description = "ARN of the IAM policy for uploading to static assets bucket"
   type        = string

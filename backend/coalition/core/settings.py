@@ -436,13 +436,17 @@ if DEBUG:
     # Development: Log emails to console
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
-    # Production: Use SMTP
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+    # Production: Use AWS SES via SMTP or custom backend
+    # For AWS SES SMTP, use: email-smtp.us-east-1.amazonaws.com
+    EMAIL_BACKEND = os.getenv(
+        "EMAIL_BACKEND",
+        "coalition.core.email_backend.SafeSMTPBackend",
+    )
+    EMAIL_HOST = os.getenv("EMAIL_HOST", "email-smtp.us-east-1.amazonaws.com")
     EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
     EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() in ("true", "1", "t")
-    EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-    EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+    EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")  # SES SMTP username
+    EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")  # SES SMTP password
 
 # Default sender for system emails
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", CONTACT_EMAIL)

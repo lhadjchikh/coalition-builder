@@ -351,3 +351,29 @@ variable "cloudfront_static_cache_max_ttl" {
   type        = number
   default     = 86400 # 1 day
 }
+
+
+# SES Email Configuration Variables
+variable "ses_from_email" {
+  description = "Default from email address for SES"
+  type        = string
+  default     = "noreply@example.com"
+}
+
+variable "ses_verify_domain" {
+  description = "Whether to verify the entire domain in SES"
+  type        = bool
+  default     = true
+}
+
+variable "ses_notification_email" {
+  description = "Email address for receiving SES notifications (bounces, complaints)"
+  type        = string
+  default     = ""
+}
+
+variable "ses_enable_notifications" {
+  description = "Whether to enable SNS notifications for SES events"
+  type        = bool
+  default     = true
+}
