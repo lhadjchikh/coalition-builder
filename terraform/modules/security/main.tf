@@ -10,47 +10,7 @@ resource "aws_security_group" "app_sg" {
   description = "Allow inbound traffic for Coalition Builder application"
   vpc_id      = var.vpc_id
 
-  # Ingress rules that don't reference other security groups
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTP from internet via load balancer"
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTPS from internet via load balancer"
-  }
-
-  # Egress rules that don't reference other security groups
-  egress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTPS outbound traffic"
-  }
-
-  egress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTP outbound traffic"
-  }
-
-  egress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    cidr_blocks = var.database_subnet_cidrs
-    description = "PostgreSQL access to database subnets"
-  }
+  # All rules are managed as separate resources to avoid circular dependencies
 
   tags = {
     Name = "${var.prefix}-app-sg"
@@ -80,46 +40,7 @@ resource "aws_security_group" "alb_sg" {
     description = "HTTPS from internet"
   }
 
-  # Egress rules that don't reference other security groups
-  egress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTP outbound for health checks and redirects"
-  }
-
-  egress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTPS outbound for SSL validation and AWS APIs"
-  }
-
-  egress {
-    from_port   = 53
-    to_port     = 53
-    protocol    = "tcp"
-    cidr_blocks = [data.aws_vpc.current.cidr_block]
-    description = "DNS resolution within VPC only"
-  }
-
-  egress {
-    from_port   = 53
-    to_port     = 53
-    protocol    = "udp"
-    cidr_blocks = [data.aws_vpc.current.cidr_block]
-    description = "DNS resolution within VPC only"
-  }
-
-  egress {
-    from_port   = 123
-    to_port     = 123
-    protocol    = "udp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "NTP time synchronization"
-  }
+  # Egress rules are managed as separate resources to avoid circular dependencies
 
   tags = {
     Name = "${var.prefix}-alb-sg"
@@ -234,6 +155,102 @@ resource "aws_vpc_security_group_ingress_rule" "app_from_alb" {
     aws_security_group.app_sg,
     null_resource.security_group_rules_dependency
   ]
+}
+
+# Additional ALB egress rules (non-circular)
+resource "aws_vpc_security_group_egress_rule" "alb_http" {
+  security_group_id = aws_security_group.alb_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 80
+  to_port           = 80
+  ip_protocol       = "tcp"
+  description       = "HTTP outbound for health checks and redirects"
+}
+
+resource "aws_vpc_security_group_egress_rule" "alb_https" {
+  security_group_id = aws_security_group.alb_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+  description       = "HTTPS outbound for SSL validation and AWS APIs"
+}
+
+resource "aws_vpc_security_group_egress_rule" "alb_dns_tcp" {
+  security_group_id = aws_security_group.alb_sg.id
+  cidr_ipv4         = data.aws_vpc.current.cidr_block
+  from_port         = 53
+  to_port           = 53
+  ip_protocol       = "tcp"
+  description       = "DNS resolution within VPC only"
+}
+
+resource "aws_vpc_security_group_egress_rule" "alb_dns_udp" {
+  security_group_id = aws_security_group.alb_sg.id
+  cidr_ipv4         = data.aws_vpc.current.cidr_block
+  from_port         = 53
+  to_port           = 53
+  ip_protocol       = "udp"
+  description       = "DNS resolution within VPC only"
+}
+
+resource "aws_vpc_security_group_egress_rule" "alb_ntp" {
+  security_group_id = aws_security_group.alb_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 123
+  to_port           = 123
+  ip_protocol       = "udp"
+  description       = "NTP time synchronization"
+}
+
+# Additional app ingress rules (non-circular)
+resource "aws_vpc_security_group_ingress_rule" "app_http" {
+  security_group_id = aws_security_group.app_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 80
+  to_port           = 80
+  ip_protocol       = "tcp"
+  description       = "HTTP from internet via load balancer"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "app_https" {
+  security_group_id = aws_security_group.app_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+  description       = "HTTPS from internet via load balancer"
+}
+
+# App egress rules
+resource "aws_vpc_security_group_egress_rule" "app_https" {
+  security_group_id = aws_security_group.app_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+  description       = "HTTPS outbound traffic"
+}
+
+resource "aws_vpc_security_group_egress_rule" "app_http" {
+  security_group_id = aws_security_group.app_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 80
+  to_port           = 80
+  ip_protocol       = "tcp"
+  description       = "HTTP outbound traffic"
+}
+
+# App to database egress - handle multiple subnets
+resource "aws_vpc_security_group_egress_rule" "app_to_db" {
+  for_each = toset(var.database_subnet_cidrs)
+
+  security_group_id = aws_security_group.app_sg.id
+  cidr_ipv4         = each.value
+  from_port         = 5432
+  to_port           = 5432
+  ip_protocol       = "tcp"
+  description       = "PostgreSQL access to database subnet ${each.value}"
 }
 
 # Database Security Group
