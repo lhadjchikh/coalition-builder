@@ -241,18 +241,18 @@ The infrastructure is designed with security best practices:
 
 Typical monthly costs for a production deployment:
 
-| Service | Configuration | Estimated Cost |
-|---------|--------------|---------------|
-| ECS Fargate | 0.5 vCPU, 1GB RAM | ~$20 |
-| RDS PostgreSQL | db.t4g.micro | ~$15 |
-| Application Load Balancer | 1 ALB | ~$20 |
-| S3 & CloudFront | 10GB storage, 100GB transfer | ~$10 |
-| Route53 | 1 hosted zone | ~$0.50 |
-| Secrets Manager | 5 secrets | ~$2.50 |
-| CloudWatch | Logs and metrics | ~$5 |
-| **Total** | | **~$73/month** |
+| Service                   | Configuration                | Estimated Cost |
+| ------------------------- | ---------------------------- | -------------- |
+| ECS Fargate               | 0.5 vCPU, 1GB RAM            | ~$20           |
+| RDS PostgreSQL            | db.t4g.micro                 | ~$15           |
+| Application Load Balancer | 1 ALB                        | ~$20           |
+| S3 & CloudFront           | 10GB storage, 100GB transfer | ~$10           |
+| Route53                   | 1 hosted zone                | ~$0.50         |
+| Secrets Manager           | 5 secrets                    | ~$2.50         |
+| CloudWatch                | Logs and metrics             | ~$5            |
+| **Total**                 |                              | **~$73/month** |
 
-*Note: Actual costs vary based on usage and region.*
+_Note: Actual costs vary based on usage and region._
 
 ## Support
 

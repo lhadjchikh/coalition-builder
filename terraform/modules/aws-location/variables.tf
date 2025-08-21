@@ -8,12 +8,6 @@ variable "environment" {
   type        = string
 }
 
-variable "aws_region" {
-  description = "AWS region"
-  type        = string
-}
-
-
 # Removed ecs_task_role_name variable to avoid circular dependency
 # The compute module will handle attaching the policy to the ECS task role
 

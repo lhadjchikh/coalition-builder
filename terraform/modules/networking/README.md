@@ -52,6 +52,7 @@ The module creates three types of subnets:
 ### S3 Gateway Endpoint
 
 The module creates a free S3 Gateway endpoint that provides:
+
 - Direct, efficient access to S3 without traversing the internet
 - No data transfer costs for S3 access
 - Available to all subnets in the VPC
@@ -69,17 +70,17 @@ See `variables.tf` for a complete list of input parameters.
 
 ## Outputs
 
-| Name                        | Description                                 |
-| --------------------------- | ------------------------------------------- |
-| vpc_id                      | The ID of the VPC                           |
-| vpc_cidr                    | The CIDR block of the VPC                   |
-| public_subnet_ids           | List of public subnet IDs                   |
-| private_subnet_ids          | List of private app subnet IDs              |
-| private_db_subnet_ids       | List of private database subnet IDs         |
-| app_subnet_cidrs            | List of private app subnet CIDR blocks      |
-| db_subnet_cidrs             | List of private database subnet CIDR blocks |
-| s3_endpoint_id              | ID of the S3 VPC endpoint                   |
-| s3_endpoint_prefix_list_id  | Prefix list ID of the S3 VPC endpoint       |
+| Name                       | Description                                 |
+| -------------------------- | ------------------------------------------- |
+| vpc_id                     | The ID of the VPC                           |
+| vpc_cidr                   | The CIDR block of the VPC                   |
+| public_subnet_ids          | List of public subnet IDs                   |
+| private_subnet_ids         | List of private app subnet IDs              |
+| private_db_subnet_ids      | List of private database subnet IDs         |
+| app_subnet_cidrs           | List of private app subnet CIDR blocks      |
+| db_subnet_cidrs            | List of private database subnet CIDR blocks |
+| s3_endpoint_id             | ID of the S3 VPC endpoint                   |
+| s3_endpoint_prefix_list_id | Prefix list ID of the S3 VPC endpoint       |
 
 ## Complete Documentation
 
