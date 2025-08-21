@@ -148,3 +148,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 Built with ❤️ to empower advocacy organizations and drive policy change.
+
+This project is tested with BrowserStack.
