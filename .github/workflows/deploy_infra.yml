@@ -15,41 +15,12 @@ on:
       - "terraform/**"
       - ".github/workflows/deploy_infra.yml"
   workflow_dispatch:
-    inputs:
-      skip_plan:
-        description: "Skip Terraform plan step (use if plan is timing out)"
-        required: true
-        default: "false"
-        type: choice
-        options:
-          - "true"
-          - "false"
 
 # Define environment variables at the workflow level
+# NOTE: When using 'environment: prod' at the job level, both secrets and variables
+# are environment-specific and must be defined within each job
 env:
   TF_LOG: error
-  TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
-  TF_VAR_db_username: ${{ secrets.DB_USERNAME }}
-  TF_VAR_app_db_username: ${{ secrets.APP_DB_USERNAME }}
-  TF_VAR_app_db_password: ${{ secrets.APP_DB_PASSWORD }}
-  TF_VAR_route53_zone_id: ${{ vars.TF_VAR_ROUTE53_ZONE_ID }}
-  TF_VAR_domain_name: ${{ vars.TF_VAR_DOMAIN_NAME }}
-  TF_VAR_acm_certificate_arn: ${{ vars.TF_VAR_ACM_CERTIFICATE_ARN }}
-  TF_VAR_alert_email: ${{ vars.TF_VAR_ALERT_EMAIL }}
-  TF_VAR_bastion_public_key: ${{ secrets.TF_VAR_BASTION_PUBLIC_KEY }}
-  TF_VAR_allowed_hosts: "localhost,127.0.0.1,${{ vars.TF_VAR_DOMAIN_NAME }},*.${{ vars.TF_VAR_DOMAIN_NAME }}"
-  TF_VAR_csrf_trusted_origins: "https://${{ vars.TF_VAR_DOMAIN_NAME }},https://www.${{ vars.TF_VAR_DOMAIN_NAME }}"
-  TF_VAR_site_password_enabled: ${{ vars.SITE_PASSWORD_ENABLED }}
-  TF_VAR_site_password: ${{ secrets.SITE_PASSWORD }}
-  TF_VAR_site_username: ${{ vars.SITE_USERNAME }}
-  # SES Email Configuration
-  TF_VAR_ses_from_email: ${{ vars.SES_FROM_EMAIL }}
-  TF_VAR_ses_verify_domain: ${{ vars.SES_VERIFY_DOMAIN }}
-  TF_VAR_ses_notification_email: ${{ vars.SES_NOTIFICATION_EMAIL }}
-  # Organization and Admin Email Configuration
-  TF_VAR_contact_email: ${{ vars.CONTACT_EMAIL }}
-  TF_VAR_admin_notification_emails: ${{ vars.ADMIN_NOTIFICATION_EMAILS }}
-  TF_VAR_organization_name: ${{ vars.ORGANIZATION_NAME }}
 
 jobs:
   # Wait for terraform tests to complete successfully before deploying to production
@@ -97,15 +68,39 @@ jobs:
           echo "Terraform tests did not complete successfully: ${{ steps.wait_for_tests.outputs.conclusion }}"
           exit 1
 
-  terraform_plan:
-    name: Terraform Plan
+  terraform_deploy:
+    name: Terraform Plan & Apply
     runs-on: ubuntu-latest
     environment: prod
     needs: [wait_for_tests]
     if: always() && (needs.wait_for_tests.result == 'success' || needs.wait_for_tests.result == 'skipped')
-    outputs:
-      terraform_plan: ${{ steps.plan.outputs.stdout || steps.skip_plan.outputs.stdout }}
-      plan_success: ${{ steps.plan.outputs.plan_success || steps.skip_plan.outputs.plan_success }}
+
+    env:
+      # Environment-specific secrets (from prod environment)
+      TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+      TF_VAR_db_username: ${{ secrets.DB_USERNAME }}
+      TF_VAR_app_db_username: ${{ secrets.APP_DB_USERNAME }}
+      TF_VAR_app_db_password: ${{ secrets.APP_DB_PASSWORD }}
+      TF_VAR_bastion_public_key: ${{ secrets.TF_VAR_BASTION_PUBLIC_KEY }}
+      TF_VAR_site_password: ${{ secrets.SITE_PASSWORD }}
+      # Environment-specific variables (from prod environment)
+      TF_VAR_route53_zone_id: ${{ vars.TF_VAR_ROUTE53_ZONE_ID }}
+      TF_VAR_domain_name: ${{ vars.TF_VAR_DOMAIN_NAME }}
+      TF_VAR_acm_certificate_arn: ${{ vars.TF_VAR_ACM_CERTIFICATE_ARN }}
+      TF_VAR_alert_email: ${{ vars.TF_VAR_ALERT_EMAIL }}
+      TF_VAR_allowed_hosts: "localhost,127.0.0.1,${{ vars.TF_VAR_DOMAIN_NAME }},*.${{ vars.TF_VAR_DOMAIN_NAME }}"
+      TF_VAR_csrf_trusted_origins: "https://${{ vars.TF_VAR_DOMAIN_NAME }},https://www.${{ vars.TF_VAR_DOMAIN_NAME }}"
+      # Site configuration
+      TF_VAR_site_password_enabled: ${{ vars.SITE_PASSWORD_ENABLED }}
+      TF_VAR_site_username: ${{ vars.SITE_USERNAME }}
+      # SES Email Configuration
+      TF_VAR_ses_from_email: ${{ vars.SES_FROM_EMAIL }}
+      TF_VAR_ses_verify_domain: ${{ vars.SES_VERIFY_DOMAIN }}
+      TF_VAR_ses_notification_email: ${{ vars.SES_NOTIFICATION_EMAIL }}
+      # Organization Configuration (these will be added to ECS task)
+      TF_VAR_contact_email: ${{ vars.CONTACT_EMAIL }}
+      TF_VAR_admin_notification_emails: ${{ vars.ADMIN_NOTIFICATION_EMAILS }}
+      TF_VAR_organization_name: ${{ vars.ORGANIZATION_NAME }}
 
     steps:
       - name: Checkout
@@ -149,49 +144,38 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        if: github.event.inputs.skip_plan != 'true'
         run: |
           cd terraform
 
           echo "Running terraform plan..."
           set +e  # Don't exit on error
-          terraform plan -no-color -input=false > plan_output.txt 2>&1
+          terraform plan -no-color -input=false -out=tfplan > plan_output.txt 2>&1
           PLAN_EXIT_CODE=$?
           set -e  # Resume exiting on error
 
           echo "Plan completed with exit code: $PLAN_EXIT_CODE"
 
-          # Always make stdout output available for debugging
-          echo "stdout<<EOF" >> $GITHUB_OUTPUT
-          cat plan_output.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          # Output plan for review
+          echo "::group::Terraform Plan Output"
+          cat plan_output.txt
+          echo "::endgroup::"
 
           if [ $PLAN_EXIT_CODE -ne 0 ]; then
-            echo "::error::Terraform plan failed or timed out with exit code $PLAN_EXIT_CODE"
-            echo "plan_success=false" >> $GITHUB_OUTPUT
-            
-            # Output errors for debugging
-            echo "::group::Plan output"
-            cat plan_output.txt
-            echo "::endgroup::"
-            
-            # Fail the step explicitly
+            echo "::error::Terraform plan failed with exit code $PLAN_EXIT_CODE"
             exit 1
-          else
-            echo "plan_success=true" >> $GITHUB_OUTPUT
-            echo "::notice::Plan completed successfully"
           fi
 
-      - name: Skip Terraform Plan
-        id: skip_plan
-        if: github.event.inputs.skip_plan == 'true'
-        run: |
-          echo "Skipping Terraform plan as requested"
-          echo "stdout=Plan step skipped as requested" >> $GITHUB_OUTPUT
-          echo "plan_success=manual_override" >> $GITHUB_OUTPUT
+          # Check if there are changes to apply
+          if grep -q "No changes. Your infrastructure matches the configuration." plan_output.txt; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "::notice::No infrastructure changes detected"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "::notice::Infrastructure changes detected"
+          fi
 
       - name: Debug Terraform State
-        if: always() && github.event.inputs.skip_plan != 'true'
+        if: always()
         run: |
           echo "::group::Environment Variables"
           echo "Checking for Terraform variables"
@@ -222,190 +206,18 @@ jobs:
           fi
           echo "::endgroup::"
 
-  terraform_apply:
-    name: Terraform Apply
-    runs-on: ubuntu-latest
-    environment: prod
-    needs: terraform_plan
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.12.1
-
-      - name: Setup Backend Configuration
-        run: |
-          cd terraform
-          # Regenerate backend configuration for apply job
-          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          echo "Using backend bucket: coalition-terraform-state-${ACCOUNT_ID}"
-
-          cat > backend.hcl << EOF
-          bucket         = "coalition-terraform-state-${ACCOUNT_ID}"
-          key            = "production/terraform.tfstate"
-          region         = "us-east-1"
-          encrypt        = true
-          dynamodb_table = "coalition-terraform-locks"
-          EOF
-
-          echo "Backend configuration created for production deployment"
-
-      - name: Terraform Init
-        run: |
-          cd terraform
-          # Use -input=false to prevent interactive prompts
-          timeout 5m terraform init -backend-config=backend.hcl -input=false
-
-      - name: Verify Security Group Rules
-        # Check and potentially recreate missing security group rules before apply
-        if: github.ref == 'refs/heads/main'
-        continue-on-error: true
-        run: |
-          cd terraform
-          # Extract security group IDs from terraform state if possible
-          echo "Checking for missing security group rules..."
-
-          # Try to get security group IDs from state
-          ALB_SG_ID=$(terraform state show module.security.aws_security_group.alb_sg 2>/dev/null | grep -E '^\s*id\s*=' | sed 's/.*=\s*//; s/"//g' | tr -d ' ')
-          APP_SG_ID=$(terraform state show module.security.aws_security_group.app_sg 2>/dev/null | grep -E '^\s*id\s*=' | sed 's/.*=\s*//; s/"//g' | tr -d ' ')
-
-          if [ -n "$ALB_SG_ID" ] && [ -n "$APP_SG_ID" ]; then
-            echo "Found security groups in state: ALB=$ALB_SG_ID, APP=$APP_SG_ID"
-            
-            # Check if the critical rules exist
-            MISSING_RULES=false
-            
-            # Check ALB egress rules
-            if ! aws ec2 describe-security-group-rules \
-              --filters "Name=group-id,Values=${ALB_SG_ID}" "Name=is-egress,Values=true" \
-              --query "SecurityGroupRules[?FromPort==\`8000\` || FromPort==\`3000\`]" \
-              --output text 2>/dev/null | grep -q "${APP_SG_ID}"; then
-              echo "⚠️  Missing ALB egress rules detected"
-              MISSING_RULES=true
-            fi
-            
-            # Check APP ingress rules  
-            if ! aws ec2 describe-security-group-rules \
-              --filters "Name=group-id,Values=${APP_SG_ID}" "Name=is-egress,Values=false" \
-              --query "SecurityGroupRules[?FromPort==\`8000\` || FromPort==\`3000\`]" \
-              --output text 2>/dev/null | grep -q "${ALB_SG_ID}"; then
-              echo "⚠️  Missing APP ingress rules detected"
-              MISSING_RULES=true
-            fi
-            
-            if [ "$MISSING_RULES" = true ]; then
-              echo "::warning::Critical security group rules are missing. Terraform will recreate them."
-              # Force terraform to refresh the state for these specific resources
-              terraform refresh -target=module.security.aws_vpc_security_group_egress_rule.alb_to_api \
-                -target=module.security.aws_vpc_security_group_egress_rule.alb_to_app \
-                -target=module.security.aws_vpc_security_group_ingress_rule.api_from_alb \
-                -target=module.security.aws_vpc_security_group_ingress_rule.app_from_alb || true
-            else
-              echo "✅ All critical security group rules are present"
-            fi
-          else
-            echo "Could not retrieve security group IDs from state - will proceed with normal apply"
-          fi
-
       - name: Terraform Apply
-        # Only apply on main branch - push events include direct pushes and PR merges to main
-        # Also ensure plan was successful or manually overridden
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && steps.plan.outputs.has_changes == 'true'
         run: |
           cd terraform
 
-          # Use unique filename to avoid conflicts between concurrent workflows
-          TF_APPLY_OUTPUT_FILE="/tmp/terraform_apply_output_${GITHUB_RUN_ID}_${GITHUB_RUN_ATTEMPT}.txt"
+          echo "Applying infrastructure changes..."
 
-          # Function to handle apply with better error reporting
-          run_apply() {
-            local output_file="$TF_APPLY_OUTPUT_FILE"
-            
-            echo "Starting Terraform apply..."
-            if timeout 15m terraform apply -auto-approve -input=false 2>&1 | tee "$output_file"; then
-              echo "✅ Terraform apply completed successfully"
-              return 0
-            else
-              local exit_code=$?
-              echo "❌ Terraform apply failed with exit code: $exit_code"
-              
-              # Check for specific error patterns
-              if grep -q "Error acquiring the state lock" "$output_file"; then
-                echo "::error::🔒 STATE LOCK ERROR: Terraform state is locked. Another operation may be in progress."
-                echo "::error::To force unlock, run: terraform force-unlock <LOCK_ID>"
-                echo "::error::Check the DynamoDB table 'terraform-state-lock' for stuck locks"
-                
-                # Extract lock ID if present
-                if grep -q "Lock Info:" "$output_file"; then
-                  echo "::error::Lock details:"
-                  grep -A 5 "Lock Info:" "$output_file"
-                fi
-              elif grep -q "timeout" "$output_file" || [ "$exit_code" -eq 124 ]; then
-                echo "::error::⏱️ TIMEOUT ERROR: Terraform apply took longer than 15 minutes"
-                echo "::error::This may indicate a state lock issue or a complex infrastructure change"
-              elif grep -q "Error: " "$output_file"; then
-                echo "::error::Terraform errors detected:"
-                grep "Error: " "$output_file" | head -10
-              fi
-              
-              return $exit_code
-            fi
-          }
-
-          # Run apply with error handling
-          if ! run_apply; then
-            echo "::error::Terraform apply failed. Check the logs above for details."
-            
-            # Create job summary for better visibility
-            echo "## ❌ Terraform Apply Failed" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            
-            # Store the exit code from run_apply
-            local apply_exit_code=$?
-            
-            # Check for common error patterns and add to summary
-            if grep -q "Error acquiring the state lock" "$TF_APPLY_OUTPUT_FILE" 2>/dev/null; then
-              echo "### 🔒 State Lock Error Detected" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo "The Terraform state is currently locked. This usually means:" >> $GITHUB_STEP_SUMMARY
-              echo "- Another Terraform operation is in progress" >> $GITHUB_STEP_SUMMARY
-              echo "- A previous operation was interrupted and didn't release the lock" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo "**To resolve:**" >> $GITHUB_STEP_SUMMARY
-              echo "1. Wait for any running operations to complete" >> $GITHUB_STEP_SUMMARY
-              echo "2. If no operations are running, manually unlock with: \`terraform force-unlock <LOCK_ID>\`" >> $GITHUB_STEP_SUMMARY
-              echo "3. Check the DynamoDB table \`terraform-state-lock\` for stuck locks" >> $GITHUB_STEP_SUMMARY
-            elif grep -q "timeout" "$TF_APPLY_OUTPUT_FILE" 2>/dev/null || [ "$apply_exit_code" -eq 124 ]; then
-              echo "### ⏱️ Timeout Error" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo "The operation timed out after 15 minutes. This could indicate:" >> $GITHUB_STEP_SUMMARY
-              echo "- A state lock that couldn't be acquired" >> $GITHUB_STEP_SUMMARY
-              echo "- A complex infrastructure change taking too long" >> $GITHUB_STEP_SUMMARY
-              echo "- Network connectivity issues" >> $GITHUB_STEP_SUMMARY
-            else
-              echo "### Error Details" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo "Check the workflow logs for specific error messages." >> $GITHUB_STEP_SUMMARY
-            fi
-            
+          # Apply the saved plan
+          if terraform apply tfplan; then
+            echo "✅ Terraform apply completed successfully"
+            echo "::notice::Infrastructure changes have been successfully applied"
+          else
+            echo "❌ Terraform apply failed"
             exit 1
           fi
-
-          # Add success summary
-          echo "## ✅ Terraform Apply Successful" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Infrastructure changes have been successfully applied to production." >> $GITHUB_STEP_SUMMARY
