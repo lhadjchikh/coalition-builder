@@ -4,6 +4,11 @@ data "aws_vpc" "current" {
   id = var.vpc_id
 }
 
+# Resolve SES SMTP endpoint IPs for the region
+data "dns_a_record_set" "ses_smtp" {
+  host = "email-smtp.${var.aws_region}.amazonaws.com"
+}
+
 # Application Security Group
 resource "aws_security_group" "app_sg" {
   name        = "${var.prefix}-sg"
@@ -222,14 +227,17 @@ resource "aws_vpc_security_group_egress_rule" "app_http" {
   description       = "HTTP outbound traffic"
 }
 
-# SMTP egress for SES email sending
+# SMTP egress for SES email sending - restricted to AWS SES endpoints
+# Using DNS resolution for SES SMTP endpoint IPs provides better security than 0.0.0.0/0
 resource "aws_vpc_security_group_egress_rule" "app_smtp" {
+  for_each = toset([for ip in data.dns_a_record_set.ses_smtp.addrs : "${ip}/32"])
+
   security_group_id = aws_security_group.app_sg.id
-  cidr_ipv4         = "0.0.0.0/0"
+  cidr_ipv4         = each.value
   from_port         = 587
   to_port           = 587
   ip_protocol       = "tcp"
-  description       = "SMTP outbound for SES email sending"
+  description       = "SMTP outbound for SES endpoint ${each.value}"
 }
 
 # App to database egress - handle multiple subnets
