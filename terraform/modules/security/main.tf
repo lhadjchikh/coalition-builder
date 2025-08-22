@@ -222,6 +222,16 @@ resource "aws_vpc_security_group_egress_rule" "app_http" {
   description       = "HTTP outbound traffic"
 }
 
+# SMTP egress for SES email sending
+resource "aws_vpc_security_group_egress_rule" "app_smtp" {
+  security_group_id = aws_security_group.app_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 587
+  to_port           = 587
+  ip_protocol       = "tcp"
+  description       = "SMTP outbound for SES email sending"
+}
+
 # App to database egress - handle multiple subnets
 resource "aws_vpc_security_group_egress_rule" "app_to_db" {
   for_each = toset(var.database_subnet_cidrs)
