@@ -243,9 +243,8 @@ variable "site_username" {
 }
 
 variable "ses_smtp_secret_arn" {
-  description = "ARN of the SES SMTP credentials secret"
+  description = "ARN of the SES SMTP credentials secret (required for email functionality)"
   type        = string
-  default     = ""
 }
 
 variable "contact_email" {

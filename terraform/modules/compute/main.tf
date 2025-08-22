@@ -228,7 +228,8 @@ resource "aws_iam_policy" "secrets_access" {
         Resource = [
           var.db_url_secret_arn,
           var.secret_key_secret_arn,
-          var.site_password_secret_arn
+          var.site_password_secret_arn,
+          var.ses_smtp_secret_arn
         ]
       },
       {
@@ -378,8 +379,7 @@ resource "aws_ecs_task_definition" "app" {
         {
           name      = "SITE_PASSWORD",
           valueFrom = "${var.site_password_secret_arn}:password::"
-        }
-        ], var.ses_smtp_secret_arn != "" ? [
+        },
         {
           name      = "EMAIL_HOST",
           valueFrom = "${var.ses_smtp_secret_arn}:EMAIL_HOST::"
@@ -404,7 +404,7 @@ resource "aws_ecs_task_definition" "app" {
           name      = "DEFAULT_FROM_EMAIL",
           valueFrom = "${var.ses_smtp_secret_arn}:DEFAULT_FROM_EMAIL::"
         }
-      ] : [])
+      ])
       healthCheck = {
         command = [
           "CMD-SHELL",
