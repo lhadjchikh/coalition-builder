@@ -4,6 +4,7 @@ data "aws_vpc" "current" {
   id = var.vpc_id
 }
 
+
 # Application Security Group
 resource "aws_security_group" "app_sg" {
   name        = "${var.prefix}-sg"
@@ -223,13 +224,20 @@ resource "aws_vpc_security_group_egress_rule" "app_http" {
 }
 
 # SMTP egress for SES email sending
+# NOTE: AWS doesn't provide managed prefix lists for SES SMTP endpoints, and
+# DNS resolution at plan/apply time creates instability (IPs can change).
+# Using 0.0.0.0/0 is a pragmatic choice for production reliability.
+# Consider implementing additional security through:
+# - VPC endpoints for SES (if available in your region)
+# - Network ACLs for additional layer of security
+# - CloudWatch monitoring for unusual SMTP traffic patterns
 resource "aws_vpc_security_group_egress_rule" "app_smtp" {
   security_group_id = aws_security_group.app_sg.id
   cidr_ipv4         = "0.0.0.0/0"
   from_port         = 587
   to_port           = 587
   ip_protocol       = "tcp"
-  description       = "SMTP outbound for SES email sending"
+  description       = "SMTP outbound for AWS SES email sending"
 }
 
 # App to database egress - handle multiple subnets
