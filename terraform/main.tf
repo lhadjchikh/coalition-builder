@@ -56,6 +56,7 @@ module "security" {
   vpc_id                = module.networking.vpc_id
   allowed_bastion_cidrs = var.allowed_bastion_cidrs
   database_subnet_cidrs = module.networking.db_subnet_cidrs
+  aws_region            = var.aws_region
 }
 
 # Monitoring Module

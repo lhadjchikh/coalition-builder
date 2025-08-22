@@ -10,5 +10,9 @@ terraform {
       source  = "hashicorp/null"
       version = "~> 3.2.0"
     }
+    dns = {
+      source  = "hashicorp/dns"
+      version = "~> 3.4.0"
+    }
   }
 }

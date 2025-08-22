@@ -20,3 +20,9 @@ variable "database_subnet_cidrs" {
   type        = list(string)
   default     = []
 }
+
+variable "aws_region" {
+  description = "AWS region for SES SMTP IP ranges"
+  type        = string
+  default     = "us-east-1"
+}
