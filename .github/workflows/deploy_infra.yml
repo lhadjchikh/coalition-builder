@@ -15,15 +15,6 @@ on:
       - "terraform/**"
       - ".github/workflows/deploy_infra.yml"
   workflow_dispatch:
-    inputs:
-      skip_plan:
-        description: "Skip Terraform plan step (use if plan is timing out)"
-        required: true
-        default: "false"
-        type: choice
-        options:
-          - "true"
-          - "false"
 
 # Define environment variables at the workflow level
 # NOTE: When using 'environment: prod' at the job level, both secrets and variables
@@ -183,16 +174,8 @@ jobs:
             echo "::notice::Infrastructure changes detected"
           fi
 
-      - name: Skip Terraform Plan
-        id: skip_plan
-        if: github.event.inputs.skip_plan == 'true'
-        run: |
-          echo "Skipping Terraform plan as requested"
-          echo "stdout=Plan step skipped as requested" >> $GITHUB_OUTPUT
-          echo "plan_success=manual_override" >> $GITHUB_OUTPUT
-
       - name: Debug Terraform State
-        if: always() && github.event.inputs.skip_plan != 'true'
+        if: always()
         run: |
           echo "::group::Environment Variables"
           echo "Checking for Terraform variables"
