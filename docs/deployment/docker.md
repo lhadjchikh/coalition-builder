@@ -17,10 +17,10 @@ docker-compose.yml (local development)
 ├── api (Django Backend)
 ├── app (Next.js Frontend)
 ├── db (PostgreSQL + PostGIS)
-├── redis (Django Cache)
-├── dynamodb-local (Rate Limiting - matches production)
 └── nginx (reverse proxy - optional)
 ```
+
+> **Note**: Rate limiting and caching now use PostgreSQL's database cache backend for dev/prod parity.
 
 ## Quick Start
 
@@ -58,7 +58,6 @@ Services will be available at:
 - **Backend API**: http://localhost:8000
 - **Nginx Proxy**: http://localhost:80 (optional)
 - **Database**: localhost:5432
-- **Redis**: localhost:6379
 
 ## Docker Compose Configuration
 
@@ -85,40 +84,6 @@ services:
       timeout: 5s
       retries: 5
 
-  redis:
-    image: redis:8-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
-  dynamodb-local:
-    image: amazon/dynamodb-local:latest
-    ports:
-      - "8001:8000"
-    volumes:
-      - dynamodb_data:/home/dynamodblocal/data
-    command:
-      [
-        "-jar",
-        "DynamoDBLocal.jar",
-        "-sharedDb",
-        "-dbPath",
-        "/home/dynamodblocal/data",
-      ]
-    working_dir: /home/dynamodblocal
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
   api:
     build:
       context: ./backend
@@ -127,14 +92,11 @@ services:
       - DEBUG=${DEBUG:-False}
       - SECRET_KEY=${SECRET_KEY:-dev_secret_key_replace_in_production}
       - DATABASE_URL=postgis://${APP_DB_USERNAME:-coalition_app}:${APP_DB_PASSWORD:-app_password}@db:5432/${DB_NAME:-coalition}
-      - CACHE_URL=${CACHE_URL:-redis://redis:6379/1}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,api,nginx,app}
     ports:
       - "8000:8000"
     depends_on:
       db:
-        condition: service_healthy
-      redis:
         condition: service_healthy
 
   app:
@@ -158,8 +120,6 @@ services:
 
 volumes:
   postgres_data:
-  redis_data:
-  dynamodb_data:
 ```
 
 ### Environment Configuration
@@ -179,7 +139,6 @@ Key environment variables:
 - `DEBUG=True` for development mode
 - `SECRET_KEY` for Django security (auto-generated for local development)
 - `DATABASE_URL` automatically configured for the local database
-- `CACHE_URL` configured for the local Redis instance
 
 ## Individual Service Containers
 
