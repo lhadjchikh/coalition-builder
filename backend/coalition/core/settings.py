@@ -385,7 +385,10 @@ if IS_LAMBDA:
 
     # GeoDjango is fully supported via Docker container
     # GDAL paths are set via environment variables
-    if os.environ.get("USE_GEODJANGO", "true").lower() == "true":
+    if os.environ.get("USE_GEODJANGO", "true").lower() == "true" and os.path.exists(
+        "/opt/lib/libgdal.so",
+    ):
+        # Set GDAL paths for Lambda container
         GDAL_LIBRARY_PATH = "/opt/lib/libgdal.so"
         GEOS_LIBRARY_PATH = "/opt/lib/libgeos_c.so"
 
