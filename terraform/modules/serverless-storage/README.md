@@ -22,10 +22,12 @@ module "serverless_storage" {
 }
 ```
 
-This creates three S3 buckets with unique names:
-- `coalition-dev-assets-[random]` - Development environment
-- `coalition-staging-assets-[random]` - Staging environment  
-- `coalition-production-assets-[random]` - Production environment
+This creates three S3 buckets with a shared random suffix for uniqueness:
+- `coalition-dev-assets-abc123` - Development environment
+- `coalition-staging-assets-abc123` - Staging environment  
+- `coalition-production-assets-abc123` - Production environment
+
+Note: All buckets share the same random suffix (e.g., `abc123`), making them easier to identify and manage as a set.
 
 After running `terraform apply`, the actual bucket names will be shown in the output. You'll need to update your configuration files with these names.
 
