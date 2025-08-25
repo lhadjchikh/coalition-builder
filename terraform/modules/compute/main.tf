@@ -63,6 +63,14 @@ locals {
     {
       name  = "ORGANIZATION_NAME"
       value = var.organization_name
+    },
+    {
+      name  = "SITE_URL"
+      value = "https://${var.domain_name}"
+    },
+    {
+      name  = "API_URL"
+      value = "https://${var.domain_name}"
     }
   ]
 
