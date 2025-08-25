@@ -1,22 +1,25 @@
-# Docker Deployment Guide
+# Local Development with Docker
 
-This guide covers containerized deployment of Coalition Builder using Docker and Docker Compose.
+This guide covers running Coalition Builder locally using Docker and Docker Compose for development purposes.
+
+> **Note**: For production deployment, Coalition Builder uses a serverless architecture on AWS Lambda and Vercel. See [AWS Serverless Guide](aws.md) and [Lambda Deployment](../lambda_deployment.md) for production deployment.
 
 ## Overview
 
-Coalition Builder is designed for containerized deployment with Docker. The application consists of multiple services that can be orchestrated using Docker Compose for development or deployed individually in production environments.
+Coalition Builder uses Docker Compose for local development to provide a consistent environment across different machines. The local setup includes all necessary services for development and testing.
 
 ## Docker Architecture
 
 ### Service Components
 
 ```
-docker compose.yml
+docker-compose.yml (local development)
 ├── api (Django Backend)
-├── frontend (Next.js Frontend)
+├── app (Next.js Frontend)
 ├── db (PostgreSQL + PostGIS)
-├── redis (Cache)
-└── nginx (reverse proxy)
+├── redis (Django Cache)
+├── dynamodb-local (Rate Limiting - matches production)
+└── nginx (reverse proxy - optional)
 ```
 
 ## Quick Start
@@ -28,12 +31,16 @@ docker compose.yml
 - 4GB+ available RAM
 - 10GB+ available disk space
 
-### Development Environment
+### Local Development Setup
 
 ```bash
 # Clone repository
 git clone https://github.com/lhadjchikh/coalition-builder.git
 cd coalition-builder
+
+# Copy environment files (optional)
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
 
 # Start all services
 docker compose up -d
@@ -47,120 +54,132 @@ docker compose down
 
 Services will be available at:
 
+- **Frontend (app)**: http://localhost:3000
 - **Backend API**: http://localhost:8000
-- **Frontend**: http://localhost:3000
+- **Nginx Proxy**: http://localhost:80 (optional)
 - **Database**: localhost:5432
 - **Redis**: localhost:6379
 
 ## Docker Compose Configuration
 
-### Main Compose File
+### Current Compose Configuration
+
+The local development setup uses the following services:
 
 ```yaml
-version: "3.8"
-
 services:
   db:
     image: postgis/postgis:16-3.4
     environment:
-      POSTGRES_DB: coalition
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=${DB_NAME:-coalition}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./backend/scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+      - postgres_data:/var/lib/postgresql/data/
+      - ./backend/scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
     ports:
       - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 30s
-      timeout: 10s
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:8-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    ports:
+      - "8001:8000"
+    volumes:
+      - dynamodb_data:/home/dynamodblocal/data
+    command:
+      [
+        "-jar",
+        "DynamoDBLocal.jar",
+        "-sharedDb",
+        "-dbPath",
+        "/home/dynamodblocal/data",
+      ]
+    working_dir: /home/dynamodblocal
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 10s
+      timeout: 5s
       retries: 3
 
-  backend:
+  api:
     build:
       context: ./backend
       dockerfile: Dockerfile
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/coalition
-      - DEBUG=True
-      - ALLOWED_HOSTS=localhost,127.0.0.1,backend
-    volumes:
-      - ./backend:/app
-      - static_volume:/app/static
+      - DEBUG=${DEBUG:-False}
+      - SECRET_KEY=${SECRET_KEY:-dev_secret_key_replace_in_production}
+      - DATABASE_URL=postgis://${APP_DB_USERNAME:-coalition_app}:${APP_DB_PASSWORD:-app_password}@db:5432/${DB_NAME:-coalition}
+      - CACHE_URL=${CACHE_URL:-redis://redis:6379/1}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,api,nginx,app}
     ports:
       - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "python", "healthcheck.py"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      redis:
+        condition: service_healthy
 
-  frontend:
+  app:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     environment:
-      - API_URL=http://backend:8000
-      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
+      - NODE_ENV=production
+      - API_URL=http://api:8000
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
       - PORT=3000
     ports:
-      - "3001:3000"
+      - "3000:3000"
     depends_on:
-      - backend
+      - api
     healthcheck:
       test: ["CMD", "node", "healthcheck.js"]
-      interval: 30s
-      timeout: 10s
+      interval: 10s
+      timeout: 5s
       retries: 3
 
 volumes:
   postgres_data:
-  static_volume:
+  redis_data:
+  dynamodb_data:
 ```
 
-### Production Compose Override
+### Environment Configuration
 
-```yaml
-# docker compose.prod.yml
-version: "3.8"
+The compose file uses environment variables for configuration. Create `.env` files in the `backend/` and `frontend/` directories based on the `.env.example` templates:
 
-services:
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.prod.conf:/etc/nginx/nginx.conf
-      - static_volume:/var/www/static
-      - ./ssl:/etc/nginx/ssl
-    depends_on:
-      - backend
-      - ssr
+```bash
+# Copy environment templates
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
 
-  backend:
-    environment:
-      - DEBUG=False
-      - DATABASE_URL=${DATABASE_URL}
-      - SECRET_KEY=${SECRET_KEY}
-      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
-    volumes: [] # Remove development volume mounts
-
-  frontend:
-    environment:
-      - NODE_ENV=production
-      - API_URL=http://api:8000
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-
-  db:
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      # Remove init script volume for production
+# Edit the files to customize your local setup
 ```
+
+Key environment variables:
+
+- `DEBUG=True` for development mode
+- `SECRET_KEY` for Django security (auto-generated for local development)
+- `DATABASE_URL` automatically configured for the local database
+- `CACHE_URL` configured for the local Redis instance
 
 ## Individual Service Containers
 

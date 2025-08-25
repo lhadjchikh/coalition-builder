@@ -70,9 +70,21 @@ flowchart TD
 
 ## Architecture
 
-- **Backend**: Django API with PostgreSQL/PostGIS
-- **Frontend**: Next.js with React, TypeScript and styled-components (Server-Side Rendered)
-- **Infrastructure**: Terraform-managed AWS deployment
+### Serverless Architecture (Current)
+
+- **Backend**: Django API on AWS Lambda (via Zappa)
+- **Frontend**: Next.js on Vercel Edge Network
+- **Database**: PostgreSQL with PostGIS (RDS)
+- **Rate Limiting**: DynamoDB (serverless)
+- **Infrastructure**: Terraform-managed AWS resources
+- **Cost**: ~$39/month (46% reduction from ECS)
+
+### Legacy Architecture (Deprecated)
+
+- **Backend**: Django API on ECS Fargate
+- **Frontend**: Next.js on ECS with SSR
+- **Infrastructure**: ALB + ECS + NAT Gateway
+- **Cost**: ~$73/month
 
 ### Frontend Architecture
 
@@ -103,14 +115,16 @@ The `/frontend` directory contains a Next.js application that serves as the prim
 - **Fast Initial Load**: Pre-rendered HTML for instant page display
 - **Type Safety**: Full TypeScript support across the application
 - **Modern Stack**: Latest React and Next.js features
-- **Production Ready**: Containerized deployment with Docker and AWS ECS
+- **Production Ready**: Serverless deployment with Lambda and Vercel
 
 ## Getting Started
 
 1. **[Installation](installation.md)** - Quick setup for development
 2. **[Configuration](configuration.md)** - Environment variables and settings
 3. **[Development](development.md)** - Development workflow and contributing
-4. **[Deployment](deployment.md)** - Production deployment options
+4. **[Lambda Deployment](lambda_deployment.md)** - Backend deployment to AWS Lambda
+5. **[Vercel Deployment](vercel_deployment.md)** - Frontend deployment to Vercel
+6. **[Legacy Deployment](deployment.md)** - ECS deployment (deprecated)
 
 ## User Guides
 
@@ -130,6 +144,13 @@ Comprehensive guides for managing your coalition platform:
 - **[Testing Guide](development/testing.md)** - Comprehensive testing with pytest, Jest, and Go
 - **[Site Password Protection](development/automated-protection.md)** - Configure site-wide authentication for development and production
 - **[Email Configuration](email-configuration.md)** - Set up AWS SES for transactional emails
+
+## Deployment Guides
+
+- **[Lambda Deployment](lambda_deployment.md)** - Deploy Django to AWS Lambda with Zappa
+- **[Vercel Deployment](vercel_deployment.md)** - Deploy Next.js to Vercel Edge Network
+- **[GitHub Workflows](deployment/workflows.md)** - CI/CD pipelines for automated deployment
+- **[Geographic Data Import](deployment/geodata-import.md)** - Import TIGER shapefiles via ECS
 
 ## Documentation
 

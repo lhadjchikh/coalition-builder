@@ -7,17 +7,17 @@ on:
       - staging
       - development
     paths:
-      - 'frontend/**'
-      - '.github/workflows/deploy-frontend.yml'
+      - "frontend/**"
+      - ".github/workflows/deploy-frontend.yml"
   pull_request:
     paths:
-      - 'frontend/**'
+      - "frontend/**"
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy to'
+        description: "Environment to deploy to"
         required: true
-        default: 'preview'
+        default: "preview"
         type: choice
         options:
           - preview
@@ -31,18 +31,18 @@ jobs:
   deploy:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: frontend/package-lock.json
-          
+
       - name: Determine environment
         id: env
         run: |
@@ -57,15 +57,15 @@ jobs:
           else
             ENV="development"
           fi
-          
+
           echo "environment=$ENV" >> $GITHUB_OUTPUT
           echo "Deploying to: $ENV"
-          
+
       - name: Set API URL
         id: api
         run: |
           ENV="${{ steps.env.outputs.environment }}"
-          
+
           # Get API URL based on environment
           if [[ "$ENV" == "production" ]]; then
             API_URL="${{ vars.PRODUCTION_API_URL || 'https://api.yourdomain.com' }}"
@@ -77,17 +77,17 @@ jobs:
             API_URL="${{ vars.DEVELOPMENT_API_URL || 'https://api-dev.yourdomain.com' }}"
             SITE_URL="${{ vars.DEVELOPMENT_SITE_URL || 'https://dev.yourdomain.com' }}"
           fi
-          
+
           echo "api_url=$API_URL" >> $GITHUB_OUTPUT
           echo "site_url=$SITE_URL" >> $GITHUB_OUTPUT
-          
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
-        
+
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=${{ steps.env.outputs.environment }} --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: ./frontend
-        
+
       - name: Build Project Artifacts
         run: |
           vercel build \
@@ -99,7 +99,7 @@ jobs:
           NEXT_PUBLIC_ENVIRONMENT: ${{ steps.env.outputs.environment }}
           NEXT_PUBLIC_SITE_URL: ${{ steps.api.outputs.site_url }}
           NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: ${{ vars.GOOGLE_ANALYTICS_ID }}
-          
+
       - name: Deploy to Vercel
         id: deploy
         run: |
@@ -108,11 +108,11 @@ jobs:
           else
             DEPLOY_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
           fi
-          
+
           echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
           echo "Deployed to: $DEPLOY_URL"
         working-directory: ./frontend
-        
+
       - name: Create deployment summary
         run: |
           echo "### 🚀 Frontend Deployment Complete!" >> $GITHUB_STEP_SUMMARY
@@ -125,7 +125,7 @@ jobs:
           echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
-          
+
       - name: Comment on PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
@@ -133,46 +133,46 @@ jobs:
           script: |
             const url = '${{ steps.deploy.outputs.url }}';
             const environment = '${{ steps.env.outputs.environment }}';
-            
+
             const body = `## 🚀 Vercel Preview Deployment
-            
+
             **Preview URL:** ${url}
             **Environment:** ${environment}
             **API URL:** ${{ steps.api.outputs.api_url }}
-            
+
             ### Lighthouse Scores
             Run Lighthouse CI to check performance scores.
-            
+
             ### Next Steps
             - Test the preview deployment
             - Check responsive design
             - Verify API integration
             `;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: body
             });
-            
+
       - name: Run smoke tests
         if: steps.env.outputs.environment != 'production'
         continue-on-error: true
         run: |
           DEPLOY_URL="${{ steps.deploy.outputs.url }}"
-          
+
           echo "Running smoke tests on $DEPLOY_URL"
-          
+
           # Test homepage
           curl -f -s -o /dev/null -w "Homepage: %{http_code}\n" "$DEPLOY_URL/"
-          
+
           # Test campaigns page
           curl -f -s -o /dev/null -w "Campaigns: %{http_code}\n" "$DEPLOY_URL/campaigns"
-          
+
           # Test health endpoint
           curl -f -s -o /dev/null -w "Health: %{http_code}\n" "$DEPLOY_URL/api/health"
-          
+
       - name: Alias production deployment
         if: steps.env.outputs.environment == 'production' && github.ref == 'refs/heads/main'
         run: |

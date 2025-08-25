@@ -5,6 +5,7 @@ go 1.24
 toolchain go1.24.3
 
 require (
+	github.com/aws/aws-sdk-go v1.55.8
 	github.com/aws/aws-sdk-go-v2 v1.36.5
 	github.com/aws/aws-sdk-go-v2/config v1.29.14
 	github.com/aws/aws-sdk-go-v2/service/budgets v1.31.2

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       import_type:
-        description: 'Type of geographic data to import'
+        description: "Type of geographic data to import"
         required: true
         type: choice
         options:
@@ -14,15 +14,15 @@ on:
           - all-tiger
           - custom
       states:
-        description: 'State codes to import (comma-separated, e.g., CA,NY,TX)'
+        description: "State codes to import (comma-separated, e.g., CA,NY,TX)"
         required: false
-        default: 'all'
+        default: "all"
       year:
-        description: 'TIGER data year'
+        description: "TIGER data year"
         required: false
-        default: '2023'
+        default: "2023"
       environment:
-        description: 'Environment to import to'
+        description: "Environment to import to"
         required: true
         type: choice
         options:
@@ -30,27 +30,27 @@ on:
           - staging
           - production
       custom_command:
-        description: 'Custom import command (for custom import type)'
+        description: "Custom import command (for custom import type)"
         required: false
-        default: ''
+        default: ""
 
 jobs:
   import:
     name: Import Geographic Data
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-          
+
       - name: Prepare import command
         id: command
         run: |
@@ -58,7 +58,7 @@ jobs:
           STATES="${{ github.event.inputs.states }}"
           YEAR="${{ github.event.inputs.year }}"
           CUSTOM="${{ github.event.inputs.custom_command }}"
-          
+
           case "$IMPORT_TYPE" in
             tiger-states)
               CMD="python manage.py import_tiger_data --type=state --year=$YEAR"
@@ -85,30 +85,30 @@ jobs:
               CMD="$CUSTOM"
               ;;
           esac
-          
+
           echo "command=$CMD" >> $GITHUB_OUTPUT
           echo "### 🗺️ Geographic Data Import" >> $GITHUB_STEP_SUMMARY
           echo "**Type:** $IMPORT_TYPE" >> $GITHUB_STEP_SUMMARY
           echo "**Environment:** ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
           echo "**Command:** \`$CMD\`" >> $GITHUB_STEP_SUMMARY
-          
+
       - name: Get ECS cluster and task definition
         id: ecs
         run: |
           ENV="${{ github.event.inputs.environment }}"
           PREFIX="coalition-builder"
-          
+
           if [ "$ENV" = "production" ]; then
             PREFIX="coalition-prod"
           elif [ "$ENV" = "staging" ]; then
             PREFIX="coalition-staging"
           fi
-          
+
           echo "cluster_name=${PREFIX}-geodata-import" >> $GITHUB_OUTPUT
           echo "task_family=${PREFIX}-geodata-import" >> $GITHUB_OUTPUT
           echo "subnet_ids=${{ secrets.ECS_SUBNET_IDS }}" >> $GITHUB_OUTPUT
           echo "security_group=${{ secrets.ECS_SECURITY_GROUP }}" >> $GITHUB_OUTPUT
-          
+
       - name: Run ECS Task
         id: run-task
         run: |
@@ -117,7 +117,7 @@ jobs:
             --task-definition ${{ steps.ecs.outputs.task_family }} \
             --query 'taskDefinition.taskDefinitionArn' \
             --output text)
-          
+
           # Run the task with overridden command
           TASK_ARN=$(aws ecs run-task \
             --cluster ${{ steps.ecs.outputs.cluster_name }} \
@@ -132,10 +132,10 @@ jobs:
             }' \
             --query 'tasks[0].taskArn' \
             --output text)
-          
+
           echo "task_arn=$TASK_ARN" >> $GITHUB_OUTPUT
           echo "**Task ARN:** $TASK_ARN" >> $GITHUB_STEP_SUMMARY
-          
+
       - name: Wait for task to start
         run: |
           echo "Waiting for task to start..."
@@ -143,7 +143,7 @@ jobs:
             --cluster ${{ steps.ecs.outputs.cluster_name }} \
             --tasks ${{ steps.run-task.outputs.task_arn }}
           echo "✅ Task started successfully" >> $GITHUB_STEP_SUMMARY
-          
+
       - name: Stream logs
         continue-on-error: true
         run: |
@@ -151,10 +151,10 @@ jobs:
           LOG_GROUP="/ecs/geodata-import"
           TASK_ID=$(echo ${{ steps.run-task.outputs.task_arn }} | rev | cut -d'/' -f1 | rev)
           LOG_STREAM="geodata/$TASK_ID"
-          
+
           echo "### 📋 Import Logs" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          
+
           # Stream logs for up to 30 minutes
           TIMEOUT=$(($(date +%s) + 1800))
           while [ $(date +%s) -lt $TIMEOUT ]; do
@@ -180,7 +180,7 @@ jobs:
             sleep 10
           done
           echo '```' >> $GITHUB_STEP_SUMMARY
-          
+
       - name: Check task status
         id: task-status
         run: |
@@ -189,25 +189,25 @@ jobs:
             --cluster ${{ steps.ecs.outputs.cluster_name }} \
             --tasks ${{ steps.run-task.outputs.task_arn }} \
             --query 'tasks[0]')
-          
+
           STATUS=$(echo $TASK_INFO | jq -r '.lastStatus')
           EXIT_CODE=$(echo $TASK_INFO | jq -r '.containers[0].exitCode // "N/A"')
           REASON=$(echo $TASK_INFO | jq -r '.stoppedReason // "N/A"')
-          
+
           echo "### 📊 Task Result" >> $GITHUB_STEP_SUMMARY
           echo "**Status:** $STATUS" >> $GITHUB_STEP_SUMMARY
           echo "**Exit Code:** $EXIT_CODE" >> $GITHUB_STEP_SUMMARY
           if [ "$REASON" != "N/A" ]; then
             echo "**Stopped Reason:** $REASON" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           if [ "$EXIT_CODE" != "0" ] && [ "$EXIT_CODE" != "N/A" ]; then
             echo "❌ Import failed with exit code $EXIT_CODE" >> $GITHUB_STEP_SUMMARY
             exit 1
           else
             echo "✅ Import completed successfully!" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
       - name: Notify completion
         if: always()
         uses: actions/github-script@v7
@@ -216,16 +216,16 @@ jobs:
             const status = '${{ steps.task-status.outcome }}' === 'success' ? '✅' : '❌';
             const importType = '${{ github.event.inputs.import_type }}';
             const environment = '${{ github.event.inputs.environment }}';
-            
+
             const body = `## ${status} Geographic Data Import ${status === '✅' ? 'Complete' : 'Failed'}
-            
+
             **Import Type:** ${importType}
             **Environment:** ${environment}
             **Task ARN:** ${{ steps.run-task.outputs.task_arn }}
-            
+
             View the full logs in the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             `;
-            
+
             // Create an issue comment if this was triggered from an issue
             if (context.issue.number) {
               github.rest.issues.createComment({

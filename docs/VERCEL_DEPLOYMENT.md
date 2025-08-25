@@ -41,19 +41,23 @@ Add these as **repository secrets** in GitHub:
 Add these as **repository variables** (or environment-specific):
 
 #### Development
+
 - `DEVELOPMENT_API_URL`: `https://api-dev.yourdomain.com` or Lambda API Gateway URL
 - `DEVELOPMENT_SITE_URL`: `https://dev.yourdomain.com`
 
 #### Staging
+
 - `STAGING_API_URL`: `https://api-staging.yourdomain.com` or Lambda API Gateway URL
 - `STAGING_SITE_URL`: `https://staging.yourdomain.com`
 
 #### Production
+
 - `PRODUCTION_API_URL`: `https://api.yourdomain.com` or Lambda API Gateway URL
 - `PRODUCTION_SITE_URL`: `https://yourdomain.com`
 - `PRODUCTION_DOMAIN`: `yourdomain.com` (for aliasing)
 
 #### Optional
+
 - `GOOGLE_ANALYTICS_ID`: Your GA tracking ID
 
 ## Environment Variables in Vercel
@@ -100,6 +104,7 @@ vercel         # Preview
 Add these records to your DNS provider:
 
 #### For Apex Domain (yourdomain.com)
+
 ```
 Type: A
 Name: @
@@ -107,6 +112,7 @@ Value: 76.76.21.21
 ```
 
 #### For Subdomain (www.yourdomain.com)
+
 ```
 Type: CNAME
 Name: www
@@ -213,11 +219,13 @@ vercel rollback
 ### Build Failures
 
 Check build logs:
+
 ```bash
 vercel logs --build
 ```
 
 Common issues:
+
 - Missing environment variables
 - Node version mismatch
 - Build memory limits

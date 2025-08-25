@@ -1,456 +1,369 @@
-# Deploying to Amazon ECS with Terraform
-
-This guide explains how to deploy the Coalition Builder application to Amazon ECS (Elastic Container Service) using Terraform
-and GitHub Actions. The application is built with Python 3.13 and PostgreSQL 16 with PostGIS extension.
+# AWS Serverless Deployment
 
 ## Overview
 
-This deployment strategy uses:
+Coalition Builder uses a serverless architecture on AWS for cost-effective, scalable deployment. The application leverages Lambda for the Django backend and integrates with Vercel for the Next.js frontend.
 
-- **Terraform** to provision and manage AWS infrastructure
-- **GitHub Actions** for CI/CD pipeline
-- **Amazon ECS** for container orchestration
-- **Amazon ECR** for container registry
-- **Amazon RDS** for PostgreSQL with PostGIS
-- **Amazon S3** for static file storage and media uploads
-- **Application Load Balancer** for routing traffic
-- **AWS Secrets Manager** for secure credentials management
-
-## Architecture Overview
-
-The following diagram shows the complete AWS infrastructure layout:
-
-> **Note**: This diagram uses Mermaid syntax and will render automatically on GitHub and other platforms that support Mermaid.
+## Architecture
 
 ```mermaid
 %%{init: {'theme':'basic'}}%%
 flowchart TB
-    %% Internet
     internet[Internet] --> cloudfront[CloudFront CDN]
-    internet --> route53[Route53 DNS]
+    internet --> vercel[Vercel Edge Network]
 
-    %% DNS and CDN
-    route53 --> alb[Application Load Balancer]
-    cloudfront --> s3_assets[S3 Static Assets]
+    subgraph aws["AWS (us-east-1)"]
+        cloudfront --> apigateway[API Gateway]
+        apigateway --> lambda[Lambda Function<br/>Django via Zappa]
 
-    %% VPC Container
-    subgraph vpc["VPC (10.0.0.0/16)"]
-        %% Public Subnets
-        subgraph public["Public Subnets"]
-            alb
-            bastion[Bastion Host]
-            subgraph ecs_cluster["ECS Cluster"]
-                api[Django API Container<br/>Public IP]
-                app[Next.js Frontend Container<br/>Public IP]
-                redis[Redis Cache]
-            end
+        lambda --> rds[(RDS PostgreSQL<br/>with PostGIS)]
+        lambda --> dynamodb[(DynamoDB<br/>Rate Limiting)]
+        lambda --> s3_static[S3 Static Assets]
+
+        subgraph ecs_occasional["ECS (Occasional Use)"]
+            ecs_task[Fargate Task<br/>TIGER Data Import]
         end
 
-        %% Database Subnets
-        subgraph db_subnets["Private Database Subnets"]
-            rds[(RDS PostgreSQL<br/>with PostGIS)]
+        ecs_task --> rds
+
+        subgraph security["Security & Monitoring"]
+            secrets[Secrets Manager]
+            cloudwatch[CloudWatch Logs]
+            xray[X-Ray Tracing]
         end
 
-        %% S3 Gateway Endpoint
-        s3_endpoint[S3 Gateway Endpoint<br/>Free]
+        lambda --> secrets
+        lambda --> cloudwatch
+        lambda --> xray
     end
 
-    %% External Services
-    subgraph aws_services["AWS Services"]
-        secrets[Secrets Manager]
-        ecr[ECR Repositories]
-        cloudwatch[CloudWatch Logs]
-        s3_assets
-        location[AWS Location Service]
-    end
-
-    %% Connections
-    alb --> api
-    alb --> app
-    api --> redis
-    api --> rds
-    app --> api
-    bastion --> rds
-
-    %% CloudFront connections
-    cloudfront --> alb
-
-    %% Service connections via Internet
-    api --> secrets
-    app --> secrets
-    api --> cloudwatch
-    app --> cloudwatch
-    redis --> cloudwatch
-    api --> location
-
-    %% ECR connections via Internet
-    ecr --> api
-    ecr --> app
-    ecr --> redis
-
-    %% S3 via Gateway Endpoint
-    api -.-> s3_endpoint
-    app -.-> s3_endpoint
-    s3_endpoint -.-> s3_assets
+    vercel --> apigateway
 ```
 
-The infrastructure uses a cost-optimized security model with:
+## AWS Resources
 
-- **Public Subnets**: ALB, bastion host, and ECS containers with public IPs
-- **Private Database Subnets**: RDS PostgreSQL with PostGIS (isolated)
-- **Security Groups**: Component isolation with least privilege
-- **Secrets Manager**: Secure credential storage
-- **CloudWatch**: Logging and monitoring
+### Core Infrastructure
 
-## Prerequisites
+#### Lambda Function
 
-1. An AWS account with appropriate permissions
-2. GitHub repository with your code
-3. AWS credentials with the following permissions:
-   - ECR full access
-   - ECS full access
-   - VPC and networking permissions
-   - RDS permissions
-   - S3 permissions for static asset storage
-   - CloudWatch Logs permissions
-   - IAM permissions to create roles and policies
+- **Runtime**: Python 3.13 on Docker
+- **Memory**: 512MB (dev) to 1024MB (production)
+- **Timeout**: 30 seconds
+- **Keep-Warm**: Enabled for production (prevents cold starts)
+- **VPC**: Optional (for RDS access)
 
-## Setup
+#### API Gateway
 
-### 1. Configure Environment Variables
+- **Type**: REST API (for Django compatibility)
+- **Custom Domain**: Optional via ACM certificate
+- **Throttling**: Configured per environment
+- **CORS**: Enabled for frontend integration
 
-For local testing and development with Terraform, create a `.env` file in the terraform directory or export these environment variables:
+#### RDS PostgreSQL
+
+- **Engine**: PostgreSQL 16 with PostGIS
+- **Instance**: db.t3.micro (dev) to db.t3.small (production)
+- **Storage**: 20GB GP3 with autoscaling
+- **Multi-AZ**: Disabled (cost optimization)
+- **Backup**: 7-day retention
+
+#### DynamoDB
+
+- **Billing**: Pay-per-request
+- **Tables**: `coalition-builder-rate-limits`
+- **TTL**: Enabled for automatic cleanup
+- **Global Secondary Index**: None (simple key structure)
+
+### Supporting Resources
+
+#### S3 Buckets
+
+- **Static Assets**: `coalition-builder-static`
+- **Media Uploads**: `coalition-builder-media`
+- **Zappa Deployments**: `coalition-builder-zappa-deployments`
+
+#### ECS Fargate (TIGER Imports)
+
+- **Cluster**: `coalition-builder-geodata-import`
+- **Task Definition**: 2 vCPU, 4GB RAM
+- **Usage**: Triggered manually for shapefile imports
+- **Frequency**: Monthly or as needed
+
+#### CloudWatch
+
+- **Log Groups**: `/aws/lambda/{function-name}`
+- **Metrics**: API Gateway, Lambda, DynamoDB
+- **Retention**: 7 days (cost optimization)
+
+#### Secrets Manager
+
+- **Database URL**: RDS connection string
+- **Django Secret Key**: Application secret
+- **Rotation**: Disabled (manual)
+
+## Infrastructure as Code
+
+### Terraform Modules
 
 ```bash
-# AWS deployment settings
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=your-aws-access-key
-AWS_SECRET_ACCESS_KEY=your-aws-secret-key
-
-# Domain and certificate settings
-TF_VAR_aws_region=us-east-1
-TF_VAR_db_name=your-db-name
-TF_VAR_route53_zone_id=your-route53-zone-id
-TF_VAR_domain_name=yourdomain.org
-TF_VAR_acm_certificate_arn=your-acm-certificate-arn
-TF_VAR_alert_email=your-email@example.com
-
-# Secrets Manager configuration
-TF_VAR_use_secrets_manager=true
-
-# Terraform directory
-TERRAFORM_DIR=terraform
+terraform/
+├── modules/
+│   ├── dynamodb/          # Rate limiting tables
+│   ├── zappa/             # S3 + IAM for Lambda
+│   ├── geodata-import/    # ECS for TIGER imports
+│   └── database/          # RDS PostgreSQL (existing)
 ```
 
-> **IMPORTANT**: For security best practices, database credentials are stored in AWS Secrets Manager rather than specified directly in environment variables. See the "Secure Credentials Management" section below.
+### Deployment Commands
+
+```bash
+# Deploy core infrastructure
+cd terraform
+terraform init
+terraform apply -target=module.database
+terraform apply -target=module.dynamodb
+terraform apply -target=module.zappa
+terraform apply -target=module.geodata_import
+
+# Deploy applications via GitHub Actions
+gh workflow run deploy-lambda.yml --ref main
+```
+
+## Cost Analysis
+
+### Monthly Costs (Approximate)
+
+| Service       | Legacy ECS | Serverless      | Savings |
+| ------------- | ---------- | --------------- | ------- |
+| Compute       | ECS: $25   | Lambda: $5      | $20     |
+| Load Balancer | ALB: $16   | API Gateway: $4 | $12     |
+| Networking    | NAT: $32   | None: $0        | $32     |
+| Database      | RDS: $15   | RDS: $15        | $0      |
+| Storage       | S3: $5     | S3: $5          | $0      |
+| Other         | $5         | DynamoDB: $1    | $4      |
+| **Total**     | **$98**    | **$30**         | **$68** |
+
+**Savings: 69% reduction**
+
+### Cost Optimization Features
+
+- **DynamoDB**: Pay-per-request (no idle costs)
+- **Lambda**: Pay-per-invocation (no idle costs)
+- **API Gateway**: Pay-per-request
+- **ECS**: Only runs for TIGER imports (~$2/year)
+- **No NAT Gateway**: Lambda doesn't need VPC for most operations
+
+## Security
+
+### IAM Roles & Policies
+
+#### Lambda Execution Role
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "arn:aws:logs:*:*:*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["secretsmanager:GetSecretValue"],
+      "Resource": "arn:aws:secretsmanager:*:*:secret:coalition-builder-*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["dynamodb:Query", "dynamodb:PutItem", "dynamodb:GetItem"],
+      "Resource": "arn:aws:dynamodb:*:*:table/coalition-builder-*"
+    }
+  ]
+}
+```
 
-### 2. Configure GitHub Secrets
+#### Zappa Deployment Role
+
+- S3 access for deployment packages
+- Lambda function management
+- API Gateway configuration
+- CloudWatch logs access
 
-For CI/CD deployment, add the following secrets to your GitHub repository:
+### Network Security
 
-1.  `AWS_ACCESS_KEY_ID`: Your AWS access key
-2.  `AWS_SECRET_ACCESS_KEY`: Your AWS secret key
-3.  `AWS_REGION`: The AWS region to deploy to (e.g., `us-east-1`)
-4.  `TF_VAR_DB_NAME`: Database name (default: `coalition`)
-5.  `TF_VAR_AWS_ROUTE53_ZONE_ID`: Your Route 53 hosted zone ID
-6.  `TF_VAR_AWS_DOMAIN_NAME`: Your domain name (e.g., `app.mydomain.org` or `mydomain.org`)
-7.  `TF_VAR_AWS_ACM_CERTIFICATE_ARN`: The ARN of your ACM certificate for HTTPS
-8.  `TF_VAR_AWS_ALERT_EMAIL`: Email address to receive budget and other alerts
-9.  `TF_VAR_AWS_USE_SECRETS_MANAGER`: Set to `true` to use AWS Secrets Manager (recommended for production)
+- **API Gateway**: DDoS protection included
+- **Lambda**: No direct internet access (behind API Gateway)
+- **RDS**: Private subnets with security groups
+- **Secrets**: Encrypted at rest and in transit
 
-> **IMPORTANT**: Database credentials (`DB_USERNAME`, `DB_PASSWORD`, `APP_DB_USERNAME`, `APP_DB_PASSWORD`) are managed through AWS Secrets Manager for security rather than GitHub Secrets. For initial setup only, you may need to provide these values once, after which they will be securely stored.
+## Monitoring & Alerts
 
-To add these secrets:
+### CloudWatch Metrics
 
-1. Go to your GitHub repository
-2. Click on "Settings" > "Secrets and variables" > "Actions"
-3. Click "New repository secret" and add each secret
+#### Lambda Metrics
 
-### 3. Configure CloudFront for Image Optimization
+- Invocation count and duration
+- Error rate and throttles
+- Cold start frequency
+- Memory utilization
 
-When deploying to AWS, CloudFront CDN is automatically configured to serve media files and optimized images. To enable Next.js image optimization with CloudFront:
+#### API Gateway Metrics
 
-1. **Set the CloudFront domain** in your environment variables:
+- Request count and latency
+- 4xx/5xx error rates
+- Cache hit rates
 
-   ```bash
-   # In your ECS task definition or environment configuration
-   CLOUDFRONT_DOMAIN=d123456789.cloudfront.net  # Your CloudFront distribution domain
-   ```
+#### DynamoDB Metrics
 
-2. **Custom domain (optional)**: If you've configured a custom domain for CloudFront:
+- Read/write capacity usage
+- Throttling events
+- Item count trends
 
-   ```bash
-   CLOUDFRONT_DOMAIN=cdn.yourdomain.com
-   ```
+### X-Ray Tracing
 
-3. **Backend domain (optional)**: If serving images directly from the backend without CDN:
-   ```bash
-   BACKEND_DOMAIN=api.yourdomain.com
-   ```
+Enabled for production to track:
 
-**Benefits of CloudFront Integration:**
+- Request flow across services
+- Performance bottlenecks
+- Error root cause analysis
 
-- Automatic image optimization and resizing by Next.js
-- Global CDN distribution for faster image loading
-- Support for dynamic image dimensions from backend storage
-- WebP format serving when supported by browsers
-- Reduced bandwidth costs through caching
+### Alerting
 
-**Image Storage in S3:**
-Media files uploaded through the admin interface are automatically stored in S3 with the following structure:
+```bash
+# High error rate
+aws cloudwatch put-metric-alarm \
+  --alarm-name lambda-high-error-rate \
+  --metric-name Errors \
+  --namespace AWS/Lambda \
+  --statistic Sum \
+  --period 300 \
+  --threshold 10 \
+  --comparison-operator GreaterThanThreshold
+```
 
-- `logos/` - Organization logos from theme settings
-- `favicons/` - Favicon uploads
-- `backgrounds/` - Hero background images
-- `content_blocks/` - Images from content blocks
+## Deployment Environments
 
-### 4. Secure Credentials Management with AWS Secrets Manager
+### Development
 
-Before deployment, set up your database credentials in AWS Secrets Manager:
+- Lambda: 512MB memory, no keep-warm
+- API Gateway: Lower throttling limits
+- RDS: Shared with staging
+- DynamoDB: Shared table with environment prefix
 
-1. **Create a secret for database master credentials**:
+### Staging
 
-   ```bash
-   aws secretsmanager create-secret \
-     --name coalition/database-master \
-     --description "PostgreSQL master database credentials" \
-     --secret-string '{"username":"your_secure_username","password":"your_secure_password","host":"pending-db-creation","port":"5432","dbname":"coalition"}'
-   ```
+- Lambda: 512MB memory, 10-minute keep-warm
+- API Gateway: Production-like throttling
+- RDS: Shared with development
+- DynamoDB: Shared table with environment prefix
 
-2. **Create a secret for application database credentials** (optional, will be auto-generated if not provided):
+### Production
 
-   ```bash
-   aws secretsmanager create-secret \
-     --name coalition/database-app \
-     --description "PostgreSQL application database credentials" \
-     --secret-string '{"username":"app_user","password":"your_secure_app_password","host":"pending-db-creation","port":"5432","dbname":"coalition"}'
-   ```
+- Lambda: 1024MB memory, 4-minute keep-warm
+- API Gateway: Full throttling protection
+- RDS: Dedicated instance
+- DynamoDB: Dedicated table
+- X-Ray: Enabled
 
-> **IMPORTANT**: Once these secrets are created, Terraform will use them for all deployments. For initial setup, if no secrets exist yet, Terraform will create them using secure random passwords.
+## Backup & Disaster Recovery
 
-### 4. Initial Deployment
+### RDS Backups
 
-The initial deployment will be triggered automatically when you push to the main branch, or you can manually trigger it:
+- Automated backups: 7-day retention
+- Point-in-time recovery: Enabled
+- Cross-region snapshots: Optional
 
-1. Go to the "Actions" tab in your GitHub repository
-2. Select the "Deploy to Amazon ECS" workflow
-3. Click "Run workflow" and select the main branch
+### Lambda Versioning
 
-The workflow consists of two jobs:
+- Each deployment creates new version
+- Rollback via Zappa: `zappa rollback production -n 1`
+- Code stored in S3 deployment bucket
 
-1. **Terraform**: Sets up all AWS infrastructure
-2. **Deploy**: Builds and deploys the application container
+### DynamoDB
 
-### 5. PostGIS Extension Setup
+- Point-in-time recovery: Enabled
+- On-demand backups: Manual
+- Global tables: Not needed (single region)
 
-After the initial deployment, you need to enable the PostGIS extension in the RDS database:
+## Troubleshooting
 
-1. Connect to your RDS instance:
+### Common Issues
 
-   ```bash
-   # Get database connection details from Secrets Manager
-   aws secretsmanager get-secret-value --secret-id coalition/database-master --query SecretString --output text | jq .
+#### Lambda Cold Starts
 
-   # Connect to the database (replace values with those from the secret)
-   psql -h <database_endpoint> -U <master_username> -d coalition
-   ```
+```bash
+# Check cold start metrics
+aws logs filter-log-events \
+  --log-group-name /aws/lambda/coalition-production \
+  --filter-pattern "INIT_START"
+```
 
-   (You can also get the database_endpoint from Terraform outputs by running: `terraform -chdir=terraform output database_endpoint`)
+**Solutions:**
 
-2. Create the PostGIS extension:
+- Increase memory allocation
+- Enable keep-warm
+- Use provisioned concurrency for critical functions
 
-   ```sql
-   CREATE EXTENSION postgis;
-   ```
+#### Database Connection Issues
 
-3. Verify the PostGIS installation:
+```bash
+# Check RDS connectivity
+aws rds describe-db-instances --db-instance-identifier coalition-prod
+```
 
-   ```sql
-   SELECT PostGIS_version();
-   ```
+**Solutions:**
 
-## Infrastructure Details
+- Verify security groups
+- Check VPC configuration
+- Review connection pooling settings
 
-The Terraform configuration creates:
+#### API Gateway Errors
 
-1. **Networking**:
-   - VPC with public subnets
-   - Internet Gateway
-   - Security Groups
+```bash
+# Check API Gateway logs
+aws logs filter-log-events \
+  --log-group-name API-Gateway-Execution-Logs_<api-id>/<stage>
+```
 
-2. **Database**:
-   - Amazon RDS PostgreSQL instance
-   - Custom parameter group for PostGIS
+**Solutions:**
 
-3. **Security**:
-   - AWS Secrets Manager for secure credential storage
-   - IAM roles with least privilege access
-   - KMS keys for encryption
-   - Secure credential management
+- Review Lambda function logs
+- Check API Gateway configuration
+- Verify CORS settings
 
-4. **Container Infrastructure**:
-   - ECR Repository
-   - ECS Cluster
-   - ECS Task Definition
-   - ECS Service
-   - IAM Roles for ECS tasks
+### Performance Tuning
 
-5. **Load Balancing**:
-   - Application Load Balancer
-   - Target Group
-   - Listener
+#### Lambda Optimization
 
-6. **Cost Management**:
-   - Monthly budget alert ($30)
-   - Notification thresholds at 70%, 90%, and forecast
-   - Email notifications for budget alerts
+- Right-size memory allocation (affects CPU)
+- Minimize cold start time
+- Use connection pooling for RDS
+- Optimize Docker image size
 
-## Continuous Deployment
+#### Database Optimization
 
-The deployment process is handled by two GitHub Actions workflows:
+- Enable query logging temporarily
+- Add indexes for slow queries
+- Consider read replicas for heavy read workloads
+- Monitor connection counts
 
-### Check App Workflow
+## Regional Considerations
 
-Runs on every push to main:
+### US East 1 (Primary)
 
-1. Validates code quality and runs tests
-2. Ensures application builds successfully
+- Lambda functions
+- API Gateway
+- RDS primary
+- DynamoDB tables
 
-### Deploy App Workflow
+### Vercel Edge Locations
 
-Automatically triggered when Check App completes successfully:
+- Global CDN automatically configured
+- Edge functions for dynamic content
+- Geographic routing optimization
 
-1. Builds Docker images and pushes to ECR
-2. Updates ECS task definitions with new images
-3. Deploys the updated application to ECS
-4. Waits for service to stabilize
-
-The deployment workflow skips deployment if only documentation files were changed, ensuring efficient resource usage.
-
-## Customization
-
-### Modifying Infrastructure
-
-To modify the infrastructure:
-
-1. Edit files in the `terraform` directory
-2. Commit and push the changes
-3. The GitHub Actions workflow will apply your changes
-
-### Scaling the Application
-
-To scale your application:
-
-1. Edit the `desired_count` parameter in `terraform/main.tf`
-2. Adjust the CPU and memory allocations in the task definition if needed
-3. Commit and push the changes
-
-### Custom Domain Name
-
-To use a custom domain name:
-
-1. The Route 53 and HTTPS configuration is already enabled in `terraform/main.tf`
-2. You need to add the following GitHub secrets:
-   - `TF_VAR_route53_zone_id`: Your Route 53 hosted zone ID
-   - `TF_VAR_domain_name`: Your domain name (e.g., `app.mydomain.org` or `mydomain.org`)
-   - `TF_VAR_acm_certificate_arn`: The ARN of your ACM certificate
-
-> **Note**: You must have already created an ACM certificate for your domain. If you don't have one, you can create it
-> in the AWS console or use Terraform to provision it.
-
-## Monitoring and Logs
-
-Your application logs are sent to CloudWatch Logs:
-
-1. Go to CloudWatch in the AWS Console
-2. Navigate to "Log groups"
-3. Find the `/ecs/coalition` log group
-
-### Cost Monitoring
-
-A monthly budget alert is set up to help monitor AWS costs:
-
-1. The budget is set to $30 per month
-2. You'll receive email notifications at the following thresholds:
-   - When you reach 70% of your budget ($21)
-   - When you reach 90% of your budget ($27)
-   - When AWS forecasts that you'll exceed your budget
-
-To view or modify the budget:
-
-1. Go to the AWS Billing Dashboard
-2. Navigate to "Budgets"
-3. Select the "coalition-monthly-budget"
-
-> **Important**: Make sure to set the `TF_VAR_alert_email` variable with a valid email address to receive these alerts.
-> If you change the email address, you'll need to redeploy the infrastructure.
-
-#### Cost Allocation Tags
-
-All resources are automatically tagged with essential AWS provider tags and two custom tags:
-
-- `Project`: Identifies all resources as part of "Coalition Builder"
-- `Environment`: Specifies the deployment environment (e.g., "Production")
-
-AWS Cost Explorer and AWS Budgets can use these tags for cost tracking and allocation. Resources are also automatically
-tracked by their creator (Terraform) for budget monitoring.
-
-## Cleanup
-
-To clean up all AWS resources:
-
-> **IMPORTANT**: Before attempting to destroy the infrastructure, you must disable deletion protection on the RDS
-> database. The terraform destroy will fail if you don't complete this step first.
-
-1. Disable RDS deletion protection by editing `terraform/main.tf` and setting `deletion_protection = false` in the
-   `aws_db_instance` resource, then applying the change:
-
-   ```bash
-   terraform -chdir=terraform apply -target=aws_db_instance.postgres
-   ```
-
-2. Create a new workflow file in `.github/workflows/terraform-destroy.yml`
-
-   ```yaml
-   name: Terraform Destroy
-
-   on:
-     workflow_dispatch:
-
-   env:
-     AWS_REGION: ${{ secrets.AWS_REGION }}
-     TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
-     TF_VAR_db_name: ${{ secrets.TF_VAR_db_name || 'coalition' }}
-     TF_VAR_route53_zone_id: ${{ secrets.TF_VAR_route53_zone_id }}
-     TF_VAR_domain_name: ${{ secrets.TF_VAR_DOMAIN_NAME }}
-     TF_VAR_acm_certificate_arn: ${{ secrets.TF_VAR_acm_certificate_arn }}
-     TF_VAR_alert_email: ${{ secrets.TF_VAR_alert_email }}
-     TF_VAR_use_secrets_manager: ${{ secrets.TF_VAR_use_secrets_manager || 'true' }}
-     TERRAFORM_DIR: terraform
-
-   jobs:
-     destroy:
-       runs-on: ubuntu-latest
-       steps:
-         - uses: actions/checkout@v4
-
-         - name: Configure AWS credentials
-           uses: aws-actions/configure-aws-credentials@v4
-           with:
-             aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-             aws-region: ${{ env.AWS_REGION }}
-
-         - name: Setup Terraform
-           uses: hashicorp/setup-terraform@v3
-
-         - name: Terraform Init
-           working-directory: ${{ env.TERRAFORM_DIR }}
-           run: terraform init
-
-         - name: Terraform Destroy
-           working-directory: ${{ env.TERRAFORM_DIR }}
-           run: terraform destroy -auto-approve
-   ```
-
-3. Run the "Terraform Destroy" workflow from the Actions tab
+This serverless architecture provides excellent performance with significant cost savings while maintaining the full feature set of the application.
