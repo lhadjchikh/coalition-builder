@@ -83,11 +83,16 @@ jobs:
           poetry install --no-interaction --no-ansi
           poetry add zappa
           
-      - name: Update Zappa settings with ECR image
+      - name: Update Zappa settings with ECR image and domain
         working-directory: ./backend
+        env:
+          DOMAIN_NAME: ${{ vars.DOMAIN_NAME }}
+          CERTIFICATE_ARN: ${{ vars.CERTIFICATE_ARN }}
         run: |
           python -c "
           import json
+          import os
+          
           with open('zappa_settings.json', 'r') as f:
               settings = json.load(f)
           
@@ -99,6 +104,17 @@ jobs:
           
           settings[env]['docker_image_uri'] = ecr_uri
           settings[env]['aws_region'] = 'us-east-1'
+          
+          # Add custom domain configuration if provided
+          domain_name = os.environ.get('DOMAIN_NAME', '')
+          certificate_arn = os.environ.get('CERTIFICATE_ARN', '')
+          
+          if domain_name and certificate_arn:
+              settings[env]['domain'] = domain_name
+              settings[env]['certificate_arn'] = certificate_arn
+              print(f'Configured custom domain: {domain_name}')
+          else:
+              print('No custom domain configured')
           
           with open('zappa_settings.json', 'w') as f:
               json.dump(settings, f, indent=4)
@@ -116,16 +132,38 @@ jobs:
             poetry run zappa deploy ${{ steps.env.outputs.environment }}
           fi
           
+      - name: Configure custom domain
+        if: vars.DOMAIN_NAME != '' && vars.CERTIFICATE_ARN != ''
+        working-directory: ./backend
+        continue-on-error: true
+        run: |
+          echo "Certifying domain ${{ vars.DOMAIN_NAME }}..."
+          poetry run zappa certify ${{ steps.env.outputs.environment }} --yes || echo "Domain certification may already be complete"
+          
       - name: Get deployment URL
         id: deployment
         working-directory: ./backend
         run: |
           API_URL=$(poetry run zappa status ${{ steps.env.outputs.environment }} | grep "API Gateway URL" | awk '{print $NF}')
-          echo "api_url=$API_URL" >> $GITHUB_OUTPUT
+          CUSTOM_DOMAIN="${{ vars.DOMAIN_NAME }}"
+          
+          # Use custom domain if configured
+          if [ -n "$CUSTOM_DOMAIN" ]; then
+            FINAL_URL="https://$CUSTOM_DOMAIN"
+            echo "Custom domain configured: $FINAL_URL"
+          else
+            FINAL_URL="$API_URL"
+          fi
+          
+          echo "api_url=$FINAL_URL" >> $GITHUB_OUTPUT
+          echo "gateway_url=$API_URL" >> $GITHUB_OUTPUT
           echo "### 🚀 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Environment:** ${{ steps.env.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
-          echo "**API URL:** $API_URL" >> $GITHUB_STEP_SUMMARY
+          echo "**API URL:** $FINAL_URL" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$CUSTOM_DOMAIN" ]; then
+            echo "**API Gateway URL:** $API_URL" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "**Docker Image:** ${{ steps.env.outputs.ecr_registry }}/${{ steps.env.outputs.ecr_repository }}:${{ steps.env.outputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
           
       - name: Run health check
