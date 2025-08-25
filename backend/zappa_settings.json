@@ -67,7 +67,9 @@
         "apigateway_settings": {
             "throttle_burst_limit": 50,
             "throttle_rate_limit": 25
-        }
+        },
+        
+        "comment": "Domain and certificate can be set via environment or CI/CD"
     },
     
     "staging": {
@@ -93,7 +95,9 @@
         "apigateway_settings": {
             "throttle_burst_limit": 75,
             "throttle_rate_limit": 40
-        }
+        },
+        
+        "comment": "Domain: staging-api.yourdomain.com - set via CI/CD"
     },
     
     "production": {
@@ -121,6 +125,8 @@
             "throttle_rate_limit": 50
         },
         
-        "xray_tracing": true
+        "xray_tracing": true,
+        
+        "comment": "Domain: api.yourdomain.com - set via CI/CD"
     }
 }
