@@ -1,0 +1,198 @@
+name: Deploy to Lambda
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - development
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+
+jobs:
+  deploy:
+    name: Deploy Django to Lambda
+    runs-on: ubuntu-latest
+    
+    # Set environment based on branch or input
+    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production') || (github.ref == 'refs/heads/staging' && 'staging') || 'dev' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+          
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Get environment variables
+        id: env
+        run: |
+          echo "environment=${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production') || (github.ref == 'refs/heads/staging' && 'staging') || 'dev' }}" >> $GITHUB_OUTPUT
+          echo "image_tag=${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "ecr_registry=${{ steps.login-ecr.outputs.registry }}" >> $GITHUB_OUTPUT
+          echo "ecr_repository=coalition-builder-lambda" >> $GITHUB_OUTPUT
+          
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/docker/app/Dockerfile.lambda
+          push: true
+          tags: |
+            ${{ steps.env.outputs.ecr_registry }}/${{ steps.env.outputs.ecr_repository }}:${{ steps.env.outputs.environment }}
+            ${{ steps.env.outputs.ecr_registry }}/${{ steps.env.outputs.ecr_repository }}:${{ steps.env.outputs.image_tag }}
+            ${{ steps.env.outputs.ecr_registry }}/${{ steps.env.outputs.ecr_repository }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.7.1
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          
+      - name: Install dependencies
+        working-directory: ./backend
+        run: |
+          poetry install --no-interaction --no-ansi
+          poetry add zappa
+          
+      - name: Update Zappa settings with ECR image
+        working-directory: ./backend
+        run: |
+          python -c "
+          import json
+          with open('zappa_settings.json', 'r') as f:
+              settings = json.load(f)
+          
+          env = '${{ steps.env.outputs.environment }}'
+          ecr_uri = '${{ steps.env.outputs.ecr_registry }}/${{ steps.env.outputs.ecr_repository }}:${{ steps.env.outputs.image_tag }}'
+          
+          if env not in settings:
+              settings[env] = settings.get('base', {}).copy()
+          
+          settings[env]['docker_image_uri'] = ecr_uri
+          settings[env]['aws_region'] = 'us-east-1'
+          
+          with open('zappa_settings.json', 'w') as f:
+              json.dump(settings, f, indent=4)
+          "
+          
+      - name: Deploy with Zappa
+        working-directory: ./backend
+        run: |
+          # Check if deployment exists
+          if poetry run zappa status ${{ steps.env.outputs.environment }} 2>/dev/null; then
+            echo "Updating existing deployment..."
+            poetry run zappa update ${{ steps.env.outputs.environment }}
+          else
+            echo "Creating new deployment..."
+            poetry run zappa deploy ${{ steps.env.outputs.environment }}
+          fi
+          
+      - name: Get deployment URL
+        id: deployment
+        working-directory: ./backend
+        run: |
+          API_URL=$(poetry run zappa status ${{ steps.env.outputs.environment }} | grep "API Gateway URL" | awk '{print $NF}')
+          echo "api_url=$API_URL" >> $GITHUB_OUTPUT
+          echo "### 🚀 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ steps.env.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**API URL:** $API_URL" >> $GITHUB_STEP_SUMMARY
+          echo "**Docker Image:** ${{ steps.env.outputs.ecr_registry }}/${{ steps.env.outputs.ecr_repository }}:${{ steps.env.outputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+          
+      - name: Run health check
+        continue-on-error: true
+        run: |
+          if [ -n "${{ steps.deployment.outputs.api_url }}" ]; then
+            echo "Running health check..."
+            curl -s "${{ steps.deployment.outputs.api_url }}/health/" || echo "Health check endpoint not available yet"
+          fi
+          
+      - name: Run smoke tests
+        if: steps.env.outputs.environment != 'production'
+        continue-on-error: true
+        working-directory: ./backend
+        run: |
+          API_URL="${{ steps.deployment.outputs.api_url }}"
+          
+          # Test health endpoint
+          poetry run python -c "
+          import requests
+          import sys
+          
+          api_url = '$API_URL'
+          if api_url:
+              try:
+                  response = requests.get(f'{api_url}/health/', timeout=10)
+                  print(f'Health check: {response.status_code}')
+                  if response.status_code != 200:
+                      sys.exit(1)
+              except Exception as e:
+                  print(f'Health check failed: {e}')
+                  sys.exit(1)
+          "
+          
+      - name: Create deployment comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const environment = '${{ steps.env.outputs.environment }}';
+            const apiUrl = '${{ steps.deployment.outputs.api_url }}';
+            const imageTag = '${{ steps.env.outputs.image_tag }}';
+            
+            const body = `## 🚀 Lambda Deployment Successful!
+            
+            **Environment:** ${environment}
+            **API URL:** ${apiUrl}
+            **Docker Image Tag:** ${imageTag}
+            
+            ### Next Steps:
+            - Test the API endpoints at ${apiUrl}
+            - Monitor CloudWatch logs with: \`zappa tail ${environment}\`
+            - Rollback if needed with: \`zappa rollback ${environment} -n 1\`
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  # Optional: Deploy to staging after dev succeeds
+  deploy-staging:
+    if: github.ref == 'refs/heads/development' && github.event_name == 'push'
+    needs: deploy
+    uses: ./.github/workflows/deploy-lambda.yml
+    with:
+      environment: staging
+    secrets: inherit
