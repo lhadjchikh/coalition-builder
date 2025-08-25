@@ -1,0 +1,148 @@
+name: Lambda Management
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options:
+          - tail-logs
+          - rollback
+          - undeploy
+          - schedule
+          - unschedule
+          - invoke
+          - certify
+      environment:
+        description: 'Environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+      rollback_steps:
+        description: 'Number of versions to rollback (for rollback action)'
+        required: false
+        default: '1'
+      schedule_expression:
+        description: 'Schedule expression (for schedule action, e.g., rate(5 minutes))'
+        required: false
+        default: 'rate(10 minutes)'
+      function_payload:
+        description: 'JSON payload for invoke action'
+        required: false
+        default: '{}'
+
+jobs:
+  manage:
+    name: Lambda Management - ${{ github.event.inputs.action }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+          
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.7.1
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          
+      - name: Install dependencies
+        working-directory: ./backend
+        run: |
+          poetry install --no-interaction --no-ansi
+          poetry add zappa
+          
+      - name: Tail Logs
+        if: github.event.inputs.action == 'tail-logs'
+        working-directory: ./backend
+        run: |
+          echo "### 📋 Lambda Logs for ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          poetry run zappa tail ${{ github.event.inputs.environment }} --since 1h --disable-progress | head -100 >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          
+      - name: Rollback Deployment
+        if: github.event.inputs.action == 'rollback'
+        working-directory: ./backend
+        run: |
+          echo "Rolling back ${{ github.event.inputs.rollback_steps }} version(s)..."
+          poetry run zappa rollback ${{ github.event.inputs.environment }} -n ${{ github.event.inputs.rollback_steps }}
+          echo "### ⏪ Rollback Complete" >> $GITHUB_STEP_SUMMARY
+          echo "Rolled back ${{ github.event.inputs.rollback_steps }} version(s) in ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          
+      - name: Undeploy Lambda
+        if: github.event.inputs.action == 'undeploy'
+        working-directory: ./backend
+        run: |
+          echo "⚠️ Undeploying Lambda function for ${{ github.event.inputs.environment }}..."
+          poetry run zappa undeploy ${{ github.event.inputs.environment }} --yes
+          echo "### 🗑️ Lambda Undeployed" >> $GITHUB_STEP_SUMMARY
+          echo "Successfully removed Lambda function for ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          
+      - name: Schedule Lambda
+        if: github.event.inputs.action == 'schedule'
+        working-directory: ./backend
+        run: |
+          echo "Setting schedule for ${{ github.event.inputs.environment }}..."
+          poetry run zappa schedule ${{ github.event.inputs.environment }}
+          echo "### ⏰ Schedule Set" >> $GITHUB_STEP_SUMMARY
+          echo "Lambda function scheduled with expression: ${{ github.event.inputs.schedule_expression }}" >> $GITHUB_STEP_SUMMARY
+          
+      - name: Unschedule Lambda
+        if: github.event.inputs.action == 'unschedule'
+        working-directory: ./backend
+        run: |
+          echo "Removing schedule for ${{ github.event.inputs.environment }}..."
+          poetry run zappa unschedule ${{ github.event.inputs.environment }}
+          echo "### ⏸️ Schedule Removed" >> $GITHUB_STEP_SUMMARY
+          echo "Lambda function unscheduled for ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          
+      - name: Invoke Lambda Function
+        if: github.event.inputs.action == 'invoke'
+        working-directory: ./backend
+        run: |
+          echo "Invoking Lambda function..."
+          RESULT=$(poetry run zappa invoke ${{ github.event.inputs.environment }} --raw-response '${{ github.event.inputs.function_payload }}')
+          echo "### 🎯 Lambda Invocation Result" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          echo "$RESULT" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          
+      - name: Certify Deployment
+        if: github.event.inputs.action == 'certify'
+        working-directory: ./backend
+        run: |
+          echo "Certifying deployment for ${{ github.event.inputs.environment }}..."
+          poetry run zappa certify ${{ github.event.inputs.environment }} --yes
+          echo "### ✅ Deployment Certified" >> $GITHUB_STEP_SUMMARY
+          echo "Lambda deployment certified for ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          
+      - name: Get Lambda Status
+        if: always()
+        continue-on-error: true
+        working-directory: ./backend
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Current Status" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          poetry run zappa status ${{ github.event.inputs.environment }} >> $GITHUB_STEP_SUMMARY 2>&1 || echo "Status not available" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
