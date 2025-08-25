@@ -9,9 +9,9 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy to'
+        description: "Environment to deploy to"
         required: true
-        default: 'dev'
+        default: "dev"
         type: choice
         options:
           - dev
@@ -22,28 +22,28 @@ jobs:
   deploy:
     name: Deploy Django to Lambda
     runs-on: ubuntu-latest
-    
+
     # Set environment based on branch or input
     environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production') || (github.ref == 'refs/heads/staging' && 'staging') || 'dev' }}
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-          
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-        
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        
+
       - name: Get environment variables
         id: env
         run: |
@@ -51,7 +51,7 @@ jobs:
           echo "image_tag=${{ github.sha }}" >> $GITHUB_OUTPUT
           echo "ecr_registry=${{ steps.login-ecr.outputs.registry }}" >> $GITHUB_OUTPUT
           echo "ecr_repository=coalition-builder-lambda" >> $GITHUB_OUTPUT
-          
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -64,25 +64,25 @@ jobs:
             ${{ steps.env.outputs.ecr_registry }}/${{ steps.env.outputs.ecr_repository }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
-          
+          python-version: "3.13"
+
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
           version: 1.7.1
           virtualenvs-create: true
           virtualenvs-in-project: true
-          
+
       - name: Install dependencies
         working-directory: ./backend
         run: |
           poetry install --no-interaction --no-ansi
           poetry add zappa
-          
+
       - name: Update Zappa settings with ECR image and domain
         working-directory: ./backend
         env:
@@ -92,34 +92,34 @@ jobs:
           python -c "
           import json
           import os
-          
+
           with open('zappa_settings.json', 'r') as f:
               settings = json.load(f)
-          
+
           env = '${{ steps.env.outputs.environment }}'
           ecr_uri = '${{ steps.env.outputs.ecr_registry }}/${{ steps.env.outputs.ecr_repository }}:${{ steps.env.outputs.image_tag }}'
-          
+
           if env not in settings:
               settings[env] = settings.get('base', {}).copy()
-          
+
           settings[env]['docker_image_uri'] = ecr_uri
           settings[env]['aws_region'] = 'us-east-1'
-          
+
           # Add custom domain configuration if provided
           domain_name = os.environ.get('DOMAIN_NAME', '')
           certificate_arn = os.environ.get('CERTIFICATE_ARN', '')
-          
+
           if domain_name and certificate_arn:
               settings[env]['domain'] = domain_name
               settings[env]['certificate_arn'] = certificate_arn
               print(f'Configured custom domain: {domain_name}')
           else:
               print('No custom domain configured')
-          
+
           with open('zappa_settings.json', 'w') as f:
               json.dump(settings, f, indent=4)
           "
-          
+
       - name: Deploy with Zappa
         working-directory: ./backend
         run: |
@@ -131,7 +131,7 @@ jobs:
             echo "Creating new deployment..."
             poetry run zappa deploy ${{ steps.env.outputs.environment }}
           fi
-          
+
       - name: Configure custom domain
         if: vars.DOMAIN_NAME != '' && vars.CERTIFICATE_ARN != ''
         working-directory: ./backend
@@ -139,14 +139,14 @@ jobs:
         run: |
           echo "Certifying domain ${{ vars.DOMAIN_NAME }}..."
           poetry run zappa certify ${{ steps.env.outputs.environment }} --yes || echo "Domain certification may already be complete"
-          
+
       - name: Get deployment URL
         id: deployment
         working-directory: ./backend
         run: |
           API_URL=$(poetry run zappa status ${{ steps.env.outputs.environment }} | grep "API Gateway URL" | awk '{print $NF}')
           CUSTOM_DOMAIN="${{ vars.DOMAIN_NAME }}"
-          
+
           # Use custom domain if configured
           if [ -n "$CUSTOM_DOMAIN" ]; then
             FINAL_URL="https://$CUSTOM_DOMAIN"
@@ -154,7 +154,7 @@ jobs:
           else
             FINAL_URL="$API_URL"
           fi
-          
+
           echo "api_url=$FINAL_URL" >> $GITHUB_OUTPUT
           echo "gateway_url=$API_URL" >> $GITHUB_OUTPUT
           echo "### 🚀 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
@@ -165,7 +165,7 @@ jobs:
             echo "**API Gateway URL:** $API_URL" >> $GITHUB_STEP_SUMMARY
           fi
           echo "**Docker Image:** ${{ steps.env.outputs.ecr_registry }}/${{ steps.env.outputs.ecr_repository }}:${{ steps.env.outputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
-          
+
       - name: Run health check
         continue-on-error: true
         run: |
@@ -173,19 +173,19 @@ jobs:
             echo "Running health check..."
             curl -s "${{ steps.deployment.outputs.api_url }}/health/" || echo "Health check endpoint not available yet"
           fi
-          
+
       - name: Run smoke tests
         if: steps.env.outputs.environment != 'production'
         continue-on-error: true
         working-directory: ./backend
         run: |
           API_URL="${{ steps.deployment.outputs.api_url }}"
-          
+
           # Test health endpoint
           poetry run python -c "
           import requests
           import sys
-          
+
           api_url = '$API_URL'
           if api_url:
               try:
@@ -197,7 +197,7 @@ jobs:
                   print(f'Health check failed: {e}')
                   sys.exit(1)
           "
-          
+
       - name: Create deployment comment
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
@@ -206,19 +206,19 @@ jobs:
             const environment = '${{ steps.env.outputs.environment }}';
             const apiUrl = '${{ steps.deployment.outputs.api_url }}';
             const imageTag = '${{ steps.env.outputs.image_tag }}';
-            
+
             const body = `## 🚀 Lambda Deployment Successful!
-            
+
             **Environment:** ${environment}
             **API URL:** ${apiUrl}
             **Docker Image Tag:** ${imageTag}
-            
+
             ### Next Steps:
             - Test the API endpoints at ${apiUrl}
             - Monitor CloudWatch logs with: \`zappa tail ${environment}\`
             - Rollback if needed with: \`zappa rollback ${environment} -n 1\`
             `;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,

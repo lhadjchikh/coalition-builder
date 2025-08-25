@@ -18,14 +18,17 @@ Set these as **repository secrets** or **environment secrets**:
 Set these as **environment variables** (not secrets) for each environment:
 
 #### Development Environment
+
 - `DOMAIN_NAME`: `api-dev.yourdomain.com` (optional)
 - `CERTIFICATE_ARN`: ACM certificate ARN for the domain (optional)
 
 #### Staging Environment
+
 - `DOMAIN_NAME`: `api-staging.yourdomain.com` (optional)
 - `CERTIFICATE_ARN`: ACM certificate ARN for the domain (optional)
 
 #### Production Environment
+
 - `DOMAIN_NAME`: `api.yourdomain.com` (optional)
 - `CERTIFICATE_ARN`: ACM certificate ARN for the domain (optional)
 
@@ -45,6 +48,7 @@ Set these as **environment variables** (not secrets) for each environment:
 Before configuring custom domains, you need to:
 
 1. **Request an ACM certificate** in us-east-1 region:
+
    ```bash
    aws acm request-certificate \
      --domain-name api.yourdomain.com \
@@ -56,6 +60,7 @@ Before configuring custom domains, you need to:
 2. **Validate the certificate** by adding the DNS records provided by ACM
 
 3. **Get the certificate ARN**:
+
    ```bash
    aws acm list-certificates --region us-east-1
    ```
@@ -88,6 +93,7 @@ poetry run zappa certify production --yes
 After deployment with a custom domain:
 
 1. Get the API Gateway domain name:
+
    ```bash
    poetry run zappa status production | grep "Domain"
    ```
@@ -114,17 +120,20 @@ The configuration includes several cost-saving measures:
 ## Troubleshooting
 
 ### Domain Not Working
+
 - Verify certificate is validated in ACM
 - Check DNS propagation (can take up to 48 hours)
 - Ensure certificate covers the exact domain name
 - Run `zappa certify {env} --yes` to reconfigure
 
 ### Lambda Timeout
+
 - Check CloudWatch logs: `zappa tail {env}`
 - Increase timeout in zappa_settings.json
 - Optimize database queries
 
 ### Cold Start Issues
+
 - Enable keep_warm for production
 - Increase memory allocation
 - Use provisioned concurrency for critical endpoints
