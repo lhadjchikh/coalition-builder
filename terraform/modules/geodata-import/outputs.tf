@@ -1,21 +1,21 @@
 output "cluster_name" {
   description = "Name of the ECS cluster"
-  value       = aws_ecs_cluster.tiger_import.name
+  value       = aws_ecs_cluster.geodata_import.name
 }
 
 output "cluster_arn" {
   description = "ARN of the ECS cluster"
-  value       = aws_ecs_cluster.tiger_import.arn
+  value       = aws_ecs_cluster.geodata_import.arn
 }
 
 output "task_definition_arn" {
   description = "ARN of the task definition"
-  value       = aws_ecs_task_definition.tiger_import.arn
+  value       = aws_ecs_task_definition.geodata_import.arn
 }
 
 output "task_definition_family" {
   description = "Family of the task definition"
-  value       = aws_ecs_task_definition.tiger_import.family
+  value       = aws_ecs_task_definition.geodata_import.family
 }
 
 output "execution_role_arn" {
@@ -30,5 +30,5 @@ output "task_role_arn" {
 
 output "log_group_name" {
   description = "Name of the CloudWatch log group"
-  value       = aws_cloudwatch_log_group.tiger_import.name
+  value       = aws_cloudwatch_log_group.geodata_import.name
 }
