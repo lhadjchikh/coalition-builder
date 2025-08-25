@@ -1,0 +1,126 @@
+{
+    "base": {
+        "aws_region": "us-east-1",
+        "django_settings": "coalition.core.settings",
+        "project_name": "coalition",
+        "s3_bucket": "YOUR-ZAPPA-DEPLOYMENT-BUCKET",
+        "runtime": "python3.13",
+        
+        "vpc_config": {
+            "SubnetIds": [],
+            "SecurityGroupIds": []
+        },
+        
+        "timeout_seconds": 30,
+        "slim_handler": false,
+        "use_precompiled_packages": false,
+        
+        "environment_variables": {
+            "USE_S3": "true",
+            "AWS_STORAGE_BUCKET_NAME": "YOUR-ASSETS-BUCKET",
+            "IS_LAMBDA": "true",
+            "USE_GEODJANGO": "true",
+            "GDAL_DATA": "/opt/share/gdal",
+            "PROJ_LIB": "/opt/share/proj",
+            "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64"
+        },
+        
+        "exclude": [
+            "*.gz", "*.rar", "*.zip", "*.tar",
+            ".git/*", "tests/*", "*.pyc", "local/*",
+            "docker/*", "scripts/build-docker.sh",
+            "node_modules/*", ".pytest_cache/*",
+            "__pycache__/*", "*.egg-info/*",
+            ".coverage", "htmlcov/*", "docs/*"
+        ],
+        
+        "cors": true,
+        "cors_allow_headers": [
+            "Content-Type", "X-CSRFToken", "Authorization", "X-Requested-With"
+        ],
+        
+        "apigateway_settings": {
+            "throttle_burst_limit": 100,
+            "throttle_rate_limit": 50
+        }
+    },
+    
+    "dev": {
+        "extends": "base",
+        "stage": "dev",
+        "docker_image": "YOUR-ECR-REGISTRY/YOUR-LAMBDA-IMAGE:dev",
+        "memory_size": 512,
+        "keep_warm": false,
+        
+        "environment_variables": {
+            "ENVIRONMENT": "dev",
+            "DEBUG": "true",
+            "DATABASE_NAME": "YOUR-DEV-DB-NAME",
+            "AWS_STORAGE_BUCKET_NAME": "YOUR-DEV-ASSETS-BUCKET"
+        },
+        
+        "aws_environment_variables": {
+            "DATABASE_URL": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:YOUR-DB-SECRET",
+            "SECRET_KEY": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:YOUR-DJANGO-SECRET"
+        },
+        
+        "apigateway_settings": {
+            "throttle_burst_limit": 50,
+            "throttle_rate_limit": 25
+        }
+    },
+    
+    "staging": {
+        "extends": "base",
+        "stage": "staging",
+        "docker_image": "YOUR-ECR-REGISTRY/YOUR-LAMBDA-IMAGE:staging",
+        "memory_size": 512,
+        "keep_warm": true,
+        "keep_warm_expression": "rate(10 minutes)",
+        
+        "environment_variables": {
+            "ENVIRONMENT": "staging",
+            "DEBUG": "false",
+            "DATABASE_NAME": "YOUR-STAGING-DB-NAME",
+            "AWS_STORAGE_BUCKET_NAME": "YOUR-STAGING-ASSETS-BUCKET"
+        },
+        
+        "aws_environment_variables": {
+            "DATABASE_URL": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:YOUR-DB-SECRET",
+            "SECRET_KEY": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:YOUR-DJANGO-SECRET"
+        },
+        
+        "apigateway_settings": {
+            "throttle_burst_limit": 75,
+            "throttle_rate_limit": 40
+        }
+    },
+    
+    "production": {
+        "extends": "base",
+        "stage": "production",
+        "docker_image": "YOUR-ECR-REGISTRY/YOUR-LAMBDA-IMAGE:production",
+        "memory_size": 1024,
+        "keep_warm": true,
+        "keep_warm_expression": "rate(4 minutes)",
+        
+        "environment_variables": {
+            "ENVIRONMENT": "production",
+            "DEBUG": "false",
+            "DATABASE_NAME": "YOUR-PRODUCTION-DB-NAME",
+            "AWS_STORAGE_BUCKET_NAME": "YOUR-PRODUCTION-ASSETS-BUCKET"
+        },
+        
+        "aws_environment_variables": {
+            "DATABASE_URL": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:YOUR-DB-SECRET",
+            "SECRET_KEY": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:YOUR-DJANGO-SECRET"
+        },
+        
+        "apigateway_settings": {
+            "throttle_burst_limit": 100,
+            "throttle_rate_limit": 50
+        },
+        
+        "xray_tracing": true
+    }
+}

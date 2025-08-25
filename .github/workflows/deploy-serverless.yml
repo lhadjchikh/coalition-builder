@@ -110,6 +110,22 @@ jobs:
         run: |
           pip install zappa boto3
 
+      - name: Configure Zappa settings
+        working-directory: ./backend
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_REGION: us-east-1
+          ZAPPA_DEPLOYMENT_BUCKET: ${{ vars.ZAPPA_DEPLOYMENT_BUCKET }}
+          DEV_ASSETS_BUCKET: ${{ vars.DEV_ASSETS_BUCKET }}
+          STAGING_ASSETS_BUCKET: ${{ vars.STAGING_ASSETS_BUCKET }}
+          PRODUCTION_ASSETS_BUCKET: ${{ vars.PRODUCTION_ASSETS_BUCKET }}
+          USE_CUSTOM_DOCKER: true
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          VPC_SUBNET_IDS: ${{ vars.VPC_SUBNET_IDS }}
+          VPC_SECURITY_GROUP_IDS: ${{ vars.VPC_SECURITY_GROUP_IDS }}
+        run: |
+          python scripts/configure-zappa.py
+
       - name: Deploy with Zappa
         working-directory: ./backend
         env:

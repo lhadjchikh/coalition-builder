@@ -99,3 +99,6 @@ coverage/
 
 # Project Data
 /backend/fixtures
+
+# Zappa - user-specific configuration
+backend/zappa_settings.json
