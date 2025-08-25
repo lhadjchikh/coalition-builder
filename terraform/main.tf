@@ -207,3 +207,19 @@ module "dns" {
   alb_dns_name    = module.loadbalancer.alb_dns_name
   alb_zone_id     = module.loadbalancer.alb_zone_id
 }
+
+# DynamoDB Module for Serverless Rate Limiting
+module "dynamodb" {
+  source = "./modules/dynamodb"
+
+  prefix      = var.prefix
+  environment = var.environment
+  tags        = var.tags
+
+  # Cost optimization - disable point-in-time recovery for non-production
+  enable_point_in_time_recovery = var.environment == "production"
+
+  # Enable monitoring
+  enable_monitoring = var.enable_dynamodb_monitoring
+  alarm_actions     = var.dynamodb_alarm_actions
+}
