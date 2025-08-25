@@ -1,0 +1,249 @@
+name: Deploy Serverless Infrastructure
+
+on:
+  push:
+    branches: [main, staging, dev]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy"
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+
+jobs:
+  determine-environment:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.env.outputs.environment }}
+    steps:
+      - id: env
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          else
+            echo "environment=dev" >> $GITHUB_OUTPUT
+          fi
+
+  test-backend:
+    needs: determine-environment
+    runs-on: ubuntu-latest
+    if: needs.determine-environment.outputs.environment != 'production' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: |
+          poetry install --no-interaction --no-ansi
+
+      - name: Run tests
+        working-directory: ./backend
+        env:
+          DJANGO_SETTINGS_MODULE: coalition.core.settings
+          DATABASE_URL: sqlite:///test.db
+          SECRET_KEY: test-secret-key
+          IS_LAMBDA: true
+          ENVIRONMENT: test
+        run: |
+          poetry run pytest --cov=coalition --cov-report=xml
+
+      - name: Run linting
+        working-directory: ./backend
+        run: |
+          poetry run python scripts/lint.py
+
+  deploy-backend:
+    needs: [determine-environment, test-backend]
+    if: always() && needs.determine-environment.result == 'success' && (needs.test-backend.result == 'success' || needs.test-backend.result == 'skipped')
+    runs-on: ubuntu-latest
+    environment: ${{ needs.determine-environment.outputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        working-directory: ./backend
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ENV: ${{ needs.determine-environment.outputs.environment == 'production' && 'prod' || needs.determine-environment.outputs.environment }}
+        run: |
+          # Pull base image if not building it
+          docker pull $ECR_REGISTRY/geolambda:3.10.3 || ./scripts/build-docker.sh geolambda
+
+          # Build and push application image
+          ./scripts/build-docker.sh $ENV
+
+      - name: Set up Python for Zappa
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Zappa
+        run: |
+          pip install zappa boto3
+
+      - name: Deploy with Zappa
+        working-directory: ./backend
+        env:
+          ENV: ${{ needs.determine-environment.outputs.environment }}
+        run: |
+          # Check if deployment exists
+          if zappa status $ENV 2>/dev/null; then
+            echo "Updating existing deployment..."
+            zappa update $ENV
+          else
+            echo "Creating new deployment..."
+            zappa deploy $ENV
+          fi
+
+      - name: Run database migrations
+        working-directory: ./backend
+        env:
+          ENV: ${{ needs.determine-environment.outputs.environment }}
+        run: |
+          zappa manage $ENV migrate --noinput
+
+      - name: Collect static files
+        working-directory: ./backend
+        env:
+          ENV: ${{ needs.determine-environment.outputs.environment }}
+        run: |
+          zappa manage $ENV collectstatic --noinput
+
+  deploy-frontend:
+    needs: [determine-environment, test-backend]
+    if: always() && needs.determine-environment.result == 'success' && (needs.test-backend.result == 'success' || needs.test-backend.result == 'skipped')
+    runs-on: ubuntu-latest
+    environment: ${{ needs.determine-environment.outputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Run tests
+        working-directory: ./frontend
+        run: npm test -- --watchAll=false
+
+      - name: Run linting
+        working-directory: ./frontend
+        run: npm run lint
+
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+
+      - name: Set API URL
+        id: api-url
+        env:
+          ENV: ${{ needs.determine-environment.outputs.environment }}
+        run: |
+          if [ "$ENV" = "production" ]; then
+            echo "url=https://api.yourdomain.com" >> $GITHUB_OUTPUT
+          elif [ "$ENV" = "staging" ]; then
+            echo "url=https://staging-api.yourdomain.com" >> $GITHUB_OUTPUT
+          else
+            echo "url=https://dev-api.yourdomain.com" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy to Vercel
+        working-directory: ./frontend
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          ENV: ${{ needs.determine-environment.outputs.environment }}
+          NEXT_PUBLIC_API_URL: ${{ steps.api-url.outputs.url }}
+        run: |
+          if [ "$ENV" = "production" ]; then
+            vercel --prod --token $VERCEL_TOKEN --yes
+          else
+            vercel --token $VERCEL_TOKEN --yes \
+              --env NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
+              --name coalition-$ENV
+          fi
+
+  smoke-test:
+    needs: [deploy-backend, deploy-frontend, determine-environment]
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set API URL
+        id: api-url
+        env:
+          ENV: ${{ needs.determine-environment.outputs.environment }}
+        run: |
+          if [ "$ENV" = "production" ]; then
+            echo "url=https://api.yourdomain.com" >> $GITHUB_OUTPUT
+          elif [ "$ENV" = "staging" ]; then
+            echo "url=https://staging-api.yourdomain.com" >> $GITHUB_OUTPUT
+          else
+            echo "url=https://dev-api.yourdomain.com" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Health check API
+        run: |
+          echo "Checking API health at ${{ steps.api-url.outputs.url }}/api/health/"
+          curl -f ${{ steps.api-url.outputs.url }}/api/health/ || exit 1
+
+      - name: Check Lambda logs for errors
+        env:
+          ENV: ${{ needs.determine-environment.outputs.environment }}
+        run: |
+          # Check for errors in the last 5 minutes
+          aws logs filter-log-events \
+            --log-group-name /aws/lambda/coalition-$ENV \
+            --start-time $(date -d '5 minutes ago' +%s)000 \
+            --filter-pattern "ERROR" \
+            --max-items 10 || true
+
+  notify:
+    needs: [determine-environment, deploy-backend, deploy-frontend, smoke-test]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deployment Status
+        env:
+          ENV: ${{ needs.determine-environment.outputs.environment }}
+        run: |
+          if [ "${{ needs.smoke-test.result }}" = "success" ]; then
+            echo "✅ Deployment to $ENV environment successful!"
+          else
+            echo "❌ Deployment to $ENV environment failed!"
+            exit 1
+          fi
