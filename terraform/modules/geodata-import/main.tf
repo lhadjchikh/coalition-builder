@@ -1,6 +1,6 @@
-# ECS Cluster for TIGER data imports (used occasionally)
-resource "aws_ecs_cluster" "tiger_import" {
-  name = "${var.prefix}-tiger-import"
+# ECS Cluster for geodata imports (used occasionally)
+resource "aws_ecs_cluster" "geodata_import" {
+  name = "${var.prefix}-geodata-import"
 
   setting {
     name  = "containerInsights"
@@ -10,15 +10,15 @@ resource "aws_ecs_cluster" "tiger_import" {
   tags = merge(
     var.tags,
     {
-      Name    = "${var.prefix}-tiger-import"
-      Purpose = "TIGER shapefile imports"
+      Name    = "${var.prefix}-geodata-import"
+      Purpose = "Geographic data imports"
     }
   )
 }
 
-# Task Definition for TIGER imports
-resource "aws_ecs_task_definition" "tiger_import" {
-  family                   = "${var.prefix}-tiger-import"
+# Task Definition for geodata imports
+resource "aws_ecs_task_definition" "geodata_import" {
+  family                   = "${var.prefix}-geodata-import"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "2048" # 2 vCPU for shapefile processing
@@ -27,13 +27,13 @@ resource "aws_ecs_task_definition" "tiger_import" {
   task_role_arn            = aws_iam_role.ecs_task.arn
 
   container_definitions = jsonencode([{
-    name  = "tiger-import"
+    name  = "geodata-import"
     image = "${var.ecr_repository_url}:latest"
 
     environment = [
       { name = "USE_GEODJANGO", value = "true" },
       { name = "DJANGO_SETTINGS_MODULE", value = "coalition.core.settings" },
-      { name = "IS_ECS_TIGER_IMPORT", value = "true" }
+      { name = "IS_ECS_GEODATA_IMPORT", value = "true" }
     ]
 
     secrets = [
@@ -50,9 +50,9 @@ resource "aws_ecs_task_definition" "tiger_import" {
     logConfiguration = {
       logDriver = "awslogs"
       options = {
-        "awslogs-group"         = aws_cloudwatch_log_group.tiger_import.name
+        "awslogs-group"         = aws_cloudwatch_log_group.geodata_import.name
         "awslogs-region"        = var.aws_region
-        "awslogs-stream-prefix" = "tiger"
+        "awslogs-stream-prefix" = "geodata"
       }
     }
 
@@ -64,8 +64,8 @@ resource "aws_ecs_task_definition" "tiger_import" {
 }
 
 # CloudWatch Log Group
-resource "aws_cloudwatch_log_group" "tiger_import" {
-  name              = "/ecs/tiger-import"
+resource "aws_cloudwatch_log_group" "geodata_import" {
+  name              = "/ecs/geodata-import"
   retention_in_days = 7 # Short retention to save costs
 
   tags = var.tags
@@ -73,7 +73,7 @@ resource "aws_cloudwatch_log_group" "tiger_import" {
 
 # IAM Role for ECS Task Execution
 resource "aws_iam_role" "ecs_execution" {
-  name = "${var.prefix}-tiger-import-execution"
+  name = "${var.prefix}-geodata-import-execution"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -93,7 +93,7 @@ resource "aws_iam_role" "ecs_execution" {
 
 # IAM Role for ECS Task
 resource "aws_iam_role" "ecs_task" {
-  name = "${var.prefix}-tiger-import-task"
+  name = "${var.prefix}-geodata-import-task"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -119,7 +119,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_policy" {
 
 # Policy for accessing secrets
 resource "aws_iam_role_policy" "ecs_secrets_policy" {
-  name = "${var.prefix}-tiger-import-secrets"
+  name = "${var.prefix}-geodata-import-secrets"
   role = aws_iam_role.ecs_execution.id
 
   policy = jsonencode({
@@ -141,7 +141,7 @@ resource "aws_iam_role_policy" "ecs_secrets_policy" {
 
 # Policy for S3 access (downloading shapefiles)
 resource "aws_iam_role_policy" "ecs_s3_policy" {
-  name = "${var.prefix}-tiger-import-s3"
+  name = "${var.prefix}-geodata-import-s3"
   role = aws_iam_role.ecs_task.id
 
   policy = jsonencode({
