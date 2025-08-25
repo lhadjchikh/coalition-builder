@@ -18,14 +18,46 @@ This module creates S3 buckets for serverless/Lambda deployments with automatic 
 module "serverless_storage" {
   source = "./modules/serverless-storage"
   
-  # That's it! No configuration needed for basic setup
+  # Creates buckets with random suffixes for uniqueness
 }
 ```
 
-This creates three S3 buckets:
-- `coalition-dev-assets` - Development environment
-- `coalition-staging-assets` - Staging environment  
-- `coalition-production-assets` - Production environment
+This creates three S3 buckets with unique names:
+- `coalition-dev-assets-[random]` - Development environment
+- `coalition-staging-assets-[random]` - Staging environment  
+- `coalition-production-assets-[random]` - Production environment
+
+After running `terraform apply`, the actual bucket names will be shown in the output. You'll need to update your configuration files with these names.
+
+### Option 1: Use Predictable Names (For Your Own AWS Account)
+
+If you control the AWS account and want predictable names:
+
+```hcl
+module "serverless_storage" {
+  source = "./modules/serverless-storage"
+  
+  use_random_suffix = false  # Creates fixed names without random suffix
+}
+```
+
+This creates:
+- `coalition-dev-assets`
+- `coalition-staging-assets`
+- `coalition-production-assets`
+
+⚠️ **Warning**: This will fail if someone else already owns these bucket names.
+
+### Option 2: Custom Prefix
+
+Use your own prefix to avoid conflicts:
+
+```hcl
+module "serverless_storage" {
+  source = "./modules/serverless-storage"
+  
+  bucket_prefix = "mycompany"  # Creates mycompany-dev-assets-[random], etc.
+}
 
 ### Advanced Usage
 
@@ -123,7 +155,7 @@ If you're migrating from a single-bucket setup:
 
 ## For Open Source Contributors
 
-This module is designed to work with zero configuration:
+### Step 1: Deploy the Buckets
 
 ```bash
 # Clone the repo
@@ -134,7 +166,46 @@ cd terraform
 terraform init
 terraform apply -target=module.serverless_storage
 
-# Buckets are ready to use!
+# Note the bucket names from the output
+terraform output serverless_bucket_names
 ```
 
-The bucket names match what's expected in `backend/zappa_settings.json`, so no configuration changes are needed.
+### Step 2: Update Configuration
+
+After Terraform creates the buckets, update `backend/zappa_settings.json` with the actual bucket names:
+
+```json
+{
+  "dev": {
+    "environment_variables": {
+      "AWS_STORAGE_BUCKET_NAME": "coalition-dev-assets-abc123"
+    }
+  },
+  "staging": {
+    "environment_variables": {
+      "AWS_STORAGE_BUCKET_NAME": "coalition-staging-assets-def456"
+    }
+  },
+  "production": {
+    "environment_variables": {
+      "AWS_STORAGE_BUCKET_NAME": "coalition-production-assets-ghi789"
+    }
+  }
+}
+```
+
+### Alternative: Use Environment Variables
+
+Instead of hardcoding bucket names, use environment variables:
+
+```python
+# In Django settings.py
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
+```
+
+Then set the environment variable during deployment:
+
+```bash
+export AWS_STORAGE_BUCKET_NAME=$(terraform output -raw serverless_bucket_names | jq -r '.dev')
+zappa deploy dev
+```

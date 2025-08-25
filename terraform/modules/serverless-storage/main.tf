@@ -4,12 +4,18 @@
 locals {
   environments = ["dev", "staging", "production"]
   
-  # Map environment names to bucket names as expected by zappa_settings.json
+  # Generate unique bucket names with optional random suffix
   bucket_names = {
-    dev        = "coalition-dev-assets"
-    staging    = "coalition-staging-assets"
-    production = "coalition-production-assets"
+    dev        = var.use_random_suffix ? "${var.bucket_prefix}-dev-assets-${random_id.bucket_suffix[0].hex}" : "${var.bucket_prefix}-dev-assets"
+    staging    = var.use_random_suffix ? "${var.bucket_prefix}-staging-assets-${random_id.bucket_suffix[1].hex}" : "${var.bucket_prefix}-staging-assets"
+    production = var.use_random_suffix ? "${var.bucket_prefix}-production-assets-${random_id.bucket_suffix[2].hex}" : "${var.bucket_prefix}-production-assets"
   }
+}
+
+# Random suffixes for bucket uniqueness (only if enabled)
+resource "random_id" "bucket_suffix" {
+  count       = var.use_random_suffix ? 3 : 0
+  byte_length = 4
 }
 
 # Create S3 buckets for each environment
