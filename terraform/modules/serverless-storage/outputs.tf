@@ -1,3 +1,8 @@
+output "bucket_suffix" {
+  description = "The random suffix used for all buckets (if enabled)"
+  value       = var.use_random_suffix && length(random_id.bucket_suffix) > 0 ? random_id.bucket_suffix[0].hex : "none"
+}
+
 output "bucket_names" {
   description = "Map of environment to bucket names"
   value = {

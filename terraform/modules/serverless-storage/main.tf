@@ -1,21 +1,26 @@
 # Serverless Storage Module - S3 buckets for Lambda/serverless deployments
 # Creates environment-specific S3 buckets for static assets and uploads
 
+# Single random suffix shared by all buckets (only if enabled)
+resource "random_id" "bucket_suffix" {
+  byte_length = 4
+  
+  # Only create if random suffix is enabled
+  count = var.use_random_suffix ? 1 : 0
+}
+
 locals {
   environments = ["dev", "staging", "production"]
   
-  # Generate unique bucket names with optional random suffix
+  # Use a single random suffix for all buckets (easier to manage)
+  suffix = var.use_random_suffix && length(random_id.bucket_suffix) > 0 ? "-${random_id.bucket_suffix[0].hex}" : ""
+  
+  # Generate bucket names with the same suffix for consistency
   bucket_names = {
-    dev        = var.use_random_suffix ? "${var.bucket_prefix}-dev-assets-${random_id.bucket_suffix[0].hex}" : "${var.bucket_prefix}-dev-assets"
-    staging    = var.use_random_suffix ? "${var.bucket_prefix}-staging-assets-${random_id.bucket_suffix[1].hex}" : "${var.bucket_prefix}-staging-assets"
-    production = var.use_random_suffix ? "${var.bucket_prefix}-production-assets-${random_id.bucket_suffix[2].hex}" : "${var.bucket_prefix}-production-assets"
+    dev        = "${var.bucket_prefix}-dev-assets${local.suffix}"
+    staging    = "${var.bucket_prefix}-staging-assets${local.suffix}"
+    production = "${var.bucket_prefix}-production-assets${local.suffix}"
   }
-}
-
-# Random suffixes for bucket uniqueness (only if enabled)
-resource "random_id" "bucket_suffix" {
-  count       = var.use_random_suffix ? 3 : 0
-  byte_length = 4
 }
 
 # Create S3 buckets for each environment
