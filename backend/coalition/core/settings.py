@@ -227,7 +227,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
     "django_extensions",
-    "django_ratelimit",
     "lockdown",
     "storages",
     "tinymce",
@@ -534,11 +533,10 @@ TIGER_GEOCODING_CONFIDENCE_THRESHOLD = int(
 )
 
 # Cache configuration
-# Always use Redis cache for consistency across all environments
-# This ensures django-ratelimit works properly in all scenarios
-CACHE_URL = os.getenv("CACHE_URL", "redis://redis:6379/1")
+# Use database cache for consistent behavior across all environments
+# This provides dev/prod parity and eliminates Redis/DynamoDB dependencies
 
-# Use locmem cache during tests and disable ratelimit checks
+# Use locmem cache during tests for speed
 if "test" in sys.argv:
     CACHES = {
         "default": {
@@ -546,13 +544,11 @@ if "test" in sys.argv:
             "LOCATION": "test-cache",
         },
     }
-    # Disable django-ratelimit system checks during tests
-    SILENCED_SYSTEM_CHECKS = ["django_ratelimit.E003", "django_ratelimit.W001"]
 else:
     CACHES = {
         "default": {
-            "BACKEND": "django.core.cache.backends.redis.RedisCache",
-            "LOCATION": CACHE_URL,
+            "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+            "LOCATION": "django_cache",
         },
     }
 

@@ -396,16 +396,3 @@ variable "organization_name" {
   type        = string
   default     = "Coalition Builder"
 }
-
-# DynamoDB Configuration
-variable "enable_dynamodb_monitoring" {
-  description = "Enable CloudWatch monitoring for DynamoDB table"
-  type        = bool
-  default     = true
-}
-
-variable "dynamodb_alarm_actions" {
-  description = "List of ARNs to notify when DynamoDB alarms trigger"
-  type        = list(string)
-  default     = []
-}

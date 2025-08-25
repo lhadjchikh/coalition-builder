@@ -23,9 +23,7 @@ except ImportError:
     validate_email = None  # type: ignore[assignment]
     EmailNotValidError = Exception  # type: ignore[misc,assignment]
 
-from django_ratelimit.core import is_ratelimited
-
-from coalition.core.rate_limiter import get_rate_limiter
+from coalition.core.database_rate_limiter import get_rate_limiter
 
 logger = logging.getLogger(__name__)
 
@@ -123,68 +121,30 @@ class SpamPreventionService:
         request: HttpRequest,
     ) -> dict[str, Any]:
         """
-        Check if request has exceeded rate limit.
-        Uses DynamoDB in Lambda environments, django-ratelimit otherwise.
+        Check if request has exceeded rate limit using database-backed rate limiter.
         Returns dict with 'allowed' boolean and 'remaining' count
         """
-        # Try DynamoDB rate limiter first (for Lambda)
-        dynamodb_limiter = get_rate_limiter()
-        if dynamodb_limiter:
-            ip_address = get_client_ip(request)
-            is_limited = dynamodb_limiter.is_rate_limited(
-                key=ip_address,
-                max_attempts=cls.RATE_LIMIT_MAX_ATTEMPTS,
-                window_seconds=cls.RATE_LIMIT_WINDOW,
-            )
+        limiter = get_rate_limiter()
+        ip_address = get_client_ip(request)
 
-            if is_limited:
-                return {
-                    "allowed": False,
-                    "remaining": 0,
-                    "reset_in": cls.RATE_LIMIT_WINDOW,
-                    "message": (
-                        f"Rate limit exceeded. Try again in "
-                        f"{cls.RATE_LIMIT_WINDOW // 60} minutes."
-                    ),
-                }
-            else:
-                remaining = dynamodb_limiter.get_remaining_attempts(
-                    key=ip_address,
-                    max_attempts=cls.RATE_LIMIT_MAX_ATTEMPTS,
-                    window_seconds=cls.RATE_LIMIT_WINDOW,
-                )
-                return {
-                    "allowed": True,
-                    "remaining": remaining,
-                    "reset_in": cls.RATE_LIMIT_WINDOW,
-                }
-
-        # Fall back to django-ratelimit for non-Lambda environments
-        rate = f"{cls.RATE_LIMIT_MAX_ATTEMPTS}/{cls.RATE_LIMIT_WINDOW}s"
-        ratelimited = is_ratelimited(
-            request=request,
-            group="endorsement_submission",
-            key=secure_ip_key,
-            rate=rate,
-            increment=False,  # Just check, don't increment yet
+        # Get comprehensive rate limit info
+        info = limiter.get_rate_limit_info(
+            key=ip_address,
+            max_attempts=cls.RATE_LIMIT_MAX_ATTEMPTS,
+            window_seconds=cls.RATE_LIMIT_WINDOW,
         )
 
-        if ratelimited:
-            return {
-                "allowed": False,
-                "remaining": 0,
-                "reset_in": cls.RATE_LIMIT_WINDOW,
-                "message": (
-                    f"Rate limit exceeded. Try again in "
-                    f"{cls.RATE_LIMIT_WINDOW // 60} minutes."
-                ),
-            }
-        else:
-            return {
-                "allowed": True,
-                "remaining": cls.RATE_LIMIT_MAX_ATTEMPTS,
-                "reset_in": cls.RATE_LIMIT_WINDOW,
-            }
+        return {
+            "allowed": info["allowed"],
+            "remaining": info["remaining"],
+            "reset_in": info["reset_in"],
+            "message": (
+                f"Rate limit exceeded. Try again in "
+                f"{info['reset_in'] // 60 + 1} minutes."
+                if not info["allowed"]
+                else None
+            ),
+        }
 
     @classmethod
     def record_submission_attempt(
@@ -192,23 +152,16 @@ class SpamPreventionService:
         request: HttpRequest,
     ) -> None:
         """
-        Record a submission attempt.
-        Uses DynamoDB in Lambda environments, django-ratelimit otherwise.
+        Record a submission attempt using database-backed rate limiter.
         """
-        # DynamoDB rate limiter handles recording in is_rate_limited method
-        dynamodb_limiter = get_rate_limiter()
-        if dynamodb_limiter:
-            # Already recorded in check_rate_limit when checking
-            return
+        limiter = get_rate_limiter()
+        ip_address = get_client_ip(request)
 
-        # Fall back to django-ratelimit for non-Lambda environments
-        rate = f"{cls.RATE_LIMIT_MAX_ATTEMPTS}/{cls.RATE_LIMIT_WINDOW}s"
-        is_ratelimited(
-            request=request,
-            group="endorsement_submission",
-            key=secure_ip_key,
-            rate=rate,
-            increment=True,  # Increment the counter
+        # Record the attempt by checking rate limit (which increments counter)
+        limiter.is_rate_limited(
+            key=ip_address,
+            max_attempts=cls.RATE_LIMIT_MAX_ATTEMPTS,
+            window_seconds=cls.RATE_LIMIT_WINDOW,
         )
 
     @classmethod

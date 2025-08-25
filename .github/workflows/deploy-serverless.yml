@@ -140,6 +140,15 @@ jobs:
             zappa deploy $ENV
           fi
 
+      - name: Create cache table
+        working-directory: ./backend
+        env:
+          ENV: ${{ needs.determine-environment.outputs.environment }}
+        run: |
+          # Create cache table for database cache backend
+          # This command is idempotent - safe to run multiple times
+          zappa manage $ENV createcachetable || true
+
       - name: Run database migrations
         working-directory: ./backend
         env:
