@@ -163,6 +163,27 @@ output "cloudfront_distribution_id" {
   value       = module.storage.cloudfront_distribution_id
 }
 
+# Serverless Storage Outputs (Lambda deployment)
+output "serverless_bucket_names" {
+  description = "Map of environment to S3 bucket names for serverless deployments"
+  value       = module.serverless_storage.bucket_names
+}
+
+output "serverless_bucket_configuration" {
+  description = "Configuration summary for all serverless S3 buckets"
+  value       = module.serverless_storage.configuration_summary
+}
+
+output "serverless_cloudfront_domains" {
+  description = "CloudFront domains for serverless buckets (if enabled)"
+  value       = module.serverless_storage.cloudfront_domains
+}
+
+output "serverless_lambda_policy_arns" {
+  description = "IAM policy ARNs for Lambda to access S3 buckets"
+  value       = module.serverless_storage.lambda_s3_policy_arns
+}
+
 # Summary output
 output "deployment_summary" {
   description = "Complete deployment summary"
