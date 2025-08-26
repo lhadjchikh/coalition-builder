@@ -22,9 +22,11 @@ Edit `terraform.tfvars` with your values. Key items to update:
 
 - **Passwords**: Replace all default passwords with secure ones
 - **Django Secret Key**: Generate a new one using:
+
   ```bash
   python generate-secret-key.py
   ```
+
 - **Domain**: Update `domain_name` and email addresses
 - **SSH Key**: Add your public key to `bastion_public_key` for SSH access
 - **Route53**: Add `route53_zone_id` if using Route53 for DNS
@@ -56,6 +58,7 @@ Type `yes` when prompted to confirm.
 ## What Gets Created
 
 ### Core Infrastructure
+
 - **VPC** with public/private subnets
 - **RDS PostgreSQL** instance with PostGIS
 - **ECS Cluster** for container deployment
@@ -63,6 +66,7 @@ Type `yes` when prompted to confirm.
 - **S3 Buckets** for static assets
 
 ### Security & Secrets (Hybrid Approach)
+
 - **SSM Parameter Store** (FREE):
   - `/coalition/dev/database-url`
   - `/coalition/staging/database-url`
@@ -73,6 +77,7 @@ Type `yes` when prompted to confirm.
   - SES SMTP credentials (complex JSON)
 
 ### Optional Components
+
 - **Bastion Host** for SSH access to private resources
 - **SES** for email functionality
 - **CloudFront** CDN for static assets
@@ -93,6 +98,7 @@ With default settings (t3.micro instances):
 | **Total** | **~$90/month** |
 
 💡 **Cost Optimization Tips**:
+
 - Use `enable_bastion = false` when not needed
 - Consider smaller RDS instance for development
 - Stop ECS tasks when not in use
@@ -122,11 +128,13 @@ poetry run python local/migrate-to-ssm.py             # Execute
 ### Database Access via Bastion
 
 1. Get connection info:
+
    ```bash
    terraform output ssh_tunnel_command
    ```
 
 2. Create SSH tunnel:
+
    ```bash
    ssh -i coalition-bastion.pem ec2-user@<bastion-ip> -L 5432:<db-endpoint>:5432
    ```

@@ -23,6 +23,7 @@ module "serverless_storage" {
 ```
 
 This creates three S3 buckets with a shared random suffix for uniqueness:
+
 - `coalition-dev-assets-abc123` - Development environment
 - `coalition-staging-assets-abc123` - Staging environment  
 - `coalition-production-assets-abc123` - Production environment
@@ -44,6 +45,7 @@ module "serverless_storage" {
 ```
 
 This creates:
+
 - `coalition-dev-assets`
 - `coalition-staging-assets`
 - `coalition-production-assets`
@@ -86,12 +88,14 @@ module "serverless_storage" {
 ## Bucket Configuration
 
 ### Development (`coalition-dev-assets`)
+
 - **Versioning**: Disabled (to save costs)
 - **Lifecycle**: 90-day expiration
 - **CORS**: Allow all origins
 - **Force Destroy**: Yes (easy cleanup)
 
 ### Staging (`coalition-staging-assets`)
+
 - **Versioning**: Enabled
 - **Lifecycle**: 180-day expiration
 - **CORS**: Allow all origins
@@ -99,6 +103,7 @@ module "serverless_storage" {
 - **Force Destroy**: Configurable
 
 ### Production (`coalition-production-assets`)
+
 - **Versioning**: Enabled
 - **Lifecycle**: Disabled (keep all data)
 - **CORS**: Restricted to configured origins
@@ -114,12 +119,12 @@ The module includes automatic cost optimization:
    - Files moved to Infrequent Access after 30 days
    - Old files deleted (90 days for dev, 180 for staging)
 
-2. **Intelligent Tiering**: 
+2. **Intelligent Tiering**:
    - Development files auto-deleted
    - Staging files archived
    - Production files preserved
 
-3. **CloudFront**: 
+3. **CloudFront**:
    - Optional CDN only for staging/production
    - Different price classes per environment
 

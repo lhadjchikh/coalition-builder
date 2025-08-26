@@ -30,12 +30,14 @@ This module manages simple application secrets using AWS Systems Manager Paramet
 
 ## Why This Hybrid Approach?
 
-### Use SSM Parameter Store When:
+### Use SSM Parameter Store When
+
 - Storing simple string values
 - No need for JSON path extraction in ECS
 - Want to save costs (FREE)
 
-### Keep Secrets Manager When:
+### Keep Secrets Manager When
+
 - Storing complex JSON objects
 - Need JSON path extraction (e.g., `${arn}:EMAIL_HOST::`)
 - Need automatic rotation capabilities

@@ -63,17 +63,20 @@ zappa update dev
 For CI/CD, add these as GitHub Secrets:
 
 ### Required Secrets
+
 - `AWS_ACCOUNT_ID`
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 
 ### Required Variables
+
 - `ZAPPA_DEPLOYMENT_BUCKET`
 - `DEV_ASSETS_BUCKET`
 - `STAGING_ASSETS_BUCKET`
 - `PRODUCTION_ASSETS_BUCKET`
 
 ### Optional Variables
+
 - `VPC_SUBNET_IDS`
 - `VPC_SECURITY_GROUP_IDS`
 - `USE_CUSTOM_DOCKER`
@@ -138,6 +141,7 @@ export VPC_SECURITY_GROUP_IDS="sg-abc123"
 ### Issue: Docker image not found
 
 **Solution**: Build and push the Docker image first:
+
 ```bash
 cd backend
 ./scripts/build-docker.sh dev
