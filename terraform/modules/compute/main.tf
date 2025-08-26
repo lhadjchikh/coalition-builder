@@ -222,37 +222,49 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
 }
 
 resource "aws_iam_policy" "secrets_access" {
-  name        = "SecretsManagerAccess"
-  description = "Allow access to Secrets Manager and KMS for ECS tasks"
+  name        = "SecretsAndSSMAccess"
+  description = "Allow access to Secrets Manager, SSM Parameter Store, and KMS for ECS tasks"
 
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
+        # Secrets Manager access for complex JSON objects
         Effect = "Allow",
         Action = [
           "secretsmanager:GetSecretValue"
         ],
         Resource = [
-          var.db_url_secret_arn,
-          var.secret_key_secret_arn,
-          var.site_password_secret_arn,
-          var.ses_smtp_secret_arn
+          var.ses_smtp_secret_arn  # Keep in Secrets Manager for JSON path access
         ]
       },
       {
+        # SSM Parameter Store access for simple values
+        Effect = "Allow",
+        Action = [
+          "ssm:GetParameter",
+          "ssm:GetParameters"
+        ],
+        Resource = [
+          var.db_url_parameter_arn,
+          var.secret_key_parameter_arn,
+          var.site_password_parameter_arn
+        ]
+      },
+      {
+        # KMS access for both Secrets Manager and SSM SecureString
         Effect = "Allow",
         Action = [
           "kms:Decrypt",
           "kms:DescribeKey"
         ],
-        Resource = var.secrets_kms_key_arn
+        Resource = "*"  # Covers both Secrets Manager KMS and SSM default KMS
       }
     ]
   })
 
   tags = {
-    Name = "SecretsManagerAccess"
+    Name = "SecretsAndSSMAccess"
   }
 }
 
@@ -377,16 +389,16 @@ resource "aws_ecs_task_definition" "app" {
       secrets = concat([
         {
           name      = "SECRET_KEY",
-          valueFrom = var.secret_key_secret_arn
+          valueFrom = var.secret_key_parameter_arn  # SSM Parameter (simple string)
         },
         {
           name      = "DATABASE_URL",
-          valueFrom = "${var.db_url_secret_arn}:url::"
+          valueFrom = var.db_url_parameter_arn  # SSM Parameter (simple string)
         }
         ], [
         {
           name      = "SITE_PASSWORD",
-          valueFrom = "${var.site_password_secret_arn}:password::"
+          valueFrom = var.site_password_parameter_arn  # SSM Parameter (simple string)
         },
         {
           name      = "EMAIL_HOST",
@@ -480,7 +492,7 @@ resource "aws_ecs_task_definition" "app" {
       secrets = [
         {
           name      = "SITE_PASSWORD",
-          valueFrom = "${var.site_password_secret_arn}:password::"
+          valueFrom = var.site_password_parameter_arn  # SSM Parameter (simple string)
         }
       ]
       healthCheck = {

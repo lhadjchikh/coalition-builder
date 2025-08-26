@@ -94,18 +94,13 @@ variable "bastion_security_group_id" {
   type        = string
 }
 
-variable "db_url_secret_arn" {
-  description = "ARN of the database URL secret"
+variable "db_url_parameter_arn" {
+  description = "ARN of the database URL SSM parameter (production by default)"
   type        = string
 }
 
-variable "secret_key_secret_arn" {
-  description = "ARN of the Django secret key secret"
-  type        = string
-}
-
-variable "secrets_kms_key_arn" {
-  description = "ARN of the KMS key used for Secrets Manager"
+variable "secret_key_parameter_arn" {
+  description = "ARN of the Django secret key SSM parameter"
   type        = string
 }
 
@@ -231,8 +226,8 @@ variable "site_password_enabled" {
   default     = false
 }
 
-variable "site_password_secret_arn" {
-  description = "ARN of the site password secret"
+variable "site_password_parameter_arn" {
+  description = "ARN of the site password SSM parameter"
   type        = string
 }
 
