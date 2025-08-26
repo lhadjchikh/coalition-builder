@@ -197,6 +197,7 @@ Environment variables are set via GitHub Actions:
    - Add `yourdomain.com`
 
 2. **Configure DNS:**
+
    ```
    Type: CNAME
    Name: @

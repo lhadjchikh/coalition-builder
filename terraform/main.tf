@@ -203,12 +203,12 @@ module "storage" {
 # automatically, making it easy for open-source contributors to get started
 module "serverless_storage" {
   source = "./modules/serverless-storage"
-  
-  project_name                  = var.prefix
-  force_destroy_non_production  = var.environment != "production"
-  enable_lifecycle_rules        = true
+
+  project_name                 = var.prefix
+  force_destroy_non_production = var.environment != "production"
+  enable_lifecycle_rules       = true
   enable_cloudfront            = var.environment == "production" || var.environment == "staging"
-  
+
   production_cors_origins = [
     "https://${var.domain_name}",
     "https://www.${var.domain_name}"

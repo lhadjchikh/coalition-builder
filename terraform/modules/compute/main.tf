@@ -235,7 +235,7 @@ resource "aws_iam_policy" "secrets_access" {
           "secretsmanager:GetSecretValue"
         ],
         Resource = [
-          var.ses_smtp_secret_arn  # Keep in Secrets Manager for JSON path access
+          var.ses_smtp_secret_arn # Keep in Secrets Manager for JSON path access
         ]
       },
       {
@@ -258,7 +258,7 @@ resource "aws_iam_policy" "secrets_access" {
           "kms:Decrypt",
           "kms:DescribeKey"
         ],
-        Resource = "*"  # Covers both Secrets Manager KMS and SSM default KMS
+        Resource = "*" # Covers both Secrets Manager KMS and SSM default KMS
       }
     ]
   })
@@ -389,16 +389,16 @@ resource "aws_ecs_task_definition" "app" {
       secrets = concat([
         {
           name      = "SECRET_KEY",
-          valueFrom = var.secret_key_parameter_arn  # SSM Parameter (simple string)
+          valueFrom = var.secret_key_parameter_arn # SSM Parameter (simple string)
         },
         {
           name      = "DATABASE_URL",
-          valueFrom = var.db_url_parameter_arn  # SSM Parameter (simple string)
+          valueFrom = var.db_url_parameter_arn # SSM Parameter (simple string)
         }
         ], [
         {
           name      = "SITE_PASSWORD",
-          valueFrom = var.site_password_parameter_arn  # SSM Parameter (simple string)
+          valueFrom = var.site_password_parameter_arn # SSM Parameter (simple string)
         },
         {
           name      = "EMAIL_HOST",
@@ -492,7 +492,7 @@ resource "aws_ecs_task_definition" "app" {
       secrets = [
         {
           name      = "SITE_PASSWORD",
-          valueFrom = var.site_password_parameter_arn  # SSM Parameter (simple string)
+          valueFrom = var.site_password_parameter_arn # SSM Parameter (simple string)
         }
       ]
       healthCheck = {

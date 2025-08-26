@@ -194,6 +194,7 @@ WHERE NOT ST_IsValid(geometry);
    ```
 
 2. **Duplicate Entries**
+
    ```sql
    -- Find duplicates
    SELECT geoid, COUNT(*)

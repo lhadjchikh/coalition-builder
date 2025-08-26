@@ -4,17 +4,17 @@
 # Single random suffix shared by all buckets (only if enabled)
 resource "random_id" "bucket_suffix" {
   byte_length = 4
-  
+
   # Only create if random suffix is enabled
   count = var.use_random_suffix ? 1 : 0
 }
 
 locals {
   environments = ["dev", "staging", "production"]
-  
+
   # Use a single random suffix for all buckets (easier to manage)
   suffix = var.use_random_suffix && length(random_id.bucket_suffix) > 0 ? "-${random_id.bucket_suffix[0].hex}" : ""
-  
+
   # Generate bucket names with the same suffix for consistency
   bucket_names = {
     dev        = "${var.bucket_prefix}-dev-assets${local.suffix}"
@@ -26,7 +26,7 @@ locals {
 # Create S3 buckets for each environment
 resource "aws_s3_bucket" "environment_assets" {
   for_each = local.bucket_names
-  
+
   bucket        = each.value
   force_destroy = var.force_destroy_non_production || each.key == "dev"
 
@@ -42,9 +42,9 @@ resource "aws_s3_bucket" "environment_assets" {
 # Bucket versioning (enabled for staging and production)
 resource "aws_s3_bucket_versioning" "environment_assets" {
   for_each = local.bucket_names
-  
+
   bucket = aws_s3_bucket.environment_assets[each.key].id
-  
+
   versioning_configuration {
     status = each.key == "production" || each.key == "staging" ? "Enabled" : "Suspended"
   }
@@ -53,7 +53,7 @@ resource "aws_s3_bucket_versioning" "environment_assets" {
 # Public access block - more restrictive for production
 resource "aws_s3_bucket_public_access_block" "environment_assets" {
   for_each = local.bucket_names
-  
+
   bucket = aws_s3_bucket.environment_assets[each.key].id
 
   # Production should be more restrictive
@@ -66,7 +66,7 @@ resource "aws_s3_bucket_public_access_block" "environment_assets" {
 # CORS configuration for each bucket
 resource "aws_s3_bucket_cors_configuration" "environment_assets" {
   for_each = local.bucket_names
-  
+
   bucket = aws_s3_bucket.environment_assets[each.key].id
 
   cors_rule {
@@ -81,7 +81,7 @@ resource "aws_s3_bucket_cors_configuration" "environment_assets" {
 # Lifecycle rules for cost optimization (non-production)
 resource "aws_s3_bucket_lifecycle_configuration" "environment_assets" {
   for_each = var.enable_lifecycle_rules ? { for k, v in local.bucket_names : k => v if k != "production" } : {}
-  
+
   bucket = aws_s3_bucket.environment_assets[each.key].id
 
   rule {
@@ -114,7 +114,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "environment_assets" {
 # Bucket policies for public read access
 resource "aws_s3_bucket_policy" "environment_assets" {
   for_each = local.bucket_names
-  
+
   bucket = aws_s3_bucket.environment_assets[each.key].id
 
   policy = jsonencode({
@@ -197,14 +197,14 @@ resource "aws_cloudfront_distribution" "cdn" {
 # CloudFront OAI for secure S3 access
 resource "aws_cloudfront_origin_access_identity" "cdn" {
   for_each = var.enable_cloudfront ? { for k, v in local.bucket_names : k => v if k != "dev" } : {}
-  
+
   comment = "OAI for ${each.key} environment CDN"
 }
 
 # IAM policy for Lambda to access buckets
 resource "aws_iam_policy" "lambda_s3_access" {
   for_each = local.bucket_names
-  
+
   name        = "${each.value}-lambda-access"
   description = "Allow Lambda functions to access ${each.key} S3 bucket"
 

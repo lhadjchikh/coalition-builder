@@ -111,7 +111,7 @@ Name: @
 Value: 76.76.21.21
 ```
 
-#### For Subdomain (www.yourdomain.com)
+#### For Subdomain (<www.yourdomain.com>)
 
 ```
 Type: CNAME

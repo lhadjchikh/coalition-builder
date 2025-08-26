@@ -208,6 +208,7 @@ aws ecs describe-tasks --cluster coalition-builder-geodata-import --tasks {task-
    ```
 
 3. **Database Connection Errors**
+
    ```
    Solution: Verify RDS security group allows ECS access
    Check Secrets Manager permissions
@@ -228,6 +229,7 @@ aws ecs describe-tasks --cluster coalition-builder-geodata-import --tasks {task-
    ```
 
 3. **Verify Permissions**
+
    ```bash
    aws iam simulate-principal-policy --policy-source-arn {task-role-arn} --action-names s3:GetObject --resource-arns arn:aws:s3:::census-bucket/*
    ```

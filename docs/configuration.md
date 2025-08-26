@@ -191,6 +191,7 @@ For a comprehensive list of all environment variables, see:
    ```
 
 3. **Test configuration:**
+
    ```bash
    cd backend
    poetry run python manage.py check --deploy
@@ -209,6 +210,7 @@ For a comprehensive list of all environment variables, see:
    See [Lambda Deployment Guide](lambda_deployment.md) and [Vercel Deployment Guide](vercel_deployment.md)
 
 3. **Deploy infrastructure:**
+
    ```bash
    cd terraform
    terraform apply

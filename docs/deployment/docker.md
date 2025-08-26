@@ -54,9 +54,9 @@ docker compose down
 
 Services will be available at:
 
-- **Frontend (app)**: http://localhost:3000
-- **Backend API**: http://localhost:8000
-- **Nginx Proxy**: http://localhost:80 (optional)
+- **Frontend (app)**: <http://localhost:3000>
+- **Backend API**: <http://localhost:8000>
+- **Nginx Proxy**: <http://localhost:80> (optional)
 - **Database**: localhost:5432
 
 ## Docker Compose Configuration
