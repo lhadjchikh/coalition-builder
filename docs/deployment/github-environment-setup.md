@@ -93,6 +93,7 @@ If `SES_VERIFY_DOMAIN` is `true`, ensure:
 On first deployment with SES:
 
 1. **Terraform will**:
+
    - Create all SES resources
    - Verify your domain automatically (if using Route53)
    - Generate and store SMTP credentials
@@ -106,10 +107,12 @@ On first deployment with SES:
 After deployment, verify the setup:
 
 1. **Check AWS Console**:
+
    - SES → Verified identities → Your domain should be verified
    - Secrets Manager → `your-prefix/ses-smtp-credentials` should exist
 
 2. **Check ECS Logs**:
+
    - Email sending attempts will be logged
    - Successful sends show in SES statistics
 

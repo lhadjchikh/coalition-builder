@@ -201,14 +201,17 @@ python manage.py shell
 ### Common Issues
 
 1. **"Email address is not verified"**
+
    - You're in sandbox mode and trying to send to unverified address
    - Solution: Verify the recipient or request production access
 
 2. **"Connection timeout"**
+
    - ECS task cannot reach SES endpoint
    - Solution: Ensure ECS is in public subnet with internet access
 
 3. **"Invalid credentials"**
+
    - SMTP credentials are incorrect
    - Solution: Regenerate SMTP credentials in SES console
 
