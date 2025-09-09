@@ -102,3 +102,7 @@ coverage/
 
 # Zappa - user-specific configuration
 backend/zappa_settings.json
+
+# Pullitzer task files
+.pullitzer/
+backend/.pullitzer/
