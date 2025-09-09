@@ -34,12 +34,14 @@ module "networking" {
 The module creates three types of subnets:
 
 1. **Public Subnets** (2 AZs):
+
    - Used by Application Load Balancer (ALB)
    - Used by ECS Fargate tasks with public IP assignment
    - Direct internet access via Internet Gateway
    - CIDR: 10.0.1.0/24 and 10.0.2.0/24
 
 2. **Private App Subnets** (2 AZs):
+
    - Currently unused (ECS runs in public subnets)
    - Reserved for future use if needed
    - CIDR: 10.0.3.0/24 and 10.0.4.0/24
