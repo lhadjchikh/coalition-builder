@@ -3,7 +3,11 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from coalition.campaigns.constants import BILL_PREFIXES, CHAMBER_CHOICES, LEVEL_CHOICES
+from coalition.campaigns.constants import (
+    BILL_PREFIXES,
+    CHAMBER_CHOICES,
+    LEVEL_CHOICES,
+)
 
 
 class Bill(models.Model):
