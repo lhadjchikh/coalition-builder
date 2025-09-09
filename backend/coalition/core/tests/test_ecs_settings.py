@@ -6,10 +6,7 @@ from importlib import reload
 from unittest.mock import Mock, patch
 
 from django.test import TestCase
-from requests.exceptions import (
-    SSLError,
-    Timeout,
-)
+from requests.exceptions import SSLError, Timeout
 
 
 class ECSSettingsTest(TestCase):

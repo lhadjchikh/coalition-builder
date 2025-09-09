@@ -20,14 +20,8 @@ from urllib.parse import quote
 
 import dj_database_url
 import requests
-from requests.exceptions import (
-    ConnectionError as RequestsConnectionError,
-)
-from requests.exceptions import (
-    RequestException,
-    SSLError,
-    Timeout,
-)
+from requests.exceptions import ConnectionError as RequestsConnectionError
+from requests.exceptions import RequestException, SSLError, Timeout
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
