@@ -1,16 +1,17 @@
 package modules
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	"github.com/aws/aws-sdk-go/service/ecs"
-	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
+	"github.com/aws/aws-sdk-go-v2/service/ecs"
+	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
@@ -24,13 +25,16 @@ func TestGeodataImportModule(t *testing.T) {
 	uniqueID := random.UniqueId()
 	prefix := fmt.Sprintf("test-geodata-%s", strings.ToLower(uniqueID))
 
-	// AWS session for validation
-	sess := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String("us-east-1"),
-	}))
-	ecsClient := ecs.New(sess)
-	iamClient := iam.New(sess)
-	logsClient := cloudwatchlogs.New(sess)
+	// AWS configuration for validation
+	ctx := context.Background()
+	cfg, err := config.LoadDefaultConfig(ctx,
+		config.WithRegion("us-east-1"),
+	)
+	require.NoError(t, err)
+	
+	ecsClient := ecs.NewFromConfig(cfg)
+	iamClient := iam.NewFromConfig(cfg)
+	logsClient := cloudwatchlogs.NewFromConfig(cfg)
 
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: "../../modules/geodata-import",
@@ -96,8 +100,8 @@ func TestGeodataImportModule(t *testing.T) {
 		clusterName := terraform.Output(t, terraformOptions, "cluster_name")
 
 		// Check cluster exists
-		describeResult, err := ecsClient.DescribeClusters(&ecs.DescribeClustersInput{
-			Clusters: []*string{aws.String(clusterName)},
+		describeResult, err := ecsClient.DescribeClusters(ctx, &ecs.DescribeClustersInput{
+			Clusters: []string{clusterName},
 		})
 		require.NoError(t, err)
 		require.Len(t, describeResult.Clusters, 1)
@@ -108,13 +112,13 @@ func TestGeodataImportModule(t *testing.T) {
 
 		// Check containerInsights setting
 		for _, setting := range cluster.Settings {
-			if *setting.Name == "containerInsights" {
-				assert.Equal(t, "disabled", *setting.Value, "Container Insights should be disabled for cost optimization")
+			if setting.Name == "containerInsights" {
+				assert.Equal(t, "disabled", setting.Value, "Container Insights should be disabled for cost optimization")
 			}
 		}
 
 		// Verify cluster tags
-		listTagsResult, err := ecsClient.ListTagsForResource(&ecs.ListTagsForResourceInput{
+		listTagsResult, err := ecsClient.ListTagsForResource(ctx, &ecs.ListTagsForResourceInput{
 			ResourceArn: cluster.ClusterArn,
 		})
 		require.NoError(t, err)
@@ -134,7 +138,7 @@ func TestGeodataImportModule(t *testing.T) {
 		taskDefArn := terraform.Output(t, terraformOptions, "task_definition_arn")
 
 		// Describe task definition
-		describeResult, err := ecsClient.DescribeTaskDefinition(&ecs.DescribeTaskDefinitionInput{
+		describeResult, err := ecsClient.DescribeTaskDefinition(ctx, &ecs.DescribeTaskDefinitionInput{
 			TaskDefinition: aws.String(taskDefArn),
 		})
 		require.NoError(t, err)
@@ -142,8 +146,8 @@ func TestGeodataImportModule(t *testing.T) {
 		taskDef := describeResult.TaskDefinition
 
 		// Check basic properties
-		assert.Equal(t, "FARGATE", *taskDef.RequiresCompatibilities[0])
-		assert.Equal(t, "awsvpc", *taskDef.NetworkMode)
+		assert.Equal(t, "FARGATE", string(taskDef.RequiresCompatibilities[0]))
+		assert.Equal(t, "awsvpc", string(taskDef.NetworkMode))
 		assert.Equal(t, "2048", *taskDef.Cpu)    // 2 vCPU
 		assert.Equal(t, "4096", *taskDef.Memory) // 4GB RAM
 
@@ -176,19 +180,19 @@ func TestGeodataImportModule(t *testing.T) {
 
 		// Check log configuration
 		require.NotNil(t, container.LogConfiguration)
-		assert.Equal(t, "awslogs", *container.LogConfiguration.LogDriver)
+		assert.Equal(t, "awslogs", string(container.LogConfiguration.LogDriver))
 
 		logOptions := container.LogConfiguration.Options
-		assert.Equal(t, "/ecs/geodata-import", *logOptions["awslogs-group"])
-		assert.Equal(t, "us-east-1", *logOptions["awslogs-region"])
-		assert.Equal(t, "geodata", *logOptions["awslogs-stream-prefix"])
+		assert.Equal(t, "/ecs/geodata-import", logOptions["awslogs-group"])
+		assert.Equal(t, "us-east-1", logOptions["awslogs-region"])
+		assert.Equal(t, "geodata", logOptions["awslogs-stream-prefix"])
 
 		// Check default command (should be help command)
 		require.Len(t, container.Command, 4)
-		assert.Equal(t, "python", *container.Command[0])
-		assert.Equal(t, "manage.py", *container.Command[1])
-		assert.Equal(t, "import_tiger_data", *container.Command[2])
-		assert.Equal(t, "--help", *container.Command[3])
+		assert.Equal(t, "python", container.Command[0])
+		assert.Equal(t, "manage.py", container.Command[1])
+		assert.Equal(t, "import_tiger_data", container.Command[2])
+		assert.Equal(t, "--help", container.Command[3])
 	})
 
 	// Validate CloudWatch log group
@@ -207,8 +211,8 @@ func TestGeodataImportModule(t *testing.T) {
 		assert.Equal(t, int64(7), *logGroup.RetentionInDays) // 7 days for cost optimization
 
 		// Check log group tags
-		listTagsResult, err := logsClient.ListTagsLogGroup(&cloudwatchlogs.ListTagsLogGroupInput{
-			LogGroupName: aws.String(logGroupName),
+		listTagsResult, err := logsClient.ListTagsForResource(ctx, &cloudwatchlogs.ListTagsForResourceInput{
+			ResourceArn: logGroup.Arn,
 		})
 		require.NoError(t, err)
 
@@ -226,14 +230,14 @@ func TestGeodataImportModule(t *testing.T) {
 		taskRoleName := strings.Split(taskRoleArn, "/")[1]
 
 		// Check execution role
-		execRoleResult, err := iamClient.GetRole(&iam.GetRoleInput{
+		execRoleResult, err := iamClient.GetRole(ctx, &iam.GetRoleInput{
 			RoleName: aws.String(executionRoleName),
 		})
 		require.NoError(t, err)
 		assert.Contains(t, *execRoleResult.Role.AssumeRolePolicyDocument, "ecs-tasks.amazonaws.com")
 
 		// Check execution role has ECS task execution policy
-		execPoliciesResult, err := iamClient.ListAttachedRolePolicies(&iam.ListAttachedRolePoliciesInput{
+		execPoliciesResult, err := iamClient.ListAttachedRolePolicies(ctx, &iam.ListAttachedRolePoliciesInput{
 			RoleName: aws.String(executionRoleName),
 		})
 		require.NoError(t, err)
@@ -248,35 +252,35 @@ func TestGeodataImportModule(t *testing.T) {
 		assert.True(t, hasECSPolicy, "Execution role should have ECS task execution policy")
 
 		// Check task role
-		taskRoleResult, err := iamClient.GetRole(&iam.GetRoleInput{
+		taskRoleResult, err := iamClient.GetRole(ctx, &iam.GetRoleInput{
 			RoleName: aws.String(taskRoleName),
 		})
 		require.NoError(t, err)
 		assert.Contains(t, *taskRoleResult.Role.AssumeRolePolicyDocument, "ecs-tasks.amazonaws.com")
 
 		// Check inline policies exist
-		execInlinePoliciesResult, err := iamClient.ListRolePolicies(&iam.ListRolePoliciesInput{
+		execInlinePoliciesResult, err := iamClient.ListRolePolicies(ctx, &iam.ListRolePoliciesInput{
 			RoleName: aws.String(executionRoleName),
 		})
 		require.NoError(t, err)
 
 		hasSecretsPolicy := false
 		for _, policyName := range execInlinePoliciesResult.PolicyNames {
-			if strings.Contains(*policyName, "secrets") {
+			if strings.Contains(policyName, "secrets") {
 				hasSecretsPolicy = true
 				break
 			}
 		}
 		assert.True(t, hasSecretsPolicy, "Execution role should have secrets policy")
 
-		taskInlinePoliciesResult, err := iamClient.ListRolePolicies(&iam.ListRolePoliciesInput{
+		taskInlinePoliciesResult, err := iamClient.ListRolePolicies(ctx, &iam.ListRolePoliciesInput{
 			RoleName: aws.String(taskRoleName),
 		})
 		require.NoError(t, err)
 
 		hasS3Policy := false
 		for _, policyName := range taskInlinePoliciesResult.PolicyNames {
-			if strings.Contains(*policyName, "s3") {
+			if strings.Contains(policyName, "s3") {
 				hasS3Policy = true
 				break
 			}
