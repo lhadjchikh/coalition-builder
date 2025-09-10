@@ -15,7 +15,7 @@ def get_env_or_default(key: str, default: str = "") -> str:
     return os.environ.get(key, default)
 
 
-def configure_zappa_settings():
+def configure_zappa_settings() -> None:
     """Generate zappa_settings.json from environment variables."""
 
     # Get AWS account details
@@ -230,7 +230,7 @@ def configure_zappa_settings():
         print(f"  Security Groups: {', '.join(vpc_security_group_ids)}")
 
 
-def main():
+def main() -> None:
     """Main entry point."""
     # Check if we're in CI/CD environment
     if os.environ.get("CI"):
