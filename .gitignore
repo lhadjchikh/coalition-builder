@@ -9,6 +9,9 @@ media/
 .env
 *.log
 
+# Pullitzer task files
+**/.pullitzer/
+
 # Organization-specific files
 backend/local/
 *.local.md
@@ -102,7 +105,3 @@ coverage/
 
 # Zappa - user-specific configuration
 backend/zappa_settings.json
-
-# Pullitzer task files
-.pullitzer/
-backend/.pullitzer/
