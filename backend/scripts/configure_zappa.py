@@ -209,10 +209,12 @@ def configure_zappa_settings() -> None:
         },
     }
 
-    # Write the configuration
+    # Write the configuration with Prettier-compatible formatting
     config_path = Path(__file__).parent.parent / "zappa_settings.json"
     with open(config_path, "w") as f:
-        json.dump(settings, f, indent=4)
+        # Add trailing newline for Prettier compatibility
+        json.dump(settings, f, indent=2)
+        f.write("\n")
 
     print(f"✅ Generated zappa_settings.json at {config_path}")
     print("\nConfiguration summary:")
