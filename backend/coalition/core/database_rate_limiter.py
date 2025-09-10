@@ -88,6 +88,8 @@ class DatabaseRateLimiter:
                 timeout=window_seconds + 60,  # Add buffer to prevent early expiry
             )
 
+            if current_data is None:
+                current_data = {"count": 0}
             current_count = current_data.get("count", 0)
 
             # Check if already over limit
@@ -185,9 +187,11 @@ class DatabaseRateLimiter:
             cache_key = self._get_cache_key(window_key)
 
             current_data = cache.get(cache_key, {"count": 0})
+            if current_data is None:
+                current_data = {"count": 0}
             current_count = current_data.get("count", 0)
 
-            return max(0, max_attempts - current_count)
+            return int(max(0, max_attempts - current_count))
 
         except Exception as e:
             logger.error(f"Error getting remaining attempts for {key}: {e}")
