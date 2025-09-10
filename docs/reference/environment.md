@@ -339,7 +339,6 @@ ANALYZE=true
 The backend (Django) generates image URLs based on its configuration:
 
 1. **When using CloudFront (recommended for production)**:
-
    - Backend has `CLOUDFRONT_DOMAIN` set and `USE_S3_DIRECT_URLS=false`
    - Image URLs look like: `https://d123456789.cloudfront.net/media/images/logo.jpg`
    - Next.js needs `CLOUDFRONT_DOMAIN` in build environment to allow these URLs

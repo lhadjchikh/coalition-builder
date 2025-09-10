@@ -172,7 +172,6 @@ flowchart TD
 ### Accessing Endorsement Management
 
 1. **Navigate to Django Admin**
-
    - Go to your admin interface
    - Look for "Endorsements" section
 
@@ -189,7 +188,6 @@ flowchart TD
 
 1. **Click on an endorsement** to view details
 2. **Review submission information**:
-
    - Stakeholder name and organization
    - Contact information
    - Endorsement statement
@@ -197,7 +195,6 @@ flowchart TD
    - Verification status
 
 3. **Check for quality indicators**:
-
    - Is the organization/individual legitimate?
    - Is the endorsement statement appropriate?
    - Does the contact information look valid?

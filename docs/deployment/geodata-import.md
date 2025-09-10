@@ -170,12 +170,10 @@ WHERE NOT ST_IsValid(geometry);
 ### Import Fails
 
 1. **Out of Memory**
-
    - Increase ECS task memory
    - Import smaller batches of states
 
 2. **Network Timeout**
-
    - Census FTP may be slow
    - Retry or download files locally first
 
