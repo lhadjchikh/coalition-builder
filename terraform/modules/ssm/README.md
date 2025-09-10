@@ -11,11 +11,11 @@ This module manages simple application secrets using AWS Systems Manager Paramet
 
 ## Hybrid Secrets Management Strategy
 
-| Secret Type | Storage Solution | Use Case |
-|------------|-----------------|----------|
-| Database URLs (per env) | SSM Parameter Store | Environment-specific connection strings |
+| Secret Type                           | Storage Solution    | Use Case                                           |
+| ------------------------------------- | ------------------- | -------------------------------------------------- |
+| Database URLs (per env)               | SSM Parameter Store | Environment-specific connection strings            |
 | Simple strings (secret key, password) | SSM Parameter Store | Single values that don't need JSON path extraction |
-| Complex JSON objects (SES SMTP) | Secrets Manager | Multiple related values accessed via JSON paths |
+| Complex JSON objects (SES SMTP)       | Secrets Manager     | Multiple related values accessed via JSON paths    |
 
 ## Resources Created
 
@@ -64,7 +64,7 @@ module "ssm" {
 # In compute module, use production by default
 module "compute" {
   source = "./modules/compute"
-  
+
   db_url_parameter_arn      = module.ssm.production_db_url_arn  # Uses prod database
   secret_key_parameter_arn  = module.ssm.secret_key_parameter_arn
   site_password_parameter_arn = module.ssm.site_password_parameter_arn
@@ -114,10 +114,10 @@ secrets = [
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| `db_url_parameter_arn` | ARN for DATABASE_URL parameter |
-| `secret_key_parameter_arn` | ARN for SECRET_KEY parameter |
-| `site_password_parameter_arn` | ARN for SITE_PASSWORD parameter |
-| `ssm_read_policy_arn` | IAM policy for reading parameters |
-| `parameter_names` | Map of parameter names |
+| Name                          | Description                       |
+| ----------------------------- | --------------------------------- |
+| `db_url_parameter_arn`        | ARN for DATABASE_URL parameter    |
+| `secret_key_parameter_arn`    | ARN for SECRET_KEY parameter      |
+| `site_password_parameter_arn` | ARN for SITE_PASSWORD parameter   |
+| `ssm_read_policy_arn`         | IAM policy for reading parameters |
+| `parameter_names`             | Map of parameter names            |

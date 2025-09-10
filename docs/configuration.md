@@ -200,6 +200,7 @@ For a comprehensive list of all environment variables, see:
 ### Serverless Deployment
 
 1. **Set GitHub Secrets:**
+
    - `AWS_ACCESS_KEY_ID`
    - `AWS_SECRET_ACCESS_KEY`
    - `VERCEL_TOKEN`

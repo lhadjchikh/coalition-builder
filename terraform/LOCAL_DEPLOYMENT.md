@@ -87,15 +87,15 @@ Type `yes` when prompted to confirm.
 
 With default settings (t3.micro instances):
 
-| Service | Monthly Cost |
-|---------|-------------|
-| ECS Fargate (256 CPU, 512 MB) | ~$11 |
-| RDS db.t3.micro | ~$15 |
-| Load Balancer | ~$18 |
-| NAT Gateway | ~$45 |
-| Secrets Manager (1 secret) | $0.40 |
-| S3 & CloudFront | ~$1 |
-| **Total** | **~$90/month** |
+| Service                       | Monthly Cost   |
+| ----------------------------- | -------------- |
+| ECS Fargate (256 CPU, 512 MB) | ~$11           |
+| RDS db.t3.micro               | ~$15           |
+| Load Balancer                 | ~$18           |
+| NAT Gateway                   | ~$45           |
+| Secrets Manager (1 secret)    | $0.40          |
+| S3 & CloudFront               | ~$1            |
+| **Total**                     | **~$90/month** |
 
 💡 **Cost Optimization Tips**:
 
