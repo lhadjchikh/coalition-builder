@@ -17,7 +17,7 @@ This module creates S3 buckets for serverless/Lambda deployments with automatic 
 ```hcl
 module "serverless_storage" {
   source = "./modules/serverless-storage"
-  
+
   # Creates buckets with random suffixes for uniqueness
 }
 ```
@@ -25,7 +25,7 @@ module "serverless_storage" {
 This creates three S3 buckets with a shared random suffix for uniqueness:
 
 - `coalition-dev-assets-abc123` - Development environment
-- `coalition-staging-assets-abc123` - Staging environment  
+- `coalition-staging-assets-abc123` - Staging environment
 - `coalition-production-assets-abc123` - Production environment
 
 Note: All buckets share the same random suffix (e.g., `abc123`), making them easier to identify and manage as a set.
@@ -39,7 +39,7 @@ If you control the AWS account and want predictable names:
 ```hcl
 module "serverless_storage" {
   source = "./modules/serverless-storage"
-  
+
   use_random_suffix = false  # Creates fixed names without random suffix
 }
 ```
@@ -56,10 +56,10 @@ This creates:
 
 Use your own prefix to avoid conflicts:
 
-```hcl
+````hcl
 module "serverless_storage" {
   source = "./modules/serverless-storage"
-  
+
   bucket_prefix = "mycompany"  # Creates mycompany-dev-assets-[random], etc.
 }
 
@@ -68,22 +68,22 @@ module "serverless_storage" {
 ```hcl
 module "serverless_storage" {
   source = "./modules/serverless-storage"
-  
+
   project_name                  = "my-project"
   force_destroy_non_production  = true  # Allow destroying dev/staging buckets with content
   enable_lifecycle_rules        = true  # Auto-cleanup old files in dev/staging
   enable_cloudfront            = true  # Create CDN for staging/production
-  
+
   # Production-specific settings
   production_cors_origins = [
     "https://myapp.com",
     "https://www.myapp.com"
   ]
-  
+
   # Optional IP whitelist for production (leave empty for public access)
   production_ip_whitelist = []
 }
-```
+````
 
 ## Bucket Configuration
 
@@ -115,11 +115,13 @@ module "serverless_storage" {
 The module includes automatic cost optimization:
 
 1. **Lifecycle Rules** (non-production):
+
    - Incomplete uploads cleaned after 7 days
    - Files moved to Infrequent Access after 30 days
    - Old files deleted (90 days for dev, 180 for staging)
 
 2. **Intelligent Tiering**:
+
    - Development files auto-deleted
    - Staging files archived
    - Production files preserved

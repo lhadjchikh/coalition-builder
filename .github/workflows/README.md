@@ -53,16 +53,16 @@ flowchart TD
 
     %% Decision to deployment - multiple deployment paths
     tests_complete --> deployment_decision{"Deployment<br/>Type"}
-    
+
     %% ECS Deployment path
     deployment_decision -->|Container| app_deploy[ECS Deployment]
     app_deploy --> ecs[Amazon ECS]
-    
+
     %% Serverless Deployment path
     deployment_decision -->|Serverless| serverless_deploy[Serverless Deployment]
     serverless_deploy --> lambda_backend[Lambda Backend]
     serverless_deploy --> vercel_frontend[Vercel Frontend]
-    
+
     %% Infrastructure changes trigger deployments
     infra_changes[Infrastructure Changes] --> deploy_infra[Deploy Infrastructure]
     deploy_infra --> app_deploy
@@ -269,15 +269,18 @@ The deployment workflows coordinate to ensure smooth production updates:
 Workflows that interact with external resources support manual triggers via `workflow_dispatch`:
 
 ### Container-based Deployment
+
 - **deploy_app.yml** - Deploys to AWS ECS
 - **deploy_infra.yml** - Manages AWS infrastructure with Terraform
 
 ### Serverless Deployment
+
 - **deploy_serverless.yml** - Deploys backend to AWS Lambda with Zappa
 - **deploy_lambda.yml** - Alternative Lambda deployment workflow
 - **deploy_frontend.yml** - Deploys frontend to Vercel
 
 ### Documentation
+
 - **deploy_docs.yml** - Deploys to GitHub Pages
 
 ## AWS Credentials
