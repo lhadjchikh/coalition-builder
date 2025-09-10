@@ -30,7 +30,7 @@ func TestZappaModule(t *testing.T) {
 		config.WithRegion("us-east-1"),
 	)
 	require.NoError(t, err)
-	
+
 	s3Client := s3.NewFromConfig(cfg)
 	iamClient := iam.NewFromConfig(cfg)
 

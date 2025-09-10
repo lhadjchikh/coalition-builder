@@ -31,7 +31,7 @@ func TestGeodataImportModule(t *testing.T) {
 		config.WithRegion("us-east-1"),
 	)
 	require.NoError(t, err)
-	
+
 	ecsClient := ecs.NewFromConfig(cfg)
 	iamClient := iam.NewFromConfig(cfg)
 	logsClient := cloudwatchlogs.NewFromConfig(cfg)
