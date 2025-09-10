@@ -115,13 +115,11 @@ module "serverless_storage" {
 The module includes automatic cost optimization:
 
 1. **Lifecycle Rules** (non-production):
-
    - Incomplete uploads cleaned after 7 days
    - Files moved to Infrequent Access after 30 days
    - Old files deleted (90 days for dev, 180 for staging)
 
 2. **Intelligent Tiering**:
-
    - Development files auto-deleted
    - Staging files archived
    - Production files preserved

@@ -85,7 +85,6 @@ This is handled automatically by the `calculate_ses_password.py` script.
 ## Manual Steps Required
 
 1. **Request Production Access**:
-
    - New SES accounts start in sandbox mode
    - Request production access in AWS Console → SES → Account dashboard
    - Takes ~24 hours for approval

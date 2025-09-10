@@ -40,7 +40,6 @@ A campaign in Coalition Builder represents a coordinated effort to advocate for 
 ### Accessing Campaign Management
 
 1. **Navigate to Django Admin**
-
    - Go to your admin interface (`/admin/`)
    - Look for the "Campaigns" section
    - Click "Campaigns" to view existing campaigns
@@ -91,12 +90,10 @@ A campaign in Coalition Builder represents a coordinated effort to advocate for 
 ### Adding Bills to Campaigns
 
 1. **In Campaign Edit View**:
-
    - Scroll to "Campaign Bills" section
    - Click "Add another Campaign bill"
 
 2. **Bill Information**:
-
    - **Level**: Choose between "Federal" or "State"
    - **Bill Number**: Official legislative identifier (e.g., "123" for federal, "456" for state)
    - **Title**: Official bill title
@@ -110,7 +107,6 @@ A campaign in Coalition Builder represents a coordinated effort to advocate for 
    - **Related Bill**: Optional - link to companion bill in the other chamber
 
 3. **Bill Display**:
-
    - Federal bills display as: "H.R. 123" or "S. 456"
    - State bills display as: "California AB 789" or "Texas HB 100"
 
@@ -198,7 +194,6 @@ Note: State legislative processes may have additional or different status option
 ### Enabling Endorsements
 
 1. **Campaign Settings**:
-
    - Check "Allow Endorsements" in campaign edit form
    - Ensure campaign status is "Active"
    - Verify campaign is published
