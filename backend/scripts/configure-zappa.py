@@ -24,28 +24,33 @@ def configure_zappa_settings():
 
     # Get ECR registry (if using custom Docker images)
     ecr_registry = get_env_or_default(
-        "ECR_REGISTRY", f"{aws_account_id}.dkr.ecr.{aws_region}.amazonaws.com"
+        "ECR_REGISTRY",
+        f"{aws_account_id}.dkr.ecr.{aws_region}.amazonaws.com",
     )
 
     # Get bucket names (from Terraform output or manual configuration)
     zappa_deployment_bucket = get_env_or_default(
-        "ZAPPA_DEPLOYMENT_BUCKET", "coalition-zappa-deployments"
+        "ZAPPA_DEPLOYMENT_BUCKET",
+        "coalition-zappa-deployments",
     )
 
     # Get asset bucket names
     dev_assets_bucket = get_env_or_default("DEV_ASSETS_BUCKET", "coalition-dev-assets")
     staging_assets_bucket = get_env_or_default(
-        "STAGING_ASSETS_BUCKET", "coalition-staging-assets"
+        "STAGING_ASSETS_BUCKET",
+        "coalition-staging-assets",
     )
     production_assets_bucket = get_env_or_default(
-        "PRODUCTION_ASSETS_BUCKET", "coalition-production-assets"
+        "PRODUCTION_ASSETS_BUCKET",
+        "coalition-production-assets",
     )
 
     # Get database names
     dev_db_name = get_env_or_default("DEV_DB_NAME", "coalition_dev")
     staging_db_name = get_env_or_default("STAGING_DB_NAME", "coalition_staging")
     production_db_name = get_env_or_default(
-        "PRODUCTION_DB_NAME", "coalition_production"
+        "PRODUCTION_DB_NAME",
+        "coalition_production",
     )
 
     # Get VPC configuration (optional)
@@ -214,7 +219,7 @@ def configure_zappa_settings():
     print(f"  AWS Region: {aws_region}")
     print(f"  AWS Account: {aws_account_id}")
     print(f"  Zappa Bucket: {zappa_deployment_bucket}")
-    print(f"  Asset Buckets:")
+    print("  Asset Buckets:")
     print(f"    - Dev: {dev_assets_bucket}")
     print(f"    - Staging: {staging_assets_bucket}")
     print(f"    - Production: {production_assets_bucket}")
