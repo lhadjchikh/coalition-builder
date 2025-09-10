@@ -1,132 +1,120 @@
 {
-    "base": {
-        "aws_region": "us-east-1",
-        "django_settings": "coalition.core.settings",
-        "project_name": "coalition",
-        "s3_bucket": "coalition-builder-zappa-deployments",
-        "runtime": "python3.13",
-        
-        "vpc_config": {
-            "SubnetIds": [],
-            "SecurityGroupIds": []
-        },
-        
-        "timeout_seconds": 30,
-        "slim_handler": false,
-        "use_precompiled_packages": false,
-        
-        "environment_variables": {
-            "USE_S3": "true",
-            "AWS_STORAGE_BUCKET_NAME": "coalition-assets",
-            "IS_LAMBDA": "true",
-            "USE_GEODJANGO": "true",
-            "GDAL_DATA": "/opt/share/gdal",
-            "PROJ_LIB": "/opt/share/proj",
-            "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64"
-        },
-        
-        "exclude": [
-            "*.gz", "*.rar", "*.zip", "*.tar",
-            ".git/*", "tests/*", "*.pyc", "local/*",
-            "docker/*", "scripts/build-docker.sh",
-            "node_modules/*", ".pytest_cache/*",
-            "__pycache__/*", "*.egg-info/*",
-            ".coverage", "htmlcov/*", "docs/*"
-        ],
-        
-        "cors": true,
-        "cors_allow_headers": [
-            "Content-Type", "X-CSRFToken", "Authorization", "X-Requested-With"
-        ],
-        
-        "apigateway_settings": {
-            "throttle_burst_limit": 100,
-            "throttle_rate_limit": 50
-        }
+  "base": {
+    "aws_region": "us-east-1",
+    "django_settings": "coalition.core.settings",
+    "project_name": "coalition",
+    "s3_bucket": "coalition-zappa-deployments",
+    "runtime": "python3.13",
+    "vpc_config": {
+      "SubnetIds": [],
+      "SecurityGroupIds": []
     },
-    
-    "dev": {
-        "extends": "base",
-        "stage": "dev",
-        "docker_image": "public.ecr.aws/lambda/python:3.13",
-        "memory_size": 512,
-        "keep_warm": false,
-        
-        "environment_variables": {
-            "ENVIRONMENT": "dev",
-            "DEBUG": "true",
-            "DATABASE_NAME": "coalition_dev",
-            "AWS_STORAGE_BUCKET_NAME": "coalition-dev-assets"
-        },
-        
-        "aws_environment_variables": {
-            "DATABASE_URL": "arn:aws:secretsmanager:us-east-1:*:secret:coalition-builder-database-*",
-            "SECRET_KEY": "arn:aws:secretsmanager:us-east-1:*:secret:coalition-builder-django-secret-*"
-        },
-        
-        "apigateway_settings": {
-            "throttle_burst_limit": 50,
-            "throttle_rate_limit": 25
-        },
-        
-        "comment": "Domain and certificate can be set via environment or CI/CD"
+    "timeout_seconds": 30,
+    "slim_handler": false,
+    "use_precompiled_packages": false,
+    "environment_variables": {
+      "USE_S3": "true",
+      "IS_LAMBDA": "true",
+      "USE_GEODJANGO": "true",
+      "GDAL_DATA": "/opt/share/gdal",
+      "PROJ_LIB": "/opt/share/proj",
+      "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64"
     },
-    
-    "staging": {
-        "extends": "base",
-        "stage": "staging",
-        "docker_image": "public.ecr.aws/lambda/python:3.13",
-        "memory_size": 512,
-        "keep_warm": true,
-        "keep_warm_expression": "rate(10 minutes)",
-        
-        "environment_variables": {
-            "ENVIRONMENT": "staging",
-            "DEBUG": "false",
-            "DATABASE_NAME": "coalition_staging",
-            "AWS_STORAGE_BUCKET_NAME": "coalition-staging-assets"
-        },
-        
-        "aws_environment_variables": {
-            "DATABASE_URL": "arn:aws:secretsmanager:us-east-1:*:secret:coalition-builder-database-*",
-            "SECRET_KEY": "arn:aws:secretsmanager:us-east-1:*:secret:coalition-builder-django-secret-*"
-        },
-        
-        "apigateway_settings": {
-            "throttle_burst_limit": 75,
-            "throttle_rate_limit": 40
-        },
-        
-        "comment": "Domain: staging-api.yourdomain.com - set via CI/CD"
-    },
-    
-    "production": {
-        "extends": "base",
-        "stage": "production",
-        "docker_image": "public.ecr.aws/lambda/python:3.13",
-        "memory_size": 1024,
-        "keep_warm": true,
-        "keep_warm_expression": "rate(4 minutes)",
-        
-        "environment_variables": {
-            "ENVIRONMENT": "production",
-            "DEBUG": "false",
-            "DATABASE_NAME": "coalition_production",
-            "AWS_STORAGE_BUCKET_NAME": "coalition-production-assets"
-        },
-        
-        "aws_environment_variables": {
-            "DATABASE_URL": "arn:aws:secretsmanager:us-east-1:*:secret:coalition-builder-database-*",
-            "SECRET_KEY": "arn:aws:secretsmanager:us-east-1:*:secret:coalition-builder-django-secret-*"
-        },
-        
-        "apigateway_settings": {
-            "throttle_burst_limit": 100,
-            "throttle_rate_limit": 50
-        },
-        
-        "xray_tracing": true,
-        
-        "comment": "Domain: api.yourdomain.com - set via CI/CD"
+    "exclude": [
+      "*.gz",
+      "*.rar",
+      "*.zip",
+      "*.tar",
+      ".git/*",
+      "tests/*",
+      "*.pyc",
+      "local/*",
+      "docker/*",
+      "scripts/build-docker.sh",
+      "node_modules/*",
+      ".pytest_cache/*",
+      "__pycache__/*",
+      "*.egg-info/*",
+      ".coverage",
+      "htmlcov/*",
+      "docs/*"
+    ],
+    "cors": true,
+    "cors_allow_headers": [
+      "Content-Type",
+      "X-CSRFToken",
+      "Authorization",
+      "X-Requested-With"
+    ],
+    "apigateway_settings": {
+      "throttle_burst_limit": 100,
+      "throttle_rate_limit": 50
     }
+  },
+  "dev": {
+    "extends": "base",
+    "stage": "dev",
+    "docker_image": "public.ecr.aws/lambda/python:3.13",
+    "memory_size": 512,
+    "keep_warm": false,
+    "environment_variables": {
+      "ENVIRONMENT": "dev",
+      "DEBUG": "true",
+      "DATABASE_NAME": "coalition_dev",
+      "AWS_STORAGE_BUCKET_NAME": "coalition-dev-assets"
+    },
+    "aws_environment_variables": {
+      "DATABASE_URL": "arn:aws:secretsmanager:us-east-1:*:secret:coalition-database-*",
+      "SECRET_KEY": "arn:aws:secretsmanager:us-east-1:*:secret:coalition-django-*"
+    },
+    "apigateway_settings": {
+      "throttle_burst_limit": 50,
+      "throttle_rate_limit": 25
+    }
+  },
+  "staging": {
+    "extends": "base",
+    "stage": "staging",
+    "docker_image": "public.ecr.aws/lambda/python:3.13",
+    "memory_size": 512,
+    "keep_warm": true,
+    "keep_warm_expression": "rate(10 minutes)",
+    "environment_variables": {
+      "ENVIRONMENT": "staging",
+      "DEBUG": "false",
+      "DATABASE_NAME": "coalition_staging",
+      "AWS_STORAGE_BUCKET_NAME": "coalition-staging-assets"
+    },
+    "aws_environment_variables": {
+      "DATABASE_URL": "arn:aws:secretsmanager:us-east-1:*:secret:coalition-database-*",
+      "SECRET_KEY": "arn:aws:secretsmanager:us-east-1:*:secret:coalition-django-*"
+    },
+    "apigateway_settings": {
+      "throttle_burst_limit": 75,
+      "throttle_rate_limit": 40
+    }
+  },
+  "production": {
+    "extends": "base",
+    "stage": "production",
+    "docker_image": "public.ecr.aws/lambda/python:3.13",
+    "memory_size": 1024,
+    "keep_warm": true,
+    "keep_warm_expression": "rate(4 minutes)",
+    "environment_variables": {
+      "ENVIRONMENT": "production",
+      "DEBUG": "false",
+      "DATABASE_NAME": "coalition_production",
+      "AWS_STORAGE_BUCKET_NAME": "coalition-production-assets"
+    },
+    "aws_environment_variables": {
+      "DATABASE_URL": "arn:aws:secretsmanager:us-east-1:*:secret:coalition-database-*",
+      "SECRET_KEY": "arn:aws:secretsmanager:us-east-1:*:secret:coalition-django-*"
+    },
+    "apigateway_settings": {
+      "throttle_burst_limit": 100,
+      "throttle_rate_limit": 50
+    },
+    "xray_tracing": true
+  }
 }
