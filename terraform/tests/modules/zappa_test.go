@@ -1,15 +1,16 @@
 package modules
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/iam"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
@@ -23,12 +24,15 @@ func TestZappaModule(t *testing.T) {
 	uniqueID := random.UniqueId()
 	prefix := fmt.Sprintf("test-zappa-%s", strings.ToLower(uniqueID))
 
-	// AWS session for validation
-	sess := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String("us-east-1"),
-	}))
-	s3Client := s3.New(sess)
-	iamClient := iam.New(sess)
+	// AWS configuration for validation
+	ctx := context.Background()
+	cfg, err := config.LoadDefaultConfig(ctx,
+		config.WithRegion("us-east-1"),
+	)
+	require.NoError(t, err)
+	
+	s3Client := s3.NewFromConfig(cfg)
+	iamClient := iam.NewFromConfig(cfg)
 
 	defer func() {
 		// Cleanup: Delete S3 bucket if it exists
@@ -36,10 +40,10 @@ func TestZappaModule(t *testing.T) {
 
 		// List and delete all objects in bucket
 		listInput := &s3.ListObjectsV2Input{Bucket: aws.String(bucketName)}
-		result, err := s3Client.ListObjectsV2(listInput)
+		result, err := s3Client.ListObjectsV2(ctx, listInput)
 		if err == nil {
 			for _, obj := range result.Contents {
-				_, _ = s3Client.DeleteObject(&s3.DeleteObjectInput{
+				_, _ = s3Client.DeleteObject(ctx, &s3.DeleteObjectInput{
 					Bucket: aws.String(bucketName),
 					Key:    obj.Key,
 				})
@@ -47,7 +51,7 @@ func TestZappaModule(t *testing.T) {
 		}
 
 		// Delete bucket
-		_, _ = s3Client.DeleteBucket(&s3.DeleteBucketInput{
+		_, _ = s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
 			Bucket: aws.String(bucketName),
 		})
 	}()
@@ -110,20 +114,20 @@ func TestZappaModule(t *testing.T) {
 		bucketName := terraform.Output(t, terraformOptions, "s3_bucket_name")
 
 		// Check bucket exists and is accessible
-		_, err := s3Client.HeadBucket(&s3.HeadBucketInput{
+		_, err := s3Client.HeadBucket(ctx, &s3.HeadBucketInput{
 			Bucket: aws.String(bucketName),
 		})
 		require.NoError(t, err, "S3 bucket should exist and be accessible")
 
 		// Check versioning is enabled
-		versioningResult, err := s3Client.GetBucketVersioning(&s3.GetBucketVersioningInput{
+		versioningResult, err := s3Client.GetBucketVersioning(ctx, &s3.GetBucketVersioningInput{
 			Bucket: aws.String(bucketName),
 		})
 		require.NoError(t, err)
 		assert.Equal(t, "Enabled", *versioningResult.Status)
 
 		// Check public access is blocked
-		publicAccessResult, err := s3Client.GetPublicAccessBlock(&s3.GetPublicAccessBlockInput{
+		publicAccessResult, err := s3Client.GetPublicAccessBlock(ctx, &s3.GetPublicAccessBlockInput{
 			Bucket: aws.String(bucketName),
 		})
 		require.NoError(t, err)
@@ -133,7 +137,7 @@ func TestZappaModule(t *testing.T) {
 		assert.True(t, *publicAccessResult.PublicAccessBlockConfiguration.RestrictPublicBuckets)
 
 		// Check server-side encryption
-		encryptionResult, err := s3Client.GetBucketEncryption(&s3.GetBucketEncryptionInput{
+		encryptionResult, err := s3Client.GetBucketEncryption(ctx, &s3.GetBucketEncryptionInput{
 			Bucket: aws.String(bucketName),
 		})
 		require.NoError(t, err)
@@ -143,7 +147,7 @@ func TestZappaModule(t *testing.T) {
 		assert.Equal(t, "AES256", *rule.ApplyServerSideEncryptionByDefault.SSEAlgorithm)
 
 		// Check lifecycle configuration exists
-		lifecycleResult, err := s3Client.GetBucketLifecycleConfiguration(&s3.GetBucketLifecycleConfigurationInput{
+		lifecycleResult, err := s3Client.GetBucketLifecycleConfiguration(ctx, &s3.GetBucketLifecycleConfigurationInput{
 			Bucket: aws.String(bucketName),
 		})
 		require.NoError(t, err)
@@ -167,14 +171,14 @@ func TestZappaModule(t *testing.T) {
 		roleName := terraform.Output(t, terraformOptions, "zappa_deployment_role_name")
 
 		// Check role exists
-		getRoleResult, err := iamClient.GetRole(&iam.GetRoleInput{
+		getRoleResult, err := iamClient.GetRole(ctx, &iam.GetRoleInput{
 			RoleName: aws.String(roleName),
 		})
 		require.NoError(t, err)
 		assert.Contains(t, *getRoleResult.Role.AssumeRolePolicyDocument, "lambda.amazonaws.com")
 
 		// Check attached policies
-		listPoliciesResult, err := iamClient.ListAttachedRolePolicies(&iam.ListAttachedRolePoliciesInput{
+		listPoliciesResult, err := iamClient.ListAttachedRolePolicies(ctx, &iam.ListAttachedRolePoliciesInput{
 			RoleName: aws.String(roleName),
 		})
 		require.NoError(t, err)
@@ -191,12 +195,12 @@ func TestZappaModule(t *testing.T) {
 		require.NotNil(t, zappaPolicy, "Should have zappa-deployment policy attached")
 
 		// Verify policy permissions
-		getPolicyResult, err := iamClient.GetPolicy(&iam.GetPolicyInput{
+		getPolicyResult, err := iamClient.GetPolicy(ctx, &iam.GetPolicyInput{
 			PolicyArn: zappaPolicy.PolicyArn,
 		})
 		require.NoError(t, err)
 
-		getPolicyVersionResult, err := iamClient.GetPolicyVersion(&iam.GetPolicyVersionInput{
+		getPolicyVersionResult, err := iamClient.GetPolicyVersion(ctx, &iam.GetPolicyVersionInput{
 			PolicyArn: zappaPolicy.PolicyArn,
 			VersionId: getPolicyResult.Policy.DefaultVersionId,
 		})
@@ -214,7 +218,7 @@ func TestZappaModule(t *testing.T) {
 		bucketName := terraform.Output(t, terraformOptions, "s3_bucket_name")
 
 		// Check S3 bucket tags
-		tagResult, err := s3Client.GetBucketTagging(&s3.GetBucketTaggingInput{
+		tagResult, err := s3Client.GetBucketTagging(ctx, &s3.GetBucketTaggingInput{
 			Bucket: aws.String(bucketName),
 		})
 		require.NoError(t, err)
