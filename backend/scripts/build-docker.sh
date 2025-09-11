@@ -7,7 +7,8 @@ set -e # Exit on error
 
 # Configuration
 AWS_REGION=${AWS_REGION:-us-east-1}
-AWS_ACCOUNT=${AWS_ACCOUNT:-686959632945}
+# AWS_ACCOUNT must be set as environment variable (removed hardcoded default)
+AWS_ACCOUNT=${AWS_ACCOUNT}
 ECR_REGISTRY="${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 
 # Colors for output

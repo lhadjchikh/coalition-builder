@@ -1,6 +1,7 @@
 # Application image for AWS Lambda deployment
 # Uses the geolambda base image with GDAL/GEOS/PROJ pre-installed
-FROM 686959632945.dkr.ecr.us-east-1.amazonaws.com/geolambda:3.10.3 AS app
+ARG AWS_ACCOUNT_ID
+FROM ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/geolambda:3.10.3 AS app
 
 # Set working directory for Lambda
 WORKDIR /var/task
