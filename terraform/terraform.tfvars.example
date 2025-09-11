@@ -1,0 +1,131 @@
+# Terraform Variables File Template
+# Copy this file to terraform.tfvars and fill in your values
+# terraform.tfvars is gitignored and will not be committed
+
+# ========================
+# Basic Configuration
+# ========================
+prefix      = "coalition"
+aws_region  = "us-east-1"
+environment = "prod"
+
+tags = {
+  Project     = "coalition"
+  Environment = "Production"
+  ManagedBy   = "Terraform"
+}
+
+# ========================
+# Database Configuration
+# ========================
+db_name     = "coalition"
+db_username = "lab_admin"
+db_password = "CHANGE_ME_BEFORE_DEPLOYMENT"  # Master password
+
+# Application database user (restricted privileges)
+app_db_username = "landandbay_app"
+app_db_password = "CHANGE_ME_BEFORE_DEPLOYMENT"  # App password
+
+# Database settings
+db_instance_class      = "db.t3.micro"
+db_allocated_storage   = 10
+db_max_allocated_storage = 100
+db_publicly_accessible = false
+auto_setup_database    = true
+
+# ========================
+# Domain and DNS
+# ========================
+domain_name     = "yourdomain.org"
+route53_zone_id = ""  # Leave empty if not using Route53
+
+# ========================
+# Bastion Host (SSH Access)
+# ========================
+bastion_key_name   = "coalition-bastion"
+bastion_public_key = ""  # Paste your SSH public key here (ssh-rsa AAAA...)
+
+# ========================
+# Application Configuration
+# ========================
+# Django settings
+django_secret_key = "CHANGE_ME_TO_RANDOM_50_CHAR_STRING"
+django_debug      = "False"
+allowed_hosts     = "localhost,127.0.0.1"  # Add your domain
+
+# Site password protection (for development)
+site_password_enabled = false
+site_password        = "preview"
+site_username        = "admin"
+
+# Contact information
+contact_email    = "info@yourdomain.org"
+contact_phone    = "555-0100"
+contact_address  = "123 Main St, City, State 12345"
+
+# ========================
+# Email Configuration (SES)
+# ========================
+ses_from_email        = "admin@yourdomain.org"
+ses_notification_email = "admin@yourdomain.org"
+ses_dmarc_email       = "dmarc@yourdomain.org"
+ses_enable_notifications = true
+ses_verify_domain     = true
+ses_verify_email      = false
+
+# ========================
+# ECS Configuration
+# ========================
+task_cpu    = 256  # 0.25 vCPU
+task_memory = 512  # 512 MB
+container_port_app = 3000
+container_port_api = 8000
+
+# Fargate pricing (as of 2024):
+# - 0.25 vCPU: ~$9/month
+# - 0.5 GB RAM: ~$2/month
+# - Total: ~$11/month for always-on container
+
+# ========================
+# Budget Alerts
+# ========================
+budget_limit_amount = 25  # Monthly budget in USD
+budget_alert_emails = ["admin@yourdomain.org"]
+
+# ========================
+# VPC Configuration
+# ========================
+# Set to false to use existing VPC
+create_vpc = true
+vpc_cidr   = "10.0.0.0/16"
+
+# If using existing VPC, provide these:
+vpc_id             = ""
+public_subnet_ids  = []
+private_subnet_ids = []
+
+# ========================
+# Static Assets (S3 + CloudFront)
+# ========================
+static_assets_cors_allowed_origins = [
+  "http://localhost:3000",
+  "https://yourdomain.org"
+]
+
+# ========================
+# Feature Flags
+# ========================
+enable_bastion   = true
+enable_ses       = true
+enable_cloudfront = true
+
+# ========================
+# NOTES
+# ========================
+# 1. Replace all CHANGE_ME values before deployment
+# 2. Generate a secure Django secret key: 
+#    python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+# 3. Use strong passwords for database accounts
+# 4. Update domain_name and email addresses to your actual values
+# 5. Adjust resource sizes (db_instance_class, task_cpu, task_memory) based on your needs
+# 6. Set budget_limit_amount to your monthly AWS budget threshold

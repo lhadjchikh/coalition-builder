@@ -19,9 +19,9 @@ This guide explains how to use Docker Compose for local development with hot rel
    ```
 
 3. **Access the application:**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
-   - Django Admin: http://localhost:8000/admin
+   - Frontend: <http://localhost:3000>
+   - Backend API: <http://localhost:8000>
+   - Django Admin: <http://localhost:8000/admin>
 
 ## How It Works
 
@@ -48,6 +48,7 @@ The `docker-compose.dev.yml` file overrides the production configuration to enab
 - Edit files in `backend/` directory
 - Django server auto-reloads on Python file changes
 - For new dependencies:
+
   ```bash
   docker compose -f docker-compose.yml -f docker-compose.dev.yml build api
   ```
@@ -57,6 +58,7 @@ The `docker-compose.dev.yml` file overrides the production configuration to enab
 - Edit files in `frontend/` directory
 - Next.js fast refresh updates browser instantly
 - For new dependencies:
+
   ```bash
   docker compose -f docker-compose.yml -f docker-compose.dev.yml build app
   ```
@@ -64,10 +66,13 @@ The `docker-compose.dev.yml` file overrides the production configuration to enab
 ### Database Changes
 
 - Run migrations:
+
   ```bash
   docker compose exec api python manage.py migrate
   ```
+
 - Create superuser:
+
   ```bash
   docker compose exec api python manage.py createsuperuser
   ```

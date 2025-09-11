@@ -14,12 +14,19 @@ from ninja.errors import HttpError
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.email_service import EndorsementEmailService
 from coalition.endorsements.models import Endorsement
-from coalition.endorsements.spam_prevention import SpamPreventionService, get_client_ip
+from coalition.endorsements.spam_prevention import (
+    SpamPreventionService,
+    get_client_ip,
+)
 from coalition.legal.models import LegalDocument, TermsAcceptance
 from coalition.stakeholders.models import Stakeholder
 from coalition.stakeholders.services import GeocodingService
 
-from .schemas import EndorsementCreateSchema, EndorsementOut, EndorsementVerifySchema
+from .schemas import (
+    EndorsementCreateSchema,
+    EndorsementOut,
+    EndorsementVerifySchema,
+)
 
 router = Router()
 logger = logging.getLogger(__name__)

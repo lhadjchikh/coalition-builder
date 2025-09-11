@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("regions", "0001_initial"),
         ("stakeholders", "0005_add_scientist_healthcare_types"),

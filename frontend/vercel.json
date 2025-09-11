@@ -1,0 +1,88 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "devCommand": "npm run dev",
+
+  "env": {
+    "NEXT_PUBLIC_API_URL": "@api_url",
+    "NEXT_PUBLIC_ENVIRONMENT": "@environment",
+    "NEXT_PUBLIC_GOOGLE_ANALYTICS_ID": "@google_analytics_id",
+    "NEXT_PUBLIC_SITE_URL": "@site_url"
+  },
+
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_API_URL": "@api_url",
+      "NEXT_PUBLIC_ENVIRONMENT": "@environment",
+      "NEXT_PUBLIC_GOOGLE_ANALYTICS_ID": "@google_analytics_id",
+      "NEXT_PUBLIC_SITE_URL": "@site_url",
+      "NODE_ENV": "production"
+    }
+  },
+
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    },
+    {
+      "source": "/_next/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ],
+
+  "redirects": [],
+
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://api.yourdomain.com/:path*"
+    }
+  ],
+
+  "regions": ["iad1"],
+
+  "functions": {
+    "app/api/health/route.ts": {
+      "maxDuration": 10
+    },
+    "app/campaigns/[name]/page.tsx": {
+      "maxDuration": 30
+    }
+  },
+
+  "crons": []
+}

@@ -85,7 +85,7 @@ python scripts/setup_dev_env.py --os windows
 - 🔄 **Go Tools**: Installs all Go linting tools automatically
 - ✅ **Validation**: Tests the setup by running the lint script
 
-## Lint Script Features:
+## Lint Script Features
 
 - 🎨 **Auto-formatting**: Fixes formatting issues automatically
 - 🔧 **Tool Installation**: Installs missing linting tools automatically

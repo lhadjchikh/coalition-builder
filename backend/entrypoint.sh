@@ -41,6 +41,10 @@ while attempt < max_attempts:
 "
 echo "Database is ready!"
 
+# Create cache table if using database cache
+echo "Creating cache table..."
+python manage.py createcachetable || true
+
 # Apply database migrations
 echo "Applying migrations..."
 python manage.py migrate --noinput
