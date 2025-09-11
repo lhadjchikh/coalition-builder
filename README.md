@@ -4,6 +4,8 @@
 [![Full Stack Tests](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_fullstack.yml/badge.svg)](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_fullstack.yml)
 [![Code Coverage](https://codecov.io/gh/lhadjchikh/coalition-builder/branch/main/graph/badge.svg?token=VGUU4R6NR3)](https://codecov.io/gh/lhadjchikh/coalition-builder)
 
+> **⚠️ Pre-Alpha Software:** This project is in pre-alpha and undergoing rapid development with a major serverless migration in progress ([PR #222](https://github.com/lhadjchikh/coalition-builder/pull/222)). No official releases yet. Expect frequent updates and architectural changes.
+
 A comprehensive platform for organizing and managing policy advocacy campaigns, bringing together stakeholders, legislators, and advocates to drive meaningful policy change.
 
 ## 📊 Build Status
