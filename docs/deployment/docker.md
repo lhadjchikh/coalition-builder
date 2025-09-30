@@ -2,7 +2,7 @@
 
 This guide covers running Coalition Builder locally using Docker and Docker Compose for development purposes.
 
-> **Note**: For production deployment, Coalition Builder uses a serverless architecture on AWS Lambda and Vercel. See [AWS Serverless Guide](aws.md) and [Lambda Deployment](../lambda_deployment.md) for production deployment.
+> **Note**: For production deployment, Coalition Builder uses a serverless architecture on AWS Lambda and Vercel. See [AWS Serverless Guide](aws.md) and [Lambda Deployment](../LAMBDA_DEPLOYMENT.md) for production deployment.
 
 ## Overview
 

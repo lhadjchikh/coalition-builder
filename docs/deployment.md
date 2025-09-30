@@ -304,8 +304,8 @@ Environment variables are set via GitHub Actions:
 ### Getting Help
 
 - Check [GitHub Actions workflows](deployment/workflows.md)
-- View [Lambda deployment guide](lambda_deployment.md)
-- See [Vercel deployment guide](vercel_deployment.md)
+- View [Lambda deployment guide](LAMBDA_DEPLOYMENT.md)
+- See [Vercel deployment guide](VERCEL_DEPLOYMENT.md)
 - Review CloudWatch logs for errors
 
 ## Migration from Legacy

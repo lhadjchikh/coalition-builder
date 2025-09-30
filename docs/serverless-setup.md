@@ -190,6 +190,6 @@ zappa deploy dev
 
 ## Next Steps
 
-- [Configure Vercel](vercel_deployment.md) for frontend deployment
-- [Set up GitHub Actions](workflows.md) for CI/CD
-- [Configure custom domain](custom-domain.md) for production
+- [Configure Vercel](VERCEL_DEPLOYMENT.md) for frontend deployment
+- [Set up GitHub Actions](deployment/workflows.md) for CI/CD
+- Configure custom domain for production (see deployment documentation)

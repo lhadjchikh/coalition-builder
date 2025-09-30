@@ -207,7 +207,7 @@ For a comprehensive list of all environment variables, see:
    - `VERCEL_PROJECT_ID`
 
 2. **Configure environment variables per environment**
-   See [Lambda Deployment Guide](lambda_deployment.md) and [Vercel Deployment Guide](vercel_deployment.md)
+   See [Lambda Deployment Guide](LAMBDA_DEPLOYMENT.md) and [Vercel Deployment Guide](VERCEL_DEPLOYMENT.md)
 
 3. **Deploy infrastructure:**
 

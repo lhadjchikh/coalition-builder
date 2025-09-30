@@ -122,8 +122,8 @@ The `/frontend` directory contains a Next.js application that serves as the prim
 1. **[Installation](installation.md)** - Quick setup for development
 2. **[Configuration](configuration.md)** - Environment variables and settings
 3. **[Development](development.md)** - Development workflow and contributing
-4. **[Lambda Deployment](lambda_deployment.md)** - Backend deployment to AWS Lambda
-5. **[Vercel Deployment](vercel_deployment.md)** - Frontend deployment to Vercel
+4. **[Lambda Deployment](LAMBDA_DEPLOYMENT.md)** - Backend deployment to AWS Lambda
+5. **[Vercel Deployment](VERCEL_DEPLOYMENT.md)** - Frontend deployment to Vercel
 6. **[Legacy Deployment](deployment.md)** - ECS deployment (deprecated)
 
 ## User Guides
@@ -147,8 +147,8 @@ Comprehensive guides for managing your coalition platform:
 
 ## Deployment Guides
 
-- **[Lambda Deployment](lambda_deployment.md)** - Deploy Django to AWS Lambda with Zappa
-- **[Vercel Deployment](vercel_deployment.md)** - Deploy Next.js to Vercel Edge Network
+- **[Lambda Deployment](LAMBDA_DEPLOYMENT.md)** - Deploy Django to AWS Lambda with Zappa
+- **[Vercel Deployment](VERCEL_DEPLOYMENT.md)** - Deploy Next.js to Vercel Edge Network
 - **[GitHub Workflows](deployment/workflows.md)** - CI/CD pipelines for automated deployment
 - **[Geographic Data Import](deployment/geodata-import.md)** - Import TIGER shapefiles via ECS
 

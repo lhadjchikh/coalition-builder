@@ -36,7 +36,12 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - Configuration: configuration.md
-  - Development: development.md
+  - Development:
+      - Overview: development.md
+      - Setup: development/setup.md
+      - Testing: development/testing.md
+      - Docker Hot Reload: development/docker-hot-reload.md
+      - Automated Protection: development/automated-protection.md
   - User Guides:
       - Theme Management: user-guides/theme-management.md
       - Homepage Management: user-guides/homepage-management.md
@@ -45,7 +50,19 @@ nav:
       - Endorsement Workflow: user-guides/endorsement-workflow.md
       - Legal Compliance: user-guides/legal-compliance.md
       - Content Management: user-guides/content-management.md
-  - Deployment: deployment.md
+  - Deployment:
+      - Overview: deployment.md
+      - AWS Deployment: deployment/aws.md
+      - Docker Deployment: deployment/docker.md
+      - Lambda Deployment: LAMBDA_DEPLOYMENT.md
+      - Vercel Deployment: VERCEL_DEPLOYMENT.md
+      - Serverless Setup: serverless-setup.md
+      - GitHub Environment: deployment/github-environment-setup.md
+      - Workflows: deployment/workflows.md
+      - Geodata Import: deployment/geodata-import.md
+  - Operations:
+      - Email Configuration: email-configuration.md
+      - Rate Limiting: rate-limiting.md
   - Architecture:
       - Database Models: architecture/models.md
   - Reference:
