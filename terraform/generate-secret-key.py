@@ -42,29 +42,19 @@ if __name__ == "__main__":
         default="secret_key.tfvars",
         help="Output file path (default: secret_key.tfvars)",
     )
-    parser.add_argument(
-        "--print",
-        action="store_true",
-        help="Print key to stdout (WARNING: may expose in logs)",
-    )
+# Removed ability to print secret key to stdout.
     args = parser.parse_args()
 
     key = generate_secret_key()
 
-    if args.print:
-        print("\n⚠️  WARNING: Printing secret key to stdout (may appear in logs)")
-        print("=" * 60)
-        print(key)
-        print("=" * 60)
-    else:
-        try:
-            write_key_to_file(key, args.output)
-            print(f"\n✅ Secret key generated and saved to: {args.output}")
-            print(f"   File permissions set to 0600 (owner read/write only)")
-            print(f"\n📝 To use with Terraform:")
-            print(f"   terraform apply -var-file={args.output}")
-            print("\n⚠️  Keep this file secure and never commit it to version control!")
-            print("   Add to .gitignore: echo 'secret_key.tfvars' >> .gitignore")
-        except Exception as e:
-            print(f"\n❌ Error writing key to file: {e}", file=sys.stderr)
-            sys.exit(1)
+    try:
+        write_key_to_file(key, args.output)
+        print(f"\n✅ Secret key generated and saved to: {args.output}")
+        print(f"   File permissions set to 0600 (owner read/write only)")
+        print(f"\n📝 To use with Terraform:")
+        print(f"   terraform apply -var-file={args.output}")
+        print("\n⚠️  Keep this file secure and never commit it to version control!")
+        print("   Add to .gitignore: echo 'secret_key.tfvars' >> .gitignore")
+    except Exception as e:
+        print(f"\n❌ Error writing key to file: {e}", file=sys.stderr)
+        sys.exit(1)
