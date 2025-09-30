@@ -102,6 +102,7 @@ jobs:
             -v $(pwd)/backend_coverage:/app/coverage \
             -e PYTHONUNBUFFERED=1 \
             -e DEBUG=True \
+            -e ENVIRONMENT=test \
             -e DATABASE_URL=postgis://coalition_admin:admin_password@db:5432/coalition \
             api sh -c "
               poetry install --with dev &&
