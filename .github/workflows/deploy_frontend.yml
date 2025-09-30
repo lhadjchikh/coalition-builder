@@ -99,6 +99,9 @@ jobs:
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=${{ steps.vercel_env.outputs.vercel_env }} --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: ./frontend
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Build Project Artifacts
         run: |
@@ -107,6 +110,8 @@ jobs:
             --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: ./frontend
         env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
           NEXT_PUBLIC_ENVIRONMENT: ${{ steps.env.outputs.environment }}
           NEXT_PUBLIC_SITE_URL: ${{ steps.api.outputs.site_url }}
@@ -124,6 +129,9 @@ jobs:
           echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
           echo "Deployed to: $DEPLOY_URL"
         working-directory: ./frontend
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Create deployment summary
         run: |
