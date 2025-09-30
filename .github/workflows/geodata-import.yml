@@ -34,6 +34,10 @@ on:
         required: false
         default: ""
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   import:
     name: Import Geographic Data

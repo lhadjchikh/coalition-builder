@@ -18,6 +18,10 @@ on:
           - staging
           - production
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   deploy:
     name: Deploy Django to Lambda
