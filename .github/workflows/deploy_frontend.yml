@@ -105,20 +105,24 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
+          NEXT_PUBLIC_ENVIRONMENT: ${{ steps.env.outputs.environment }}
+          NEXT_PUBLIC_SITE_URL: ${{ steps.api.outputs.site_url }}
+          NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: ${{ vars.GOOGLE_ANALYTICS_ID }}
 
       - name: Build Project Artifacts
         run: |
           vercel build \
             --prod=${{ steps.env.outputs.environment == 'production' && 'true' || 'false' }} \
-            --build-env NEXT_PUBLIC_API_URL="${{ steps.api.outputs.api_url }}" \
-            --build-env NEXT_PUBLIC_ENVIRONMENT="${{ steps.env.outputs.environment }}" \
-            --build-env NEXT_PUBLIC_SITE_URL="${{ steps.api.outputs.site_url }}" \
-            --build-env NEXT_PUBLIC_GOOGLE_ANALYTICS_ID="${{ vars.GOOGLE_ANALYTICS_ID }}" \
             --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: ./frontend
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
+          NEXT_PUBLIC_ENVIRONMENT: ${{ steps.env.outputs.environment }}
+          NEXT_PUBLIC_SITE_URL: ${{ steps.api.outputs.site_url }}
+          NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: ${{ vars.GOOGLE_ANALYTICS_ID }}
 
       - name: Deploy to Vercel
         id: deploy
