@@ -95,8 +95,9 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ENV: ${{ needs.determine-environment.outputs.environment == 'production' && 'prod' || needs.determine-environment.outputs.environment }}
         run: |
-          # Pull base image if not building it
+          # Pull and tag base image if not building it
           docker pull $ECR_REGISTRY/geolambda:3.10.3 || ./scripts/build-docker.sh geolambda
+          docker tag $ECR_REGISTRY/geolambda:3.10.3 geolambda:3.10.3
 
           # Build and push application image
           ./scripts/build-docker.sh $ENV
@@ -124,7 +125,7 @@ jobs:
           VPC_SUBNET_IDS: ${{ vars.VPC_SUBNET_IDS }}
           VPC_SECURITY_GROUP_IDS: ${{ vars.VPC_SECURITY_GROUP_IDS }}
         run: |
-          python scripts/configure-zappa.py
+          python scripts/configure_zappa.py
 
       - name: Deploy with Zappa
         working-directory: ./backend
@@ -174,7 +175,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "22"
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
