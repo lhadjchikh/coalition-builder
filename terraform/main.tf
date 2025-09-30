@@ -142,9 +142,8 @@ module "compute" {
   bastion_security_group_id       = module.security.bastion_security_group_id
   api_target_group_arn            = module.loadbalancer.api_target_group_arn
   app_target_group_arn            = module.loadbalancer.app_target_group_arn
-  db_url_secret_arn               = module.secrets.db_url_secret_arn
-  secret_key_secret_arn           = module.secrets.secret_key_secret_arn
-  secrets_kms_key_arn             = module.secrets.secrets_kms_key_arn
+  db_url_parameter_arn            = module.secrets.db_url_secret_arn
+  secret_key_parameter_arn        = module.secrets.secret_key_secret_arn
   bastion_key_name                = var.bastion_key_name
   bastion_public_key              = var.bastion_public_key
   create_new_key_pair             = var.create_new_key_pair
@@ -156,7 +155,7 @@ module "compute" {
   alb_dns_name                    = module.loadbalancer.alb_dns_name
   csrf_trusted_origins            = var.csrf_trusted_origins
   site_password_enabled           = var.site_password_enabled
-  site_password_secret_arn        = module.secrets.site_password_secret_arn
+  site_password_parameter_arn     = module.secrets.site_password_secret_arn
   site_username                   = var.site_username
   static_assets_upload_policy_arn = module.storage.static_assets_upload_policy_arn
   static_assets_bucket_name       = module.storage.static_assets_bucket_name
