@@ -36,6 +36,10 @@ on:
         required: false
         default: "{}"
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   manage:
     name: Lambda Management - ${{ github.event.inputs.action }}
