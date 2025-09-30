@@ -2,6 +2,17 @@
 # Uses free SSM parameters for simple string values
 # Complex JSON objects remain in Secrets Manager
 
+terraform {
+  required_version = ">= 1.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.0"
+    }
+  }
+}
+
 # Django Secret Key Parameter (simple string)
 resource "aws_ssm_parameter" "secret_key" {
   name        = "/${var.prefix}/secret-key"

@@ -1,6 +1,21 @@
 # Serverless Storage Module - S3 buckets for Lambda/serverless deployments
 # Creates environment-specific S3 buckets for static assets and uploads
 
+terraform {
+  required_version = ">= 1.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = ">= 3.0"
+    }
+  }
+}
+
 # Single random suffix shared by all buckets (only if enabled)
 resource "random_id" "bucket_suffix" {
   byte_length = 4
@@ -10,8 +25,6 @@ resource "random_id" "bucket_suffix" {
 }
 
 locals {
-  environments = ["dev", "staging", "production"]
-
   # Use a single random suffix for all buckets (easier to manage)
   suffix = var.use_random_suffix && length(random_id.bucket_suffix) > 0 ? "-${random_id.bucket_suffix[0].hex}" : ""
 
