@@ -200,7 +200,7 @@ func TestGeodataImportModule(t *testing.T) {
 		logGroupName := terraform.Output(t, terraformOptions, "log_group_name")
 
 		// Check log group exists
-		describeResult, err := logsClient.DescribeLogGroups(&cloudwatchlogs.DescribeLogGroupsInput{
+		describeResult, err := logsClient.DescribeLogGroups(ctx, &cloudwatchlogs.DescribeLogGroupsInput{
 			LogGroupNamePrefix: aws.String(logGroupName),
 		})
 		require.NoError(t, err)

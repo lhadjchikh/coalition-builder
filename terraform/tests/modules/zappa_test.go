@@ -10,7 +10,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
@@ -124,7 +126,7 @@ func TestZappaModule(t *testing.T) {
 			Bucket: aws.String(bucketName),
 		})
 		require.NoError(t, err)
-		assert.Equal(t, "Enabled", *versioningResult.Status)
+		assert.Equal(t, types.BucketVersioningStatusEnabled, versioningResult.Status)
 
 		// Check public access is blocked
 		publicAccessResult, err := s3Client.GetPublicAccessBlock(ctx, &s3.GetPublicAccessBlockInput{
@@ -144,7 +146,7 @@ func TestZappaModule(t *testing.T) {
 		assert.NotEmpty(t, encryptionResult.ServerSideEncryptionConfiguration.Rules)
 
 		rule := encryptionResult.ServerSideEncryptionConfiguration.Rules[0]
-		assert.Equal(t, "AES256", *rule.ApplyServerSideEncryptionByDefault.SSEAlgorithm)
+		assert.Equal(t, types.ServerSideEncryptionAes256, rule.ApplyServerSideEncryptionByDefault.SSEAlgorithm)
 
 		// Check lifecycle configuration exists
 		lifecycleResult, err := s3Client.GetBucketLifecycleConfiguration(ctx, &s3.GetBucketLifecycleConfigurationInput{
@@ -154,15 +156,15 @@ func TestZappaModule(t *testing.T) {
 		assert.NotEmpty(t, lifecycleResult.Rules)
 
 		// Find the delete-old-deployments rule
-		var deleteRule *s3.LifecycleRule
-		for _, rule := range lifecycleResult.Rules {
-			if *rule.ID == "delete-old-deployments" {
-				deleteRule = rule
+		var deleteRule *types.LifecycleRule
+		for i := range lifecycleResult.Rules {
+			if *lifecycleResult.Rules[i].ID == "delete-old-deployments" {
+				deleteRule = &lifecycleResult.Rules[i]
 				break
 			}
 		}
 		require.NotNil(t, deleteRule, "Should have delete-old-deployments lifecycle rule")
-		assert.Equal(t, "Enabled", *deleteRule.Status)
+		assert.Equal(t, types.ExpirationStatusEnabled, deleteRule.Status)
 		assert.Equal(t, int64(30), *deleteRule.NoncurrentVersionExpiration.NoncurrentDays)
 	})
 
@@ -185,10 +187,10 @@ func TestZappaModule(t *testing.T) {
 		assert.NotEmpty(t, listPoliciesResult.AttachedPolicies)
 
 		// Find our custom policy
-		var zappaPolicy *iam.AttachedPolicy
-		for _, policy := range listPoliciesResult.AttachedPolicies {
-			if strings.Contains(*policy.PolicyName, "zappa-deployment") {
-				zappaPolicy = policy
+		var zappaPolicy *iamtypes.AttachedPolicy
+		for i := range listPoliciesResult.AttachedPolicies {
+			if strings.Contains(*listPoliciesResult.AttachedPolicies[i].PolicyName, "zappa-deployment") {
+				zappaPolicy = &listPoliciesResult.AttachedPolicies[i]
 				break
 			}
 		}
