@@ -163,7 +163,7 @@ class DatabaseRateLimiter:
 
             # Fetch the updated count
             updated_data = cache.get(cache_key, {"count": 1})
-            return updated_data.get("count", 1)
+            return int(updated_data.get("count", 1))
 
         except Exception as e:
             logger.warning(f"Atomic increment fallback error: {e}")
@@ -174,7 +174,7 @@ class DatabaseRateLimiter:
             )
             current_data["count"] = current_data.get("count", 0) + 1
             cache.set(cache_key, current_data, timeout=window_seconds + 60)
-            return current_data["count"]
+            return int(current_data["count"])
 
     def get_remaining_attempts(
         self,
