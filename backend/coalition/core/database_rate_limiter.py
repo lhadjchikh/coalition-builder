@@ -103,13 +103,9 @@ class DatabaseRateLimiter:
                 cache.set(cache_key, current_data, timeout=window_seconds + 60)
                 new_count = current_data["count"]
 
-            # Check if now over limit (after increment)
-            if new_count > max_attempts:
-                logger.info(
-                    f"Rate limit exceeded for {key}: {new_count}/{max_attempts}",
-                )
-                return True
-
+            # Note: The return value here is not used for rate limiting decisions.
+            # The actual rate limiting check is done via get_rate_limit_info().
+            # This method's primary purpose is to increment the counter.
             return False
 
         except Exception as e:
@@ -267,7 +263,7 @@ class DatabaseRateLimiter:
             reset_in = window_seconds - (current_time - window_start)
 
             return {
-                "allowed": current_count < max_attempts,
+                "allowed": current_count <= max_attempts,
                 "remaining": max(0, max_attempts - current_count),
                 "total": max_attempts,
                 "reset_in": max(0, reset_in),
