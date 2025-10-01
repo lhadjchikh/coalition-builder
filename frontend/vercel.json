@@ -5,23 +5,6 @@
   "installCommand": "npm install",
   "devCommand": "npm run dev",
 
-  "env": {
-    "NEXT_PUBLIC_API_URL": "@api_url",
-    "NEXT_PUBLIC_ENVIRONMENT": "@environment",
-    "NEXT_PUBLIC_GOOGLE_ANALYTICS_ID": "@google_analytics_id",
-    "NEXT_PUBLIC_SITE_URL": "@site_url"
-  },
-
-  "build": {
-    "env": {
-      "NEXT_PUBLIC_API_URL": "@api_url",
-      "NEXT_PUBLIC_ENVIRONMENT": "@environment",
-      "NEXT_PUBLIC_GOOGLE_ANALYTICS_ID": "@google_analytics_id",
-      "NEXT_PUBLIC_SITE_URL": "@site_url",
-      "NODE_ENV": "production"
-    }
-  },
-
   "headers": [
     {
       "source": "/api/(.*)",
