@@ -115,9 +115,11 @@ jobs:
 
       - name: Build Project Artifacts
         run: |
-          vercel build \
-            --prod=${{ steps.env.outputs.environment == 'production' && 'true' || 'false' }} \
-            --token=${{ secrets.VERCEL_TOKEN }}
+          if [[ "${{ steps.env.outputs.environment }}" == "production" ]]; then
+            vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          else
+            vercel build --token=${{ secrets.VERCEL_TOKEN }}
+          fi
         working-directory: ./frontend
 
       - name: Deploy to Vercel
