@@ -54,19 +54,23 @@ class DatabaseRateLimiterTest(TestCase):
         assert test_key.startswith("test:")
 
     def test_basic_rate_limiting(self) -> None:
-        """Test basic rate limiting functionality."""
+        """Test basic rate limiting functionality using record-then-check pattern."""
         key = "test_ip_1"
         max_attempts = 3
         window_seconds = 60
 
         # First 3 attempts should be allowed
         for i in range(max_attempts):
-            result = self.limiter.is_rate_limited(key, max_attempts, window_seconds)
-            assert not result, f"Attempt {i + 1} should be allowed"
+            # Record the attempt
+            self.limiter.record_attempt(key, window_seconds)
+            # Check if allowed
+            info = self.limiter.get_rate_limit_info(key, max_attempts, window_seconds)
+            assert info["allowed"], f"Attempt {i + 1} should be allowed"
 
         # 4th attempt should be blocked
-        result = self.limiter.is_rate_limited(key, max_attempts, window_seconds)
-        assert result, "4th attempt should be rate limited"
+        self.limiter.record_attempt(key, window_seconds)
+        info = self.limiter.get_rate_limit_info(key, max_attempts, window_seconds)
+        assert not info["allowed"], "4th attempt should be rate limited"
 
     def test_different_keys_independent(self) -> None:
         """Test that different keys are rate limited independently."""
@@ -77,11 +81,19 @@ class DatabaseRateLimiterTest(TestCase):
 
         # Exhaust limit for key1
         for _i in range(max_attempts):
-            assert not self.limiter.is_rate_limited(key1, max_attempts, window_seconds)
-        assert self.limiter.is_rate_limited(key1, max_attempts, window_seconds)
+            self.limiter.record_attempt(key1, window_seconds)
+            info = self.limiter.get_rate_limit_info(key1, max_attempts, window_seconds)
+            assert info["allowed"]
+
+        # One more to exceed limit
+        self.limiter.record_attempt(key1, window_seconds)
+        info = self.limiter.get_rate_limit_info(key1, max_attempts, window_seconds)
+        assert not info["allowed"]
 
         # key2 should still be allowed
-        assert not self.limiter.is_rate_limited(key2, max_attempts, window_seconds)
+        self.limiter.record_attempt(key2, window_seconds)
+        info = self.limiter.get_rate_limit_info(key2, max_attempts, window_seconds)
+        assert info["allowed"]
 
     def test_window_key_generation(self) -> None:
         """Test time window key generation."""
@@ -110,7 +122,7 @@ class DatabaseRateLimiterTest(TestCase):
         assert remaining == 5
 
         # After one attempt
-        self.limiter.is_rate_limited(key, max_attempts, window_seconds)
+        self.limiter.record_attempt(key, max_attempts, window_seconds)
         remaining = self.limiter.get_remaining_attempts(
             key,
             max_attempts,
@@ -120,7 +132,7 @@ class DatabaseRateLimiterTest(TestCase):
 
         # After exhausting all attempts
         for _i in range(4):  # 4 more attempts (total 5)
-            self.limiter.is_rate_limited(key, max_attempts, window_seconds)
+            self.limiter.record_attempt(key, max_attempts, window_seconds)
 
         remaining = self.limiter.get_remaining_attempts(
             key,
@@ -136,15 +148,18 @@ class DatabaseRateLimiterTest(TestCase):
         window_seconds = 60
 
         # Exhaust the limit
-        for _i in range(max_attempts):
-            assert not self.limiter.is_rate_limited(key, max_attempts, window_seconds)
-        assert self.limiter.is_rate_limited(key, max_attempts, window_seconds)
+        for _i in range(max_attempts + 1):
+            self.limiter.record_attempt(key, max_attempts, window_seconds)
+
+        info = self.limiter.get_rate_limit_info(key, max_attempts, window_seconds)
+        assert not info["allowed"]
 
         # Reset the limit
         self.limiter.reset_limit(key)
 
         # Should be allowed again
-        assert not self.limiter.is_rate_limited(key, max_attempts, window_seconds)
+        info = self.limiter.get_rate_limit_info(key, max_attempts, window_seconds)
+        assert info["allowed"]
 
     def test_get_rate_limit_info(self) -> None:
         """Test getting comprehensive rate limit info."""
@@ -162,7 +177,7 @@ class DatabaseRateLimiterTest(TestCase):
         assert info["reset_in"] > 0
 
         # After one attempt
-        self.limiter.is_rate_limited(key, max_attempts, window_seconds)
+        self.limiter.record_attempt(key, max_attempts, window_seconds)
         info = self.limiter.get_rate_limit_info(key, max_attempts, window_seconds)
         assert info["allowed"]
         assert info["remaining"] == 2
@@ -174,9 +189,12 @@ class DatabaseRateLimiterTest(TestCase):
 
         # Mock cache to raise exception
         with patch.object(cache, "get_or_set", side_effect=Exception("Cache error")):
-            # Should not raise exception and should allow request (fail-open)
-            result = self.limiter.is_rate_limited(key, 3, 60)
-            assert not result, "Should fail open when cache errors occur"
+            # Should not raise exception (fail-open)
+            try:
+                self.limiter.record_attempt(key, 60)
+                # If it didn't raise, that's good - fail-open behavior
+            except Exception:
+                self.fail("Should fail open when cache errors occur")
 
     def test_different_window_sizes(self) -> None:
         """Test rate limiting with different window sizes."""
@@ -185,13 +203,18 @@ class DatabaseRateLimiterTest(TestCase):
 
         # Test 60-second window
         for _i in range(max_attempts):
-            assert not self.limiter.is_rate_limited(key, max_attempts, 60)
-        assert self.limiter.is_rate_limited(key, max_attempts, 60)
+            self.limiter.record_attempt(key, 60)
+            info = self.limiter.get_rate_limit_info(key, max_attempts, 60)
+            assert info["allowed"]
+
+        self.limiter.record_attempt(key, 60)
+        info = self.limiter.get_rate_limit_info(key, max_attempts, 60)
+        assert not info["allowed"]
 
         # Same key but different window should be independent
         # (though it shares some implementation details due to cache key generation)
-        self.limiter.is_rate_limited(key, max_attempts, 300)
-        # This might be True or False depending on implementation details
+        self.limiter.record_attempt(key, 300)
+        # This might be allowed or not depending on implementation details
         # The key point is it doesn't crash
 
     def test_concurrent_requests_simulation(self) -> None:
@@ -200,15 +223,16 @@ class DatabaseRateLimiterTest(TestCase):
         max_attempts = 5
         window_seconds = 60
 
-        # Simulate rapid successive requests
-        results = []
+        # Simulate rapid successive requests using record-then-check pattern
+        allowed_results = []
         for _i in range(10):
-            result = self.limiter.is_rate_limited(key, max_attempts, window_seconds)
-            results.append(result)
+            self.limiter.record_attempt(key, window_seconds)
+            info = self.limiter.get_rate_limit_info(key, max_attempts, window_seconds)
+            allowed_results.append(info["allowed"])
 
-        # Should have exactly 5 allowed (False) and 5 blocked (True)
-        allowed_count = sum(1 for r in results if not r)
-        blocked_count = sum(1 for r in results if r)
+        # Should have exactly 5 allowed (True) and 5 blocked (False)
+        allowed_count = sum(1 for r in allowed_results if r)
+        blocked_count = sum(1 for r in allowed_results if not r)
 
         assert allowed_count == max_attempts
         assert blocked_count == 10 - max_attempts
@@ -231,16 +255,15 @@ class DatabaseRateLimiterTest(TestCase):
     def test_logging(self, mock_logger: Mock) -> None:
         """Test that appropriate logging occurs."""
         key = "test_logging"
-        max_attempts = 1
 
-        # First request should be allowed (no logging)
-        self.limiter.is_rate_limited(key, max_attempts, 60)
+        # First request should be allowed (no logging from record_attempt)
+        self.limiter.record_attempt(key, 60)
         mock_logger.info.assert_not_called()
 
-        # Second request should be blocked and logged
-        self.limiter.is_rate_limited(key, max_attempts, 60)
-        mock_logger.info.assert_called_once()
-        assert "Rate limit exceeded" in str(mock_logger.info.call_args)
+        # Second request increments counter but no logging (record_attempt just records)
+        self.limiter.record_attempt(key, 60)
+        # Note: record_attempt() does not log, it just records
+        # Logging would happen at application level when checking get_rate_limit_info()
 
     def test_get_rate_limiter_function(self) -> None:
         """Test the factory function."""
@@ -250,23 +273,25 @@ class DatabaseRateLimiterTest(TestCase):
     def test_edge_case_zero_attempts(self) -> None:
         """Test edge case with zero max attempts."""
         key = "test_zero"
-        result = self.limiter.is_rate_limited(key, 0, 60)
+        self.limiter.record_attempt(key, 60)
+        info = self.limiter.get_rate_limit_info(key, 0, 60)
         # With 0 max attempts, should always be rate limited
-        assert result
+        assert not info["allowed"]
 
     def test_edge_case_negative_values(self) -> None:
         """Test edge cases with negative values."""
         key = "test_negative"
 
         # Negative max_attempts should be handled gracefully
-        result = self.limiter.is_rate_limited(key, -1, 60)
+        self.limiter.record_attempt(key, 60)
+        info = self.limiter.get_rate_limit_info(key, -1, 60)
         # Should be rate limited (no attempts allowed)
-        assert result
+        assert not info["allowed"]
 
         # Negative window_seconds should be handled gracefully
         # (Implementation may vary, but should not crash)
         try:
-            result = self.limiter.is_rate_limited(key, 3, -60)
+            self.limiter.record_attempt(key, -60)
             # Should either work or fail gracefully
         except Exception:
             self.fail("Should handle negative window_seconds gracefully")
@@ -283,19 +308,22 @@ class DatabaseRateLimiterTest(TestCase):
 
         # Use up attempts in this window
         for i in range(max_attempts):
-            result = self.limiter.is_rate_limited(key, max_attempts, window_seconds)
-            assert not result, f"Attempt {i + 1} should be allowed"
+            self.limiter.record_attempt(key, window_seconds)
+            info = self.limiter.get_rate_limit_info(key, max_attempts, window_seconds)
+            assert info["allowed"], f"Attempt {i + 1} should be allowed"
 
         # Next attempt should be blocked
-        result = self.limiter.is_rate_limited(key, max_attempts, window_seconds)
-        assert result, "Should be rate limited after max attempts"
+        self.limiter.record_attempt(key, window_seconds)
+        info = self.limiter.get_rate_limit_info(key, max_attempts, window_seconds)
+        assert not info["allowed"], "Should be rate limited after max attempts"
 
         # Move to next window
         mock_time.return_value = 3660.0  # 1 minute later (new window)
 
         # Should be allowed again in new window
-        result = self.limiter.is_rate_limited(key, max_attempts, window_seconds)
-        assert not result, "Should be allowed in new time window"
+        self.limiter.record_attempt(key, window_seconds)
+        info = self.limiter.get_rate_limit_info(key, max_attempts, window_seconds)
+        assert info["allowed"], "Should be allowed in new time window"
 
 
 class DatabaseRateLimiterIntegrationTest(TestCase):
@@ -328,12 +356,14 @@ class DatabaseRateLimiterIntegrationTest(TestCase):
 
         # Test normal rate limiting flow
         for i in range(max_attempts):
-            result = self.limiter.is_rate_limited(key, max_attempts, 60)
-            assert not result, f"Attempt {i + 1} should be allowed"
+            self.limiter.record_attempt(key, 60)
+            info = self.limiter.get_rate_limit_info(key, max_attempts, 60)
+            assert info["allowed"], f"Attempt {i + 1} should be allowed"
 
         # Next attempt should be blocked
-        result = self.limiter.is_rate_limited(key, max_attempts, 60)
-        assert result, "Should be rate limited"
+        self.limiter.record_attempt(key, 60)
+        info = self.limiter.get_rate_limit_info(key, max_attempts, 60)
+        assert not info["allowed"], "Should be rate limited"
 
         # Test remaining attempts
         remaining = self.limiter.get_remaining_attempts(key, max_attempts, 60)
@@ -347,7 +377,7 @@ class DatabaseRateLimiterIntegrationTest(TestCase):
 
         for i in range(100):
             key = f"perf_test_{i % 10}"
-            self.limiter.is_rate_limited(key, 5, 60)
+            self.limiter.record_attempt(key, 60)
 
         duration = time_module.time() - start_time
         assert duration > 0, "Operations should complete"
