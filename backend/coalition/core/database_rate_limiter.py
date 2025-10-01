@@ -47,27 +47,30 @@ class DatabaseRateLimiter:
         window_start = (current_time // window_seconds) * window_seconds
         return f"{key}:w:{window_start}"
 
-    def is_rate_limited(
+    def record_attempt(
         self,
         key: str,
-        max_attempts: int = 3,  # noqa: ARG002 - kept for API compatibility
         window_seconds: int = 300,
-    ) -> bool:
+    ) -> None:
         """
-        Check if a key is rate limited using atomic database operations.
+        Record an attempt for rate limiting purposes.
+
+        This method increments the counter for the given key but does not
+        check if the rate limit has been exceeded. Use get_rate_limit_info()
+        to check the rate limit status.
 
         Args:
-            key: The identifier to rate limit (e.g., IP address, user ID)
-            max_attempts: Maximum attempts allowed in the window
+            key: The identifier to track (e.g., IP address, user ID)
             window_seconds: Time window in seconds (default: 5 minutes)
-
-        Returns:
-            True if rate limited, False if allowed
 
         Example:
             >>> limiter = DatabaseRateLimiter()
             >>> ip = "192.168.1.1"
-            >>> if limiter.is_rate_limited(ip, max_attempts=5, window_seconds=60):
+            >>> limiter.record_attempt(ip, window_seconds=60)
+            >>> info = limiter.get_rate_limit_info(
+            ...     ip, max_attempts=5, window_seconds=60
+            ... )
+            >>> if not info["allowed"]:
             ...     # Block request
             ...     return HttpResponse("Rate limited", status=429)
         """
@@ -77,7 +80,6 @@ class DatabaseRateLimiter:
             cache_key = self._get_cache_key(window_key)
 
             # Use atomic increment with timeout to handle concurrency
-            # Django's cache.get_or_set with callable provides atomicity
             def get_initial_count() -> dict[str, Any]:
                 return {"count": 0, "first_attempt": time.time()}
 
@@ -90,26 +92,19 @@ class DatabaseRateLimiter:
 
             if current_data is None:
                 current_data = {"count": 0}
-            current_count = current_data.get("count", 0)
 
             # Increment counter to record the attempt
-            # The actual rate limiting check is done via get_rate_limit_info()
-            # Use raw SQL for true atomicity if cache backend is database
             if hasattr(cache, "_cache") and "DatabaseCache" in str(type(cache._cache)):
                 self._atomic_increment_db(cache_key, window_seconds)
             else:
                 # Fallback for other cache backends - increment and save
+                current_count = current_data.get("count", 0)
                 current_data["count"] = current_count + 1
                 cache.set(cache_key, current_data, timeout=window_seconds + 60)
 
-            # Always return False - this method just records attempts
-            # Rate limit enforcement happens in get_rate_limit_info()
-            return False
-
         except Exception as e:
-            # Log error but fail open (allow request) for availability
-            logger.error(f"Rate limiter error for key {key}: {e}")
-            return False
+            # Log error but continue (fail-open)
+            logger.error(f"Rate limiter record error for key {key}: {e}")
 
     def _atomic_increment_db(self, cache_key: str, window_seconds: int) -> None:
         """

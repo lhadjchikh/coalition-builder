@@ -157,10 +157,9 @@ class SpamPreventionService:
         limiter = get_rate_limiter()
         ip_address = get_client_ip(request)
 
-        # Record the attempt by checking rate limit (which increments counter)
-        limiter.is_rate_limited(
+        # Record the attempt (increments counter)
+        limiter.record_attempt(
             key=ip_address,
-            max_attempts=cls.RATE_LIMIT_MAX_ATTEMPTS,
             window_seconds=cls.RATE_LIMIT_WINDOW,
         )
 
