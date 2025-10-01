@@ -103,14 +103,23 @@ jobs:
         run: vercel pull --yes --environment=${{ steps.vercel_env.outputs.vercel_env }} --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: ./frontend
 
-      - name: Create .env file for build
+      - name: Set environment variables in Vercel
         run: |
-          cat > .env.production.local <<EOF
-          NEXT_PUBLIC_API_URL=${{ steps.api.outputs.api_url }}
-          NEXT_PUBLIC_ENVIRONMENT=${{ steps.env.outputs.environment }}
-          NEXT_PUBLIC_SITE_URL=${{ steps.api.outputs.site_url }}
-          NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=${{ vars.GOOGLE_ANALYTICS_ID }}
-          EOF
+          # Remove any existing secret references and set as plain environment variables
+          vercel env rm NEXT_PUBLIC_API_URL ${{ steps.vercel_env.outputs.vercel_env }} --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm NEXT_PUBLIC_ENVIRONMENT ${{ steps.vercel_env.outputs.vercel_env }} --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm NEXT_PUBLIC_SITE_URL ${{ steps.vercel_env.outputs.vercel_env }} --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+          vercel env rm NEXT_PUBLIC_GOOGLE_ANALYTICS_ID ${{ steps.vercel_env.outputs.vercel_env }} --yes --token=${{ secrets.VERCEL_TOKEN }} || true
+
+          # Set environment variables as plain values (not secrets)
+          echo "${{ steps.api.outputs.api_url }}" | vercel env add NEXT_PUBLIC_API_URL ${{ steps.vercel_env.outputs.vercel_env }} --token=${{ secrets.VERCEL_TOKEN }}
+          echo "${{ steps.env.outputs.environment }}" | vercel env add NEXT_PUBLIC_ENVIRONMENT ${{ steps.vercel_env.outputs.vercel_env }} --token=${{ secrets.VERCEL_TOKEN }}
+          echo "${{ steps.api.outputs.site_url }}" | vercel env add NEXT_PUBLIC_SITE_URL ${{ steps.vercel_env.outputs.vercel_env }} --token=${{ secrets.VERCEL_TOKEN }}
+          echo "${{ vars.GOOGLE_ANALYTICS_ID }}" | vercel env add NEXT_PUBLIC_GOOGLE_ANALYTICS_ID ${{ steps.vercel_env.outputs.vercel_env }} --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: ./frontend
+
+      - name: Pull updated environment
+        run: vercel pull --yes --environment=${{ steps.vercel_env.outputs.vercel_env }} --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: ./frontend
 
       - name: Build Project Artifacts
