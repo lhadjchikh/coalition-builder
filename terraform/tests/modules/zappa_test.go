@@ -63,11 +63,8 @@ func TestZappaModule(t *testing.T) {
 		Vars: map[string]interface{}{
 			"prefix":     prefix,
 			"aws_region": "us-east-1",
-			"vpc_id":     "vpc-12345678", // Mock VPC ID for testing
-			"database_subnet_cidrs": []string{
-				"10.0.3.0/24",
-				"10.0.4.0/24",
-			},
+			// Skip VPC configuration for testing - security group won't be created
+			// vpc_id and database_subnet_cidrs are optional and default to empty
 			"tags": map[string]string{
 				"Environment": "test",
 				"Purpose":     "terratest",

@@ -9,13 +9,15 @@ variable "aws_region" {
 }
 
 variable "vpc_id" {
-  description = "VPC ID for Lambda security group"
+  description = "VPC ID for Lambda security group (optional, leave empty if Lambda doesn't need VPC access)"
   type        = string
+  default     = ""
 }
 
 variable "database_subnet_cidrs" {
-  description = "CIDR blocks of database subnets"
+  description = "CIDR blocks of database subnets (optional)"
   type        = list(string)
+  default     = []
 }
 
 variable "tags" {

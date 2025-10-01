@@ -61,8 +61,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "zappa_deployments" {
   }
 }
 
-# Security group for Lambda functions
+# Security group for Lambda functions (only if VPC ID is provided)
 resource "aws_security_group" "lambda" {
+  count = var.vpc_id != "" ? 1 : 0
+
   name        = "${var.prefix}-lambda"
   description = "Security group for Lambda functions"
   vpc_id      = var.vpc_id
