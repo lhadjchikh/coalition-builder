@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"terraform-tests/common"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
@@ -18,7 +20,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestGeodataImportModuleValidation runs validation-only tests that don't require AWS credentials
+func TestGeodataImportModuleValidation(t *testing.T) {
+	common.ValidateModuleStructure(t, "geodata-import")
+}
+
 func TestGeodataImportModule(t *testing.T) {
+	common.SkipIfShortTest(t)
 	t.Parallel()
 
 	// Generate unique names for this test
@@ -289,7 +297,8 @@ func TestGeodataImportModule(t *testing.T) {
 	})
 }
 
-func TestGeodataImportModuleValidation(t *testing.T) {
+func TestGeodataImportModuleVariableValidation(t *testing.T) {
+	common.SkipIfShortTest(t)
 	t.Parallel()
 
 	// Test validation errors

@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"terraform-tests/common"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
@@ -19,7 +21,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestZappaModuleValidation runs validation-only tests that don't require AWS credentials
+func TestZappaModuleValidation(t *testing.T) {
+	common.ValidateModuleStructure(t, "zappa")
+}
+
 func TestZappaModule(t *testing.T) {
+	common.SkipIfShortTest(t)
 	t.Parallel()
 
 	// Generate unique names for this test
@@ -235,7 +243,8 @@ func TestZappaModule(t *testing.T) {
 	})
 }
 
-func TestZappaModuleValidation(t *testing.T) {
+func TestZappaModuleVariableValidation(t *testing.T) {
+	common.SkipIfShortTest(t)
 	t.Parallel()
 
 	// Test validation errors
