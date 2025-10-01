@@ -102,13 +102,16 @@ jobs:
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=${{ steps.vercel_env.outputs.vercel_env }} --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: ./frontend
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
-          NEXT_PUBLIC_ENVIRONMENT: ${{ steps.env.outputs.environment }}
-          NEXT_PUBLIC_SITE_URL: ${{ steps.api.outputs.site_url }}
-          NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: ${{ vars.GOOGLE_ANALYTICS_ID }}
+
+      - name: Create .env file for build
+        run: |
+          cat > .env.production.local <<EOF
+          NEXT_PUBLIC_API_URL=${{ steps.api.outputs.api_url }}
+          NEXT_PUBLIC_ENVIRONMENT=${{ steps.env.outputs.environment }}
+          NEXT_PUBLIC_SITE_URL=${{ steps.api.outputs.site_url }}
+          NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=${{ vars.GOOGLE_ANALYTICS_ID }}
+          EOF
+        working-directory: ./frontend
 
       - name: Build Project Artifacts
         run: |
@@ -116,13 +119,6 @@ jobs:
             --prod=${{ steps.env.outputs.environment == 'production' && 'true' || 'false' }} \
             --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: ./frontend
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
-          NEXT_PUBLIC_ENVIRONMENT: ${{ steps.env.outputs.environment }}
-          NEXT_PUBLIC_SITE_URL: ${{ steps.api.outputs.site_url }}
-          NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: ${{ vars.GOOGLE_ANALYTICS_ID }}
 
       - name: Deploy to Vercel
         id: deploy
