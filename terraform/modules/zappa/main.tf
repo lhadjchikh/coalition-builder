@@ -49,6 +49,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "zappa_deployments" {
     id     = "delete-old-deployments"
     status = "Enabled"
 
+    filter {}
+
     noncurrent_version_expiration {
       noncurrent_days = 30 # Keep old versions for 30 days
     }
