@@ -50,7 +50,7 @@ class DatabaseRateLimiter:
     def is_rate_limited(
         self,
         key: str,
-        max_attempts: int = 3,
+        max_attempts: int = 3,  # noqa: ARG002 - kept for API compatibility
         window_seconds: int = 300,
     ) -> bool:
         """
@@ -92,20 +92,18 @@ class DatabaseRateLimiter:
                 current_data = {"count": 0}
             current_count = current_data.get("count", 0)
 
-            # Increment counter first (record), then check limit (check)
-            # This is the "record-then-check" pattern
+            # Increment counter to record the attempt
+            # The actual rate limiting check is done via get_rate_limit_info()
             # Use raw SQL for true atomicity if cache backend is database
             if hasattr(cache, "_cache") and "DatabaseCache" in str(type(cache._cache)):
-                new_count = self._atomic_increment_db(cache_key, window_seconds)
+                self._atomic_increment_db(cache_key, window_seconds)
             else:
                 # Fallback for other cache backends - increment and save
                 current_data["count"] = current_count + 1
                 cache.set(cache_key, current_data, timeout=window_seconds + 60)
-                new_count = current_data["count"]
 
-            # Note: The return value here is not used for rate limiting decisions.
-            # The actual rate limiting check is done via get_rate_limit_info().
-            # This method's primary purpose is to increment the counter.
+            # Always return False - this method just records attempts
+            # Rate limit enforcement happens in get_rate_limit_info()
             return False
 
         except Exception as e:
@@ -113,14 +111,11 @@ class DatabaseRateLimiter:
             logger.error(f"Rate limiter error for key {key}: {e}")
             return False
 
-    def _atomic_increment_db(self, cache_key: str, window_seconds: int) -> int:
+    def _atomic_increment_db(self, cache_key: str, window_seconds: int) -> None:
         """
         Perform atomic increment using raw SQL for database cache backend.
 
         This ensures true atomicity even under high concurrency.
-
-        Returns:
-            The new count after incrementing
         """
         try:
             with transaction.atomic(), connection.cursor() as cursor:
@@ -157,10 +152,6 @@ class DatabaseRateLimiter:
                     ],
                 )
 
-            # Fetch the updated count
-            updated_data = cache.get(cache_key, {"count": 1})
-            return int(updated_data.get("count", 1))
-
         except Exception as e:
             logger.warning(f"Atomic increment fallback error: {e}")
             # Fall back to cache.set if raw SQL fails
@@ -170,7 +161,6 @@ class DatabaseRateLimiter:
             )
             current_data["count"] = current_data.get("count", 0) + 1
             cache.set(cache_key, current_data, timeout=window_seconds + 60)
-            return int(current_data["count"])
 
     def get_remaining_attempts(
         self,
