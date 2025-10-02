@@ -214,6 +214,13 @@ module "serverless_storage" {
   ]
 }
 
+# Lambda ECR Module - Creates ECR repositories for Lambda deployment
+module "lambda_ecr" {
+  source = "./modules/lambda-ecr"
+
+  tags = var.tags
+}
+
 # DNS Module
 module "dns" {
   source = "./modules/dns"

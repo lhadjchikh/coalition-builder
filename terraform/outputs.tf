@@ -184,6 +184,17 @@ output "serverless_lambda_policy_arns" {
   value       = module.serverless_storage.lambda_s3_policy_arns
 }
 
+# Lambda ECR Outputs
+output "geolambda_repository_url" {
+  description = "URL of the geolambda ECR repository"
+  value       = module.lambda_ecr.geolambda_repository_url
+}
+
+output "lambda_repository_url" {
+  description = "URL of the Lambda ECR repository"
+  value       = module.lambda_ecr.lambda_repository_url
+}
+
 # Summary output
 output "deployment_summary" {
   description = "Complete deployment summary"
