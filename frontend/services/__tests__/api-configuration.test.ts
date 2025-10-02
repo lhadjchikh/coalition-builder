@@ -17,6 +17,17 @@ const describeInCI = process.env.CI ? describe : describe.skip;
 describeInCI("API Service - Configuration", () => {
   const originalEnv = process.env;
 
+  // Helper to run test in SSR environment (without window)
+  const withoutWindow = async (testFn: () => void | Promise<void>) => {
+    const originalWindow = (global as any).window;
+    delete (global as any).window;
+    try {
+      await testFn();
+    } finally {
+      (global as any).window = originalWindow;
+    }
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     jest.resetAllMocks();
@@ -30,39 +41,29 @@ describeInCI("API Service - Configuration", () => {
 
   describe("getBaseUrl", () => {
     it("should return REACT_APP_API_URL when set", () => {
-      // Delete window to simulate SSR environment
-      const originalWindow = (global as any).window;
-      delete (global as any).window;
-
-      jest.replaceProperty(
-        process,
-        "env",
-        createCleanEnv(originalEnv, {
-          REACT_APP_API_URL: "https://react-api.example.com",
-        })
-      );
-      expect(getBaseUrl()).toBe("https://react-api.example.com");
-
-      // Restore window
-      (global as any).window = originalWindow;
+      withoutWindow(() => {
+        jest.replaceProperty(
+          process,
+          "env",
+          createCleanEnv(originalEnv, {
+            REACT_APP_API_URL: "https://react-api.example.com",
+          })
+        );
+        expect(getBaseUrl()).toBe("https://react-api.example.com");
+      });
     });
 
     it("should return localhost:8000 when in CI environment", () => {
-      // Delete window to simulate SSR environment
-      const originalWindow = (global as any).window;
-      delete (global as any).window;
-
-      jest.replaceProperty(
-        process,
-        "env",
-        createCleanEnv(originalEnv, {
-          CI: "true",
-        })
-      );
-      expect(getBaseUrl()).toBe("http://localhost:8000");
-
-      // Restore window
-      (global as any).window = originalWindow;
+      withoutWindow(() => {
+        jest.replaceProperty(
+          process,
+          "env",
+          createCleanEnv(originalEnv, {
+            CI: "true",
+          })
+        );
+        expect(getBaseUrl()).toBe("http://localhost:8000");
+      });
     });
 
     it("should return empty string for production and development (relative paths)", () => {
@@ -127,36 +128,31 @@ describeInCI("API Service - Configuration", () => {
 
   describe("URL construction", () => {
     it("should use correct URL with explicit API URL", async () => {
-      // Delete window to simulate SSR environment
-      const originalWindow = (global as any).window;
-      delete (global as any).window;
+      await withoutWindow(async () => {
+        jest.replaceProperty(
+          process,
+          "env",
+          createCleanEnv(originalEnv, {
+            REACT_APP_API_URL: "https://api.example.com",
+          })
+        );
 
-      jest.replaceProperty(
-        process,
-        "env",
-        createCleanEnv(originalEnv, {
-          REACT_APP_API_URL: "https://api.example.com",
-        })
-      );
+        expect(getBaseUrl()).toBe("https://api.example.com");
 
-      expect(getBaseUrl()).toBe("https://api.example.com");
+        mockFetch.mockResolvedValueOnce(createMockResponse([]));
 
-      mockFetch.mockResolvedValueOnce(createMockResponse([]));
-
-      await API.getCampaigns();
-      expect(mockFetch).toHaveBeenCalledWith(
-        getExpectedUrl("/api/campaigns/", originalEnv),
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            "Content-Type": "application/json",
-          }),
-          credentials: "same-origin",
-          signal: expect.any(AbortSignal),
-        })
-      );
-
-      // Restore window
-      (global as any).window = originalWindow;
+        await API.getCampaigns();
+        expect(mockFetch).toHaveBeenCalledWith(
+          getExpectedUrl("/api/campaigns/", originalEnv),
+          expect.objectContaining({
+            headers: expect.objectContaining({
+              "Content-Type": "application/json",
+            }),
+            credentials: "same-origin",
+            signal: expect.any(AbortSignal),
+          })
+        );
+      });
     });
 
     it("should handle campaign endorsements URL with query parameter", async () => {
