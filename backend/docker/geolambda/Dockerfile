@@ -9,14 +9,14 @@ ENV GDAL_VERSION=3.10.3 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-# Install build dependencies using dnf (Amazon Linux 2023)
-# dnf is the package manager for AL2023, replacing yum from AL2
-RUN dnf install -y \
+# Install build dependencies using microdnf (Amazon Linux 2023)
+# Lambda base images use microdnf, a lightweight package manager
+RUN microdnf install -y \
     gcc gcc-c++ make cmake \
     sqlite sqlite-devel \
     libtiff libtiff-devel \
     curl tar gzip bzip2 xz \
-    && dnf clean all
+    && microdnf clean all
 
 # Build PROJ (required by GDAL)
 WORKDIR /tmp
@@ -65,9 +65,9 @@ RUN python -c "from osgeo import gdal, ogr, osr; print(f'GDAL {gdal.__version__}
     python -c "import os; os.environ['DJANGO_SETTINGS_MODULE']=''; from django.contrib.gis.geos import GEOSGeometry" || true
 
 # Clean up build dependencies to reduce image size
-RUN dnf remove -y gcc gcc-c++ make cmake && \
-    dnf clean all && \
-    rm -rf /tmp/* /var/cache/dnf/*
+RUN microdnf remove -y gcc gcc-c++ make cmake && \
+    microdnf clean all && \
+    rm -rf /tmp/* /var/cache/yum/*
 
 # Label for tracking
 LABEL maintainer="Coalition Builder Team" \
