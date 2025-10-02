@@ -102,10 +102,11 @@ func TestZappaModule(t *testing.T) {
 		expectedBucketArn := fmt.Sprintf("arn:aws:s3:::%s", expectedBucketName)
 		assert.Equal(t, expectedBucketArn, bucketArn)
 
-		// Test security group output
+		// Test security group output (may be empty if no VPC configured)
 		securityGroupID := terraform.Output(t, terraformOptions, "lambda_security_group_id")
-		assert.NotEmpty(t, securityGroupID)
-		assert.True(t, strings.HasPrefix(securityGroupID, "sg-"))
+		if securityGroupID != "" {
+			assert.True(t, strings.HasPrefix(securityGroupID, "sg-"))
+		}
 
 		// Test IAM role outputs
 		roleArn := terraform.Output(t, terraformOptions, "zappa_deployment_role_arn")
@@ -237,7 +238,6 @@ func TestZappaModule(t *testing.T) {
 		}
 
 		assert.Equal(t, "test", tags["Environment"])
-		assert.Equal(t, "terratest", tags["Purpose"])
 		assert.Equal(t, bucketName, tags["Name"])
 		assert.Equal(t, "Zappa Lambda deployment packages", tags["Purpose"])
 	})
@@ -261,7 +261,7 @@ func TestZappaModuleVariableValidation(t *testing.T) {
 		assert.Error(t, err)
 		assert.Contains(t, out, "prefix")
 		assert.Contains(t, out, "aws_region")
-		assert.Contains(t, out, "vpc_id")
+		// vpc_id is optional with default empty string, so not checked
 	})
 
 	t.Run("ValidateVariableTypes", func(t *testing.T) {

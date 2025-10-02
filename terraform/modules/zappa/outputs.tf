@@ -9,8 +9,8 @@ output "s3_bucket_arn" {
 }
 
 output "lambda_security_group_id" {
-  description = "ID of the Lambda security group"
-  value       = aws_security_group.lambda.id
+  description = "ID of the Lambda security group (null if no VPC configured)"
+  value       = length(aws_security_group.lambda) > 0 ? aws_security_group.lambda[0].id : null
 }
 
 output "zappa_deployment_role_arn" {
