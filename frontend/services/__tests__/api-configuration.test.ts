@@ -30,6 +30,10 @@ describeInCI("API Service - Configuration", () => {
 
   describe("getBaseUrl", () => {
     it("should return REACT_APP_API_URL when set", () => {
+      // Delete window to simulate SSR environment
+      const originalWindow = (global as any).window;
+      delete (global as any).window;
+
       jest.replaceProperty(
         process,
         "env",
@@ -38,9 +42,16 @@ describeInCI("API Service - Configuration", () => {
         })
       );
       expect(getBaseUrl()).toBe("https://react-api.example.com");
+
+      // Restore window
+      (global as any).window = originalWindow;
     });
 
     it("should return localhost:8000 when in CI environment", () => {
+      // Delete window to simulate SSR environment
+      const originalWindow = (global as any).window;
+      delete (global as any).window;
+
       jest.replaceProperty(
         process,
         "env",
@@ -49,6 +60,9 @@ describeInCI("API Service - Configuration", () => {
         })
       );
       expect(getBaseUrl()).toBe("http://localhost:8000");
+
+      // Restore window
+      (global as any).window = originalWindow;
     });
 
     it("should return empty string for production and development (relative paths)", () => {
@@ -113,6 +127,10 @@ describeInCI("API Service - Configuration", () => {
 
   describe("URL construction", () => {
     it("should use correct URL with explicit API URL", async () => {
+      // Delete window to simulate SSR environment
+      const originalWindow = (global as any).window;
+      delete (global as any).window;
+
       jest.replaceProperty(
         process,
         "env",
@@ -136,6 +154,9 @@ describeInCI("API Service - Configuration", () => {
           signal: expect.any(AbortSignal),
         })
       );
+
+      // Restore window
+      (global as any).window = originalWindow;
     });
 
     it("should handle campaign endorsements URL with query parameter", async () => {
