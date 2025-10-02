@@ -230,11 +230,3 @@ jobs:
               body: body
             });
 
-  # Optional: Deploy to staging after dev succeeds
-  deploy-staging:
-    if: github.ref == 'refs/heads/development' && github.event_name == 'push'
-    needs: deploy
-    uses: ./.github/workflows/deploy-lambda.yml
-    with:
-      environment: staging
-    secrets: inherit
