@@ -7,8 +7,13 @@ set -e # Exit on error
 
 # Configuration
 AWS_REGION=${AWS_REGION:-us-east-1}
+
 # AWS_ACCOUNT must be set as environment variable (removed hardcoded default)
-AWS_ACCOUNT=${AWS_ACCOUNT}
+if [ -z "$AWS_ACCOUNT" ]; then
+  echo -e "\033[0;31m[ERROR]\033[0m AWS_ACCOUNT environment variable is not set" >&2
+  exit 1
+fi
+
 ECR_REGISTRY="${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 
 # Colors for output
