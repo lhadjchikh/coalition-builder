@@ -40,8 +40,8 @@ describeInCI("API Service - Configuration", () => {
   });
 
   describe("getBaseUrl", () => {
-    it("should return REACT_APP_API_URL when set", () => {
-      withoutWindow(() => {
+    it("should return REACT_APP_API_URL when set", async () => {
+      await withoutWindow(() => {
         jest.replaceProperty(
           process,
           "env",
@@ -53,8 +53,8 @@ describeInCI("API Service - Configuration", () => {
       });
     });
 
-    it("should return localhost:8000 when in CI environment", () => {
-      withoutWindow(() => {
+    it("should return localhost:8000 when in CI environment", async () => {
+      await withoutWindow(() => {
         jest.replaceProperty(
           process,
           "env",
