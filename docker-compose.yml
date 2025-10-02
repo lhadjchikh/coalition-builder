@@ -21,21 +21,6 @@ services:
     networks:
       - app-network
 
-  redis:
-    image: redis:8-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    networks:
-      - app-network
-
   api:
     image: coalition_api:latest
     build:
@@ -43,8 +28,6 @@ services:
       dockerfile: Dockerfile
     depends_on:
       db:
-        condition: service_healthy
-      redis:
         condition: service_healthy
     # Load .env file if it exists (create from .env.example)
     env_file:
@@ -54,7 +37,6 @@ services:
       - DEBUG=${DEBUG:-False}
       - SECRET_KEY=${SECRET_KEY:-dev_secret_key_replace_in_production}
       - DATABASE_URL=postgis://${APP_DB_USERNAME:-coalition_app}:${APP_DB_PASSWORD:-app_password}@db:5432/${DB_NAME:-coalition}
-      - CACHE_URL=${CACHE_URL:-redis://redis:6379/1}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,api,nginx,app}
       - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS:-}
       - PYTHONPATH=/app
@@ -121,7 +103,6 @@ services:
 
 volumes:
   postgres_data:
-  redis_data:
 
 networks:
   app-network:

@@ -1,168 +1,321 @@
-# Deployment
+# Deployment Guide
 
-Coalition Builder supports multiple deployment options. Choose the approach that best fits your infrastructure needs.
+## Overview
 
-## Docker Deployment (Recommended)
+Coalition Builder uses a **serverless architecture** for cost-effective, scalable deployment. The application is split between AWS Lambda (Django backend) and Vercel (Next.js frontend).
 
-The simplest way to deploy Coalition Builder is using Docker Compose:
+**Cost Savings**: ~46% reduction from legacy ECS deployment ($39/month vs $73/month)
 
-```bash
-# Production deployment
-docker compose up -d
+## Quick Start
 
-# Development with hot reloading
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
-```
+### 1. Prerequisites
 
-### Prerequisites
+- AWS CLI configured with deployment permissions
+- GitHub repository with Actions enabled
+- Domain name with DNS access (optional)
+- Terraform 1.0+ for infrastructure
 
-- Docker 20.10+
-- Docker Compose 2.0+
-- Node.js 22+ (for local development)
-
-### Configuration
-
-Create `.env` file with production settings (see [Configuration](configuration.md)).
-
-## AWS Deployment
-
-For scalable production deployments, use the provided Terraform configuration:
+### 2. Deploy Infrastructure
 
 ```bash
 cd terraform
 terraform init
-terraform plan
-terraform apply
+terraform apply -target=module.dynamodb
+terraform apply -target=module.zappa
+terraform apply -target=module.geodata_import
 ```
 
-### AWS Resources Created
+### 3. Configure GitHub Secrets
 
-- RDS PostgreSQL with PostGIS
-- ECS/Fargate for application hosting
-- ALB for load balancing
-- CloudFront for CDN
-- S3 for static files
-- Redis for caching
+Set these in your GitHub repository settings:
 
-### Prerequisites
+**Secrets:**
 
-- AWS CLI configured
-- Terraform 1.0+
-- Domain name and SSL certificate
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
 
-## Manual Deployment
+**Environment Variables** (per environment):
 
-For custom deployments:
+- `DOMAIN_NAME` (optional)
+- `CERTIFICATE_ARN` (optional)
+- `PRODUCTION_API_URL`
+- `STAGING_API_URL`
+- `DEVELOPMENT_API_URL`
 
-### Backend
+### 4. Deploy Applications
 
 ```bash
+# Backend to Lambda
+gh workflow run deploy-lambda.yml --ref main
+
+# Frontend to Vercel
+gh workflow run deploy-frontend.yml --ref main
+```
+
+## Architecture
+
+### Current: Serverless Architecture
+
+```
+Internet → CloudFront CDN
+    ├── Vercel (Next.js Frontend)
+    └── API Gateway → Lambda (Django)
+         ├── RDS PostgreSQL
+         └── DynamoDB (Rate Limiting)
+
+ECS Fargate (TIGER Imports Only)
+```
+
+**Components:**
+
+- **Frontend**: Next.js on Vercel Edge Network
+- **Backend**: Django on AWS Lambda (via Zappa)
+- **Database**: RDS PostgreSQL with PostGIS
+- **Rate Limiting**: DynamoDB (replaces Redis)
+- **Geographic Data**: Imported via ECS Fargate tasks
+
+### Legacy: ECS Architecture (Deprecated)
+
+The previous ECS-based deployment is still documented for reference but deprecated:
+
+- Higher costs ($73/month vs $39/month)
+- More complex infrastructure management
+- Less scalable
+
+## Deployment Options
+
+### Production Deployment
+
+**Automatic via GitHub Actions:**
+
+- Push to `main` branch triggers production deployment
+- Backend deploys to Lambda with production settings
+- Frontend deploys to Vercel with custom domain
+
+**Manual Deployment:**
+
+```bash
+# Lambda backend
 cd backend
-poetry install --only=main
-poetry run python manage.py collectstatic
-poetry run gunicorn coalition.core.wsgi
-```
+poetry run zappa deploy production
 
-### Frontend
-
-```bash
+# Vercel frontend
 cd frontend
-npm ci --production
-npm run build
-# Serve build/ directory with nginx/apache
+vercel --prod
 ```
 
-## Environment Considerations
+### Staging Deployment
 
-### Development
+**Automatic:**
 
-- Enable DEBUG mode
-- Use SQLite for quick setup
-- Local Redis or dummy cache
+- Push to `staging` branch
+- Deploys to staging environment with keep-warm enabled
 
-### Staging
+### Development Deployment
 
-- Mirror production settings
-- Use separate database
-- Enable logging and monitoring
+**Automatic:**
 
-### Production
+- Push to feature branches creates preview deployments
+- Pull requests get preview URLs
 
-- Disable DEBUG mode
-- Use PostgreSQL with PostGIS
-- Configure Redis for caching
-- Set up SSL/HTTPS
-- Configure email delivery
-- Enable security headers
-
-## Post-Deployment Setup
-
-After deploying Coalition Builder, complete the initial setup:
-
-**Automated on startup:**
-
-- ✅ Database users and PostGIS setup (`init-db.sh`)
-- ✅ Django migrations (`entrypoint.sh`)
-- ✅ Static file collection (`entrypoint.sh`)
-
-### 1. Create Django Admin User
-
-Create a Django superuser to access the admin interface:
+**Local Development:**
 
 ```bash
-# Docker deployment
-docker compose run --rm api python manage.py createsuperuser
+# Backend
+cd backend
+poetry install
+poetry run python manage.py runserver
 
-# AWS deployment (using ECS exec)
-aws ecs execute-command --cluster coalition-cluster \
-  --task <task-id> --container api \
-  --command "python manage.py createsuperuser" --interactive
+# Frontend
+cd frontend
+npm install
+npm run dev
 ```
 
-### 2. Configure Initial Theme
+## Environment Configuration
 
-1. Access Django admin at `/admin/`
-2. Navigate to **Core** → **Themes** → **Add Theme**
-3. Configure your organization's colors and branding
-4. Mark the theme as "Active"
+### Lambda Environments
 
-### 3. Load Sample Data (Optional)
+Each Lambda stage has its own configuration:
 
-```bash
-# Load sample campaigns and content
-docker compose run --rm api python manage.py loaddata sample_data/fixtures.json
+```json
+{
+  "dev": {
+    "memory_size": 512,
+    "keep_warm": false,
+    "environment_variables": {
+      "ENVIRONMENT": "dev",
+      "DEBUG": "true"
+    }
+  },
+  "production": {
+    "memory_size": 1024,
+    "keep_warm": true,
+    "xray_tracing": true,
+    "environment_variables": {
+      "ENVIRONMENT": "production",
+      "DEBUG": "false"
+    }
+  }
+}
 ```
 
-## Health Monitoring
+### Vercel Environments
 
-All deployments include health check endpoints:
+Environment variables are set via GitHub Actions:
 
-- `/health/` - Next.js frontend health check
-- `/api/health/` - Django API health check
-- `/metrics/` - Prometheus metrics
+- `NEXT_PUBLIC_API_URL`: Points to Lambda API Gateway
+- `NEXT_PUBLIC_ENVIRONMENT`: Current environment
+- `NEXT_PUBLIC_SITE_URL`: Frontend URL
 
-## Security Checklist
+## Custom Domains
 
-- [ ] HTTPS enabled
-- [ ] Strong SECRET_KEY set
-- [ ] Database credentials secured
-- [ ] ALLOWED_HOSTS configured
-- [ ] CSRF_TRUSTED_ORIGINS set
-- [ ] Email credentials secured
-- [ ] Static files served securely
+### AWS Lambda (Backend)
+
+1. **Create ACM Certificate:**
+
+   ```bash
+   aws acm request-certificate \
+     --domain-name api.yourdomain.com \
+     --validation-method DNS \
+     --region us-east-1
+   ```
+
+2. **Set GitHub Variables:**
+   - `DOMAIN_NAME`: `api.yourdomain.com`
+   - `CERTIFICATE_ARN`: ACM certificate ARN
+
+3. **Deploy:** Domain is automatically configured via GitHub Actions
+
+### Vercel (Frontend)
+
+1. **Add Domain in Vercel Dashboard:**
+   - Project Settings → Domains
+   - Add `yourdomain.com`
+
+2. **Configure DNS:**
+
+   ```
+   Type: CNAME
+   Name: @
+   Value: cname.vercel-dns.com
+   ```
+
+## Monitoring & Logging
+
+### CloudWatch (Lambda)
+
+- Automatic log groups: `/aws/lambda/{function-name}`
+- X-Ray tracing enabled for production
+- Custom metrics via API Gateway
+
+### Vercel Analytics
+
+- Core Web Vitals
+- Real User Monitoring
+- Edge function performance
+
+## Scaling
+
+### Lambda Auto-Scaling
+
+- Automatic based on request volume
+- Reserved concurrency for production
+- Keep-warm prevents cold starts
+
+### Vercel Edge Network
+
+- Global CDN with edge caching
+- Automatic scaling to handle traffic spikes
+- ISR (Incremental Static Regeneration)
+
+## Security
+
+### Backend (Lambda)
+
+- VPC configuration for database access
+- IAM roles with least privilege
+- WAF integration via API Gateway
+- DDoS protection via CloudFront
+
+### Frontend (Vercel)
+
+- Automatic HTTPS
+- Security headers configured
+- DDoS protection via edge network
+
+## Backup & Recovery
+
+### Database Backups
+
+- Automated RDS snapshots (7-day retention)
+- Point-in-time recovery enabled
+- Cross-region backup replication
+
+### Application Recovery
+
+- Lambda versions for rollback
+- Vercel deployment history
+- Infrastructure as Code via Terraform
+
+## Cost Management
+
+### Monthly Costs (Approximate)
+
+**Serverless Architecture:**
+
+- Lambda: ~$5
+- API Gateway: ~$4
+- Vercel: $0-20 (depending on traffic)
+- RDS: ~$15
+- DynamoDB: ~$1
+- Other (S3, CloudWatch): ~$5
+- **Total: ~$39/month**
+
+**Cost Optimization:**
+
+- DynamoDB pay-per-request billing
+- Lambda keep-warm only for production
+- Vercel free tier for development
+- ECS only for occasional TIGER imports
 
 ## Troubleshooting
 
-Common deployment issues:
+### Common Issues
 
-- **Database connection failed**: Check DATABASE_URL and network access
-- **Static files not loading**: Verify STATIC_URL and file permissions
-- **CORS errors**: Configure CSRF_TRUSTED_ORIGINS
-- **Email not sending**: Verify SMTP settings and credentials
+1. **Lambda Cold Starts**
+   - Enable keep-warm for production
+   - Increase memory allocation
+   - Use provisioned concurrency if needed
 
-## Detailed Guides
+2. **Database Connection Errors**
+   - Check VPC configuration
+   - Verify security groups
+   - Check connection pool settings
 
-For comprehensive deployment instructions:
+3. **Domain Not Working**
+   - Verify ACM certificate validation
+   - Check DNS propagation
+   - Run `zappa certify` command
 
-- [AWS Deployment Guide](deployment/aws.md) - Complete AWS setup with Terraform
-- [Docker Deployment Guide](deployment/docker.md) - Advanced Docker configurations and troubleshooting
+### Getting Help
+
+- Check [GitHub Actions workflows](deployment/workflows.md)
+- View [Lambda deployment guide](LAMBDA_DEPLOYMENT.md)
+- See [Vercel deployment guide](VERCEL_DEPLOYMENT.md)
+- Review CloudWatch logs for errors
+
+## Migration from Legacy
+
+If migrating from the ECS deployment:
+
+1. **Backup Data:** Export database and user uploads
+2. **Test Serverless:** Deploy to staging first
+3. **Update DNS:** Point to new endpoints
+4. **Monitor:** Check performance and error rates
+5. **Cleanup:** Remove ECS resources after verification
+
+See the migration plan in `backend/local/SERVERLESS_MIGRATION_PLAN.md` for detailed steps.

@@ -51,14 +51,25 @@ flowchart TD
     terraform_tests --> tests_complete
     fullstack_tests --> tests_complete
 
-    %% Decision to deployment
-    tests_complete --> app_deploy[Application Deployment]
+    %% Decision to deployment - multiple deployment paths
+    tests_complete --> deployment_decision{"Deployment<br/>Type"}
 
-    %% Deployment to AWS
+    %% ECS Deployment path
+    deployment_decision -->|Container| app_deploy[ECS Deployment]
     app_deploy --> ecs[Amazon ECS]
+
+    %% Serverless Deployment path
+    deployment_decision -->|Serverless| serverless_deploy[Serverless Deployment]
+    serverless_deploy --> lambda_backend[Lambda Backend]
+    serverless_deploy --> vercel_frontend[Vercel Frontend]
+
+    %% Infrastructure changes trigger deployments
+    infra_changes[Infrastructure Changes] --> deploy_infra[Deploy Infrastructure]
+    deploy_infra --> app_deploy
+    deploy_infra --> serverless_deploy
 ```
 
-_Figure 1: Workflow dependency tree showing how push/PR events trigger orchestrated quality checks, linting, testing, and deployment processes. Diamond nodes represent quality gates where parallel processes must complete successfully before proceeding._
+_Figure 1: Workflow dependency tree showing how push/PR events trigger orchestrated quality checks, linting, testing, and deployment processes. Diamond nodes represent quality gates where parallel processes must complete successfully before proceeding. The deployment strategy supports both container-based (ECS) and serverless (Lambda/Vercel) architectures._
 
 ### Orchestration Workflows
 
@@ -198,6 +209,34 @@ _Figure 1: Workflow dependency tree showing how push/PR events trigger orchestra
 - Manages AWS resources like VPC, ECS clusters, RDS, and load balancers
 - **Triggers application deployment**: After successful infrastructure changes, automatically triggers app deployment to ensure compatibility with infrastructure
 
+#### Serverless Backend Deployment (`deploy_serverless.yml`)
+
+- **Triggered by**: push to main/staging/dev branches or manual dispatch
+- Deploys Django backend to AWS Lambda using Zappa
+- Builds custom Docker images with GeoDjango support (GDAL/GEOS/PROJ)
+- Manages Lambda functions with environment-specific configurations
+- Creates cache table for database-backed rate limiting
+- Runs database migrations automatically
+- Collects and uploads static files to S3
+
+#### Lambda Deployment (`deploy_lambda.yml`)
+
+- **Triggered by**: push to main/staging/development branches or manual dispatch
+- Alternative Lambda deployment workflow with simplified configuration
+- Builds and pushes Docker images to ECR
+- Updates Zappa settings with ECR image URIs
+- Configures custom domains with API Gateway
+- Provides deployment URLs for integration
+
+#### Frontend Deployment (`deploy_frontend.yml`)
+
+- **Triggered by**: push to main branch or manual dispatch
+- Deploys React frontend to Vercel
+- Configures environment-specific API endpoints
+- Runs frontend tests and linting before deployment
+- Supports preview deployments for pull requests
+- Provides deployment URLs for testing
+
 #### Documentation Deployment (`deploy_docs.yml`)
 
 - **Triggered by**: changes to `docs/` directory or `mkdocs.yml` or manual dispatch
@@ -229,8 +268,19 @@ The deployment workflows coordinate to ensure smooth production updates:
 
 Workflows that interact with external resources support manual triggers via `workflow_dispatch`:
 
+### Container-based Deployment
+
 - **deploy_app.yml** - Deploys to AWS ECS
 - **deploy_infra.yml** - Manages AWS infrastructure with Terraform
+
+### Serverless Deployment
+
+- **deploy_serverless.yml** - Deploys backend to AWS Lambda with Zappa
+- **deploy_lambda.yml** - Alternative Lambda deployment workflow
+- **deploy_frontend.yml** - Deploys frontend to Vercel
+
+### Documentation
+
 - **deploy_docs.yml** - Deploys to GitHub Pages
 
 ## AWS Credentials

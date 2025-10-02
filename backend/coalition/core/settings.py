@@ -20,18 +20,15 @@ from urllib.parse import quote
 
 import dj_database_url
 import requests
-from requests.exceptions import (
-    ConnectionError as RequestsConnectionError,
-)
-from requests.exceptions import (
-    RequestException,
-    SSLError,
-    Timeout,
-)
+from requests.exceptions import ConnectionError as RequestsConnectionError
+from requests.exceptions import RequestException, SSLError, Timeout
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+# Detect Lambda environment
+IS_LAMBDA = bool(os.environ.get("AWS_LAMBDA_FUNCTION_NAME"))
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -224,7 +221,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
     "django_extensions",
-    "django_ratelimit",
     "lockdown",
     "storages",
     "tinymce",
@@ -358,6 +354,54 @@ else:
         },
     }
 
+# Lambda-specific configurations
+if IS_LAMBDA:
+    # Lambda-specific settings
+    ALLOWED_HOSTS = ["*"]  # API Gateway handles host validation
+
+    # Use /tmp for writable storage in Lambda
+    MEDIA_ROOT = "/tmp/media/"
+    STATIC_ROOT = "/tmp/static/"
+    FILE_UPLOAD_TEMP_DIR = "/tmp"
+    FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+
+    # Database configuration for multi-environment on single RDS
+    # Each environment uses a different database on the same RDS instance
+    if "DATABASE_URL" in os.environ:
+        database_name = os.environ.get("DATABASE_NAME", f"coalition_{ENVIRONMENT}")
+        DATABASES["default"]["NAME"] = database_name
+        DATABASES["default"]["CONN_MAX_AGE"] = 0  # Disable persistent connections
+        DATABASES["default"]["OPTIONS"] = {
+            "connect_timeout": 30,
+            "options": "-c statement_timeout=25000",  # 25 seconds
+        }
+
+    # GeoDjango is fully supported via Docker container
+    # GDAL paths are set via environment variables
+    if os.environ.get("USE_GEODJANGO", "true").lower() == "true" and os.path.exists(
+        "/opt/lib/libgdal.so",
+    ):
+        # Set GDAL paths for Lambda container
+        GDAL_LIBRARY_PATH = "/opt/lib/libgdal.so"
+        GEOS_LIBRARY_PATH = "/opt/lib/libgeos_c.so"
+
+    # Use S3 for static/media files
+    if os.environ.get("USE_S3", "false").lower() == "true":
+        DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+        STATICFILES_STORAGE = "storages.backends.s3boto3.S3StaticStorage"
+
+        # Environment-specific S3 buckets
+        AWS_STORAGE_BUCKET_NAME = os.environ.get(
+            "AWS_STORAGE_BUCKET_NAME",
+            f"coalition-{ENVIRONMENT}-assets",
+        )
+        AWS_DEFAULT_ACL = None
+        AWS_S3_FILE_OVERWRITE = False
+        AWS_S3_VERIFY = True
+
+    # Disable debug middleware in Lambda
+    MIDDLEWARE = [m for m in MIDDLEWARE if "silk" not in m and "debug_toolbar" not in m]
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
@@ -483,11 +527,10 @@ TIGER_GEOCODING_CONFIDENCE_THRESHOLD = int(
 )
 
 # Cache configuration
-# Always use Redis cache for consistency across all environments
-# This ensures django-ratelimit works properly in all scenarios
-CACHE_URL = os.getenv("CACHE_URL", "redis://redis:6379/1")
+# Use database cache for consistent behavior across all environments
+# This provides dev/prod parity and eliminates Redis/DynamoDB dependencies
 
-# Use locmem cache during tests and disable ratelimit checks
+# Use locmem cache during tests for speed
 if "test" in sys.argv:
     CACHES = {
         "default": {
@@ -495,13 +538,11 @@ if "test" in sys.argv:
             "LOCATION": "test-cache",
         },
     }
-    # Disable django-ratelimit system checks during tests
-    SILENCED_SYSTEM_CHECKS = ["django_ratelimit.E003", "django_ratelimit.W001"]
 else:
     CACHES = {
         "default": {
-            "BACKEND": "django.core.cache.backends.redis.RedisCache",
-            "LOCATION": CACHE_URL,
+            "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+            "LOCATION": "django_cache",
         },
     }
 

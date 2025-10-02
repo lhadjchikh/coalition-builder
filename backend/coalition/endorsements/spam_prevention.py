@@ -23,7 +23,7 @@ except ImportError:
     validate_email = None  # type: ignore[assignment]
     EmailNotValidError = Exception  # type: ignore[misc,assignment]
 
-from django_ratelimit.core import is_ratelimited
+from coalition.core.database_rate_limiter import get_rate_limiter
 
 logger = logging.getLogger(__name__)
 
@@ -121,48 +121,46 @@ class SpamPreventionService:
         request: HttpRequest,
     ) -> dict[str, Any]:
         """
-        Check if request has exceeded rate limit using django-ratelimit
+        Check if request has exceeded rate limit using database-backed rate limiter.
         Returns dict with 'allowed' boolean and 'remaining' count
         """
-        rate = f"{cls.RATE_LIMIT_MAX_ATTEMPTS}/{cls.RATE_LIMIT_WINDOW}s"
-        ratelimited = is_ratelimited(
-            request=request,
-            group="endorsement_submission",
-            key=secure_ip_key,
-            rate=rate,
-            increment=False,  # Just check, don't increment yet
+        limiter = get_rate_limiter()
+        ip_address = get_client_ip(request)
+
+        # Get comprehensive rate limit info
+        info = limiter.get_rate_limit_info(
+            key=ip_address,
+            max_attempts=cls.RATE_LIMIT_MAX_ATTEMPTS,
+            window_seconds=cls.RATE_LIMIT_WINDOW,
         )
 
-        if ratelimited:
-            return {
-                "allowed": False,
-                "remaining": 0,
-                "reset_in": cls.RATE_LIMIT_WINDOW,
-                "message": (
-                    f"Rate limit exceeded. Try again in "
-                    f"{cls.RATE_LIMIT_WINDOW // 60} minutes."
-                ),
-            }
-        else:
-            return {
-                "allowed": True,
-                "remaining": cls.RATE_LIMIT_MAX_ATTEMPTS,
-                "reset_in": cls.RATE_LIMIT_WINDOW,
-            }
+        return {
+            "allowed": info["allowed"],
+            "remaining": info["remaining"],
+            "reset_in": info["reset_in"],
+            "message": (
+                f"Rate limit exceeded. Try again in "
+                f"{info['reset_in'] // 60 + 1} minutes."
+                if not info["allowed"]
+                else None
+            ),
+        }
 
     @classmethod
     def record_submission_attempt(
         cls,
         request: HttpRequest,
     ) -> None:
-        """Record a submission attempt using django-ratelimit"""
-        rate = f"{cls.RATE_LIMIT_MAX_ATTEMPTS}/{cls.RATE_LIMIT_WINDOW}s"
-        is_ratelimited(
-            request=request,
-            group="endorsement_submission",
-            key=secure_ip_key,
-            rate=rate,
-            increment=True,  # Increment the counter
+        """
+        Record a submission attempt using database-backed rate limiter.
+        """
+        limiter = get_rate_limiter()
+        ip_address = get_client_ip(request)
+
+        # Record the attempt (increments counter)
+        limiter.record_attempt(
+            key=ip_address,
+            window_seconds=cls.RATE_LIMIT_WINDOW,
         )
 
     @classmethod

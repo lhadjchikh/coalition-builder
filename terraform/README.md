@@ -4,7 +4,7 @@
 [![Terraform](https://img.shields.io/badge/terraform-1.12+-blue.svg)](https://www.terraform.io/)
 [![AWS Provider](https://img.shields.io/badge/aws-5.99+-orange.svg)](https://registry.terraform.io/providers/hashicorp/aws/latest)
 
-This directory contains the Terraform configuration for deploying Coalition Builder to AWS. The infrastructure is designed to be secure, scalable, and cost-optimized.
+This directory contains the Terraform configuration for deploying Coalition Builder's serverless infrastructure to AWS. The infrastructure is designed to be secure, scalable, and cost-optimized with a 46% cost reduction from the previous ECS-based deployment.
 
 ## 📚 Documentation
 
@@ -12,7 +12,9 @@ This directory contains the Terraform configuration for deploying Coalition Buil
 
 Quick links:
 
-- [AWS Deployment Guide](https://lhadjchikh.github.io/coalition-builder/deployment/aws/) - Complete AWS setup walkthrough
+- [AWS Serverless Guide](../docs/deployment/aws.md) - Complete serverless deployment walkthrough
+- [Lambda Deployment](../docs/lambda_deployment.md) - Django on Lambda setup
+- [Vercel Deployment](../docs/vercel_deployment.md) - Next.js on Vercel setup
 - [Configuration Reference](https://lhadjchikh.github.io/coalition-builder/reference/environment/) - All environment variables
 - [Deployment Overview](https://lhadjchikh.github.io/coalition-builder/deployment/) - Multiple deployment options
 
@@ -20,7 +22,7 @@ Quick links:
 
 - **Terraform**: Infrastructure as Code (>= 1.12.0)
 - **AWS Provider**: ~> 5.99.0
-- **AWS Services**: ECS Fargate, RDS PostgreSQL, S3, ALB, Route53, CloudFront, Secrets Manager
+- **AWS Services**: Lambda, API Gateway, RDS PostgreSQL, DynamoDB, S3, Secrets Manager, ECS (TIGER imports only)
 - **Testing**: Terratest with AWS SDK Go v2
 - **Security**: WAF, Security Groups, KMS encryption
 
@@ -29,16 +31,19 @@ Quick links:
 ```
 terraform/
 ├── modules/
-│   ├── aws-location/         # AWS Location Service for geocoding
+│   ├── dynamodb/             # DynamoDB for serverless rate limiting
+│   ├── zappa/                # S3 and IAM for Lambda deployment
+│   ├── geodata-import/       # ECS for TIGER shapefile processing
+│   ├── database/             # RDS PostgreSQL with PostGIS
+│   ├── networking/           # VPC, Subnets (existing infrastructure)
+│   ├── security/             # Security groups
+│   └── ses/                  # Email service configuration
+│
+│   # Legacy modules (deprecated but kept for reference):
 │   ├── compute/              # ECS, ECR, Bastion host
-│   ├── database/             # RDS, Parameter groups
-│   ├── dns/                  # Route53 records
 │   ├── loadbalancer/         # ALB, Target groups
-│   ├── monitoring/           # CloudWatch, Cost alerts
-│   ├── networking/           # VPC, Subnets, S3 endpoint
-│   ├── secrets/              # Secrets Manager, KMS
-│   ├── security/             # Security groups, WAF
-│   └── storage/              # S3, CloudFront CDN
+│   ├── storage/              # S3, CloudFront CDN
+│   └── monitoring/           # CloudWatch alerts
 ├── scripts/
 │   ├── setup_remote_state.sh # Remote state helper
 │   └── db_setup.sh           # Database setup
@@ -52,93 +57,61 @@ terraform/
 └── backend.tf                # Remote state configuration
 ```
 
-## Architecture Overview
+## Serverless Architecture Overview
 
-The following diagram shows the complete AWS infrastructure layout:
+The infrastructure uses a serverless architecture for cost optimization and scalability:
 
-> **Note**: This diagram uses Mermaid syntax and will render automatically on GitHub and other platforms that support Mermaid. For detailed deployment documentation including this diagram, see the [AWS Deployment Guide](https://lhadjchikh.github.io/coalition-builder/deployment/aws/).
+> **Note**: For complete architecture documentation, see the [AWS Serverless Guide](../docs/deployment/aws.md).
 
 ```mermaid
 %%{init: {'theme':'basic'}}%%
 flowchart TB
-    %% Internet
-    internet[Internet] --> cloudfront[CloudFront CDN]
-    internet --> route53[Route53 DNS]
+    internet[Internet] --> vercel[Vercel Edge Network<br/>Next.js Frontend]
+    internet --> apigateway[API Gateway]
 
-    %% DNS and CDN
-    route53 --> alb[Application Load Balancer]
-    cloudfront --> s3_assets[S3 Static Assets]
+    subgraph aws["AWS (us-east-1)"]
+        apigateway --> lambda[Lambda Function<br/>Django via Zappa]
 
-    %% VPC Container
-    subgraph vpc["VPC (10.0.0.0/16)"]
-        %% Public Subnets
-        subgraph public["Public Subnets"]
-            alb
-            bastion[Bastion Host]
-            subgraph ecs_cluster["ECS Cluster"]
-                django[Django API Container<br/>Public IP]
-                ssr[Next.js SSR Container<br/>Public IP]
-                redis[Redis Cache]
-            end
+        lambda --> rds[(RDS PostgreSQL<br/>with PostGIS)]
+        lambda --> dynamodb[(DynamoDB<br/>Rate Limiting)]
+        lambda --> s3[S3 Static Assets]
+
+        subgraph ecs_occasional["ECS (Occasional Use)"]
+            ecs_task[Fargate Task<br/>TIGER Data Import<br/>2 vCPU, 4GB RAM]
         end
 
-        %% Database Subnets
-        subgraph db_subnets["Private Database Subnets"]
-            rds[(RDS PostgreSQL<br/>with PostGIS)]
+        ecs_task --> rds
+
+        subgraph security["Security & Monitoring"]
+            secrets[Secrets Manager]
+            cloudwatch[CloudWatch Logs]
+            xray[X-Ray Tracing]
         end
 
-        %% S3 Gateway Endpoint
-        s3_endpoint[S3 Gateway Endpoint<br/>Free]
+        lambda --> secrets
+        lambda --> cloudwatch
+        lambda --> xray
     end
 
-    %% External Services
-    subgraph aws_services["AWS Services"]
-        secrets[Secrets Manager]
-        ecr[ECR Repositories]
-        cloudwatch[CloudWatch Logs]
-        s3_assets
-        location[AWS Location Service]
-    end
-
-    %% Connections
-    alb --> django
-    alb --> ssr
-    django --> redis
-    django --> rds
-    ssr --> django
-    bastion --> rds
-
-    %% CloudFront connections
-    cloudfront --> alb
-
-    %% Service connections via Internet
-    django --> secrets
-    ssr --> secrets
-    django --> cloudwatch
-    ssr --> cloudwatch
-    redis --> cloudwatch
-    django --> location
-
-    %% ECR connections via Internet
-    ecr --> django
-    ecr --> ssr
-    ecr --> redis
-
-    %% S3 via Gateway Endpoint
-    django -.-> s3_endpoint
-    ssr -.-> s3_endpoint
-    s3_endpoint -.-> s3_assets
+    vercel --> apigateway
 ```
 
-The infrastructure uses a cost-optimized security model with:
+### Current: Serverless Benefits
 
-- **Public Subnets**: ALB, bastion host, and ECS containers with public IPs
-- **Private Database Subnets**: RDS PostgreSQL with PostGIS (isolated)
-- **S3 Gateway Endpoint**: Free, efficient S3 access for all VPC resources
-- **Security Groups**: Component isolation with least privilege
-- **Secrets Manager**: Secure credential storage
-- **CloudWatch**: Logging and monitoring
-- **Cost Alerts**: Budget monitoring and anomaly detection
+- **46% Cost Reduction**: ~$39/month vs ~$73/month (ECS)
+- **Auto-scaling**: Lambda scales to zero when idle
+- **Global Performance**: Vercel edge network
+- **Minimal Maintenance**: No server management required
+- **Pay-per-use**: DynamoDB and Lambda billing
+
+### Infrastructure Components
+
+- **Lambda**: Django API via Zappa (Python 3.13)
+- **API Gateway**: REST API with custom domains
+- **RDS PostgreSQL**: Database with PostGIS extension
+- **DynamoDB**: Serverless rate limiting (replaces Redis)
+- **ECS Fargate**: TIGER shapefile imports (occasional use)
+- **Vercel**: Next.js frontend with global CDN
 
 ### Security Features
 

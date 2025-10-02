@@ -30,9 +30,9 @@ docker compose exec api python manage.py createsuperuser
 
 **Access Points:**
 
-- Frontend: http://localhost:3000
-- API: http://localhost:8000/api/
-- Admin: http://localhost:8000/admin/
+- Frontend: <http://localhost:3000>
+- API: <http://localhost:8000/api/>
+- Admin: <http://localhost:8000/admin/>
 
 ### Option 2: Manual Setup
 
@@ -72,6 +72,7 @@ docker compose exec api python manage.py createsuperuser
    ```
 
 5. **Setup frontend:**
+
    ```bash
    cd ../frontend
    npm install
