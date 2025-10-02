@@ -15,7 +15,7 @@ variable "db_name_prefix" {
 }
 
 variable "environments" {
-  description = "Map of environment configurations"
+  description = "Set of environment names"
   type        = set(string)
   default     = ["dev", "staging", "prod"]
 }
