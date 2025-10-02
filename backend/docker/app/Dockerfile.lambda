@@ -1,6 +1,8 @@
 # Application image for AWS Lambda deployment
 # Uses the geolambda base image with GDAL/GEOS/PROJ pre-installed
-FROM geolambda:3.10.3 AS app
+# Note: This image must be built first with: ./scripts/build-docker.sh geolambda
+ARG ECR_REGISTRY
+FROM ${ECR_REGISTRY}/geolambda:3.10.3 AS app
 
 # Set working directory for Lambda
 WORKDIR /var/task

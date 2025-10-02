@@ -56,12 +56,44 @@ jobs:
           echo "ecr_registry=${{ steps.login-ecr.outputs.registry }}" >> $GITHUB_OUTPUT
           echo "ecr_repository=coalition-builder-lambda" >> $GITHUB_OUTPUT
 
+      - name: Check if geolambda base image exists
+        id: check-geolambda
+        continue-on-error: true
+        run: |
+          aws ecr describe-images \
+            --repository-name geolambda \
+            --image-ids imageTag=3.10.3 \
+            --region us-east-1 2>/dev/null && echo "exists=true" >> $GITHUB_OUTPUT || echo "exists=false" >> $GITHUB_OUTPUT
+
+      - name: Create geolambda ECR repository if needed
+        if: steps.check-geolambda.outputs.exists != 'true'
+        continue-on-error: true
+        run: |
+          aws ecr create-repository \
+            --repository-name geolambda \
+            --region us-east-1 2>/dev/null || true
+
+      - name: Build and push geolambda base image
+        if: steps.check-geolambda.outputs.exists != 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/docker/geolambda/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.env.outputs.ecr_registry }}/geolambda:3.10.3
+            ${{ steps.env.outputs.ecr_registry }}/geolambda:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: ./backend
           file: ./backend/docker/app/Dockerfile.lambda
           push: true
+          build-args: |
+            ECR_REGISTRY=${{ steps.env.outputs.ecr_registry }}
           tags: |
             ${{ steps.env.outputs.ecr_registry }}/${{ steps.env.outputs.ecr_repository }}:${{ steps.env.outputs.environment }}
             ${{ steps.env.outputs.ecr_registry }}/${{ steps.env.outputs.ecr_repository }}:${{ steps.env.outputs.image_tag }}
