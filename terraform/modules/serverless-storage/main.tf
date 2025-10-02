@@ -139,7 +139,7 @@ resource "aws_s3_bucket_policy" "environment_assets" {
         Principal = "*"
         Action    = "s3:GetObject"
         Resource  = "${aws_s3_bucket.environment_assets[each.key].arn}/*"
-        Condition = each.key == "production" ? {
+        Condition = each.key == "production" && length(var.production_ip_whitelist) > 0 ? {
           IpAddress = {
             "aws:SourceIp" = var.production_ip_whitelist
           }
