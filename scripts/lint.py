@@ -440,7 +440,7 @@ def run_shell_linters(project_root: Path) -> tuple[bool, bool]:
         print("ℹ️  No shell scripts found in project.")
         return True, False
 
-    ignored_dirs = [".git", "node_modules", ".terraform"]
+    ignored_dirs = [".git", "node_modules", ".terraform", ".venv", "venv"]
 
     # Filter out ignored directories
     filtered_scripts = []
