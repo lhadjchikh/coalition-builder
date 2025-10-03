@@ -9,12 +9,14 @@ ENV GDAL_VERSION=3.10.3 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-RUN yum install -y \
+# Install build dependencies using dnf (Amazon Linux 2023)
+# Python 3.13 Lambda base images use dnf (symlinked to microdnf)
+RUN dnf install -y \
     gcc gcc-c++ make cmake \
     sqlite sqlite-devel \
     libtiff libtiff-devel \
     curl tar gzip bzip2 xz \
-    && yum clean all
+    && dnf clean all
 
 # Build PROJ (required by GDAL)
 WORKDIR /tmp
@@ -63,9 +65,9 @@ RUN python -c "from osgeo import gdal, ogr, osr; print(f'GDAL {gdal.__version__}
     python -c "import os; os.environ['DJANGO_SETTINGS_MODULE']=''; from django.contrib.gis.geos import GEOSGeometry" || true
 
 # Clean up build dependencies to reduce image size
-RUN yum remove -y gcc gcc-c++ make cmake && \
-    yum clean all && \
-    rm -rf /tmp/* /var/cache/yum/*
+RUN dnf remove -y gcc gcc-c++ make cmake && \
+    dnf clean all && \
+    rm -rf /tmp/* /var/cache/dnf/*
 
 # Label for tracking
 LABEL maintainer="Coalition Builder Team" \
