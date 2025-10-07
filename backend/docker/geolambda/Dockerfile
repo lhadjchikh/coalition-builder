@@ -11,11 +11,12 @@ ENV GDAL_VERSION=3.10.3 \
 
 # Install build dependencies using dnf (Amazon Linux 2023)
 # Python 3.13 Lambda base images use dnf (symlinked to microdnf)
+# Note: curl is already installed as curl-minimal, so we don't need to install it
 RUN dnf install -y \
     gcc gcc-c++ make cmake \
     sqlite sqlite-devel \
     libtiff libtiff-devel \
-    curl tar gzip bzip2 xz \
+    tar gzip bzip2 xz \
     && dnf clean all
 
 # Build PROJ (required by GDAL)
