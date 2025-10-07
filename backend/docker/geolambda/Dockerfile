@@ -14,6 +14,7 @@ ENV GDAL_VERSION=3.10.3 \
 RUN dnf install -y \
     gcc gcc-c++ make cmake \
     sqlite sqlite-devel \
+    libcurl-devel \
     libtiff libtiff-devel \
     curl tar gzip bzip2 xz \
     && dnf clean all
