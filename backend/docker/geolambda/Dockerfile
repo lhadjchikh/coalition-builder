@@ -53,14 +53,16 @@ RUN curl -L https://github.com/OSGeo/gdal/releases/download/v${GDAL_VERSION}/gda
     make install && \
     cd ../.. && rm -rf gdal-${GDAL_VERSION}
 
-# Set library paths for runtime
+# Set library paths for runtime and build
 ENV LD_LIBRARY_PATH=/opt/lib:/opt/lib64:$LD_LIBRARY_PATH \
     GDAL_DATA=/opt/share/gdal \
     PROJ_DATA=/opt/share/proj \
-    PROJ_LIB=/opt/share/proj
+    PROJ_LIB=/opt/share/proj \
+    PATH=/opt/bin:$PATH
 
 # Install Python GDAL bindings matching the compiled version
-RUN pip install --no-cache-dir GDAL==${GDAL_VERSION}
+# Need to specify paths for the GDAL headers and libraries
+RUN GDAL_CONFIG=/opt/bin/gdal-config pip install --no-cache-dir GDAL==${GDAL_VERSION}
 
 # Verify installation
 RUN python -c "from osgeo import gdal, ogr, osr; print(f'GDAL {gdal.__version__} installed successfully')" && \

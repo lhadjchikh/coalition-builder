@@ -40,34 +40,33 @@ describeInCI("API Service - Configuration", () => {
   });
 
   describe("getBaseUrl", () => {
-    it("should return REACT_APP_API_URL when set", async () => {
-      await withoutWindow(() => {
-        jest.replaceProperty(
-          process,
-          "env",
-          createCleanEnv(originalEnv, {
-            REACT_APP_API_URL: "https://react-api.example.com",
-          })
-        );
-        expect(getBaseUrl()).toBe("https://react-api.example.com");
-      });
+    it("should return REACT_APP_API_URL when set", () => {
+      jest.replaceProperty(
+        process,
+        "env",
+        createCleanEnv(originalEnv, {
+          REACT_APP_API_URL: "https://react-api.example.com",
+        })
+      );
+      expect(getBaseUrl()).toBe("https://react-api.example.com");
     });
 
-    it("should return localhost:8000 when in CI environment", async () => {
-      await withoutWindow(() => {
-        jest.replaceProperty(
-          process,
-          "env",
-          createCleanEnv(originalEnv, {
-            CI: "true",
-          })
-        );
-        expect(getBaseUrl()).toBe("http://localhost:8000");
-      });
+    it("should return localhost:8000 when in CI environment", () => {
+      jest.replaceProperty(
+        process,
+        "env",
+        createCleanEnv(originalEnv, {
+          CI: "true",
+        })
+      );
+      expect(getBaseUrl()).toBe("http://localhost:8000");
     });
 
     it("should return empty string for production and development (relative paths)", () => {
+      // Restore window for this test to simulate browser environment
+      (global as any).window = {};
       expect(getBaseUrl()).toBe("");
+      delete (global as any).window;
     });
   });
 
