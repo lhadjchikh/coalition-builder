@@ -62,7 +62,10 @@ ENV LD_LIBRARY_PATH=/opt/lib:/opt/lib64:$LD_LIBRARY_PATH \
 
 # Install Python GDAL bindings matching the compiled version
 # Need to specify paths for the GDAL headers and libraries
-RUN GDAL_CONFIG=/opt/bin/gdal-config pip install --no-cache-dir GDAL==${GDAL_VERSION}
+RUN GDAL_CONFIG=/opt/bin/gdal-config \
+    CPPFLAGS="-I/opt/include" \
+    LDFLAGS="-L/opt/lib -L/opt/lib64" \
+    pip install --no-cache-dir GDAL==${GDAL_VERSION}
 
 # Verify installation
 RUN python -c "from osgeo import gdal, ogr, osr; print(f'GDAL {gdal.__version__} installed successfully')" && \
