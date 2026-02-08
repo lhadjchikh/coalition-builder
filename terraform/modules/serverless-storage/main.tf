@@ -133,18 +133,22 @@ resource "aws_s3_bucket_policy" "environment_assets" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-      {
-        Sid       = "PublicReadGetObject"
-        Effect    = "Allow"
-        Principal = "*"
-        Action    = "s3:GetObject"
-        Resource  = "${aws_s3_bucket.environment_assets[each.key].arn}/*"
-        Condition = each.key == "production" && length(var.production_ip_whitelist) > 0 ? {
-          IpAddress = {
-            "aws:SourceIp" = var.production_ip_whitelist
+      merge(
+        {
+          Sid       = "PublicReadGetObject"
+          Effect    = "Allow"
+          Principal = "*"
+          Action    = "s3:GetObject"
+          Resource  = "${aws_s3_bucket.environment_assets[each.key].arn}/*"
+        },
+        each.key == "production" && length(var.production_ip_whitelist) > 0 ? {
+          Condition = {
+            IpAddress = {
+              "aws:SourceIp" = var.production_ip_whitelist
+            }
           }
-        } : null
-      }
+        } : {}
+      )
     ]
   })
 
