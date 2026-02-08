@@ -3,7 +3,7 @@
 # This base image is cached and reused across all environments
 
 # Stage 1: Builder - compile all geospatial libraries
-FROM amazon/aws-lambda-python:3.13 AS builder
+FROM public.ecr.aws/lambda/python:3.13 AS builder
 
 # Version configuration
 ENV GDAL_VERSION=3.10.3 \
@@ -65,6 +65,9 @@ RUN curl -L https://github.com/OSGeo/gdal/releases/download/v${GDAL_VERSION}/gda
 ENV LD_LIBRARY_PATH=/opt/lib64:$LD_LIBRARY_PATH \
     PATH=/opt/bin:$PATH
 
+# Ensure /opt/lib exists for toolchain portability (CMake may use lib or lib64)
+RUN mkdir -p /opt/lib
+
 # Install Python GDAL bindings matching the compiled version
 RUN GDAL_CONFIG=/opt/bin/gdal-config \
     CPPFLAGS="-I/opt/include" \
@@ -72,7 +75,7 @@ RUN GDAL_CONFIG=/opt/bin/gdal-config \
     pip install --no-cache-dir GDAL==${GDAL_VERSION}
 
 # Stage 2: Runtime - clean image with only compiled artifacts
-FROM amazon/aws-lambda-python:3.13 AS geolambda
+FROM public.ecr.aws/lambda/python:3.13 AS geolambda
 
 ENV GDAL_VERSION=3.10.3 \
     GEOS_VERSION=3.13.0 \
@@ -84,7 +87,9 @@ ENV GDAL_VERSION=3.10.3 \
 RUN dnf install -y libtiff && dnf clean all
 
 # Copy compiled libraries, binaries, and data from builder (excludes headers)
+# Include both lib and lib64 in case CMake installs to either location
 COPY --from=builder /opt/lib64/ /opt/lib64/
+COPY --from=builder /opt/lib/ /opt/lib/
 COPY --from=builder /opt/bin/ /opt/bin/
 COPY --from=builder /opt/share/ /opt/share/
 
@@ -93,8 +98,8 @@ COPY --from=builder /var/lang/lib/python3.13/site-packages/osgeo/ /var/lang/lib/
 COPY --from=builder /var/lang/lib/python3.13/site-packages/osgeo_utils/ /var/lang/lib/python3.13/site-packages/osgeo_utils/
 COPY --from=builder /var/lang/lib/python3.13/site-packages/gdal-${GDAL_VERSION}.dist-info/ /var/lang/lib/python3.13/site-packages/gdal-${GDAL_VERSION}.dist-info/
 
-# Set library paths for runtime
-ENV LD_LIBRARY_PATH=/opt/lib64:$LD_LIBRARY_PATH \
+# Set library paths for runtime (include both lib dirs for toolchain portability)
+ENV LD_LIBRARY_PATH=/opt/lib:/opt/lib64:$LD_LIBRARY_PATH \
     GDAL_DATA=/opt/share/gdal \
     PROJ_DATA=/opt/share/proj \
     PROJ_LIB=/opt/share/proj \
