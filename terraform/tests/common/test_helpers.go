@@ -366,7 +366,8 @@ func GetIntegrationTestVars() map[string]interface{} {
 	}
 
 	// Add test-specific settings
-	testVars["prevent_destroy"] = false // Allow destruction in tests
+	testVars["prevent_destroy"] = false    // Allow destruction in tests
+	testVars["api_gateway_id"] = "test123" // Dummy value for plan-only tests
 
 	return testVars
 }
