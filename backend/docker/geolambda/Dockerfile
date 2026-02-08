@@ -1,6 +1,6 @@
 # Build GDAL/GEOS/PROJ from source for GeoDjango support
 # This base image is cached and reused across all environments
-FROM public.ecr.aws/lambda/python:3.13 AS geolambda
+FROM amazon/aws-lambda-python:3.13 AS geolambda
 
 # Version configuration - using latest stable versions
 ENV GDAL_VERSION=3.10.3 \
@@ -25,8 +25,11 @@ WORKDIR /tmp
 RUN curl -L https://download.osgeo.org/proj/proj-${PROJ_VERSION}.tar.gz | tar xz && \
     cd proj-${PROJ_VERSION} && \
     mkdir build && cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/opt .. && \
-    make -j$(nproc) && \
+    cmake -DCMAKE_INSTALL_PREFIX=/opt \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_TESTING=OFF \
+        .. && \
+    make -j2 && \
     make install && \
     cd ../.. && rm -rf proj-${PROJ_VERSION}
 
@@ -34,8 +37,11 @@ RUN curl -L https://download.osgeo.org/proj/proj-${PROJ_VERSION}.tar.gz | tar xz
 RUN curl -L https://download.osgeo.org/geos/geos-${GEOS_VERSION}.tar.bz2 | tar xj && \
     cd geos-${GEOS_VERSION} && \
     mkdir build && cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/opt .. && \
-    make -j$(nproc) && \
+    cmake -DCMAKE_INSTALL_PREFIX=/opt \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_TESTING=OFF \
+        .. && \
+    make -j2 && \
     make install && \
     cd ../.. && rm -rf geos-${GEOS_VERSION}
 
@@ -44,12 +50,14 @@ RUN curl -L https://github.com/OSGeo/gdal/releases/download/v${GDAL_VERSION}/gda
     cd gdal-${GDAL_VERSION} && \
     mkdir build && cd build && \
     cmake -DCMAKE_INSTALL_PREFIX=/opt \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_TESTING=OFF \
         -DGDAL_USE_GEOS=ON \
         -DGEOS_INCLUDE_DIR=/opt/include \
         -DGEOS_LIBRARY=/opt/lib/libgeos_c.so \
         -DPROJ_ROOT=/opt \
         .. && \
-    make -j$(nproc) && \
+    make -j2 && \
     make install && \
     cd ../.. && rm -rf gdal-${GDAL_VERSION}
 
@@ -72,7 +80,7 @@ RUN python -c "from osgeo import gdal, ogr, osr; print(f'GDAL {gdal.__version__}
     python -c "import os; os.environ['DJANGO_SETTINGS_MODULE']=''; from django.contrib.gis.geos import GEOSGeometry" || true
 
 # Clean up build dependencies to reduce image size
-RUN dnf remove -y gcc gcc-c++ make cmake && \
+RUN dnf remove -y --allowerasing gcc gcc-c++ make cmake || true && \
     dnf clean all && \
     rm -rf /tmp/* /var/cache/dnf/*
 
