@@ -20,6 +20,12 @@ variable "database_subnet_cidrs" {
   default     = []
 }
 
+variable "create_lambda_sg" {
+  description = "Whether to create the Lambda security group (use this instead of vpc_id to avoid unknown-at-plan-time issues)"
+  type        = bool
+  default     = false
+}
+
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)

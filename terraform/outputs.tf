@@ -20,45 +20,14 @@ output "database_name" {
   value = module.database.db_instance_name
 }
 
-# Application Outputs
-output "api_ecr_repository_url" {
-  value = module.compute.api_ecr_repository_url
-}
-
-output "app_ecr_repository_url" {
-  value = module.compute.app_ecr_repository_url
-}
-
-output "redis_ecr_repository_url" {
-  value = module.compute.redis_ecr_repository_url
-}
-
-output "ecs_cluster_name" {
-  value = module.compute.ecs_cluster_name
-}
-
-output "ecs_service_name" {
-  value = module.compute.ecs_service_name
-}
-
-# Load Balancer Outputs
-output "load_balancer_dns" {
-  value = module.loadbalancer.alb_dns_name
-}
-
-# DNS Outputs
-output "website_url" {
-  value = module.dns.website_url
-}
-
 # Bastion Host Outputs
 output "bastion_public_ip" {
-  value       = module.compute.bastion_public_ip
+  value       = module.bastion.bastion_public_ip
   description = "Public IP address of the bastion host"
 }
 
 output "ssh_tunnel_command" {
-  value       = "ssh -i ${var.bastion_key_name}.pem ec2-user@${module.compute.bastion_public_ip} -L 5432:${module.database.db_instance_address}:5432"
+  value       = "ssh -i ${var.bastion_key_name}.pem ec2-user@${module.bastion.bastion_public_ip} -L 5432:${module.database.db_instance_address}:5432"
   description = "Command to create SSH tunnel for database access"
 }
 
@@ -69,7 +38,7 @@ output "pgadmin_connection_info" {
     - Port: 5432
     - Username: ${var.db_username}
     - Database: ${var.db_name}
-    
+
     Important: Connect to SSH tunnel first using the command above
   EOT
   description = "Connection information for pgAdmin"
@@ -104,32 +73,13 @@ output "budget_alerts_sns_topic_arn" {
 # Simple deployment status
 output "deployment_status" {
   description = "Overall deployment status"
-  value       = "✅ Infrastructure deployment completed successfully!"
+  value       = "Infrastructure deployment completed successfully!"
 }
 
 # Database setup status
 output "database_setup_status" {
   description = "Database setup status"
-  value       = var.auto_setup_database ? "✅ Database setup completed automatically" : "⚠️  Manual database setup required"
-}
-
-# Application URLs
-output "application_urls" {
-  description = "Application access URLs"
-  value = {
-    website       = module.dns.website_url
-    load_balancer = "http://${module.loadbalancer.alb_dns_name}"
-  }
-}
-
-# Troubleshooting information
-output "troubleshooting_commands" {
-  description = "Useful commands for troubleshooting"
-  value = {
-    ssh_to_bastion    = "ssh -i ${var.bastion_key_name}.pem ec2-user@${module.compute.bastion_public_ip}"
-    check_ecs_service = "aws ecs describe-services --cluster ${module.compute.ecs_cluster_name} --services ${module.compute.ecs_service_name} --region ${var.aws_region}"
-    ssh_tunnel        = "ssh -i ${var.bastion_key_name}.pem ec2-user@${module.compute.bastion_public_ip} -L 5432:${module.database.db_instance_address}:5432"
-  }
+  value       = var.auto_setup_database ? "Database setup completed automatically" : "Manual database setup required"
 }
 
 # Storage Module Outputs
@@ -199,12 +149,11 @@ output "lambda_repository_url" {
 output "deployment_summary" {
   description = "Complete deployment summary"
   value       = <<-EOT
-🎉 DEPLOYMENT COMPLETE
+DEPLOYMENT COMPLETE
 
-🌐 Website: ${module.dns.website_url}
-🗄️  Database: ${module.database.db_instance_endpoint}
-🖥️  Bastion: ${module.compute.bastion_public_ip}
-📦 Static Assets: https://${module.storage.static_assets_bucket_domain_name}
+Database: ${module.database.db_instance_endpoint}
+Bastion: ${module.bastion.bastion_public_ip}
+Static Assets: https://${module.storage.static_assets_bucket_domain_name}
 
 EOT
 }
@@ -229,4 +178,3 @@ output "zappa_lambda_security_group_id" {
   description = "Security group ID for Lambda functions"
   value       = module.zappa.lambda_security_group_id
 }
-
