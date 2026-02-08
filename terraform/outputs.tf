@@ -158,6 +158,17 @@ Static Assets: https://${module.storage.static_assets_bucket_domain_name}
 EOT
 }
 
+# API Custom Domain Outputs
+output "api_domain_name" {
+  description = "Custom domain name for the API"
+  value       = aws_api_gateway_domain_name.api.domain_name
+}
+
+output "acm_certificate_arn" {
+  description = "ARN of the ACM certificate for the domain"
+  value       = aws_acm_certificate.main.arn
+}
+
 # Zappa Outputs
 output "zappa_deployment_role_name" {
   description = "Name of the IAM role for Zappa Lambda execution"

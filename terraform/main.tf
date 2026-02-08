@@ -184,3 +184,81 @@ module "lambda_ecr" {
 
   tags = var.tags
 }
+
+# ACM certificate for domain and all subdomains
+resource "aws_acm_certificate" "main" {
+  domain_name               = var.domain_name
+  subject_alternative_names = ["*.${var.domain_name}"]
+  validation_method         = "DNS"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_route53_record" "cert_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.main.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+
+  allow_overwrite = true
+  zone_id         = var.route53_zone_id
+  name            = each.value.name
+  type            = each.value.type
+  ttl             = 60
+  records         = [each.value.record]
+}
+
+resource "aws_acm_certificate_validation" "main" {
+  certificate_arn         = aws_acm_certificate.main.arn
+  validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
+}
+
+# API custom domain
+resource "aws_api_gateway_domain_name" "api" {
+  domain_name              = "api.${var.domain_name}"
+  regional_certificate_arn = aws_acm_certificate_validation.main.certificate_arn
+
+  endpoint_configuration {
+    types = ["REGIONAL"]
+  }
+}
+
+resource "aws_api_gateway_base_path_mapping" "api" {
+  api_id      = var.api_gateway_id
+  stage_name  = var.api_gateway_stage
+  domain_name = aws_api_gateway_domain_name.api.domain_name
+}
+
+resource "aws_route53_record" "api" {
+  zone_id = var.route53_zone_id
+  name    = "api.${var.domain_name}"
+  type    = "A"
+
+  alias {
+    name                   = aws_api_gateway_domain_name.api.regional_domain_name
+    zone_id                = aws_api_gateway_domain_name.api.regional_zone_id
+    evaluate_target_health = true
+  }
+}
+
+# DNS - Point domain to Vercel
+resource "aws_route53_record" "apex" {
+  zone_id = var.route53_zone_id
+  name    = var.domain_name
+  type    = "A"
+  ttl     = 300
+  records = ["76.76.21.21"]
+}
+
+resource "aws_route53_record" "www" {
+  zone_id = var.route53_zone_id
+  name    = "www.${var.domain_name}"
+  type    = "CNAME"
+  ttl     = 300
+  records = ["cname.vercel-dns.com"]
+}

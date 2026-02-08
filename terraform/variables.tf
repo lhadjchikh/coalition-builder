@@ -196,6 +196,16 @@ variable "domain_name" {
   type        = string
 }
 
+variable "api_gateway_id" {
+  description = "The ID of the Zappa-managed API Gateway REST API"
+  type        = string
+}
+
+variable "api_gateway_stage" {
+  description = "The stage name of the API Gateway (e.g., prod)"
+  type        = string
+  default     = "prod"
+}
 
 # Monitoring Variables
 variable "alert_email" {
