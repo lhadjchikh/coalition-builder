@@ -167,14 +167,6 @@ jobs:
             poetry run zappa deploy ${{ steps.env.outputs.environment }}
           fi
 
-      - name: Configure custom domain
-        if: vars.DOMAIN_NAME != '' && vars.CERTIFICATE_ARN != ''
-        working-directory: ./backend
-        continue-on-error: true
-        run: |
-          echo "Certifying domain ${{ vars.DOMAIN_NAME }}..."
-          poetry run zappa certify ${{ steps.env.outputs.environment }} --yes || echo "Domain certification may already be complete"
-
       - name: Get deployment URL
         id: deployment
         working-directory: ./backend
