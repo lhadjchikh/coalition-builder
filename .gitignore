@@ -103,5 +103,6 @@ coverage/
 # Project Data
 /backend/fixtures
 
-# Zappa - user-specific configuration
+# Zappa - user-specific and generated configuration
 backend/zappa_settings.json
+backend/zappa_settings.py

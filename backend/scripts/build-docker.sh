@@ -98,12 +98,16 @@ build_app() {
     docker tag "${ECR_REGISTRY}/geolambda:3.10.3" geolambda:3.10.3
   fi
 
+  # Generate zappa_settings.py for Lambda handler (standard Zappa Docker workflow)
+  log_info "Generating zappa_settings.py for ${ENV}..."
+  poetry run zappa save-python-settings-file "${ENV}"
+
   # Build the application image
   docker build \
     -f docker/app/Dockerfile.lambda \
     -t "coalition-${ENV}:latest" \
     --platform linux/amd64 \
-    --build-arg ENV="${ENV}" \
+    --build-arg ECR_REGISTRY="${ECR_REGISTRY}" \
     .
 
   # Tag for ECR

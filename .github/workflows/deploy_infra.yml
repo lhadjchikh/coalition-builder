@@ -87,6 +87,7 @@ jobs:
       TF_VAR_route53_zone_id: ${{ vars.TF_VAR_ROUTE53_ZONE_ID }}
       TF_VAR_domain_name: ${{ vars.TF_VAR_DOMAIN_NAME }}
       TF_VAR_acm_certificate_arn: ${{ vars.TF_VAR_ACM_CERTIFICATE_ARN }}
+      TF_VAR_api_gateway_id: ${{ vars.TF_VAR_API_GATEWAY_ID }}
       TF_VAR_alert_email: ${{ vars.TF_VAR_ALERT_EMAIL }}
       TF_VAR_allowed_hosts: "localhost,127.0.0.1,${{ vars.TF_VAR_DOMAIN_NAME }},*.${{ vars.TF_VAR_DOMAIN_NAME }}"
       TF_VAR_csrf_trusted_origins: "https://${{ vars.TF_VAR_DOMAIN_NAME }},https://www.${{ vars.TF_VAR_DOMAIN_NAME }}"
