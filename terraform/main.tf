@@ -214,6 +214,18 @@ module "serverless_storage" {
   ]
 }
 
+# Zappa Module - S3 bucket, IAM role, and Lambda security group for Zappa deployments
+module "zappa" {
+  source = "./modules/zappa"
+
+  prefix                = var.prefix
+  aws_region            = var.aws_region
+  vpc_id                = module.networking.vpc_id
+  database_subnet_cidrs = module.networking.db_subnet_cidrs
+
+  tags = var.tags
+}
+
 # Lambda ECR Module - Creates ECR repositories for Lambda deployment
 module "lambda_ecr" {
   source = "./modules/lambda-ecr"

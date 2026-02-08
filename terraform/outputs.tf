@@ -209,3 +209,24 @@ output "deployment_summary" {
 EOT
 }
 
+# Zappa Outputs
+output "zappa_deployment_role_name" {
+  description = "Name of the IAM role for Zappa Lambda execution"
+  value       = module.zappa.zappa_deployment_role_name
+}
+
+output "zappa_deployment_role_arn" {
+  description = "ARN of the IAM role for Zappa Lambda execution"
+  value       = module.zappa.zappa_deployment_role_arn
+}
+
+output "zappa_s3_bucket" {
+  description = "S3 bucket for Zappa deployment packages"
+  value       = module.zappa.s3_bucket_name
+}
+
+output "zappa_lambda_security_group_id" {
+  description = "Security group ID for Lambda functions"
+  value       = module.zappa.lambda_security_group_id
+}
+
