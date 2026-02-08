@@ -19,7 +19,7 @@ django = "^5.2.7"
 django-ninja = "^1.4.2"
 dj-database-url = "^2.3.0"
 whitenoise = "^6.9.0"
-psycopg = "^3.2.9"
+psycopg = {version = "^3.2.9", extras = ["binary"]}
 gunicorn = "^23.0.0"
 psutil = "^7.0.0"
 akismet = "^24.11.0"
