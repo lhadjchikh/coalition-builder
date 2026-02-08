@@ -23,7 +23,6 @@ func TestMainConfiguration(t *testing.T) {
 	// Configure for deployment
 	testVars["route53_zone_id"] = "Z123456789ABCDEF"
 	testVars["domain_name"] = fmt.Sprintf("%s.example.com", testConfig.UniqueID)
-	testVars["acm_certificate_arn"] = fmt.Sprintf("arn:aws:acm:us-east-1:123456789012:certificate/%s", testConfig.UniqueID)
 	testVars["alert_email"] = "test@example.com"
 	testVars["db_password"] = "SuperSecurePassword123!"
 	testVars["app_db_password"] = "AppPassword123!"
@@ -38,9 +37,10 @@ func TestMainConfiguration(t *testing.T) {
 	// Validate all expected outputs are defined
 	expectedOutputs := []string{
 		"vpc_id", "public_subnet_ids", "private_subnet_ids", "database_endpoint",
-		"database_name", "ecs_cluster_name", "load_balancer_dns",
-		"api_ecr_repository_url", "app_ecr_repository_url", "static_assets_bucket_name", "static_assets_bucket_arn",
+		"database_name", "bastion_public_ip",
+		"static_assets_bucket_name", "static_assets_bucket_arn",
 		"cloudfront_distribution_domain_name", "cloudfront_distribution_id",
+		"zappa_deployment_role_name", "zappa_s3_bucket",
 	}
 
 	for _, output := range expectedOutputs {
@@ -51,9 +51,11 @@ func TestMainConfiguration(t *testing.T) {
 	expectedResources := []string{
 		"module.networking.aws_vpc.main", "module.networking.aws_subnet.public",
 		"module.networking.aws_subnet.private", "module.networking.aws_subnet.private_db",
-		"module.database.aws_db_instance.postgres", "module.compute.aws_ecs_cluster.main",
-		"module.loadbalancer.aws_lb.main", "module.compute.aws_ecr_repository.api",
-		"module.compute.aws_ecr_repository.app", "module.storage.aws_s3_bucket.static_assets",
+		"module.database.aws_db_instance.postgres",
+		"module.bastion.aws_instance.bastion",
+		"module.zappa.aws_s3_bucket.zappa_deployments",
+		"module.zappa.aws_security_group.lambda",
+		"module.storage.aws_s3_bucket.static_assets",
 		"module.storage.aws_cloudfront_distribution.static_assets",
 		"module.storage.aws_cloudfront_origin_access_identity.static_assets",
 	}
@@ -61,10 +63,6 @@ func TestMainConfiguration(t *testing.T) {
 	for _, resource := range expectedResources {
 		assert.Contains(t, planOutput, resource, "Plan should create %s resource", resource)
 	}
-
-	// Validate both API and App target groups exist
-	assert.Contains(t, planOutput, "module.loadbalancer.aws_lb_target_group.api", "Plan should create API target group")
-	assert.Contains(t, planOutput, "module.loadbalancer.aws_lb_target_group.app", "Plan should create App target group")
 
 	// Verify the plan completes successfully
 	assert.Contains(t, planOutput, "Plan:", "Plan should complete successfully")
@@ -82,8 +80,6 @@ func TestMainConfigurationValidation(t *testing.T) {
 	testVars := common.GetIntegrationTestVars()
 	testVars["route53_zone_id"] = "Z123456789ABCDEF"
 	testVars["domain_name"] = fmt.Sprintf("%s-complete.example.com", testConfig.UniqueID)
-	testVars["acm_certificate_arn"] = fmt.Sprintf(
-		"arn:aws:acm:us-east-1:123456789012:certificate/%s", testConfig.UniqueID)
 	testVars["alert_email"] = "test@example.com"
 	testVars["db_password"] = "SuperSecurePassword123!"
 	testVars["app_db_password"] = "AppPassword123!"
@@ -98,7 +94,8 @@ func TestMainConfigurationValidation(t *testing.T) {
 	// Should succeed and contain main components
 	assert.Contains(t, planOutput, "module.networking.aws_vpc.main", "Plan should create VPC")
 	assert.Contains(t, planOutput, "module.database.aws_db_instance.postgres", "Plan should create database")
-	assert.Contains(t, planOutput, "module.compute.aws_ecs_cluster.main", "Plan should create ECS cluster")
+	assert.Contains(t, planOutput, "module.bastion.aws_instance.bastion", "Plan should create bastion host")
+	assert.Contains(t, planOutput, "module.zappa.aws_s3_bucket.zappa_deployments", "Plan should create Zappa S3 bucket")
 }
 
 func TestMainConfigurationCORS(t *testing.T) {
@@ -115,14 +112,11 @@ func TestMainConfigurationCORS(t *testing.T) {
 		domainName := fmt.Sprintf("%s-cors.example.com", testConfig.UniqueID)
 		testVars["domain_name"] = domainName
 		testVars["route53_zone_id"] = "Z123456789ABCDEF"
-		testVars["acm_certificate_arn"] = fmt.Sprintf(
-			"arn:aws:acm:us-east-1:123456789012:certificate/%s", testConfig.UniqueID)
 		testVars["alert_email"] = "test@example.com"
 		testVars["db_password"] = "SuperSecurePassword123!"
 		testVars["app_db_password"] = "AppPassword123!"
 		testVars["bastion_key_name"] = "test-key"
 		testVars["create_new_key_pair"] = false
-		// Don't set static_assets_cors_origins - should default to domain_name
 
 		terraformOptions := testConfig.GetTerraformOptions(testVars)
 
@@ -141,8 +135,6 @@ func TestMainConfigurationCORS(t *testing.T) {
 		testVars["domain_name"] = fmt.Sprintf("%s-explicit.example.com", testConfig.UniqueID)
 		testVars["static_assets_cors_origins"] = []string{"https://custom1.example.com", "https://custom2.example.com"}
 		testVars["route53_zone_id"] = "Z123456789ABCDEF"
-		testVars["acm_certificate_arn"] = fmt.Sprintf(
-			"arn:aws:acm:us-east-1:123456789012:certificate/%s", testConfig.UniqueID)
 		testVars["alert_email"] = "test@example.com"
 		testVars["db_password"] = "SuperSecurePassword123!"
 		testVars["app_db_password"] = "AppPassword123!"
