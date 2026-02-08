@@ -377,13 +377,12 @@ if IS_LAMBDA:
         }
 
     # GeoDjango is fully supported via Docker container
-    # GDAL paths are set via environment variables
+    # GDAL/GEOS libraries are compiled to /opt/lib64/ by the geolambda Dockerfile
     if os.environ.get("USE_GEODJANGO", "true").lower() == "true" and os.path.exists(
-        "/opt/lib/libgdal.so",
+        "/opt/lib64/libgdal.so",
     ):
-        # Set GDAL paths for Lambda container
-        GDAL_LIBRARY_PATH = "/opt/lib/libgdal.so"
-        GEOS_LIBRARY_PATH = "/opt/lib/libgeos_c.so"
+        GDAL_LIBRARY_PATH = "/opt/lib64/libgdal.so"
+        GEOS_LIBRARY_PATH = "/opt/lib64/libgeos_c.so"
 
     # Use S3 for static/media files
     if os.environ.get("USE_S3", "false").lower() == "true":
