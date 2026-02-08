@@ -27,6 +27,10 @@ RUN apt-get clean && \
 ENV GDAL_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgdal.so \
     GDAL_DATA=/usr/share/gdal
 
+# Install GDAL Python bindings matching the system GDAL version
+# Must be installed separately because the version must match the C library exactly
+RUN pip install --no-cache-dir GDAL==$(gdal-config --version)
+
 # Install Poetry
 RUN pip install --no-cache-dir poetry && \
     poetry config virtualenvs.create false
