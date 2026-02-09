@@ -142,6 +142,7 @@ jobs:
           context: ./backend
           file: ./backend/docker/geolambda/Dockerfile
           push: true
+          provenance: false
           tags: |
             ${{ steps.env.outputs.ecr_registry }}/geolambda:3.10.3
             ${{ steps.env.outputs.ecr_registry }}/geolambda:latest
@@ -154,6 +155,7 @@ jobs:
           context: ./backend
           file: ./backend/docker/app/Dockerfile.lambda
           push: true
+          provenance: false
           build-args: |
             ECR_REGISTRY=${{ steps.env.outputs.ecr_registry }}
           tags: |
