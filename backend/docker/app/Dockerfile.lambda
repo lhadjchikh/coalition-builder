@@ -24,6 +24,7 @@ COPY scripts/ ./scripts/
 COPY manage.py ./
 COPY zappa_settings.json ./
 COPY zappa_settings.py ./
+COPY handler.py ./
 
 # Copy static files
 COPY static/ ./static/
