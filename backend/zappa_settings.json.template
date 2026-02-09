@@ -96,10 +96,10 @@
         }
     },
     
-    "production": {
+    "prod": {
         "extends": "base",
-        "stage": "production",
-        "docker_image": "YOUR-ECR-REGISTRY/YOUR-LAMBDA-IMAGE:production",
+        "stage": "prod",
+        "docker_image": "YOUR-ECR-REGISTRY/YOUR-LAMBDA-IMAGE:prod",
         "memory_size": 1024,
         "keep_warm": true,
         "keep_warm_expression": "rate(4 minutes)",

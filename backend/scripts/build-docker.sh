@@ -75,14 +75,9 @@ build_app() {
   log_info "Building application image for ${ENV} environment..."
 
   # Validate environment
-  if [[ ! "$ENV" =~ ^(dev|staging|production|prod)$ ]]; then
-    log_error "Invalid environment: $ENV. Must be dev, staging, or production"
+  if [[ ! "$ENV" =~ ^(dev|staging|prod)$ ]]; then
+    log_error "Invalid environment: $ENV. Must be dev, staging, or prod"
     exit 1
-  fi
-
-  # Normalize production/prod
-  if [ "$ENV" = "production" ]; then
-    ENV="prod"
   fi
 
   # Create ECR repository if it doesn't exist
@@ -176,7 +171,7 @@ case "${1}" in
   geolambda)
     build_geolambda
     ;;
-  dev | staging | production | prod)
+  dev | staging | prod)
     build_app "$1"
     ;;
   all)
@@ -192,13 +187,13 @@ case "${1}" in
     cleanup_old_images "${2:-3}"
     ;;
   *)
-    echo "Usage: $0 {geolambda|dev|staging|production|all|list|cleanup [keep_count]}"
+    echo "Usage: $0 {geolambda|dev|staging|prod|all|list|cleanup [keep_count]}"
     echo ""
     echo "Commands:"
     echo "  geolambda    - Build and push the geolambda base image (run once)"
     echo "  dev          - Build and push development environment image"
     echo "  staging      - Build and push staging environment image"
-    echo "  production   - Build and push production environment image"
+    echo "  prod         - Build and push production environment image"
     echo "  all          - Build all images (base + all environments)"
     echo "  list         - List all images in ECR"
     echo "  cleanup N    - Remove old images, keeping latest N (default: 3)"
@@ -206,7 +201,7 @@ case "${1}" in
     echo "Examples:"
     echo "  $0 geolambda        # Build base image (first time only)"
     echo "  $0 dev              # Build dev environment"
-    echo "  $0 production       # Build production environment"
+    echo "  $0 prod             # Build production environment"
     echo "  $0 list             # Show all ECR images"
     echo "  $0 cleanup 5        # Keep only 5 latest images per repo"
     exit 1

@@ -16,7 +16,7 @@ on:
         options:
           - dev
           - staging
-          - production
+          - prod
 
 permissions:
   contents: read
@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
 
     # Set environment based on branch or input
-    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production') || (github.ref == 'refs/heads/staging' && 'staging') || 'dev' }}
+    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || (github.ref == 'refs/heads/staging' && 'staging') || 'dev' }}
 
     steps:
       - name: Checkout code
@@ -51,7 +51,8 @@ jobs:
       - name: Get environment variables
         id: env
         run: |
-          echo "environment=${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production') || (github.ref == 'refs/heads/staging' && 'staging') || 'dev' }}" >> $GITHUB_OUTPUT
+          ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || (github.ref == 'refs/heads/staging' && 'staging') || 'dev' }}"
+          echo "environment=$ENV" >> $GITHUB_OUTPUT
           echo "image_tag=${{ github.sha }}" >> $GITHUB_OUTPUT
           echo "ecr_registry=${{ steps.login-ecr.outputs.registry }}" >> $GITHUB_OUTPUT
           echo "ecr_repository=coalition-builder-lambda" >> $GITHUB_OUTPUT
@@ -209,7 +210,7 @@ jobs:
           fi
 
       - name: Run smoke tests
-        if: steps.env.outputs.environment != 'production'
+        if: steps.env.outputs.environment != 'prod'
         continue-on-error: true
         working-directory: ./backend
         run: |
@@ -249,8 +250,8 @@ jobs:
 
             ### Next Steps:
             - Test the API endpoints at ${apiUrl}
-            - Monitor CloudWatch logs with: \`zappa tail ${environment}\`
-            - Rollback if needed with: \`zappa rollback ${environment} -n 1\`
+            - Monitor CloudWatch logs with: \`zappa tail ${{ steps.env.outputs.environment }}\`
+            - Rollback if needed with: \`zappa rollback ${{ steps.env.outputs.environment }} -n 1\`
             `;
 
             github.rest.issues.createComment({

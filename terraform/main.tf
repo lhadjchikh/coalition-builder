@@ -168,9 +168,9 @@ module "serverless_storage" {
   source = "./modules/serverless-storage"
 
   project_name                 = var.prefix
-  force_destroy_non_production = var.environment != "production"
+  force_destroy_non_production = var.environment != "prod"
   enable_lifecycle_rules       = true
-  enable_cloudfront            = var.environment == "production" || var.environment == "staging"
+  enable_cloudfront            = var.environment == "prod" || var.environment == "staging"
 
   production_cors_origins = [
     "https://${var.domain_name}",

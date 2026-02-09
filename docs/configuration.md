@@ -230,7 +230,7 @@ poetry run python manage.py check --deploy
 ```bash
 # Via Zappa
 cd backend
-poetry run zappa invoke production '{"path": "/health/", "httpMethod": "GET"}'
+poetry run zappa invoke prod '{"path": "/health/", "httpMethod": "GET"}'
 ```
 
 ### Frontend

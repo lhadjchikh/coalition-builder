@@ -99,9 +99,9 @@
       "throttle_rate_limit": 40
     }
   },
-  "production": {
+  "prod": {
     "extends": "base",
-    "stage": "production",
+    "stage": "prod",
     "docker_image": "public.ecr.aws/lambda/python:3.13",
     "memory_size": 1024,
     "keep_warm": true,
