@@ -48,7 +48,7 @@
     "dev": {
         "extends": "base",
         "stage": "dev",
-        "docker_image": "YOUR-ECR-REGISTRY/YOUR-LAMBDA-IMAGE:dev",
+        "docker_image": "YOUR-ECR-REGISTRY/coalition-dev:latest",
         "memory_size": 512,
         "keep_warm": false,
         
@@ -73,7 +73,7 @@
     "staging": {
         "extends": "base",
         "stage": "staging",
-        "docker_image": "YOUR-ECR-REGISTRY/YOUR-LAMBDA-IMAGE:staging",
+        "docker_image": "YOUR-ECR-REGISTRY/coalition-staging:latest",
         "memory_size": 512,
         "keep_warm": true,
         "keep_warm_expression": "rate(10 minutes)",
@@ -99,7 +99,7 @@
     "prod": {
         "extends": "base",
         "stage": "prod",
-        "docker_image": "YOUR-ECR-REGISTRY/YOUR-LAMBDA-IMAGE:prod",
+        "docker_image": "YOUR-ECR-REGISTRY/coalition-prod:latest",
         "memory_size": 1024,
         "keep_warm": true,
         "keep_warm_expression": "rate(4 minutes)",

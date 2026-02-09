@@ -77,10 +77,9 @@ def configure_zappa_settings() -> None:
     )
 
     if use_custom_docker:
-        lambda_image_base = f"{ecr_registry}/coalition-lambda"
-        dev_docker_image = f"{lambda_image_base}:dev"
-        staging_docker_image = f"{lambda_image_base}:staging"
-        production_docker_image = f"{lambda_image_base}:prod"
+        dev_docker_image = f"{ecr_registry}/coalition-dev:latest"
+        staging_docker_image = f"{ecr_registry}/coalition-staging:latest"
+        production_docker_image = f"{ecr_registry}/coalition-prod:latest"
     else:
         # Use public Lambda Python image
         dev_docker_image = "public.ecr.aws/lambda/python:3.13"
