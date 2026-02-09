@@ -108,20 +108,6 @@ jobs:
         run: |
           poetry install --no-interaction --no-ansi --only main
 
-      - name: Build and push Docker image
-        working-directory: ./backend
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
-          ENV: ${{ needs.determine-environment.outputs.environment == 'production' && 'prod' || needs.determine-environment.outputs.environment }}
-        run: |
-          # Pull and tag base image if not building it
-          docker pull $ECR_REGISTRY/geolambda:3.10.3 || ./scripts/build-docker.sh geolambda
-          docker tag $ECR_REGISTRY/geolambda:3.10.3 geolambda:3.10.3
-
-          # Build and push application image
-          ./scripts/build-docker.sh $ENV
-
       - name: Configure Zappa settings
         working-directory: ./backend
         env:
@@ -137,6 +123,20 @@ jobs:
           VPC_SECURITY_GROUP_IDS: ${{ vars.VPC_SECURITY_GROUP_IDS }}
         run: |
           poetry run python scripts/configure_zappa.py
+
+      - name: Build and push Docker image
+        working-directory: ./backend
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
+          ENV: ${{ needs.determine-environment.outputs.environment == 'production' && 'prod' || needs.determine-environment.outputs.environment }}
+        run: |
+          # Pull and tag base image if not building it
+          docker pull $ECR_REGISTRY/geolambda:3.10.3 || ./scripts/build-docker.sh geolambda
+          docker tag $ECR_REGISTRY/geolambda:3.10.3 geolambda:3.10.3
+
+          # Build and push application image
+          ./scripts/build-docker.sh $ENV
 
       - name: Deploy with Zappa
         working-directory: ./backend
