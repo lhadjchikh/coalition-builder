@@ -55,7 +55,7 @@ jobs:
           echo "environment=$ENV" >> $GITHUB_OUTPUT
           echo "image_tag=${{ github.sha }}" >> $GITHUB_OUTPUT
           echo "ecr_registry=${{ steps.login-ecr.outputs.registry }}" >> $GITHUB_OUTPUT
-          echo "ecr_repository=coalition-builder-lambda" >> $GITHUB_OUTPUT
+          echo "ecr_repository=coalition-${ENV}" >> $GITHUB_OUTPUT
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -75,55 +75,21 @@ jobs:
           poetry install --no-interaction --no-ansi
           poetry add zappa
 
-      - name: Generate Zappa settings files
+      - name: Configure Zappa settings
         working-directory: ./backend
         env:
-          DOMAIN_NAME: ${{ vars.DOMAIN_NAME }}
-          CERTIFICATE_ARN: ${{ vars.CERTIFICATE_ARN }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_REGION: us-east-1
           ZAPPA_S3_BUCKET: ${{ vars.ZAPPA_S3_BUCKET }}
+          PRODUCTION_ASSETS_BUCKET: ${{ vars.PRODUCTION_ASSETS_BUCKET }}
+          USE_CUSTOM_DOCKER: true
+          ECR_REGISTRY: ${{ steps.env.outputs.ecr_registry }}
+          VPC_SUBNET_IDS: ${{ vars.VPC_SUBNET_IDS }}
+          VPC_SECURITY_GROUP_IDS: ${{ vars.VPC_SECURITY_GROUP_IDS }}
+          DATABASE_SECRET_ARN: ${{ vars.DATABASE_SECRET_ARN }}
+          DJANGO_SECRET_ARN: ${{ vars.DJANGO_SECRET_ARN }}
         run: |
-          # Start from the tracked template
-          cp zappa_settings.json.template zappa_settings.json
-
-          # Update settings with ECR image, S3 bucket, and domain
-          python -c "
-          import json
-          import os
-
-          with open('zappa_settings.json', 'r') as f:
-              settings = json.load(f)
-
-          env = '${{ steps.env.outputs.environment }}'
-          ecr_uri = '${{ steps.env.outputs.ecr_registry }}/${{ steps.env.outputs.ecr_repository }}:${{ steps.env.outputs.image_tag }}'
-
-          if env not in settings:
-              settings[env] = settings.get('base', {}).copy()
-
-          settings[env]['docker_image_uri'] = ecr_uri
-          settings[env]['aws_region'] = 'us-east-1'
-
-          # Set S3 deployment bucket
-          s3_bucket = os.environ.get('ZAPPA_S3_BUCKET', '')
-          if s3_bucket:
-              settings['base']['s3_bucket'] = s3_bucket
-              print(f'Using S3 bucket: {s3_bucket}')
-
-          # Add custom domain configuration if provided
-          domain_name = os.environ.get('DOMAIN_NAME', '')
-          certificate_arn = os.environ.get('CERTIFICATE_ARN', '')
-
-          if domain_name and certificate_arn:
-              settings[env]['domain'] = domain_name
-              settings[env]['certificate_arn'] = certificate_arn
-              print(f'Configured custom domain: {domain_name}')
-          else:
-              print('No custom domain configured')
-
-          with open('zappa_settings.json', 'w') as f:
-              json.dump(settings, f, indent=4)
-          "
-
-          # Generate zappa_settings.py for the Lambda handler
+          poetry run python scripts/configure_zappa.py
           poetry run zappa save-python-settings-file ${{ steps.env.outputs.environment }}
 
       - name: Check if geolambda base image exists
@@ -172,6 +138,8 @@ jobs:
 
           # Check if deployment exists
           if poetry run zappa status ${{ steps.env.outputs.environment }} 2>/dev/null; then
+            echo "Waiting for any in-progress updates to complete..."
+            aws lambda wait function-updated --function-name "coalition-${{ steps.env.outputs.environment }}"
             echo "Updating existing deployment..."
             poetry run zappa update ${{ steps.env.outputs.environment }} --docker-image-uri "$IMAGE_URI"
           else
