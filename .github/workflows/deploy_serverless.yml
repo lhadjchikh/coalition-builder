@@ -151,12 +151,22 @@ jobs:
             echo "Waiting for any in-progress updates to complete..."
             aws lambda wait function-updated --function-name "coalition-${ENV}"
             echo "Updating existing deployment..."
-            # Retry once if Zappa's internal code→config update sequence hits a race condition
-            poetry run zappa update $ENV --docker-image-uri "$IMAGE_URI" || {
-              echo "Retrying after concurrent update conflict..."
-              aws lambda wait function-updated --function-name "coalition-${ENV}"
-              poetry run zappa update $ENV --docker-image-uri "$IMAGE_URI"
-            }
+            # Retry once if Zappa hits a concurrent update race condition between its
+            # internal code and config update calls; fail fast on other errors.
+            set +e
+            UPDATE_OUTPUT=$(poetry run zappa update $ENV --docker-image-uri "$IMAGE_URI" 2>&1)
+            UPDATE_STATUS=$?
+            set -e
+            echo "$UPDATE_OUTPUT"
+            if [ $UPDATE_STATUS -ne 0 ]; then
+              if echo "$UPDATE_OUTPUT" | grep -qiE 'ResourceConflict|concurrent'; then
+                echo "Retrying after concurrent update conflict..."
+                aws lambda wait function-updated --function-name "coalition-${ENV}"
+                poetry run zappa update $ENV --docker-image-uri "$IMAGE_URI"
+              else
+                exit $UPDATE_STATUS
+              fi
+            fi
           else
             echo "Creating new deployment..."
             poetry run zappa deploy $ENV
