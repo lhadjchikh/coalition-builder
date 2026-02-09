@@ -202,13 +202,16 @@ jobs:
         id: api-url
         env:
           ENV: ${{ needs.determine-environment.outputs.environment }}
+          DOMAIN_NAME: ${{ vars.DOMAIN_NAME }}
         run: |
-          if [ "$ENV" = "production" ]; then
-            echo "url=https://api.yourdomain.com" >> $GITHUB_OUTPUT
+          if [ -z "$DOMAIN_NAME" ]; then
+            echo "url=" >> $GITHUB_OUTPUT
+          elif [ "$ENV" = "production" ]; then
+            echo "url=https://api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           elif [ "$ENV" = "staging" ]; then
-            echo "url=https://staging-api.yourdomain.com" >> $GITHUB_OUTPUT
+            echo "url=https://staging-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           else
-            echo "url=https://dev-api.yourdomain.com" >> $GITHUB_OUTPUT
+            echo "url=https://dev-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           fi
 
       - name: Deploy to Vercel
@@ -237,13 +240,16 @@ jobs:
         id: api-url
         env:
           ENV: ${{ needs.determine-environment.outputs.environment }}
+          DOMAIN_NAME: ${{ vars.DOMAIN_NAME }}
         run: |
-          if [ "$ENV" = "production" ]; then
-            echo "url=https://api.yourdomain.com" >> $GITHUB_OUTPUT
+          if [ -z "$DOMAIN_NAME" ]; then
+            echo "url=" >> $GITHUB_OUTPUT
+          elif [ "$ENV" = "production" ]; then
+            echo "url=https://api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           elif [ "$ENV" = "staging" ]; then
-            echo "url=https://staging-api.yourdomain.com" >> $GITHUB_OUTPUT
+            echo "url=https://staging-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           else
-            echo "url=https://dev-api.yourdomain.com" >> $GITHUB_OUTPUT
+            echo "url=https://dev-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           fi
 
       - name: Health check API

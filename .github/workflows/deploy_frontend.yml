@@ -72,14 +72,14 @@ jobs:
 
           # Get API URL based on environment
           if [[ "$ENV" == "production" ]]; then
-            API_URL="${{ vars.PRODUCTION_API_URL || 'https://api.yourdomain.com' }}"
-            SITE_URL="${{ vars.PRODUCTION_SITE_URL || 'https://yourdomain.com' }}"
+            API_URL="${{ vars.PRODUCTION_API_URL }}"
+            SITE_URL="${{ vars.PRODUCTION_SITE_URL }}"
           elif [[ "$ENV" == "staging" ]]; then
-            API_URL="${{ vars.STAGING_API_URL || 'https://api-staging.yourdomain.com' }}"
-            SITE_URL="${{ vars.STAGING_SITE_URL || 'https://staging.yourdomain.com' }}"
+            API_URL="${{ vars.STAGING_API_URL }}"
+            SITE_URL="${{ vars.STAGING_SITE_URL }}"
           else
-            API_URL="${{ vars.DEVELOPMENT_API_URL || 'https://api-dev.yourdomain.com' }}"
-            SITE_URL="${{ vars.DEVELOPMENT_SITE_URL || 'https://dev.yourdomain.com' }}"
+            API_URL="${{ vars.DEVELOPMENT_API_URL }}"
+            SITE_URL="${{ vars.DEVELOPMENT_SITE_URL }}"
           fi
 
           echo "api_url=$API_URL" >> $GITHUB_OUTPUT

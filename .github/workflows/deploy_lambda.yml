@@ -56,6 +56,68 @@ jobs:
           echo "ecr_registry=${{ steps.login-ecr.outputs.registry }}" >> $GITHUB_OUTPUT
           echo "ecr_repository=coalition-builder-lambda" >> $GITHUB_OUTPUT
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.7.1
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: |
+          poetry install --no-interaction --no-ansi
+          poetry add zappa
+
+      - name: Generate Zappa settings files
+        working-directory: ./backend
+        env:
+          DOMAIN_NAME: ${{ vars.DOMAIN_NAME }}
+          CERTIFICATE_ARN: ${{ vars.CERTIFICATE_ARN }}
+        run: |
+          # Start from the tracked template
+          cp zappa_settings.json.template zappa_settings.json
+
+          # Update settings with ECR image and domain
+          python -c "
+          import json
+          import os
+
+          with open('zappa_settings.json', 'r') as f:
+              settings = json.load(f)
+
+          env = '${{ steps.env.outputs.environment }}'
+          ecr_uri = '${{ steps.env.outputs.ecr_registry }}/${{ steps.env.outputs.ecr_repository }}:${{ steps.env.outputs.image_tag }}'
+
+          if env not in settings:
+              settings[env] = settings.get('base', {}).copy()
+
+          settings[env]['docker_image_uri'] = ecr_uri
+          settings[env]['aws_region'] = 'us-east-1'
+
+          # Add custom domain configuration if provided
+          domain_name = os.environ.get('DOMAIN_NAME', '')
+          certificate_arn = os.environ.get('CERTIFICATE_ARN', '')
+
+          if domain_name and certificate_arn:
+              settings[env]['domain'] = domain_name
+              settings[env]['certificate_arn'] = certificate_arn
+              print(f'Configured custom domain: {domain_name}')
+          else:
+              print('No custom domain configured')
+
+          with open('zappa_settings.json', 'w') as f:
+              json.dump(settings, f, indent=4)
+          "
+
+          # Generate zappa_settings.py for the Lambda handler
+          poetry run zappa save-python-settings-file ${{ steps.env.outputs.environment }}
+
       - name: Check if geolambda base image exists
         id: check-geolambda
         continue-on-error: true
@@ -93,61 +155,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 1.7.1
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-
-      - name: Install dependencies
-        working-directory: ./backend
-        run: |
-          poetry install --no-interaction --no-ansi
-          poetry add zappa
-
-      - name: Update Zappa settings with ECR image and domain
-        working-directory: ./backend
-        env:
-          DOMAIN_NAME: ${{ vars.DOMAIN_NAME }}
-          CERTIFICATE_ARN: ${{ vars.CERTIFICATE_ARN }}
-        run: |
-          python -c "
-          import json
-          import os
-
-          with open('zappa_settings.json', 'r') as f:
-              settings = json.load(f)
-
-          env = '${{ steps.env.outputs.environment }}'
-          ecr_uri = '${{ steps.env.outputs.ecr_registry }}/${{ steps.env.outputs.ecr_repository }}:${{ steps.env.outputs.image_tag }}'
-
-          if env not in settings:
-              settings[env] = settings.get('base', {}).copy()
-
-          settings[env]['docker_image_uri'] = ecr_uri
-          settings[env]['aws_region'] = 'us-east-1'
-
-          # Add custom domain configuration if provided
-          domain_name = os.environ.get('DOMAIN_NAME', '')
-          certificate_arn = os.environ.get('CERTIFICATE_ARN', '')
-
-          if domain_name and certificate_arn:
-              settings[env]['domain'] = domain_name
-              settings[env]['certificate_arn'] = certificate_arn
-              print(f'Configured custom domain: {domain_name}')
-          else:
-              print('No custom domain configured')
-
-          with open('zappa_settings.json', 'w') as f:
-              json.dump(settings, f, indent=4)
-          "
-
       - name: Deploy with Zappa
         working-directory: ./backend
         run: |
@@ -159,14 +166,6 @@ jobs:
             echo "Creating new deployment..."
             poetry run zappa deploy ${{ steps.env.outputs.environment }}
           fi
-
-      - name: Configure custom domain
-        if: vars.DOMAIN_NAME != '' && vars.CERTIFICATE_ARN != ''
-        working-directory: ./backend
-        continue-on-error: true
-        run: |
-          echo "Certifying domain ${{ vars.DOMAIN_NAME }}..."
-          poetry run zappa certify ${{ steps.env.outputs.environment }} --yes || echo "Domain certification may already be complete"
 
       - name: Get deployment URL
         id: deployment
