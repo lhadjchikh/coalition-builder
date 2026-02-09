@@ -142,11 +142,14 @@ jobs:
         working-directory: ./backend
         env:
           ENV: ${{ needs.determine-environment.outputs.environment }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
+          IMAGE_URI="${ECR_REGISTRY}/coalition-${ENV}:latest"
+
           # Check if deployment exists
           if poetry run zappa status $ENV 2>/dev/null; then
             echo "Updating existing deployment..."
-            poetry run zappa update $ENV
+            poetry run zappa update $ENV --docker-image-uri "$IMAGE_URI"
           else
             echo "Creating new deployment..."
             poetry run zappa deploy $ENV
