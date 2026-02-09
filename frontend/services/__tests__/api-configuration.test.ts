@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import { getBaseUrl, frontendApiClient } from "../api";
 import API from "../api";
 import {
@@ -10,28 +13,14 @@ import {
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-// Skip these tests locally due to singleton initialization issues with jsdom
-// They pass in CI where the environment is properly controlled
-const describeInCI = process.env.CI ? describe : describe.skip;
-
-describeInCI("API Service - Configuration", () => {
+describe("API Service - Configuration", () => {
   const originalEnv = process.env;
-
-  // Helper to run test in SSR environment (without window)
-  const withoutWindow = async (testFn: () => void | Promise<void>) => {
-    const originalWindow = (global as any).window;
-    delete (global as any).window;
-    try {
-      await testFn();
-    } finally {
-      (global as any).window = originalWindow;
-    }
-  };
 
   beforeEach(() => {
     jest.clearAllMocks();
     jest.resetAllMocks();
     jest.replaceProperty(process, "env", createCleanEnv(originalEnv));
+    // Ensure window is not defined (node environment default)
     delete (global as any).window;
   });
 
@@ -127,31 +116,29 @@ describeInCI("API Service - Configuration", () => {
 
   describe("URL construction", () => {
     it("should use correct URL with explicit API URL", async () => {
-      await withoutWindow(async () => {
-        jest.replaceProperty(
-          process,
-          "env",
-          createCleanEnv(originalEnv, {
-            REACT_APP_API_URL: "https://api.example.com",
-          })
-        );
+      jest.replaceProperty(
+        process,
+        "env",
+        createCleanEnv(originalEnv, {
+          REACT_APP_API_URL: "https://api.example.com",
+        })
+      );
 
-        expect(getBaseUrl()).toBe("https://api.example.com");
+      expect(getBaseUrl()).toBe("https://api.example.com");
 
-        mockFetch.mockResolvedValueOnce(createMockResponse([]));
+      mockFetch.mockResolvedValueOnce(createMockResponse([]));
 
-        await API.getCampaigns();
-        expect(mockFetch).toHaveBeenCalledWith(
-          getExpectedUrl("/api/campaigns/", originalEnv),
-          expect.objectContaining({
-            headers: expect.objectContaining({
-              "Content-Type": "application/json",
-            }),
-            credentials: "same-origin",
-            signal: expect.any(AbortSignal),
-          })
-        );
-      });
+      await API.getCampaigns();
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://api.example.com/api/campaigns/",
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+          }),
+          credentials: "same-origin",
+          signal: expect.any(AbortSignal),
+        })
+      );
     });
 
     it("should handle campaign endorsements URL with query parameter", async () => {
