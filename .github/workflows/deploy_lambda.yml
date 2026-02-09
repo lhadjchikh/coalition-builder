@@ -166,10 +166,12 @@ jobs:
       - name: Deploy with Zappa
         working-directory: ./backend
         run: |
+          IMAGE_URI="${{ steps.env.outputs.ecr_registry }}/${{ steps.env.outputs.ecr_repository }}:${{ steps.env.outputs.image_tag }}"
+
           # Check if deployment exists
           if poetry run zappa status ${{ steps.env.outputs.environment }} 2>/dev/null; then
             echo "Updating existing deployment..."
-            poetry run zappa update ${{ steps.env.outputs.environment }}
+            poetry run zappa update ${{ steps.env.outputs.environment }} --docker-image-uri "$IMAGE_URI"
           else
             echo "Creating new deployment..."
             poetry run zappa deploy ${{ steps.env.outputs.environment }}

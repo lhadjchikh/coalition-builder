@@ -72,16 +72,19 @@ def configure_zappa_settings() -> None:
     )
 
     # Docker image configuration
+    # USE_CUSTOM_DOCKER=true: deploy as container image (docker_image_uri)
+    # USE_CUSTOM_DOCKER=false: package inside Docker, deploy as zip (docker_image)
     use_custom_docker = (
         get_env_or_default("USE_CUSTOM_DOCKER", "false").lower() == "true"
     )
 
     if use_custom_docker:
+        docker_image_key = "docker_image_uri"
         dev_docker_image = f"{ecr_registry}/coalition-dev:latest"
         staging_docker_image = f"{ecr_registry}/coalition-staging:latest"
         production_docker_image = f"{ecr_registry}/coalition-prod:latest"
     else:
-        # Use public Lambda Python image
+        docker_image_key = "docker_image"
         dev_docker_image = "public.ecr.aws/lambda/python:3.13"
         staging_docker_image = "public.ecr.aws/lambda/python:3.13"
         production_docker_image = "public.ecr.aws/lambda/python:3.13"
@@ -143,7 +146,7 @@ def configure_zappa_settings() -> None:
         "dev": {
             "extends": "base",
             "stage": "dev",
-            "docker_image": dev_docker_image,
+            docker_image_key: dev_docker_image,
             "memory_size": 512,
             "keep_warm": False,
             "environment_variables": {
@@ -164,7 +167,7 @@ def configure_zappa_settings() -> None:
         "staging": {
             "extends": "base",
             "stage": "staging",
-            "docker_image": staging_docker_image,
+            docker_image_key: staging_docker_image,
             "memory_size": 512,
             "keep_warm": True,
             "keep_warm_expression": "rate(10 minutes)",
@@ -186,7 +189,7 @@ def configure_zappa_settings() -> None:
         "prod": {
             "extends": "base",
             "stage": "prod",
-            "docker_image": production_docker_image,
+            docker_image_key: production_docker_image,
             "memory_size": 1024,
             "keep_warm": True,
             "keep_warm_expression": "rate(4 minutes)",
