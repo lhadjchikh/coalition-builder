@@ -206,7 +206,7 @@ gh workflow run deploy-lambda.yml --ref main
 
 # Using Zappa directly
 cd backend
-poetry run zappa deploy production
+poetry run zappa deploy prod
 ```
 
 ### Deploy Frontend
@@ -227,7 +227,7 @@ vercel --prod
 ```bash
 # Lambda status
 cd backend
-poetry run zappa status production
+poetry run zappa status prod
 
 # Vercel status
 vercel ls
@@ -237,7 +237,7 @@ vercel ls
 
 ```bash
 # Lambda logs
-poetry run zappa tail production
+poetry run zappa tail prod
 
 # Vercel logs
 vercel logs --follow
@@ -249,10 +249,10 @@ vercel logs --follow
 
 ```bash
 # Via GitHub Actions
-gh workflow run lambda-management.yml -f action=rollback -f environment=production
+gh workflow run lambda-management.yml -f action=rollback -f environment=prod
 
 # Via Zappa
-poetry run zappa rollback production -n 1
+poetry run zappa rollback prod -n 1
 ```
 
 ### Vercel Rollback

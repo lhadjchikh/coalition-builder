@@ -12,7 +12,7 @@ on:
         options:
           - dev
           - staging
-          - production
+          - prod
 
 permissions:
   contents: read
@@ -29,7 +29,7 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            echo "environment=production" >> $GITHUB_OUTPUT
+            echo "environment=prod" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
             echo "environment=staging" >> $GITHUB_OUTPUT
           else
@@ -39,7 +39,7 @@ jobs:
   test-backend:
     needs: determine-environment
     runs-on: ubuntu-latest
-    if: needs.determine-environment.outputs.environment != 'production' || github.event_name == 'workflow_dispatch'
+    if: needs.determine-environment.outputs.environment != 'prod' || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
 
@@ -129,7 +129,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
-          ENV: ${{ needs.determine-environment.outputs.environment == 'production' && 'prod' || needs.determine-environment.outputs.environment }}
+          ENV: ${{ needs.determine-environment.outputs.environment }}
         run: |
           # Pull and tag base image if not building it
           docker pull $ECR_REGISTRY/geolambda:3.10.3 || ./scripts/build-docker.sh geolambda
@@ -213,7 +213,7 @@ jobs:
         run: |
           if [ -z "$DOMAIN_NAME" ]; then
             echo "url=" >> $GITHUB_OUTPUT
-          elif [ "$ENV" = "production" ]; then
+          elif [ "$ENV" = "prod" ]; then
             echo "url=https://api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           elif [ "$ENV" = "staging" ]; then
             echo "url=https://staging-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
@@ -230,7 +230,7 @@ jobs:
           ENV: ${{ needs.determine-environment.outputs.environment }}
           NEXT_PUBLIC_API_URL: ${{ steps.api-url.outputs.url }}
         run: |
-          if [ "$ENV" = "production" ]; then
+          if [ "$ENV" = "prod" ]; then
             vercel --prod --token $VERCEL_TOKEN --yes
           else
             vercel --token $VERCEL_TOKEN --yes \
@@ -251,7 +251,7 @@ jobs:
         run: |
           if [ -z "$DOMAIN_NAME" ]; then
             echo "url=" >> $GITHUB_OUTPUT
-          elif [ "$ENV" = "production" ]; then
+          elif [ "$ENV" = "prod" ]; then
             echo "url=https://api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           elif [ "$ENV" = "staging" ]; then
             echo "url=https://staging-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT

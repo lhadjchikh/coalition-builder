@@ -77,10 +77,9 @@ def configure_zappa_settings() -> None:
     )
 
     if use_custom_docker:
-        lambda_image_base = f"{ecr_registry}/coalition-lambda"
-        dev_docker_image = f"{lambda_image_base}:dev"
-        staging_docker_image = f"{lambda_image_base}:staging"
-        production_docker_image = f"{lambda_image_base}:production"
+        dev_docker_image = f"{ecr_registry}/coalition-dev:latest"
+        staging_docker_image = f"{ecr_registry}/coalition-staging:latest"
+        production_docker_image = f"{ecr_registry}/coalition-prod:latest"
     else:
         # Use public Lambda Python image
         dev_docker_image = "public.ecr.aws/lambda/python:3.13"
@@ -184,9 +183,9 @@ def configure_zappa_settings() -> None:
                 "throttle_rate_limit": 40,
             },
         },
-        "production": {
+        "prod": {
             "extends": "base",
-            "stage": "production",
+            "stage": "prod",
             "docker_image": production_docker_image,
             "memory_size": 1024,
             "keep_warm": True,

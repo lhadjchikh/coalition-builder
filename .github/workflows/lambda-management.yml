@@ -22,7 +22,7 @@ on:
         options:
           - dev
           - staging
-          - production
+          - prod
       rollback_steps:
         description: "Number of versions to rollback (for rollback action)"
         required: false
