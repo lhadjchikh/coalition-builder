@@ -79,11 +79,12 @@ jobs:
         env:
           DOMAIN_NAME: ${{ vars.DOMAIN_NAME }}
           CERTIFICATE_ARN: ${{ vars.CERTIFICATE_ARN }}
+          ZAPPA_S3_BUCKET: ${{ vars.ZAPPA_S3_BUCKET }}
         run: |
           # Start from the tracked template
           cp zappa_settings.json.template zappa_settings.json
 
-          # Update settings with ECR image and domain
+          # Update settings with ECR image, S3 bucket, and domain
           python -c "
           import json
           import os
@@ -99,6 +100,12 @@ jobs:
 
           settings[env]['docker_image_uri'] = ecr_uri
           settings[env]['aws_region'] = 'us-east-1'
+
+          # Set S3 deployment bucket
+          s3_bucket = os.environ.get('ZAPPA_S3_BUCKET', '')
+          if s3_bucket:
+              settings['base']['s3_bucket'] = s3_bucket
+              print(f'Using S3 bucket: {s3_bucket}')
 
           # Add custom domain configuration if provided
           domain_name = os.environ.get('DOMAIN_NAME', '')

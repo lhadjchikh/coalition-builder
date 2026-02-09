@@ -30,7 +30,7 @@ def configure_zappa_settings() -> None:
 
     # Get bucket names (from Terraform output or manual configuration)
     zappa_deployment_bucket = get_env_or_default(
-        "ZAPPA_DEPLOYMENT_BUCKET",
+        "ZAPPA_S3_BUCKET",
         "coalition-zappa-deployments",
     )
 
