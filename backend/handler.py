@@ -1,11 +1,12 @@
-# Zappa handler module for Docker container Lambda deployments.
-# In zip deployments, Zappa auto-generates this file.
-# For container image deployments, we provide it manually.
-#
-# Zappa's event dispatcher imports this module when handling scheduled
-# events (e.g., keep-warm). The event rule ARN is parsed to derive
-# "handler.keep_warm_callback", so this module must be importable.
+"""Zappa handler module for Docker container Lambda deployments.
 
+In zip deployments, Zappa auto-generates this file. For container image
+deployments, we provide it manually.
+
+Zappa's event dispatcher imports this module when handling scheduled
+events (e.g., keep-warm). The event rule ARN is parsed to derive
+"handler.keep_warm_callback", so this module must be importable.
+"""
 
 from typing import Any
 
