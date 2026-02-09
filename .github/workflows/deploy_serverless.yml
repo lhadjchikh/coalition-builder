@@ -93,6 +93,21 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: |
+          poetry install --no-interaction --no-ansi
+
       - name: Build and push Docker image
         working-directory: ./backend
         env:
@@ -106,15 +121,6 @@ jobs:
 
           # Build and push application image
           ./scripts/build-docker.sh $ENV
-
-      - name: Set up Python for Zappa
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - name: Install Zappa
-        run: |
-          pip install zappa boto3
 
       - name: Configure Zappa settings
         working-directory: ./backend
@@ -130,7 +136,7 @@ jobs:
           VPC_SUBNET_IDS: ${{ vars.VPC_SUBNET_IDS }}
           VPC_SECURITY_GROUP_IDS: ${{ vars.VPC_SECURITY_GROUP_IDS }}
         run: |
-          python scripts/configure_zappa.py
+          poetry run python scripts/configure_zappa.py
 
       - name: Deploy with Zappa
         working-directory: ./backend
@@ -138,12 +144,12 @@ jobs:
           ENV: ${{ needs.determine-environment.outputs.environment }}
         run: |
           # Check if deployment exists
-          if zappa status $ENV 2>/dev/null; then
+          if poetry run zappa status $ENV 2>/dev/null; then
             echo "Updating existing deployment..."
-            zappa update $ENV
+            poetry run zappa update $ENV
           else
             echo "Creating new deployment..."
-            zappa deploy $ENV
+            poetry run zappa deploy $ENV
           fi
 
       - name: Create cache table
@@ -153,21 +159,21 @@ jobs:
         run: |
           # Create cache table for database cache backend
           # This command is idempotent - safe to run multiple times
-          zappa manage $ENV createcachetable || true
+          poetry run zappa manage $ENV createcachetable || true
 
       - name: Run database migrations
         working-directory: ./backend
         env:
           ENV: ${{ needs.determine-environment.outputs.environment }}
         run: |
-          zappa manage $ENV migrate --noinput
+          poetry run zappa manage $ENV migrate --noinput
 
       - name: Collect static files
         working-directory: ./backend
         env:
           ENV: ${{ needs.determine-environment.outputs.environment }}
         run: |
-          zappa manage $ENV collectstatic --noinput
+          poetry run zappa manage $ENV collectstatic --noinput
 
   deploy-frontend:
     needs: [determine-environment, test-backend]
@@ -254,9 +260,10 @@ jobs:
           fi
 
       - name: Health check API
+        if: steps.api-url.outputs.url != ''
         run: |
           echo "Checking API health at ${{ steps.api-url.outputs.url }}/api/health/"
-          curl -f ${{ steps.api-url.outputs.url }}/api/health/ || exit 1
+          curl -f "${{ steps.api-url.outputs.url }}/api/health/" || exit 1
 
       - name: Check Lambda logs for errors
         env:
