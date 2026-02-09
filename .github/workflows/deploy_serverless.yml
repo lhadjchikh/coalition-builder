@@ -97,6 +97,7 @@ jobs:
         working-directory: ./backend
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
           ENV: ${{ needs.determine-environment.outputs.environment == 'production' && 'prod' || needs.determine-environment.outputs.environment }}
         run: |
           # Pull and tag base image if not building it
