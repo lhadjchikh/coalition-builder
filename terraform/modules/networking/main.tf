@@ -276,6 +276,7 @@ locals {
     ecr_dkr        = "com.amazonaws.${var.aws_region}.ecr.dkr"
     logs           = "com.amazonaws.${var.aws_region}.logs"
   }
+  endpoint_subnet_ids = var.enable_single_az_endpoints ? [local.private_subnet_ids[0]] : local.private_subnet_ids
 }
 
 resource "aws_security_group" "vpc_endpoints" {
@@ -304,7 +305,7 @@ resource "aws_vpc_endpoint" "interface" {
   vpc_id              = local.vpc_id
   service_name        = each.value
   vpc_endpoint_type   = "Interface"
-  subnet_ids          = local.private_subnet_ids
+  subnet_ids          = local.endpoint_subnet_ids
   security_group_ids  = [aws_security_group.vpc_endpoints[0].id]
   private_dns_enabled = true
 

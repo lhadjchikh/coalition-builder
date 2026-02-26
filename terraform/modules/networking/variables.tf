@@ -115,7 +115,13 @@ variable "create_vpc_endpoints" {
       var.create_private_subnets == true ||
       length(var.private_subnet_ids) > 0
     )
-    error_message = "When create_vpc_endpoints is true, you must either set create_private_subnets to true or provide at least one private_subnet_ids entry."
+    error_message = "When create_vpc_endpoints is true, at least one private subnet must be configured (either set create_private_subnets to true or provide private_subnet_ids)."
   }
+}
+
+variable "enable_single_az_endpoints" {
+  description = "Place interface VPC endpoints in a single AZ to reduce costs (less resilient but cheaper)"
+  type        = bool
+  default     = false
 }
 
