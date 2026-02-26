@@ -95,7 +95,7 @@ class ResolveSecretTests(TestCase):
         }
 
         arn = "arn:aws:secretsmanager:us-east-1" ":123456789012:secret:bad-json"
-        with self.assertRaisesRegex(ValueError, "valid JSON"):
+        with self.assertRaisesRegex(ValueError, "bad-json.*valid JSON"):
             resolve_secret(arn, "url")
 
     @patch("coalition.core.secrets._get_client")
@@ -110,5 +110,5 @@ class ResolveSecretTests(TestCase):
         }
 
         arn = "arn:aws:secretsmanager:us-east-1" ":123456789012:secret:missing-key"
-        with self.assertRaisesRegex(KeyError, "expected key"):
+        with self.assertRaisesRegex(KeyError, "missing-key.*expected key"):
             resolve_secret(arn, "url")

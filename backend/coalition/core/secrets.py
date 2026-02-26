@@ -31,19 +31,20 @@ def resolve_secret(value: str, json_key: str) -> str:
     if not is_arn(value):
         return value
 
+    secret_name = value.rsplit(":", 1)[-1] if ":" in value else "<unknown>"
     client = _get_client()
     resp = client.get_secret_value(SecretId=value)
     try:
         secret = json.loads(resp["SecretString"])
     except json.JSONDecodeError as exc:
         raise ValueError(
-            f"Secret {value!r} must contain valid JSON in SecretString",
+            f"Secret '{secret_name}' must contain valid JSON in SecretString",
         ) from exc
     try:
         resolved = secret[json_key]
     except KeyError as exc:
         raise KeyError(
-            f"Secret {value!r} does not contain expected key {json_key!r}",
+            f"Secret '{secret_name}' does not contain expected key {json_key!r}",
         ) from exc
     logger.info("Resolved secret successfully")
     return str(resolved)
