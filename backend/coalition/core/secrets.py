@@ -41,4 +41,4 @@ def resolve_secret(value: str, json_key: str) -> str:
             f"Secret {value!r} does not contain expected key {json_key!r}",
         ) from exc
     logger.info("Resolved secret successfully")
-    return resolved
+    return str(resolved)
