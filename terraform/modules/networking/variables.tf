@@ -103,3 +103,10 @@ variable "private_db_subnet_b_cidr" {
   default     = "10.0.6.0/24"
 }
 
+# VPC Endpoints
+variable "create_vpc_endpoints" {
+  description = "Whether to create interface VPC endpoints for AWS services (Secrets Manager, ECR, CloudWatch Logs)"
+  type        = bool
+  default     = false
+}
+

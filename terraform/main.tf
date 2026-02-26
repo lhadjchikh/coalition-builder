@@ -38,6 +38,8 @@ module "networking" {
   db_subnet_ids            = var.db_subnet_ids
   private_db_subnet_a_cidr = var.private_db_subnet_a_cidr
   private_db_subnet_b_cidr = var.private_db_subnet_b_cidr
+
+  create_vpc_endpoints = true
 }
 
 # AWS Location Service Module
