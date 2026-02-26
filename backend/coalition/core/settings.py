@@ -16,7 +16,6 @@ import logging
 import os
 import sys
 from pathlib import Path
-from urllib.parse import quote
 
 import dj_database_url
 import requests
@@ -338,7 +337,7 @@ if IS_LAMBDA and _raw_database_url:
     _raw_database_url = resolve_secret(_raw_database_url, "url")
 if _raw_database_url:
     # Parse DATABASE_URL and ensure PostGIS is used for PostgreSQL
-    db_config = dj_database_url.config(default=quote(_raw_database_url))
+    db_config = dj_database_url.parse(_raw_database_url)
 
     # If using PostgreSQL, make sure to use the PostGIS backend
     if db_config.get("ENGINE") == "django.db.backends.postgresql":
