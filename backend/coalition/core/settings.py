@@ -16,7 +16,6 @@ import logging
 import os
 import sys
 from pathlib import Path
-from urllib.parse import quote
 
 import dj_database_url
 import requests
@@ -35,10 +34,16 @@ ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv(
+_raw_secret_key = os.getenv(
     "SECRET_KEY",
     "django-insecure-=lvqp2vsu5)=!t*_qzm3%h%7btagcgw1#cj^sut9f@95^vbclv",
 )
+if IS_LAMBDA:
+    from coalition.core.secrets import resolve_secret
+
+    SECRET_KEY = resolve_secret(_raw_secret_key, "key")
+else:
+    SECRET_KEY = _raw_secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "t")
@@ -325,9 +330,14 @@ WSGI_APPLICATION = "coalition.core.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # Use SQLite as a fallback if DATABASE_URL is not set
-if os.getenv("DATABASE_URL"):
+_raw_database_url = os.getenv("DATABASE_URL", "")
+if IS_LAMBDA and _raw_database_url:
+    from coalition.core.secrets import resolve_secret
+
+    _raw_database_url = resolve_secret(_raw_database_url, "url")
+if _raw_database_url:
     # Parse DATABASE_URL and ensure PostGIS is used for PostgreSQL
-    db_config = dj_database_url.config(default=quote(os.getenv("DATABASE_URL", "")))
+    db_config = dj_database_url.parse(_raw_database_url)
 
     # If using PostgreSQL, make sure to use the PostGIS backend
     if db_config.get("ENGINE") == "django.db.backends.postgresql":
