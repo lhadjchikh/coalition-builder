@@ -114,3 +114,39 @@ class ResolveSecretTests(TestCase):
         resolve_secret(arn, "url")
 
         mock_sm.get_secret_value.assert_called_once()
+
+    @patch("coalition.core.secrets.boto3.client")
+    def test_invalid_json_raises_value_error(
+        self,
+        mock_boto_client: Any,
+    ) -> None:
+        mock_sm = MagicMock()
+        mock_boto_client.return_value = mock_sm
+        mock_sm.get_secret_value.return_value = {
+            "SecretString": "not-valid-json",
+        }
+
+        arn = (
+            "arn:aws:secretsmanager:us-east-1"
+            ":123456789012:secret:bad-json"
+        )
+        with self.assertRaises(ValueError, msg="valid JSON"):
+            resolve_secret(arn, "url")
+
+    @patch("coalition.core.secrets.boto3.client")
+    def test_missing_key_raises_key_error(
+        self,
+        mock_boto_client: Any,
+    ) -> None:
+        mock_sm = MagicMock()
+        mock_boto_client.return_value = mock_sm
+        mock_sm.get_secret_value.return_value = {
+            "SecretString": json.dumps({"wrong_key": "value"}),
+        }
+
+        arn = (
+            "arn:aws:secretsmanager:us-east-1"
+            ":123456789012:secret:missing-key"
+        )
+        with self.assertRaises(KeyError, msg="expected key"):
+            resolve_secret(arn, "url")

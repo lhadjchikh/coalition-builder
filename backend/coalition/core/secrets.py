@@ -28,7 +28,17 @@ def resolve_secret(value: str, json_key: str) -> str:
 
     client = boto3.client("secretsmanager")
     resp = client.get_secret_value(SecretId=value)
-    secret = json.loads(resp["SecretString"])
-    resolved = secret[json_key]
-    logger.info("Resolved secret from %s", value)
+    try:
+        secret = json.loads(resp["SecretString"])
+    except json.JSONDecodeError as exc:
+        raise ValueError(
+            f"Secret {value!r} must contain valid JSON in SecretString",
+        ) from exc
+    try:
+        resolved = secret[json_key]
+    except KeyError as exc:
+        raise KeyError(
+            f"Secret {value!r} does not contain expected key {json_key!r}",
+        ) from exc
+    logger.info("Resolved secret successfully")
     return resolved
