@@ -3,6 +3,7 @@
 import json
 import logging
 from functools import lru_cache
+from typing import Any
 
 import boto3
 
@@ -16,7 +17,11 @@ def is_arn(value: str) -> bool:
     return value.startswith(_ARN_PREFIX)
 
 
-@lru_cache(maxsize=16)
+@lru_cache(maxsize=1)
+def _get_client() -> Any:
+    return boto3.client("secretsmanager")
+
+
 def resolve_secret(value: str, json_key: str) -> str:
     """Resolve a value that may be a Secrets Manager ARN.
 
@@ -26,7 +31,7 @@ def resolve_secret(value: str, json_key: str) -> str:
     if not is_arn(value):
         return value
 
-    client = boto3.client("secretsmanager")
+    client = _get_client()
     resp = client.get_secret_value(SecretId=value)
     try:
         secret = json.loads(resp["SecretString"])

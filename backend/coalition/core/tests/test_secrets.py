@@ -29,16 +29,13 @@ class IsArnTests(TestCase):
 
 
 class ResolveSecretTests(TestCase):
-    def setUp(self) -> None:
-        resolve_secret.cache_clear()
-
-    @patch("coalition.core.secrets.boto3.client")
+    @patch("coalition.core.secrets._get_client")
     def test_resolves_arn_and_extracts_json_key(
         self,
-        mock_boto_client: Any,
+        mock_get_client: Any,
     ) -> None:
         mock_sm = MagicMock()
-        mock_boto_client.return_value = mock_sm
+        mock_get_client.return_value = mock_sm
         mock_sm.get_secret_value.return_value = {
             "SecretString": json.dumps(
                 {"url": "postgis://user:pass@host:5432/db"},
@@ -56,13 +53,13 @@ class ResolveSecretTests(TestCase):
             SecretId=arn,
         )
 
-    @patch("coalition.core.secrets.boto3.client")
+    @patch("coalition.core.secrets._get_client")
     def test_resolves_secret_key(
         self,
-        mock_boto_client: Any,
+        mock_get_client: Any,
     ) -> None:
         mock_sm = MagicMock()
-        mock_boto_client.return_value = mock_sm
+        mock_get_client.return_value = mock_sm
         mock_sm.get_secret_value.return_value = {
             "SecretString": json.dumps(
                 {"key": "super-secret-django-key"},
@@ -86,51 +83,32 @@ class ResolveSecretTests(TestCase):
         result = resolve_secret("", "url")
         assert result == ""
 
-    @patch("coalition.core.secrets.boto3.client")
-    def test_results_are_cached(
-        self,
-        mock_boto_client: Any,
-    ) -> None:
-        mock_sm = MagicMock()
-        mock_boto_client.return_value = mock_sm
-        mock_sm.get_secret_value.return_value = {
-            "SecretString": json.dumps(
-                {"url": "postgis://cached"},
-            ),
-        }
-
-        arn = "arn:aws:secretsmanager:us-east-1" ":123456789012:secret:test-cache"
-        resolve_secret(arn, "url")
-        resolve_secret(arn, "url")
-
-        mock_sm.get_secret_value.assert_called_once()
-
-    @patch("coalition.core.secrets.boto3.client")
+    @patch("coalition.core.secrets._get_client")
     def test_invalid_json_raises_value_error(
         self,
-        mock_boto_client: Any,
+        mock_get_client: Any,
     ) -> None:
         mock_sm = MagicMock()
-        mock_boto_client.return_value = mock_sm
+        mock_get_client.return_value = mock_sm
         mock_sm.get_secret_value.return_value = {
             "SecretString": "not-valid-json",
         }
 
         arn = "arn:aws:secretsmanager:us-east-1" ":123456789012:secret:bad-json"
-        with self.assertRaises(ValueError, msg="valid JSON"):
+        with self.assertRaisesRegex(ValueError, "valid JSON"):
             resolve_secret(arn, "url")
 
-    @patch("coalition.core.secrets.boto3.client")
+    @patch("coalition.core.secrets._get_client")
     def test_missing_key_raises_key_error(
         self,
-        mock_boto_client: Any,
+        mock_get_client: Any,
     ) -> None:
         mock_sm = MagicMock()
-        mock_boto_client.return_value = mock_sm
+        mock_get_client.return_value = mock_sm
         mock_sm.get_secret_value.return_value = {
             "SecretString": json.dumps({"wrong_key": "value"}),
         }
 
         arn = "arn:aws:secretsmanager:us-east-1" ":123456789012:secret:missing-key"
-        with self.assertRaises(KeyError, msg="expected key"):
+        with self.assertRaisesRegex(KeyError, "expected key"):
             resolve_secret(arn, "url")
