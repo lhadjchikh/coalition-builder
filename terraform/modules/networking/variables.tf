@@ -112,10 +112,9 @@ variable "create_vpc_endpoints" {
   validation {
     condition = (
       var.create_vpc_endpoints == false ||
-      var.create_private_subnets == true ||
-      length(var.private_subnet_ids) > 0
+      var.create_private_subnets == true
     )
-    error_message = "When create_vpc_endpoints is true, at least one private subnet must be configured (either set create_private_subnets to true or provide private_subnet_ids)."
+    error_message = "When create_vpc_endpoints is true, at least one private subnet must be configured — create_private_subnets must be true so that route tables are managed by this module."
   }
 }
 
