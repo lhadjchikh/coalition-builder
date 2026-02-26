@@ -26,6 +26,18 @@ variable "create_lambda_sg" {
   default     = false
 }
 
+variable "secret_arns" {
+  description = "ARNs of Secrets Manager secrets the Lambda function needs to read"
+  type        = list(string)
+  default     = []
+}
+
+variable "secrets_kms_key_arn" {
+  description = "ARN of the KMS key used to encrypt secrets (required if secret_arns is non-empty)"
+  type        = string
+  default     = ""
+}
+
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)

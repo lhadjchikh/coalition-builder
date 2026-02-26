@@ -60,6 +60,12 @@ module "zappa" {
   create_lambda_sg      = true
   database_subnet_cidrs = module.networking.db_subnet_cidrs
 
+  secret_arns = [
+    module.secrets.db_url_secret_arn,
+    module.secrets.secret_key_secret_arn,
+  ]
+  secrets_kms_key_arn = module.secrets.secrets_kms_key_arn
+
   tags = var.tags
 }
 
