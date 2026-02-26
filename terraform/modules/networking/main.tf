@@ -276,7 +276,11 @@ locals {
     ecr_dkr        = "com.amazonaws.${var.aws_region}.ecr.dkr"
     logs           = "com.amazonaws.${var.aws_region}.logs"
   }
-  endpoint_subnet_ids = var.enable_single_az_endpoints ? [local.private_subnet_ids[0]] : local.private_subnet_ids
+  endpoint_subnet_ids = (
+    length(local.private_subnet_ids) > 0 && var.enable_single_az_endpoints
+    ? [local.private_subnet_ids[0]]
+    : local.private_subnet_ids
+  )
 }
 
 resource "aws_security_group" "vpc_endpoints" {
