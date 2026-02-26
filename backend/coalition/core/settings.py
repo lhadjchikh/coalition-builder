@@ -332,7 +332,7 @@ WSGI_APPLICATION = "coalition.core.wsgi.application"
 
 # Use SQLite as a fallback if DATABASE_URL is not set
 _raw_database_url = os.getenv("DATABASE_URL", "")
-if IS_LAMBDA:
+if IS_LAMBDA and _raw_database_url:
     from coalition.core.secrets import resolve_secret
 
     _raw_database_url = resolve_secret(_raw_database_url, "url")
