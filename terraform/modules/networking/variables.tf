@@ -108,5 +108,14 @@ variable "create_vpc_endpoints" {
   description = "Whether to create interface VPC endpoints for AWS services (Secrets Manager, ECR, CloudWatch Logs)"
   type        = bool
   default     = false
+
+  validation {
+    condition = (
+      var.create_vpc_endpoints == false ||
+      var.create_private_subnets == true ||
+      length(var.private_subnet_ids) > 0
+    )
+    error_message = "When create_vpc_endpoints is true, you must either set create_private_subnets to true or provide at least one private_subnet_ids entry."
+  }
 }
 
