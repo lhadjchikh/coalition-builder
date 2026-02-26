@@ -9,17 +9,11 @@ from coalition.core.secrets import is_arn, resolve_secret
 
 class IsArnTests(TestCase):
     def test_valid_secretsmanager_arn(self) -> None:
-        arn = (
-            "arn:aws:secretsmanager:us-east-1"
-            ":123456789012:secret:my-secret-AbCdEf"
-        )
+        arn = "arn:aws:secretsmanager:us-east-1" ":123456789012:secret:my-secret-AbCdEf"
         assert is_arn(arn)
 
     def test_arn_with_different_region(self) -> None:
-        arn = (
-            "arn:aws:secretsmanager:eu-west-1"
-            ":123456789012:secret:test"
-        )
+        arn = "arn:aws:secretsmanager:eu-west-1" ":123456789012:secret:test"
         assert is_arn(arn)
 
     def test_regular_value_is_not_arn(self) -> None:
@@ -30,8 +24,7 @@ class IsArnTests(TestCase):
 
     def test_django_insecure_key_is_not_arn(self) -> None:
         assert not is_arn(
-            "django-insecure-=lvqp2vsu5)=!t*_qzm3%h%7btagcgw1"
-            "#cj^sut9f@95^vbclv",
+            "django-insecure-=lvqp2vsu5)=!t*_qzm3%h%7btagcgw1" "#cj^sut9f@95^vbclv",
         )
 
 
@@ -106,10 +99,7 @@ class ResolveSecretTests(TestCase):
             ),
         }
 
-        arn = (
-            "arn:aws:secretsmanager:us-east-1"
-            ":123456789012:secret:test-cache"
-        )
+        arn = "arn:aws:secretsmanager:us-east-1" ":123456789012:secret:test-cache"
         resolve_secret(arn, "url")
         resolve_secret(arn, "url")
 
@@ -126,10 +116,7 @@ class ResolveSecretTests(TestCase):
             "SecretString": "not-valid-json",
         }
 
-        arn = (
-            "arn:aws:secretsmanager:us-east-1"
-            ":123456789012:secret:bad-json"
-        )
+        arn = "arn:aws:secretsmanager:us-east-1" ":123456789012:secret:bad-json"
         with self.assertRaises(ValueError, msg="valid JSON"):
             resolve_secret(arn, "url")
 
@@ -144,9 +131,6 @@ class ResolveSecretTests(TestCase):
             "SecretString": json.dumps({"wrong_key": "value"}),
         }
 
-        arn = (
-            "arn:aws:secretsmanager:us-east-1"
-            ":123456789012:secret:missing-key"
-        )
+        arn = "arn:aws:secretsmanager:us-east-1" ":123456789012:secret:missing-key"
         with self.assertRaises(KeyError, msg="expected key"):
             resolve_secret(arn, "url")
