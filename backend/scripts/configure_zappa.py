@@ -15,7 +15,7 @@ def get_env_or_default(key: str, default: str = "") -> str:
     return os.environ.get(key, default)
 
 
-def configure_zappa_settings() -> None:
+def configure_zappa_settings(output_path: Path | None = None) -> None:
     """Generate zappa_settings.json from environment variables."""
 
     # Get AWS account details
@@ -226,7 +226,7 @@ def configure_zappa_settings() -> None:
     }
 
     # Write the configuration with Prettier-compatible formatting
-    config_path = Path(__file__).parent.parent / "zappa_settings.json"
+    config_path = output_path or Path(__file__).parent.parent / "zappa_settings.json"
     with open(config_path, "w") as f:
         # Add trailing newline for Prettier compatibility
         json.dump(settings, f, indent=2)

@@ -16,23 +16,10 @@ def _generate_settings(
 ) -> dict[str, Any]:
     """Run configure_zappa_settings and return parsed output."""
     env: dict[str, str] = dict(env_vars) if env_vars else {}
-
     output_file = tmp_path / "zappa_settings.json"
-    real_open = open
 
-    def fake_open(path: Any, mode: str = "r", **kwargs: Any) -> Any:
-        if str(path).endswith("zappa_settings.json") and "w" in mode:
-            return real_open(output_file, mode, **kwargs)
-        return real_open(path, mode, **kwargs)
-
-    with (
-        patch.dict("os.environ", env, clear=True),
-        patch(
-            "builtins.open",
-            side_effect=fake_open,
-        ),
-    ):
-        configure_zappa_settings()
+    with patch.dict("os.environ", env, clear=True):
+        configure_zappa_settings(output_path=output_file)
 
     return json.loads(output_file.read_text())
 
@@ -52,7 +39,10 @@ class TestRoleName:
 
     def test_role_name_configurable_via_env_var(self, tmp_path: Path) -> None:
         """role_name should be configurable via ZAPPA_ROLE_NAME env var."""
-        settings = _generate_settings(tmp_path, {"ZAPPA_ROLE_NAME": "my-custom-role"})
+        settings = _generate_settings(
+            tmp_path,
+            {"ZAPPA_ROLE_NAME": "my-custom-role"},
+        )
         assert settings["base"]["role_name"] == "my-custom-role"
 
 
@@ -83,7 +73,7 @@ class TestProvidedSecretARNs:
 
     def test_database_url_uses_provided_arn(self, tmp_path: Path) -> None:
         """When DATABASE_SECRET_ARN is set, it should be used."""
-        arn = "arn:aws:secretsmanager:us-east-1:123456789:secret:my-db-secret-AbCdEf"
+        arn = "arn:aws:secretsmanager:us-east-1:123456789:secret:my-db-AbCdEf"
         settings = _generate_settings(
             tmp_path,
             {"DATABASE_SECRET_ARN": arn},
@@ -92,7 +82,7 @@ class TestProvidedSecretARNs:
 
     def test_secret_key_uses_provided_arn(self, tmp_path: Path) -> None:
         """When DJANGO_SECRET_ARN is set, it should be used."""
-        arn = "arn:aws:secretsmanager:us-east-1:123456789:secret:my-django-key-XyZwVu"
+        arn = "arn:aws:secretsmanager:us-east-1:123456789:secret:my-dj-XyZwVu"
         settings = _generate_settings(
             tmp_path,
             {"DJANGO_SECRET_ARN": arn},
