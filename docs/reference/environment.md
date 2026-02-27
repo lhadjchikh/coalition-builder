@@ -293,13 +293,14 @@ NEXT_PUBLIC_HOTJAR_ID=1234567
 
 ### Server Configuration
 
-| Variable              | Description                   | Default                     | Required |
-| --------------------- | ----------------------------- | --------------------------- | -------- |
-| `API_URL`             | Backend API URL (server-side) | `http://localhost:8000`     | No       |
-| `NEXT_PUBLIC_API_URL` | Backend API URL (client-side) | `http://localhost:8000/api` | No       |
-| `PORT`                | Server port                   | `3000`                      | No       |
-| `NODE_ENV`            | Node environment              | `development`               | No       |
-| `HOSTNAME`            | Server hostname               | `localhost`                 | No       |
+| Variable                  | Description                                                      | Default                     | Required   |
+| ------------------------- | ---------------------------------------------------------------- | --------------------------- | ---------- |
+| `API_URL`                 | Backend API URL (server-side rewrites for `/api/*` proxying)     | `http://localhost:8000`     | Production |
+| `NEXT_PUBLIC_API_URL`     | Backend API URL (client-side)                                    | `http://localhost:8000/api` | No         |
+| `AWS_STORAGE_BUCKET_NAME` | S3 bucket name for `next.config.js` `remotePatterns` (image opt) | -                           | Production |
+| `PORT`                    | Server port                                                      | `3000`                      | No         |
+| `NODE_ENV`                | Node environment                                                 | `development`               | No         |
+| `HOSTNAME`                | Server hostname                                                  | `localhost`                 | No         |
 
 **Example:**
 
