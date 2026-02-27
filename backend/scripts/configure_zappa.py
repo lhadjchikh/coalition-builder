@@ -61,15 +61,9 @@ def configure_zappa_settings() -> None:
     vpc_subnet_ids = [s.strip() for s in vpc_subnet_ids if s.strip()]
     vpc_security_group_ids = [s.strip() for s in vpc_security_group_ids if s.strip()]
 
-    # Get secret ARNs
-    db_secret_arn = get_env_or_default(
-        "DATABASE_SECRET_ARN",
-        f"arn:aws:secretsmanager:{aws_region}:{aws_account_id}:secret:coalition-database-*",
-    )
-    django_secret_arn = get_env_or_default(
-        "DJANGO_SECRET_ARN",
-        f"arn:aws:secretsmanager:{aws_region}:{aws_account_id}:secret:coalition-django-*",
-    )
+    # Get secret ARNs (empty default = local dev; CI provides real ARNs)
+    db_secret_arn = get_env_or_default("DATABASE_SECRET_ARN", "")
+    django_secret_arn = get_env_or_default("DJANGO_SECRET_ARN", "")
 
     # Docker image configuration
     # USE_CUSTOM_DOCKER=true: deploy as container image (docker_image_uri)
@@ -101,6 +95,7 @@ def configure_zappa_settings() -> None:
                 "SubnetIds": vpc_subnet_ids,
                 "SecurityGroupIds": vpc_security_group_ids,
             },
+            "role_name": "coalition-zappa-deployment",
             "timeout_seconds": 30,
             "slim_handler": False,
             "use_precompiled_packages": False,
