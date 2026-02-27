@@ -122,7 +122,8 @@ resource "aws_iam_role" "zappa_deployment" {
         Principal = {
           Service = [
             "lambda.amazonaws.com",
-            "events.amazonaws.com"
+            "events.amazonaws.com",
+            "apigateway.amazonaws.com"
           ]
         }
       }
