@@ -188,14 +188,14 @@ jobs:
         env:
           ENV: ${{ needs.determine-environment.outputs.environment }}
         run: |
-          poetry run zappa manage $ENV migrate --noinput
+          poetry run zappa manage $ENV "migrate --noinput"
 
       - name: Collect static files
         working-directory: ./backend
         env:
           ENV: ${{ needs.determine-environment.outputs.environment }}
         run: |
-          poetry run zappa manage $ENV collectstatic --noinput
+          poetry run zappa manage $ENV "collectstatic --noinput"
 
   deploy-frontend:
     needs: [determine-environment, test-backend]
