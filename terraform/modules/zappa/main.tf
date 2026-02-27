@@ -213,15 +213,6 @@ resource "aws_iam_policy" "zappa_deployment" {
           "iam:PassRole"
         ]
         Resource = "arn:aws:iam::*:role/${var.prefix}-*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ec2:CreateNetworkInterface",
-          "ec2:DescribeNetworkInterfaces",
-          "ec2:DeleteNetworkInterface"
-        ]
-        Resource = "*"
       }
     ]
   })
@@ -271,4 +262,12 @@ resource "aws_iam_role_policy_attachment" "lambda_secrets" {
 resource "aws_iam_role_policy_attachment" "zappa_deployment" {
   role       = aws_iam_role.zappa_deployment.name
   policy_arn = aws_iam_policy.zappa_deployment.arn
+}
+
+# AWS managed policy for Lambda VPC access (ENI permissions)
+resource "aws_iam_role_policy_attachment" "lambda_vpc_access" {
+  count = var.create_lambda_sg ? 1 : 0
+
+  role       = aws_iam_role.zappa_deployment.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
