@@ -69,18 +69,6 @@ class TestDefaultSecretARNs:
         settings = _generate_settings(tmp_path)
         assert settings["dev"]["aws_environment_variables"]["SECRET_KEY"] == ""
 
-    def test_default_database_url_not_wildcard(self, tmp_path: Path) -> None:
-        """Default should not contain IAM wildcard pattern."""
-        settings = _generate_settings(tmp_path)
-        db_url = settings["dev"]["aws_environment_variables"]["DATABASE_URL"]
-        assert "*" not in db_url
-
-    def test_default_secret_key_not_wildcard(self, tmp_path: Path) -> None:
-        """Default should not contain IAM wildcard pattern."""
-        settings = _generate_settings(tmp_path)
-        secret_key = settings["dev"]["aws_environment_variables"]["SECRET_KEY"]
-        assert "*" not in secret_key
-
     def test_all_stages_have_empty_defaults(self, tmp_path: Path) -> None:
         """All stages should have empty string defaults for secret ARNs."""
         settings = _generate_settings(tmp_path)
