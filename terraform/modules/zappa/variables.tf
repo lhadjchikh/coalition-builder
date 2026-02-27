@@ -36,6 +36,11 @@ variable "secrets_kms_key_arn" {
   description = "ARN of the KMS key used to encrypt secrets (required if secret_arns is non-empty)"
   type        = string
   default     = ""
+
+  validation {
+    condition     = length(var.secret_arns) == 0 || var.secrets_kms_key_arn != ""
+    error_message = "When secret_arns is non-empty, secrets_kms_key_arn must be set to the ARN of the KMS key used to encrypt those secrets."
+  }
 }
 
 variable "tags" {
