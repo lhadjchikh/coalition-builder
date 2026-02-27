@@ -196,11 +196,16 @@ variable "domain_name" {
   type        = string
 }
 
-variable "acm_certificate_arn" {
-  description = "The ARN of the ACM certificate to use for HTTPS"
+variable "api_gateway_id" {
+  description = "The ID of the Zappa-managed API Gateway REST API"
   type        = string
 }
 
+variable "api_gateway_stage" {
+  description = "The stage name of the API Gateway (e.g., prod)"
+  type        = string
+  default     = "prod"
+}
 
 # Monitoring Variables
 variable "alert_email" {
@@ -240,54 +245,12 @@ variable "create_new_key_pair" {
   default     = false
 }
 
-
-variable "health_check_path_api" {
-  description = "Path for backend container and load balancer health checks"
-  type        = string
-  default     = "/api/health"
-}
-
-variable "health_check_path_app" {
-  description = "Path for app container and load balancer health checks"
-  type        = string
-  default     = "/health/"
-}
-
-variable "allowed_hosts" {
-  description = "Django ALLOWED_HOSTS setting - should include localhost for health checks"
-  type        = string
-  default     = "localhost,127.0.0.1"
-}
-
-variable "csrf_trusted_origins" {
-  description = "Django CSRF_TRUSTED_ORIGINS setting"
-  type        = string
-  default     = ""
-}
-
-# Site Password Protection Variables
-variable "site_password_enabled" {
-  description = "Enable password protection for the entire site during development"
-  type        = bool
-  default     = false
-}
-
+# Site Password Protection
 variable "site_password" {
   description = "Password for site access when password protection is enabled"
   type        = string
   default     = ""
   sensitive   = true
-
-  validation {
-    condition     = var.site_password_enabled == false || var.site_password != ""
-    error_message = "site_password must be provided when site_password_enabled is true."
-  }
-}
-
-variable "site_username" {
-  description = "Username for site password protection"
-  type        = string
-  default     = "admin"
 }
 
 # Static Assets Storage Variables
@@ -376,23 +339,4 @@ variable "ses_enable_notifications" {
   description = "Whether to enable SNS notifications for SES events"
   type        = bool
   default     = true
-}
-
-# Email and Organization Configuration
-variable "contact_email" {
-  description = "Contact email address for the organization"
-  type        = string
-  default     = "info@example.org"
-}
-
-variable "admin_notification_emails" {
-  description = "Comma-separated list of admin emails for endorsement notifications"
-  type        = string
-  default     = ""
-}
-
-variable "organization_name" {
-  description = "Name of the organization"
-  type        = string
-  default     = "Coalition Builder"
 }

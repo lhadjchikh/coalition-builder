@@ -280,7 +280,7 @@ aws cloudwatch put-metric-alarm \
 ### Lambda Versioning
 
 - Each deployment creates new version
-- Rollback via Zappa: `zappa rollback production -n 1`
+- Rollback via Zappa: `zappa rollback prod -n 1`
 - Code stored in S3 deployment bucket
 
 ### DynamoDB

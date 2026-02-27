@@ -14,27 +14,30 @@ RUN pip install --no-cache-dir poetry==1.7.1
 COPY pyproject.toml poetry.lock ./
 
 # Install Python dependencies without creating a virtual environment
-# Lambda provides the runtime environment
+# Lambda provides the runtime environment (Zappa is installed via pyproject.toml)
 RUN poetry config virtualenvs.create false && \
     poetry install --no-root --no-dev --no-interaction --no-ansi
-
-# Install Zappa for Lambda handler
-RUN pip install --no-cache-dir zappa==0.59.0
 
 # Copy application code
 COPY coalition/ ./coalition/
 COPY scripts/ ./scripts/
 COPY manage.py ./
+COPY zappa_settings.json ./
+COPY zappa_settings.py ./
+COPY handler.py ./
 
-# Copy any static files that need to be included
-COPY static/ ./static/ 2>/dev/null || true
+# Copy static files
+COPY static/ ./static/
 
 # Create necessary directories
 RUN mkdir -p /tmp/media /tmp/static
 
-# Set Python path
+# Set Python path and library paths for GDAL/GEOS/PROJ
 ENV PYTHONPATH=/var/task:$PYTHONPATH \
-    DJANGO_SETTINGS_MODULE=coalition.core.settings
+    DJANGO_SETTINGS_MODULE=coalition.core.settings \
+    LD_LIBRARY_PATH=/opt/lib:/opt/lib64 \
+    GDAL_DATA=/opt/share/gdal \
+    PROJ_LIB=/opt/share/proj
 
 # Pre-compile Python files for faster cold starts
 RUN python -m compileall -b coalition
@@ -43,9 +46,5 @@ RUN python -m compileall -b coalition
 # This is optional as static files are usually served from S3
 RUN python manage.py collectstatic --noinput || true
 
-# Lambda handler configuration
-# Zappa will look for this handler
-ENV LAMBDA_HANDLER=handler.lambda_handler
-
-# The CMD is not used by Lambda but included for local testing
-CMD ["handler.lambda_handler"]
+# Lambda handler - Zappa's built-in handler for Docker deployments
+CMD ["zappa.handler.lambda_handler"]

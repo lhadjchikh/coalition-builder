@@ -21,7 +21,7 @@ on:
         type: choice
         options:
           - preview
-          - production
+          - prod
 
 permissions:
   contents: read
@@ -53,7 +53,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             ENV="${{ github.event.inputs.environment }}"
           elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            ENV="production"
+            ENV="prod"
           elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
             ENV="staging"
           elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
@@ -71,15 +71,15 @@ jobs:
           ENV="${{ steps.env.outputs.environment }}"
 
           # Get API URL based on environment
-          if [[ "$ENV" == "production" ]]; then
-            API_URL="${{ vars.PRODUCTION_API_URL || 'https://api.yourdomain.com' }}"
-            SITE_URL="${{ vars.PRODUCTION_SITE_URL || 'https://yourdomain.com' }}"
+          if [[ "$ENV" == "prod" ]]; then
+            API_URL="${{ vars.PRODUCTION_API_URL }}"
+            SITE_URL="${{ vars.PRODUCTION_SITE_URL }}"
           elif [[ "$ENV" == "staging" ]]; then
-            API_URL="${{ vars.STAGING_API_URL || 'https://api-staging.yourdomain.com' }}"
-            SITE_URL="${{ vars.STAGING_SITE_URL || 'https://staging.yourdomain.com' }}"
+            API_URL="${{ vars.STAGING_API_URL }}"
+            SITE_URL="${{ vars.STAGING_SITE_URL }}"
           else
-            API_URL="${{ vars.DEVELOPMENT_API_URL || 'https://api-dev.yourdomain.com' }}"
-            SITE_URL="${{ vars.DEVELOPMENT_SITE_URL || 'https://dev.yourdomain.com' }}"
+            API_URL="${{ vars.DEVELOPMENT_API_URL }}"
+            SITE_URL="${{ vars.DEVELOPMENT_SITE_URL }}"
           fi
 
           echo "api_url=$API_URL" >> $GITHUB_OUTPUT
@@ -92,7 +92,7 @@ jobs:
         id: vercel_env
         run: |
           ENV="${{ steps.env.outputs.environment }}"
-          if [[ "$ENV" == "production" ]]; then
+          if [[ "$ENV" == "prod" ]]; then
             echo "vercel_env=production" >> $GITHUB_OUTPUT
           elif [[ "$ENV" == "staging" ]]; then
             echo "vercel_env=preview" >> $GITHUB_OUTPUT
@@ -106,7 +106,7 @@ jobs:
 
       - name: Build Project Artifacts
         run: |
-          if [[ "${{ steps.env.outputs.environment }}" == "production" ]]; then
+          if [[ "${{ steps.env.outputs.environment }}" == "prod" ]]; then
             vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
           else
             vercel build --token=${{ secrets.VERCEL_TOKEN }}
@@ -121,7 +121,7 @@ jobs:
       - name: Deploy to Vercel
         id: deploy
         run: |
-          if [[ "${{ steps.env.outputs.environment }}" == "production" ]]; then
+          if [[ "${{ steps.env.outputs.environment }}" == "prod" ]]; then
             DEPLOY_URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
           else
             DEPLOY_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
@@ -178,7 +178,7 @@ jobs:
             });
 
       - name: Run smoke tests
-        if: steps.env.outputs.environment != 'production'
+        if: steps.env.outputs.environment != 'prod'
         continue-on-error: true
         run: |
           DEPLOY_URL="${{ steps.deploy.outputs.url }}"
@@ -195,7 +195,7 @@ jobs:
           curl -f -s -o /dev/null -w "Health: %{http_code}\n" "$DEPLOY_URL/api/health"
 
       - name: Alias production deployment
-        if: steps.env.outputs.environment == 'production' && github.ref == 'refs/heads/main'
+        if: steps.env.outputs.environment == 'prod' && github.ref == 'refs/heads/main'
         run: |
           vercel alias set ${{ steps.deploy.outputs.url }} ${{ vars.PRODUCTION_DOMAIN }} --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: ./frontend

@@ -1,16 +1,16 @@
 # Build GDAL/GEOS/PROJ from source for GeoDjango support
+# Multi-stage build: compile in builder, copy only runtime artifacts to final image
 # This base image is cached and reused across all environments
-FROM public.ecr.aws/lambda/python:3.13 AS geolambda
 
-# Version configuration - using latest stable versions
+# Stage 1: Builder - compile all geospatial libraries
+FROM public.ecr.aws/lambda/python:3.13 AS builder
+
+# Version configuration
 ENV GDAL_VERSION=3.10.3 \
     GEOS_VERSION=3.13.0 \
-    PROJ_VERSION=9.4.1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PROJ_VERSION=9.4.1
 
 # Install build dependencies using dnf (Amazon Linux 2023)
-# Python 3.13 Lambda base images use dnf (symlinked to microdnf)
 # Note: curl is already installed as curl-minimal, so we don't need to install it
 RUN dnf install -y \
     gcc gcc-c++ make cmake \
@@ -25,8 +25,11 @@ WORKDIR /tmp
 RUN curl -L https://download.osgeo.org/proj/proj-${PROJ_VERSION}.tar.gz | tar xz && \
     cd proj-${PROJ_VERSION} && \
     mkdir build && cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/opt .. && \
-    make -j$(nproc) && \
+    cmake -DCMAKE_INSTALL_PREFIX=/opt \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_TESTING=OFF \
+        .. && \
+    make -j2 && \
     make install && \
     cd ../.. && rm -rf proj-${PROJ_VERSION}
 
@@ -34,44 +37,76 @@ RUN curl -L https://download.osgeo.org/proj/proj-${PROJ_VERSION}.tar.gz | tar xz
 RUN curl -L https://download.osgeo.org/geos/geos-${GEOS_VERSION}.tar.bz2 | tar xj && \
     cd geos-${GEOS_VERSION} && \
     mkdir build && cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/opt .. && \
-    make -j$(nproc) && \
+    cmake -DCMAKE_INSTALL_PREFIX=/opt \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_TESTING=OFF \
+        .. && \
+    make -j2 && \
     make install && \
     cd ../.. && rm -rf geos-${GEOS_VERSION}
 
-# Build GDAL with Python bindings
+# Build GDAL
 RUN curl -L https://github.com/OSGeo/gdal/releases/download/v${GDAL_VERSION}/gdal-${GDAL_VERSION}.tar.gz | tar xz && \
     cd gdal-${GDAL_VERSION} && \
     mkdir build && cd build && \
     cmake -DCMAKE_INSTALL_PREFIX=/opt \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_TESTING=OFF \
         -DGDAL_USE_GEOS=ON \
         -DGEOS_INCLUDE_DIR=/opt/include \
-        -DGEOS_LIBRARY=/opt/lib/libgeos_c.so \
+        -DGEOS_LIBRARY=/opt/lib64/libgeos_c.so \
         -DPROJ_ROOT=/opt \
         .. && \
-    make -j$(nproc) && \
+    make -j2 && \
     make install && \
     cd ../.. && rm -rf gdal-${GDAL_VERSION}
 
-# Set library paths for runtime and build
+# Set paths for Python GDAL bindings install
+ENV LD_LIBRARY_PATH=/opt/lib64:$LD_LIBRARY_PATH \
+    PATH=/opt/bin:$PATH
+
+# Ensure /opt/lib exists for toolchain portability (CMake may use lib or lib64)
+RUN mkdir -p /opt/lib
+
+# Install Python GDAL bindings matching the compiled version
+RUN GDAL_CONFIG=/opt/bin/gdal-config \
+    CPPFLAGS="-I/opt/include" \
+    LDFLAGS="-L/opt/lib64" \
+    pip install --no-cache-dir GDAL==${GDAL_VERSION}
+
+# Stage 2: Runtime - clean image with only compiled artifacts
+FROM public.ecr.aws/lambda/python:3.13 AS geolambda
+
+ENV GDAL_VERSION=3.10.3 \
+    GEOS_VERSION=3.13.0 \
+    PROJ_VERSION=9.4.1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Install only runtime dependencies (libtiff may not be in the base image)
+RUN dnf install -y libtiff && dnf clean all
+
+# Copy compiled libraries, binaries, and data from builder (excludes headers)
+# Include both lib and lib64 in case CMake installs to either location
+COPY --from=builder /opt/lib64/ /opt/lib64/
+COPY --from=builder /opt/lib/ /opt/lib/
+COPY --from=builder /opt/bin/ /opt/bin/
+COPY --from=builder /opt/share/ /opt/share/
+
+# Copy Python GDAL packages from builder
+COPY --from=builder /var/lang/lib/python3.13/site-packages/osgeo/ /var/lang/lib/python3.13/site-packages/osgeo/
+COPY --from=builder /var/lang/lib/python3.13/site-packages/osgeo_utils/ /var/lang/lib/python3.13/site-packages/osgeo_utils/
+COPY --from=builder /var/lang/lib/python3.13/site-packages/gdal-${GDAL_VERSION}.dist-info/ /var/lang/lib/python3.13/site-packages/gdal-${GDAL_VERSION}.dist-info/
+
+# Set library paths for runtime (include both lib dirs for toolchain portability)
 ENV LD_LIBRARY_PATH=/opt/lib:/opt/lib64:$LD_LIBRARY_PATH \
     GDAL_DATA=/opt/share/gdal \
     PROJ_DATA=/opt/share/proj \
     PROJ_LIB=/opt/share/proj \
     PATH=/opt/bin:$PATH
 
-# Install Python GDAL bindings matching the compiled version
-# Need to specify paths for the GDAL headers and libraries
-RUN GDAL_CONFIG=/opt/bin/gdal-config pip install --no-cache-dir GDAL==${GDAL_VERSION}
-
 # Verify installation
-RUN python -c "from osgeo import gdal, ogr, osr; print(f'GDAL {gdal.__version__} installed successfully')" && \
-    python -c "import os; os.environ['DJANGO_SETTINGS_MODULE']=''; from django.contrib.gis.geos import GEOSGeometry" || true
-
-# Clean up build dependencies to reduce image size
-RUN dnf remove -y gcc gcc-c++ make cmake && \
-    dnf clean all && \
-    rm -rf /tmp/* /var/cache/dnf/*
+RUN python -c "from osgeo import gdal, ogr, osr; print(f'GDAL {gdal.__version__} installed successfully')"
 
 # Label for tracking
 LABEL maintainer="Coalition Builder Team" \

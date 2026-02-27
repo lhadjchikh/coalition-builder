@@ -58,7 +58,7 @@ The cache table is created automatically during deployment:
 python manage.py createcachetable
 
 # For production (via Zappa)
-zappa manage production createcachetable
+zappa manage prod createcachetable
 ```
 
 ## Usage

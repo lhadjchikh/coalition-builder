@@ -100,7 +100,7 @@ The previous ECS-based deployment is still documented for reference but deprecat
 ```bash
 # Lambda backend
 cd backend
-poetry run zappa deploy production
+poetry run zappa deploy prod
 
 # Vercel frontend
 cd frontend

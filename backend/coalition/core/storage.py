@@ -11,7 +11,23 @@ from storages.backends.s3boto3 import S3Boto3Storage
 logger = logging.getLogger(__name__)
 
 
-class MediaStorage(S3Boto3Storage):
+class DefaultCredentialChainMixin:
+    """Mixin that uses the default boto3 credential chain.
+
+    Overrides _create_session to create a plain boto3.Session with only
+    region_name, so Lambda execution role and ECS task role credentials are
+    picked up automatically instead of being overridden by explicit None
+    values from django-storages settings.
+    """
+
+    def _create_session(self) -> Any:
+        """Create a boto3 session using the default credential chain."""
+        return boto3.Session(
+            region_name=settings.AWS_S3_REGION_NAME,
+        )
+
+
+class MediaStorage(DefaultCredentialChainMixin, S3Boto3Storage):
     """
     Custom S3 storage for media files.
 
@@ -64,10 +80,10 @@ class MediaStorage(S3Boto3Storage):
         # The custom_domain setting will be set from AWS_S3_CUSTOM_DOMAIN in settings
         # which already uses CloudFront when available
 
-    def _get_boto3_session(self) -> Any:
-        """Create a new boto3 session to ensure fresh credentials."""
-        # Create a new session each time to ensure we get fresh credentials
-        # This is important for ECS task roles which use temporary credentials
-        return boto3.Session(
-            region_name=settings.AWS_S3_REGION_NAME,
-        )
+
+class StaticStorage(DefaultCredentialChainMixin, S3Boto3Storage):
+    """S3 storage for static files in Lambda/ECS environments."""
+
+    location = "static"
+    default_acl = None
+    querystring_auth = False

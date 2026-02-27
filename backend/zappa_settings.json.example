@@ -6,8 +6,13 @@
     "s3_bucket": "coalition-zappa-deployments",
     "runtime": "python3.13",
     "vpc_config": {
-      "SubnetIds": [],
-      "SecurityGroupIds": []
+      "SubnetIds": [
+        "subnet-XXXXXXXXXXXXXXXXXXXX",
+        "subnet-XXXXXXXXXXXXXXXXXXXX"
+      ],
+      "SecurityGroupIds": [
+        "sg-XXXXXXXXXXXXXXXXXXXX"
+      ]
     },
     "timeout_seconds": 30,
     "slim_handler": false,
@@ -61,11 +66,11 @@
       "ENVIRONMENT": "dev",
       "DEBUG": "true",
       "DATABASE_NAME": "coalition_dev",
-      "AWS_STORAGE_BUCKET_NAME": "coalition-dev-assets"
+      "AWS_STORAGE_BUCKET_NAME": "coalition-dev-assets-XXXXXXXX"
     },
     "aws_environment_variables": {
-      "DATABASE_URL": "arn:aws:secretsmanager:us-east-1:*:secret:coalition-database-*",
-      "SECRET_KEY": "arn:aws:secretsmanager:us-east-1:*:secret:coalition-django-*"
+      "DATABASE_URL": "arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:coalition/database-url-XXXXXX",
+      "SECRET_KEY": "arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:coalition/secret-key-XXXXXX"
     },
     "apigateway_settings": {
       "throttle_burst_limit": 50,
@@ -83,20 +88,20 @@
       "ENVIRONMENT": "staging",
       "DEBUG": "false",
       "DATABASE_NAME": "coalition_staging",
-      "AWS_STORAGE_BUCKET_NAME": "coalition-staging-assets"
+      "AWS_STORAGE_BUCKET_NAME": "coalition-staging-assets-XXXXXXXX"
     },
     "aws_environment_variables": {
-      "DATABASE_URL": "arn:aws:secretsmanager:us-east-1:*:secret:coalition-database-*",
-      "SECRET_KEY": "arn:aws:secretsmanager:us-east-1:*:secret:coalition-django-*"
+      "DATABASE_URL": "arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:coalition/database-url-XXXXXX",
+      "SECRET_KEY": "arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:coalition/secret-key-XXXXXX"
     },
     "apigateway_settings": {
       "throttle_burst_limit": 75,
       "throttle_rate_limit": 40
     }
   },
-  "production": {
+  "prod": {
     "extends": "base",
-    "stage": "production",
+    "stage": "prod",
     "docker_image": "public.ecr.aws/lambda/python:3.13",
     "memory_size": 1024,
     "keep_warm": true,
@@ -105,11 +110,11 @@
       "ENVIRONMENT": "production",
       "DEBUG": "false",
       "DATABASE_NAME": "coalition_production",
-      "AWS_STORAGE_BUCKET_NAME": "coalition-production-assets"
+      "AWS_STORAGE_BUCKET_NAME": "coalition-production-assets-XXXXXXXX"
     },
     "aws_environment_variables": {
-      "DATABASE_URL": "arn:aws:secretsmanager:us-east-1:*:secret:coalition-database-*",
-      "SECRET_KEY": "arn:aws:secretsmanager:us-east-1:*:secret:coalition-django-*"
+      "DATABASE_URL": "arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:coalition/database-url-XXXXXX",
+      "SECRET_KEY": "arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:coalition/secret-key-XXXXXX"
     },
     "apigateway_settings": {
       "throttle_burst_limit": 100,

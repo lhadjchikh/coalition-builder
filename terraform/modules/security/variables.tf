@@ -15,8 +15,7 @@ variable "allowed_bastion_cidrs" {
   default     = ["0.0.0.0/0"]
 }
 
-variable "database_subnet_cidrs" {
-  description = "List of CIDR blocks for database subnets"
-  type        = list(string)
-  default     = []
+variable "lambda_security_group_id" {
+  description = "ID of the Lambda security group (from the Zappa module)"
+  type        = string
 }

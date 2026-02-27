@@ -12,7 +12,7 @@ on:
         options:
           - dev
           - staging
-          - production
+          - prod
 
 permissions:
   contents: read
@@ -29,7 +29,7 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            echo "environment=production" >> $GITHUB_OUTPUT
+            echo "environment=prod" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
             echo "environment=staging" >> $GITHUB_OUTPUT
           else
@@ -39,7 +39,7 @@ jobs:
   test-backend:
     needs: determine-environment
     runs-on: ubuntu-latest
-    if: needs.determine-environment.outputs.environment != 'production' || github.event_name == 'workflow_dispatch'
+    if: needs.determine-environment.outputs.environment != 'prod' || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
 
@@ -50,7 +50,7 @@ jobs:
 
       - name: Install Poetry
         run: |
-          curl -sSL https://install.python-poetry.org | python3 -
+          curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.7.1 python3 -
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
@@ -93,11 +93,45 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.7.1 python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: |
+          poetry install --no-interaction --no-ansi --only main
+
+      - name: Configure Zappa settings
+        working-directory: ./backend
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_REGION: us-east-1
+          ZAPPA_S3_BUCKET: ${{ vars.ZAPPA_S3_BUCKET }}
+          DEV_ASSETS_BUCKET: ${{ vars.DEV_ASSETS_BUCKET }}
+          STAGING_ASSETS_BUCKET: ${{ vars.STAGING_ASSETS_BUCKET }}
+          PRODUCTION_ASSETS_BUCKET: ${{ vars.PRODUCTION_ASSETS_BUCKET }}
+          USE_CUSTOM_DOCKER: true
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          VPC_SUBNET_IDS: ${{ vars.VPC_SUBNET_IDS }}
+          VPC_SECURITY_GROUP_IDS: ${{ vars.VPC_SECURITY_GROUP_IDS }}
+          DATABASE_SECRET_ARN: ${{ secrets.DATABASE_SECRET_ARN }}
+          DJANGO_SECRET_ARN: ${{ secrets.DJANGO_SECRET_ARN }}
+        run: |
+          poetry run python scripts/configure_zappa.py
+
       - name: Build and push Docker image
         working-directory: ./backend
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ENV: ${{ needs.determine-environment.outputs.environment == 'production' && 'prod' || needs.determine-environment.outputs.environment }}
+          AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
+          ENV: ${{ needs.determine-environment.outputs.environment }}
         run: |
           # Pull and tag base image if not building it
           docker pull $ECR_REGISTRY/geolambda:3.10.3 || ./scripts/build-docker.sh geolambda
@@ -106,43 +140,38 @@ jobs:
           # Build and push application image
           ./scripts/build-docker.sh $ENV
 
-      - name: Set up Python for Zappa
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - name: Install Zappa
-        run: |
-          pip install zappa boto3
-
-      - name: Configure Zappa settings
-        working-directory: ./backend
-        env:
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-          AWS_REGION: us-east-1
-          ZAPPA_DEPLOYMENT_BUCKET: ${{ vars.ZAPPA_DEPLOYMENT_BUCKET }}
-          DEV_ASSETS_BUCKET: ${{ vars.DEV_ASSETS_BUCKET }}
-          STAGING_ASSETS_BUCKET: ${{ vars.STAGING_ASSETS_BUCKET }}
-          PRODUCTION_ASSETS_BUCKET: ${{ vars.PRODUCTION_ASSETS_BUCKET }}
-          USE_CUSTOM_DOCKER: true
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          VPC_SUBNET_IDS: ${{ vars.VPC_SUBNET_IDS }}
-          VPC_SECURITY_GROUP_IDS: ${{ vars.VPC_SECURITY_GROUP_IDS }}
-        run: |
-          python scripts/configure_zappa.py
-
       - name: Deploy with Zappa
         working-directory: ./backend
         env:
           ENV: ${{ needs.determine-environment.outputs.environment }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
+          IMAGE_URI="${ECR_REGISTRY}/coalition-${ENV}:latest"
+
           # Check if deployment exists
-          if zappa status $ENV 2>/dev/null; then
+          if poetry run zappa status $ENV 2>/dev/null; then
+            echo "Waiting for any in-progress updates to complete..."
+            aws lambda wait function-updated --function-name "coalition-${ENV}"
             echo "Updating existing deployment..."
-            zappa update $ENV
+            # Retry once if Zappa hits a concurrent update race condition between its
+            # internal code and config update calls; fail fast on other errors.
+            set +e
+            UPDATE_OUTPUT=$(poetry run zappa update $ENV --docker-image-uri "$IMAGE_URI" 2>&1)
+            UPDATE_STATUS=$?
+            set -e
+            echo "$UPDATE_OUTPUT"
+            if [ $UPDATE_STATUS -ne 0 ]; then
+              if echo "$UPDATE_OUTPUT" | grep -qiE 'ResourceConflict|concurrent'; then
+                echo "Retrying after concurrent update conflict..."
+                aws lambda wait function-updated --function-name "coalition-${ENV}"
+                poetry run zappa update $ENV --docker-image-uri "$IMAGE_URI"
+              else
+                exit $UPDATE_STATUS
+              fi
+            fi
           else
             echo "Creating new deployment..."
-            zappa deploy $ENV
+            poetry run zappa deploy $ENV
           fi
 
       - name: Create cache table
@@ -152,21 +181,21 @@ jobs:
         run: |
           # Create cache table for database cache backend
           # This command is idempotent - safe to run multiple times
-          zappa manage $ENV createcachetable || true
+          poetry run zappa manage $ENV createcachetable || true
 
       - name: Run database migrations
         working-directory: ./backend
         env:
           ENV: ${{ needs.determine-environment.outputs.environment }}
         run: |
-          zappa manage $ENV migrate --noinput
+          poetry run zappa manage $ENV "migrate --noinput"
 
       - name: Collect static files
         working-directory: ./backend
         env:
           ENV: ${{ needs.determine-environment.outputs.environment }}
         run: |
-          zappa manage $ENV collectstatic --noinput
+          poetry run zappa manage $ENV "collectstatic --noinput"
 
   deploy-frontend:
     needs: [determine-environment, test-backend]
@@ -202,13 +231,16 @@ jobs:
         id: api-url
         env:
           ENV: ${{ needs.determine-environment.outputs.environment }}
+          DOMAIN_NAME: ${{ vars.DOMAIN_NAME }}
         run: |
-          if [ "$ENV" = "production" ]; then
-            echo "url=https://api.yourdomain.com" >> $GITHUB_OUTPUT
+          if [ -z "$DOMAIN_NAME" ]; then
+            echo "url=" >> $GITHUB_OUTPUT
+          elif [ "$ENV" = "prod" ]; then
+            echo "url=https://api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           elif [ "$ENV" = "staging" ]; then
-            echo "url=https://staging-api.yourdomain.com" >> $GITHUB_OUTPUT
+            echo "url=https://staging-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           else
-            echo "url=https://dev-api.yourdomain.com" >> $GITHUB_OUTPUT
+            echo "url=https://dev-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           fi
 
       - name: Deploy to Vercel
@@ -220,7 +252,7 @@ jobs:
           ENV: ${{ needs.determine-environment.outputs.environment }}
           NEXT_PUBLIC_API_URL: ${{ steps.api-url.outputs.url }}
         run: |
-          if [ "$ENV" = "production" ]; then
+          if [ "$ENV" = "prod" ]; then
             vercel --prod --token $VERCEL_TOKEN --yes
           else
             vercel --token $VERCEL_TOKEN --yes \
@@ -237,19 +269,23 @@ jobs:
         id: api-url
         env:
           ENV: ${{ needs.determine-environment.outputs.environment }}
+          DOMAIN_NAME: ${{ vars.DOMAIN_NAME }}
         run: |
-          if [ "$ENV" = "production" ]; then
-            echo "url=https://api.yourdomain.com" >> $GITHUB_OUTPUT
+          if [ -z "$DOMAIN_NAME" ]; then
+            echo "url=" >> $GITHUB_OUTPUT
+          elif [ "$ENV" = "prod" ]; then
+            echo "url=https://api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           elif [ "$ENV" = "staging" ]; then
-            echo "url=https://staging-api.yourdomain.com" >> $GITHUB_OUTPUT
+            echo "url=https://staging-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           else
-            echo "url=https://dev-api.yourdomain.com" >> $GITHUB_OUTPUT
+            echo "url=https://dev-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           fi
 
       - name: Health check API
+        if: steps.api-url.outputs.url != ''
         run: |
           echo "Checking API health at ${{ steps.api-url.outputs.url }}/api/health/"
-          curl -f ${{ steps.api-url.outputs.url }}/api/health/ || exit 1
+          curl -f "${{ steps.api-url.outputs.url }}/api/health/" || exit 1
 
       - name: Check Lambda logs for errors
         env:

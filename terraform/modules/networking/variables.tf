@@ -103,3 +103,24 @@ variable "private_db_subnet_b_cidr" {
   default     = "10.0.6.0/24"
 }
 
+# VPC Endpoints
+variable "create_vpc_endpoints" {
+  description = "Whether to create interface VPC endpoints for AWS services (Secrets Manager, ECR, CloudWatch Logs)"
+  type        = bool
+  default     = false
+
+  validation {
+    condition = (
+      var.create_vpc_endpoints == false ||
+      var.create_private_subnets == true
+    )
+    error_message = "When create_vpc_endpoints is true, at least one private subnet must be configured — create_private_subnets must be true so that route tables are managed by this module."
+  }
+}
+
+variable "enable_single_az_endpoints" {
+  description = "Place interface VPC endpoints in a single AZ to reduce costs (less resilient but cheaper)"
+  type        = bool
+  default     = false
+}
+

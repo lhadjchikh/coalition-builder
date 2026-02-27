@@ -28,7 +28,7 @@ on:
         options:
           - dev
           - staging
-          - production
+          - prod
       custom_command:
         description: "Custom import command (for custom import type)"
         required: false
@@ -102,7 +102,7 @@ jobs:
           ENV="${{ github.event.inputs.environment }}"
           PREFIX="coalition-builder"
 
-          if [ "$ENV" = "production" ]; then
+          if [ "$ENV" = "prod" ]; then
             PREFIX="coalition-prod"
           elif [ "$ENV" = "staging" ]; then
             PREFIX="coalition-staging"

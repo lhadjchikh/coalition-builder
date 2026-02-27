@@ -16,7 +16,6 @@ import logging
 import os
 import sys
 from pathlib import Path
-from urllib.parse import quote
 
 import dj_database_url
 import requests
@@ -30,14 +29,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 IS_LAMBDA = bool(os.environ.get("AWS_LAMBDA_FUNCTION_NAME"))
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv(
+_raw_secret_key = os.getenv(
     "SECRET_KEY",
     "django-insecure-=lvqp2vsu5)=!t*_qzm3%h%7btagcgw1#cj^sut9f@95^vbclv",
 )
+if IS_LAMBDA:
+    from coalition.core.secrets import resolve_secret
+
+    SECRET_KEY = resolve_secret(_raw_secret_key, "key")
+else:
+    SECRET_KEY = _raw_secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "t")
@@ -324,9 +330,14 @@ WSGI_APPLICATION = "coalition.core.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # Use SQLite as a fallback if DATABASE_URL is not set
-if os.getenv("DATABASE_URL"):
+_raw_database_url = os.getenv("DATABASE_URL", "")
+if IS_LAMBDA and _raw_database_url:
+    from coalition.core.secrets import resolve_secret
+
+    _raw_database_url = resolve_secret(_raw_database_url, "url")
+if _raw_database_url:
     # Parse DATABASE_URL and ensure PostGIS is used for PostgreSQL
-    db_config = dj_database_url.config(default=quote(os.getenv("DATABASE_URL", "")))
+    db_config = dj_database_url.parse(_raw_database_url)
 
     # If using PostgreSQL, make sure to use the PostGIS backend
     if db_config.get("ENGINE") == "django.db.backends.postgresql":
@@ -377,13 +388,12 @@ if IS_LAMBDA:
         }
 
     # GeoDjango is fully supported via Docker container
-    # GDAL paths are set via environment variables
+    # GDAL/GEOS libraries are compiled to /opt/lib64/ by the geolambda Dockerfile
     if os.environ.get("USE_GEODJANGO", "true").lower() == "true" and os.path.exists(
-        "/opt/lib/libgdal.so",
+        "/opt/lib64/libgdal.so",
     ):
-        # Set GDAL paths for Lambda container
-        GDAL_LIBRARY_PATH = "/opt/lib/libgdal.so"
-        GEOS_LIBRARY_PATH = "/opt/lib/libgeos_c.so"
+        GDAL_LIBRARY_PATH = "/opt/lib64/libgdal.so"
+        GEOS_LIBRARY_PATH = "/opt/lib64/libgeos_c.so"
 
     # Use S3 for static/media files
     if os.environ.get("USE_S3", "false").lower() == "true":
@@ -670,6 +680,12 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+
+# Override staticfiles storage for Lambda (S3 instead of whitenoise)
+if IS_LAMBDA and os.environ.get("USE_S3", "false").lower() == "true":
+    STORAGES["staticfiles"] = {
+        "BACKEND": "coalition.core.storage.StaticStorage",
+    }
 
 # AWS S3 Configuration
 AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "")

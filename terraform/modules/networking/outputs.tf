@@ -47,3 +47,13 @@ output "private_app_route_table_id" {
   description = "ID of the private app route table (for testing purposes)"
   value       = length(aws_route_table.private_app) > 0 ? aws_route_table.private_app[0].id : null
 }
+
+output "interface_endpoints" {
+  description = "Map of interface VPC endpoint IDs"
+  value       = { for k, v in aws_vpc_endpoint.interface : k => v.id }
+}
+
+output "endpoints_security_group_id" {
+  description = "ID of the VPC endpoints security group"
+  value       = length(aws_security_group.vpc_endpoints) > 0 ? aws_security_group.vpc_endpoints[0].id : null
+}

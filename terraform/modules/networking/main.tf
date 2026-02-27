@@ -259,11 +259,70 @@ resource "aws_vpc_endpoint" "s3" {
   vpc_endpoint_type = "Gateway"
   route_table_ids = compact([
     var.create_public_subnets ? aws_route_table.public[0].id : null,
-    var.create_db_subnets ? aws_route_table.private_db[0].id : null
+    var.create_private_subnets ? aws_route_table.private_app[0].id : null,
+    var.create_db_subnets ? aws_route_table.private_db[0].id : null,
   ])
 
   tags = {
     Name = "${var.prefix}-s3-endpoint"
+  }
+}
+
+# Interface VPC Endpoints - allow Lambda in private subnets to reach AWS services
+locals {
+  interface_endpoints = {
+    secretsmanager = "com.amazonaws.${var.aws_region}.secretsmanager"
+    ecr_api        = "com.amazonaws.${var.aws_region}.ecr.api"
+    ecr_dkr        = "com.amazonaws.${var.aws_region}.ecr.dkr"
+    logs           = "com.amazonaws.${var.aws_region}.logs"
+  }
+  endpoint_subnet_ids = (
+    length(local.private_subnet_ids) > 0 && var.enable_single_az_endpoints
+    ? [local.private_subnet_ids[0]]
+    : local.private_subnet_ids
+  )
+}
+
+resource "aws_security_group" "vpc_endpoints" {
+  count = var.create_vpc_endpoints ? 1 : 0
+
+  name        = "${var.prefix}-vpc-endpoints-sg"
+  description = "Security group for VPC interface endpoints"
+  vpc_id      = local.vpc_id
+
+  ingress {
+    description = "HTTPS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [local.vpc_cidr_block]
+  }
+
+  egress {
+    description = "Allow all outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.prefix}-vpc-endpoints-sg"
+  }
+}
+
+resource "aws_vpc_endpoint" "interface" {
+  for_each = var.create_vpc_endpoints ? local.interface_endpoints : {}
+
+  vpc_id              = local.vpc_id
+  service_name        = each.value
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = local.endpoint_subnet_ids
+  security_group_ids  = [aws_security_group.vpc_endpoints[0].id]
+  private_dns_enabled = true
+
+  tags = {
+    Name = "${var.prefix}-${each.key}-endpoint"
   }
 }
 

@@ -85,7 +85,7 @@ If you need to manually configure a domain after deployment:
 ```bash
 # Update zappa_settings.json with domain and certificate
 cd backend
-poetry run zappa certify production --yes
+poetry run zappa certify prod --yes
 ```
 
 ## DNS Configuration
@@ -95,7 +95,7 @@ After deployment with a custom domain:
 1. Get the API Gateway domain name:
 
    ```bash
-   poetry run zappa status production | grep "Domain"
+   poetry run zappa status prod | grep "Domain"
    ```
 
 2. Create a CNAME record in your DNS:

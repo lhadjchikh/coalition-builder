@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 
 from django.test import TestCase, override_settings
 
-from coalition.core.storage import MediaStorage
+from coalition.core.storage import MediaStorage, StaticStorage
 
 
 class MediaStorageTest(TestCase):
@@ -84,9 +84,18 @@ class MediaStorageTest(TestCase):
         mock_logger.error.assert_any_call("Error checking AWS credentials: Test error")
 
     @override_settings(AWS_S3_REGION_NAME="us-test-1")
-    def test_get_boto3_session(self) -> None:
-        """Test that _get_boto3_session creates session with correct region."""
+    def test_create_session_uses_default_credential_chain(self) -> None:
+        """Test that _create_session omits explicit credentials for IAM roles."""
         storage = MediaStorage()
         with patch("coalition.core.storage.boto3.Session") as mock_session:
-            storage._get_boto3_session()
+            storage._create_session()
             mock_session.assert_called_once_with(region_name="us-test-1")
+
+
+class StaticStorageTest(TestCase):
+    """Test custom StaticStorage backend."""
+
+    def test_static_storage_no_acl(self) -> None:
+        """Test that StaticStorage does not set ACLs (bucket disallows them)."""
+        storage = StaticStorage()
+        assert storage.default_acl is None
