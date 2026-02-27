@@ -71,3 +71,21 @@ class MediaStorage(S3Boto3Storage):
         return boto3.Session(
             region_name=settings.AWS_S3_REGION_NAME,
         )
+
+
+class StaticStorage(S3Boto3Storage):
+    """S3 storage for static files in Lambda/ECS environments.
+
+    Overrides _get_boto3_session to use the default credential chain
+    instead of explicit None credentials from django-storages settings.
+    """
+
+    location = "static"
+    default_acl = "public-read"
+    querystring_auth = False
+
+    def _get_boto3_session(self) -> Any:
+        """Create a boto3 session using the default credential chain."""
+        return boto3.Session(
+            region_name=settings.AWS_S3_REGION_NAME,
+        )

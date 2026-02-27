@@ -691,7 +691,7 @@ if (
     == "true"
 ):
     STORAGES["staticfiles"] = {
-        "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
+        "BACKEND": "coalition.core.storage.StaticStorage",
     }
 
 # AWS S3 Configuration
