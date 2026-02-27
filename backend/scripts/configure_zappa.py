@@ -77,8 +77,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         ]
         if missing:
             raise RuntimeError(
-                "Missing required env var(s) in CI: "
-                + ", ".join(missing),
+                "Missing required env var(s) in CI: " + ", ".join(missing),
             )
 
     # Docker image configuration
