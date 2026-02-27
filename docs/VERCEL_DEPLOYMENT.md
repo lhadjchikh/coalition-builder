@@ -62,12 +62,23 @@ Add these as **repository variables** (or environment-specific):
 
 ## Environment Variables in Vercel
 
-The deployment workflow automatically sets these environment variables:
+### Build-Time Variables (set by CI workflow)
+
+The GitHub Actions deployment workflow sets these `NEXT_PUBLIC_*` variables at build time. They are baked into the JavaScript bundle and cannot be changed without rebuilding:
 
 - `NEXT_PUBLIC_API_URL`: Backend API URL (Lambda/API Gateway)
 - `NEXT_PUBLIC_ENVIRONMENT`: Current environment (dev/staging/production)
 - `NEXT_PUBLIC_SITE_URL`: Frontend URL
 - `NEXT_PUBLIC_GOOGLE_ANALYTICS_ID`: Google Analytics ID
+
+### Runtime Variables (set in Vercel dashboard)
+
+These variables must be set directly in the Vercel project settings (Settings > Environment Variables) because they are read at runtime by the Next.js server, not baked in at build time:
+
+- `API_URL`: The API Gateway invoke URL including the stage path (e.g., `https://abc123.execute-api.us-east-1.amazonaws.com/prod`). Used by `next.config.js` server-side rewrites to proxy `/api/*` requests to the Lambda backend.
+- `AWS_STORAGE_BUCKET_NAME`: The S3 bucket name for production assets (e.g., `coalition-static-assets-a4853294`). Used by `next.config.js` `remotePatterns` to allow Next.js image optimization for S3-hosted media files.
+
+**Important:** These runtime variables are not set by the CI workflow — they must be configured manually in the Vercel dashboard for each environment (Production, Preview, Development).
 
 ## Deployment Workflow
 
@@ -105,7 +116,7 @@ Add these records to your DNS provider:
 
 #### For Apex Domain (yourdomain.com)
 
-```
+```text
 Type: A
 Name: @
 Value: 76.76.21.21
@@ -113,7 +124,7 @@ Value: 76.76.21.21
 
 #### For Subdomain (<www.yourdomain.com>)
 
-```
+```text
 Type: CNAME
 Name: www
 Value: cname.vercel-dns.com
@@ -121,19 +132,33 @@ Value: cname.vercel-dns.com
 
 ## API Endpoint Configuration
 
-The frontend automatically routes `/api/*` requests to your Lambda backend:
+The frontend proxies `/api/*` requests to the Lambda backend using **server-side rewrites** in `next.config.js`, controlled by the `API_URL` environment variable:
 
 ```javascript
-// vercel.json rewrites configuration
-{
-  "rewrites": [
+// next.config.js rewrites configuration
+async rewrites() {
+  return [
     {
-      "source": "/api/:path*",
-      "destination": "https://api.yourdomain.com/:path*"
-    }
-  ]
-}
+      source: "/api/:path*",
+      destination: `${process.env.API_URL || "http://localhost:8000"}/api/:path*`,
+    },
+  ];
+},
 ```
+
+Set `API_URL` in the Vercel dashboard (see [Runtime Variables](#runtime-variables-set-in-vercel-dashboard) above) to your API Gateway invoke URL including the stage path, e.g., `https://abc123.execute-api.us-east-1.amazonaws.com/prod`.
+
+> **Note:** Do **not** add API rewrites to `vercel.json`. Vercel edge rewrites do not properly set the `Host` header for API Gateway URLs, which causes CloudFront to return `403 Forbidden`. The `next.config.js` server-side rewrites handle this correctly.
+
+## Media Files
+
+Uploaded media (organization logos, hero images, content block images) are stored in the S3 assets bucket under `media/`. The Django admin uploads files via `MediaStorage`, and the frontend fetches these URLs from the API.
+
+If you are setting up a fresh deployment or migrating to a new environment, ensure that:
+
+1. The S3 assets bucket exists and is accessible
+2. Any required media files are uploaded to the `media/` prefix in the bucket
+3. `AWS_STORAGE_BUCKET_NAME` is set in both the Lambda environment and the Vercel dashboard (for image optimization)
 
 ## Preview Deployments
 
@@ -232,8 +257,8 @@ Common issues:
 
 ### 404 Errors
 
-- Check `vercel.json` rewrites
-- Verify API URL configuration
+- Verify `API_URL` is set correctly in Vercel dashboard
+- Check `next.config.js` rewrites configuration
 - Check Next.js routing
 
 ### CORS Issues

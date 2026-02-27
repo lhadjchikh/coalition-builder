@@ -123,12 +123,24 @@ AWS_DEFAULT_REGION=us-east-1
 
 #### Vercel Environment Variables
 
+**Build-time variables** (set by CI workflow, baked into the JS bundle):
+
 ```bash
-# Public variables (prefixed with NEXT_PUBLIC_)
 NEXT_PUBLIC_API_URL=https://api.yourdomain.com
 NEXT_PUBLIC_ENVIRONMENT=production
 NEXT_PUBLIC_SITE_URL=https://yourdomain.com
 NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
+```
+
+**Runtime variables** (set in the Vercel dashboard under project Settings > Environment Variables):
+
+```bash
+# API Gateway invoke URL including stage path — used by next.config.js
+# server-side rewrites to proxy /api/* requests to the Lambda backend
+API_URL=https://abc123.execute-api.us-east-1.amazonaws.com/prod
+
+# S3 bucket name — used by next.config.js remotePatterns for image optimization
+AWS_STORAGE_BUCKET_NAME=coalition-static-assets-a4853294
 ```
 
 #### GitHub Environment Variables
