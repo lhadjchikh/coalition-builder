@@ -218,8 +218,56 @@ resource "aws_iam_policy" "zappa_deployment" {
   })
 }
 
+# IAM policy for Lambda to read secrets at runtime
+resource "aws_iam_policy" "lambda_secrets" {
+  count = length(var.secret_arns) > 0 ? 1 : 0
+
+  name        = "${var.prefix}-lambda-secrets"
+  description = "Allow Lambda to read Secrets Manager secrets"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = concat(
+      [
+        {
+          Effect   = "Allow"
+          Action   = "secretsmanager:GetSecretValue"
+          Resource = var.secret_arns
+        }
+      ],
+      var.secrets_kms_key_arn != "" ? [
+        {
+          Effect   = "Allow"
+          Action   = "kms:Decrypt"
+          Resource = var.secrets_kms_key_arn
+          Condition = {
+            StringEquals = {
+              "kms:ViaService" = "secretsmanager.${var.aws_region}.amazonaws.com"
+            }
+          }
+        }
+      ] : []
+    )
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_secrets" {
+  count = length(var.secret_arns) > 0 ? 1 : 0
+
+  role       = aws_iam_role.zappa_deployment.name
+  policy_arn = aws_iam_policy.lambda_secrets[0].arn
+}
+
 # Attach the policy to the role
 resource "aws_iam_role_policy_attachment" "zappa_deployment" {
   role       = aws_iam_role.zappa_deployment.name
   policy_arn = aws_iam_policy.zappa_deployment.arn
+}
+
+# AWS managed policy for Lambda VPC access (ENI permissions)
+resource "aws_iam_role_policy_attachment" "lambda_vpc_access" {
+  count = var.create_lambda_sg ? 1 : 0
+
+  role       = aws_iam_role.zappa_deployment.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
