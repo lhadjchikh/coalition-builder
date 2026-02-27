@@ -65,6 +65,22 @@ def configure_zappa_settings() -> None:
     db_secret_arn = get_env_or_default("DATABASE_SECRET_ARN", "")
     django_secret_arn = get_env_or_default("DJANGO_SECRET_ARN", "")
 
+    # Fail fast in CI if secret ARNs are missing
+    if os.environ.get("CI"):
+        missing = [
+            name
+            for name, value in (
+                ("DATABASE_SECRET_ARN", db_secret_arn),
+                ("DJANGO_SECRET_ARN", django_secret_arn),
+            )
+            if not value
+        ]
+        if missing:
+            raise RuntimeError(
+                "Missing required env var(s) in CI: "
+                + ", ".join(missing),
+            )
+
     # Docker image configuration
     # USE_CUSTOM_DOCKER=true: deploy as container image (docker_image_uri)
     # USE_CUSTOM_DOCKER=false: package inside Docker, deploy as zip (docker_image)
@@ -95,7 +111,10 @@ def configure_zappa_settings() -> None:
                 "SubnetIds": vpc_subnet_ids,
                 "SecurityGroupIds": vpc_security_group_ids,
             },
-            "role_name": "coalition-zappa-deployment",
+            "role_name": get_env_or_default(
+                "ZAPPA_ROLE_NAME",
+                "coalition-zappa-deployment",
+            ),
             "timeout_seconds": 30,
             "slim_handler": False,
             "use_precompiled_packages": False,

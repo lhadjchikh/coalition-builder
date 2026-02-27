@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import patch
 
+import pytest
+
 from scripts.configure_zappa import configure_zappa_settings
 
 
@@ -48,10 +50,15 @@ class TestRoleName:
         settings = _generate_settings(tmp_path)
         assert "role_name" in settings["base"]
 
-    def test_role_name_is_coalition_zappa_deployment(self, tmp_path: Path) -> None:
-        """role_name should be set to the Terraform-managed role."""
+    def test_role_name_default(self, tmp_path: Path) -> None:
+        """role_name should default to the Terraform-managed role."""
         settings = _generate_settings(tmp_path)
         assert settings["base"]["role_name"] == "coalition-zappa-deployment"
+
+    def test_role_name_configurable_via_env_var(self, tmp_path: Path) -> None:
+        """role_name should be configurable via ZAPPA_ROLE_NAME env var."""
+        settings = _generate_settings(tmp_path, {"ZAPPA_ROLE_NAME": "my-custom-role"})
+        assert settings["base"]["role_name"] == "my-custom-role"
 
 
 class TestDefaultSecretARNs:
@@ -108,3 +115,56 @@ class TestProvidedSecretARNs:
             {"DJANGO_SECRET_ARN": arn},
         )
         assert settings["prod"]["aws_environment_variables"]["SECRET_KEY"] == arn
+
+
+class TestCIValidation:
+    """Tests for CI environment validation of required env vars."""
+
+    _arn = "arn:aws:secretsmanager:us-east-1:123:secret:x"
+
+    def test_ci_raises_when_database_secret_arn_missing(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """In CI, missing DATABASE_SECRET_ARN should raise."""
+        with pytest.raises(RuntimeError, match="DATABASE_SECRET_ARN"):
+            _generate_settings(
+                tmp_path,
+                {"CI": "true", "DJANGO_SECRET_ARN": self._arn},
+            )
+
+    def test_ci_raises_when_django_secret_arn_missing(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """In CI, missing DJANGO_SECRET_ARN should raise."""
+        with pytest.raises(RuntimeError, match="DJANGO_SECRET_ARN"):
+            _generate_settings(
+                tmp_path,
+                {"CI": "true", "DATABASE_SECRET_ARN": self._arn},
+            )
+
+    def test_ci_succeeds_when_both_arns_provided(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """In CI, providing both ARNs should not raise."""
+        settings = _generate_settings(
+            tmp_path,
+            {
+                "CI": "true",
+                "DATABASE_SECRET_ARN": self._arn,
+                "DJANGO_SECRET_ARN": self._arn,
+            },
+        )
+        db_url = settings["prod"]["aws_environment_variables"]
+        assert db_url["DATABASE_URL"] != ""
+
+    def test_non_ci_allows_empty_arns(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Outside CI, empty ARNs should be allowed."""
+        settings = _generate_settings(tmp_path)
+        db_url = settings["dev"]["aws_environment_variables"]
+        assert db_url["DATABASE_URL"] == ""
