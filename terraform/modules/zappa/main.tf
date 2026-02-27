@@ -249,6 +249,11 @@ resource "aws_iam_policy" "lambda_secrets" {
           Effect   = "Allow"
           Action   = "kms:Decrypt"
           Resource = var.secrets_kms_key_arn
+          Condition = {
+            StringEquals = {
+              "kms:ViaService" = "secretsmanager.${var.aws_region}.amazonaws.com"
+            }
+          }
         }
       ] : []
     )
