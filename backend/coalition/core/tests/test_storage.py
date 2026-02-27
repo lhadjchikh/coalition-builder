@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 
 from django.test import TestCase, override_settings
 
-from coalition.core.storage import MediaStorage
+from coalition.core.storage import MediaStorage, StaticStorage
 
 
 class MediaStorageTest(TestCase):
@@ -90,3 +90,12 @@ class MediaStorageTest(TestCase):
         with patch("coalition.core.storage.boto3.Session") as mock_session:
             storage._create_session()
             mock_session.assert_called_once_with(region_name="us-test-1")
+
+
+class StaticStorageTest(TestCase):
+    """Test custom StaticStorage backend."""
+
+    def test_static_storage_no_acl(self) -> None:
+        """Test that StaticStorage does not set ACLs (bucket disallows them)."""
+        storage = StaticStorage()
+        assert storage.default_acl is None

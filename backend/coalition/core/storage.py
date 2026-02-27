@@ -85,5 +85,5 @@ class StaticStorage(DefaultCredentialChainMixin, S3Boto3Storage):
     """S3 storage for static files in Lambda/ECS environments."""
 
     location = "static"
-    default_acl = "public-read"
+    default_acl = None
     querystring_auth = False
