@@ -681,6 +681,19 @@ STORAGES = {
     },
 }
 
+# Override staticfiles storage for Lambda (S3 instead of whitenoise)
+if (
+    os.environ.get("AWS_LAMBDA_FUNCTION_NAME")
+    and os.environ.get(
+        "USE_S3",
+        "false",
+    ).lower()
+    == "true"
+):
+    STORAGES["staticfiles"] = {
+        "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
+    }
+
 # AWS S3 Configuration
 AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "")
 AWS_S3_REGION_NAME = os.getenv("AWS_REGION", "us-east-1")
