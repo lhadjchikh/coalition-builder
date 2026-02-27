@@ -682,14 +682,7 @@ STORAGES = {
 }
 
 # Override staticfiles storage for Lambda (S3 instead of whitenoise)
-if (
-    os.environ.get("AWS_LAMBDA_FUNCTION_NAME")
-    and os.environ.get(
-        "USE_S3",
-        "false",
-    ).lower()
-    == "true"
-):
+if IS_LAMBDA and os.environ.get("USE_S3", "false").lower() == "true":
     STORAGES["staticfiles"] = {
         "BACKEND": "coalition.core.storage.StaticStorage",
     }
