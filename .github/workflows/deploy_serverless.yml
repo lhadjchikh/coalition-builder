@@ -121,6 +121,8 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           VPC_SUBNET_IDS: ${{ vars.VPC_SUBNET_IDS }}
           VPC_SECURITY_GROUP_IDS: ${{ vars.VPC_SECURITY_GROUP_IDS }}
+          DATABASE_SECRET_ARN: ${{ secrets.DATABASE_SECRET_ARN }}
+          DJANGO_SECRET_ARN: ${{ secrets.DJANGO_SECRET_ARN }}
         run: |
           poetry run python scripts/configure_zappa.py
 

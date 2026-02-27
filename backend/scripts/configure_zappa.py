@@ -15,7 +15,7 @@ def get_env_or_default(key: str, default: str = "") -> str:
     return os.environ.get(key, default)
 
 
-def configure_zappa_settings() -> None:
+def configure_zappa_settings(output_path: Path | None = None) -> None:
     """Generate zappa_settings.json from environment variables."""
 
     # Get AWS account details
@@ -61,15 +61,24 @@ def configure_zappa_settings() -> None:
     vpc_subnet_ids = [s.strip() for s in vpc_subnet_ids if s.strip()]
     vpc_security_group_ids = [s.strip() for s in vpc_security_group_ids if s.strip()]
 
-    # Get secret ARNs
-    db_secret_arn = get_env_or_default(
-        "DATABASE_SECRET_ARN",
-        f"arn:aws:secretsmanager:{aws_region}:{aws_account_id}:secret:coalition-database-*",
-    )
-    django_secret_arn = get_env_or_default(
-        "DJANGO_SECRET_ARN",
-        f"arn:aws:secretsmanager:{aws_region}:{aws_account_id}:secret:coalition-django-*",
-    )
+    # Get secret ARNs (empty default = local dev; CI provides real ARNs)
+    db_secret_arn = get_env_or_default("DATABASE_SECRET_ARN", "")
+    django_secret_arn = get_env_or_default("DJANGO_SECRET_ARN", "")
+
+    # Fail fast in CI if secret ARNs are missing
+    if os.environ.get("CI"):
+        missing = [
+            name
+            for name, value in (
+                ("DATABASE_SECRET_ARN", db_secret_arn),
+                ("DJANGO_SECRET_ARN", django_secret_arn),
+            )
+            if not value
+        ]
+        if missing:
+            raise RuntimeError(
+                "Missing required env var(s) in CI: " + ", ".join(missing),
+            )
 
     # Docker image configuration
     # USE_CUSTOM_DOCKER=true: deploy as container image (docker_image_uri)
@@ -101,6 +110,10 @@ def configure_zappa_settings() -> None:
                 "SubnetIds": vpc_subnet_ids,
                 "SecurityGroupIds": vpc_security_group_ids,
             },
+            "role_name": get_env_or_default(
+                "ZAPPA_ROLE_NAME",
+                "coalition-zappa-deployment",
+            ),
             "timeout_seconds": 30,
             "slim_handler": False,
             "use_precompiled_packages": False,
@@ -212,7 +225,7 @@ def configure_zappa_settings() -> None:
     }
 
     # Write the configuration with Prettier-compatible formatting
-    config_path = Path(__file__).parent.parent / "zappa_settings.json"
+    config_path = output_path or Path(__file__).parent.parent / "zappa_settings.json"
     with open(config_path, "w") as f:
         # Add trailing newline for Prettier compatibility
         json.dump(settings, f, indent=2)
