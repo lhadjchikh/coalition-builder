@@ -28,9 +28,12 @@ def _generate_settings(
             return real_open(output_file, mode, **kwargs)
         return real_open(path, mode, **kwargs)
 
-    with patch.dict("os.environ", env, clear=True), patch(
-        "builtins.open",
-        side_effect=fake_open,
+    with (
+        patch.dict("os.environ", env, clear=True),
+        patch(
+            "builtins.open",
+            side_effect=fake_open,
+        ),
     ):
         configure_zappa_settings()
 
