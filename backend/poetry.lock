@@ -477,13 +477,13 @@ typing_extensions = ">=3.10.0.0"
 
 [[package]]
 name = "django"
-version = "5.2.7"
+version = "5.2.11"
 description = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "django-5.2.7-py3-none-any.whl", hash = "sha256:59a13a6515f787dec9d97a0438cd2efac78c8aca1c80025244b0fe507fe0754b"},
-    {file = "django-5.2.7.tar.gz", hash = "sha256:e0f6f12e2551b1716a95a63a1366ca91bbcd7be059862c1b18f989b1da356cdd"},
+    {file = "django-5.2.11-py3-none-any.whl", hash = "sha256:e7130df33ada9ab5e5e929bc19346a20fe383f5454acb2cc004508f242ee92c0"},
+    {file = "django-5.2.11.tar.gz", hash = "sha256:7f2d292ad8b9ee35e405d965fbbad293758b858c34bbf7f3df551aeeac6f02d3"},
 ]
 
 [package.dependencies]
@@ -2669,4 +2669,4 @@ wheel = "*"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.13"
-content-hash = "aa1b43f814e4d1ba1f2d3468d2a30ad8123dec1b78258dbe8b9c8f25aaa2d608"
+content-hash = "f945e748fcacff28975caeddb8ed455febf237ae2803961e5678eecc2a3efeee"
