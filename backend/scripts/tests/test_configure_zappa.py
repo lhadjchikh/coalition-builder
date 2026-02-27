@@ -15,12 +15,7 @@ def _generate_settings(
     env_vars: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Run configure_zappa_settings and return parsed output."""
-    env: dict[str, str] = {
-        "DATABASE_URL": "",
-        "SECRET_KEY": "",
-    }
-    if env_vars:
-        env.update(env_vars)
+    env: dict[str, str] = dict(env_vars) if env_vars else {}
 
     output_file = tmp_path / "zappa_settings.json"
     real_open = open
