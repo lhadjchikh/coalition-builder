@@ -14,13 +14,13 @@ logger = logging.getLogger(__name__)
 class DefaultCredentialChainMixin:
     """Mixin that uses the default boto3 credential chain.
 
-    Overrides _get_boto3_session to create a plain boto3.Session with only
+    Overrides _create_session to create a plain boto3.Session with only
     region_name, so Lambda execution role and ECS task role credentials are
     picked up automatically instead of being overridden by explicit None
     values from django-storages settings.
     """
 
-    def _get_boto3_session(self) -> Any:
+    def _create_session(self) -> Any:
         """Create a boto3 session using the default credential chain."""
         return boto3.Session(
             region_name=settings.AWS_S3_REGION_NAME,
