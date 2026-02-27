@@ -20,7 +20,7 @@ class LambdaStorageSettingsTest(TestCase):
         os.environ.update(self.original_env)
 
     def test_staticfiles_storage_uses_s3_in_lambda(self) -> None:
-        """When IS_LAMBDA=true and USE_S3=true, staticfiles backend must be S3."""
+        """Staticfiles backend must use S3 when in Lambda with USE_S3=true."""
         from coalition.core import settings as settings_module
 
         with patch.dict(
@@ -38,5 +38,5 @@ class LambdaStorageSettingsTest(TestCase):
 
             staticfiles_backend = settings_module.STORAGES["staticfiles"]["BACKEND"]
             assert (
-                staticfiles_backend == "storages.backends.s3boto3.S3StaticStorage"
-            ), f"Expected S3StaticStorage for Lambda, got {staticfiles_backend}"
+                staticfiles_backend == "coalition.core.storage.StaticStorage"
+            ), f"Expected StaticStorage for Lambda, got {staticfiles_backend}"
