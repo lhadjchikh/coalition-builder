@@ -50,7 +50,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
     staging_db_name = get_env_or_default("STAGING_DB_NAME", "coalition_staging")
     production_db_name = get_env_or_default(
         "PRODUCTION_DB_NAME",
-        "coalition_production",
+        "coalition",
     )
 
     # Get VPC configuration (optional)
