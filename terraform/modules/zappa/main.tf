@@ -120,7 +120,10 @@ resource "aws_iam_role" "zappa_deployment" {
         Action = "sts:AssumeRole"
         Effect = "Allow"
         Principal = {
-          Service = "lambda.amazonaws.com"
+          Service = [
+            "lambda.amazonaws.com",
+            "events.amazonaws.com"
+          ]
         }
       }
     ]
