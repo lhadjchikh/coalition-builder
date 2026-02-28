@@ -50,9 +50,7 @@ const Footer: React.FC<FooterProps> = ({
                       priority
                     />
                   </div>
-                  <span
-                    className="font-theme-heading text-white font-semibold text-base sm:text-lg leading-tight truncate"
-                  >
+                  <span className="font-theme-heading text-white font-semibold text-base sm:text-lg leading-tight truncate">
                     {orgInfo.organization_name}
                   </span>
                 </Link>

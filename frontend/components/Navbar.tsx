@@ -21,7 +21,7 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({
   organizationName = "Coalition Builder",
   logoUrl,
-  logoAltText,
+  logoAltText: _logoAltText,
   navItems = [],
   className,
   currentView: _currentView,
@@ -174,9 +174,7 @@ const Navbar: React.FC<NavbarProps> = ({
                       priority
                     />
                   </div>
-                  <span
-                    className="font-theme-heading text-white font-semibold text-base sm:text-lg lg:text-xl leading-tight drop-shadow-lg truncate"
-                  >
+                  <span className="font-theme-heading text-white font-semibold text-base sm:text-lg lg:text-xl leading-tight drop-shadow-lg truncate">
                     {organizationName}
                   </span>
                 </div>
