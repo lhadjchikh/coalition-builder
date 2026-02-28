@@ -22,7 +22,7 @@ from coalition.test_base import BaseTestCase
 
 
 class EndorsementApprovalLifecycleTest(BaseTestCase):
-    """Test the complete endorsement approval lifecycle end-to-end via API."""
+    """Test the complete endorsement approval lifecycle as an integrated workflow."""
 
     def setUp(self) -> None:
         super().setUp()
