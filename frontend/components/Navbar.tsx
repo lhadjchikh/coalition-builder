@@ -162,7 +162,7 @@ const Navbar: React.FC<NavbarProps> = ({
               onClick={closeMenu}
             >
               {logoUrl ? (
-                <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                   <div className="relative h-14 w-14 sm:h-16 sm:w-16 lg:h-20 lg:w-20 flex-shrink-0">
                     <Image
                       src={logoUrl}
@@ -175,7 +175,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     />
                   </div>
                   <span
-                    className="font-theme-heading text-white font-semibold text-base sm:text-lg lg:text-xl leading-tight drop-shadow-lg"
+                    className="font-theme-heading text-white font-semibold text-base sm:text-lg lg:text-xl leading-tight drop-shadow-lg truncate"
                   >
                     {organizationName}
                   </span>

@@ -37,7 +37,7 @@ const Footer: React.FC<FooterProps> = ({
               {orgInfo.theme?.logo_url ? (
                 <Link
                   href="/"
-                  className="mb-3 transition-all duration-300 transform hover:scale-105 flex items-center gap-2 sm:gap-3"
+                  className="mb-3 transition-all duration-300 transform hover:scale-105 flex items-center gap-2 sm:gap-3 min-w-0"
                 >
                   <div className="relative h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16 flex-shrink-0">
                     <Image
@@ -51,7 +51,7 @@ const Footer: React.FC<FooterProps> = ({
                     />
                   </div>
                   <span
-                    className="font-theme-heading text-white font-semibold text-base sm:text-lg leading-tight"
+                    className="font-theme-heading text-white font-semibold text-base sm:text-lg leading-tight truncate"
                   >
                     {orgInfo.organization_name}
                   </span>
