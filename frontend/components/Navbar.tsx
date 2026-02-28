@@ -153,7 +153,7 @@ const Navbar: React.FC<NavbarProps> = ({
   return (
     <nav className={getNavbarClasses()}>
       <div className="max-w-7xl mx-auto container-padding">
-        <div className="flex items-center justify-between h-20 sm:h-24">
+        <div className="flex items-center justify-between h-24 sm:h-28">
           {/* Brand */}
           <div className="flex-shrink-0 min-w-0 mr-3 sm:mr-4 max-w-[calc(100%-56px)] sm:max-w-none">
             <Link
@@ -162,15 +162,23 @@ const Navbar: React.FC<NavbarProps> = ({
               onClick={closeMenu}
             >
               {logoUrl ? (
-                <div className="relative h-14 sm:h-16 lg:h-20 w-36 sm:w-44 lg:w-56">
-                  <Image
-                    src={logoUrl}
-                    alt={logoAltText || `${organizationName} logo`}
-                    fill
-                    className="object-contain"
-                    sizes="(max-width: 640px) 144px, (max-width: 1024px) 176px, 224px"
-                    priority
-                  />
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="relative h-14 w-14 sm:h-16 sm:w-16 lg:h-20 lg:w-20 flex-shrink-0">
+                    <Image
+                      src={logoUrl}
+                      alt={logoAltText || `${organizationName} logo`}
+                      fill
+                      className="object-contain"
+                      sizes="(max-width: 640px) 56px, (max-width: 1024px) 64px, 80px"
+                      priority
+                    />
+                  </div>
+                  <span
+                    className="text-white font-semibold text-base sm:text-lg lg:text-xl leading-tight drop-shadow-lg"
+                    style={{ fontFamily: "var(--theme-font-heading)" }}
+                  >
+                    {organizationName}
+                  </span>
                 </div>
               ) : (
                 organizationName
