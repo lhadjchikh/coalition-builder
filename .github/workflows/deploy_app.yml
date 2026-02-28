@@ -266,8 +266,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache-api
-          key: ${{ runner.os }}-buildx-api-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-api-${{ hashFiles('backend/Dockerfile', 'backend/pyproject.toml', 'backend/poetry.lock') }}-${{ github.run_id }}
           restore-keys: |
+            ${{ runner.os }}-buildx-api-${{ hashFiles('backend/Dockerfile', 'backend/pyproject.toml', 'backend/poetry.lock') }}-
             ${{ runner.os }}-buildx-api-
 
       # Cache Docker layers for App (frontend) builds
@@ -275,8 +276,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache-app
-          key: ${{ runner.os }}-buildx-app-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-app-${{ hashFiles('frontend/Dockerfile', 'frontend/package-lock.json') }}-${{ github.run_id }}
           restore-keys: |
+            ${{ runner.os }}-buildx-app-${{ hashFiles('frontend/Dockerfile', 'frontend/package-lock.json') }}-
             ${{ runner.os }}-buildx-app-
 
       # Build and push the Django API Docker image with layer caching
