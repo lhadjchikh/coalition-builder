@@ -42,10 +42,8 @@ const Footer: React.FC<FooterProps> = ({
                   <div className="relative h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16 flex-shrink-0">
                     <Image
                       src={orgInfo.theme.logo_url}
-                      alt={
-                        orgInfo.theme.logo_alt_text ||
-                        `${orgInfo.organization_name} logo`
-                      }
+                      alt=""
+                      aria-hidden="true"
                       fill
                       className="object-contain"
                       sizes="(max-width: 640px) 48px, (max-width: 1024px) 56px, 64px"

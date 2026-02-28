@@ -166,7 +166,8 @@ const Navbar: React.FC<NavbarProps> = ({
                   <div className="relative h-14 w-14 sm:h-16 sm:w-16 lg:h-20 lg:w-20 flex-shrink-0">
                     <Image
                       src={logoUrl}
-                      alt={logoAltText || `${organizationName} logo`}
+                      alt=""
+                      aria-hidden="true"
                       fill
                       className="object-contain"
                       sizes="(max-width: 640px) 56px, (max-width: 1024px) 64px, 80px"
