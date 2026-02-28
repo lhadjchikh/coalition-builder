@@ -53,8 +53,7 @@ const Footer: React.FC<FooterProps> = ({
                     />
                   </div>
                   <span
-                    className="text-white font-semibold text-base sm:text-lg leading-tight"
-                    style={{ fontFamily: "var(--theme-font-heading)" }}
+                    className="font-theme-heading text-white font-semibold text-base sm:text-lg leading-tight"
                   >
                     {orgInfo.organization_name}
                   </span>

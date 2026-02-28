@@ -174,8 +174,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     />
                   </div>
                   <span
-                    className="text-white font-semibold text-base sm:text-lg lg:text-xl leading-tight drop-shadow-lg"
-                    style={{ fontFamily: "var(--theme-font-heading)" }}
+                    className="font-theme-heading text-white font-semibold text-base sm:text-lg lg:text-xl leading-tight drop-shadow-lg"
                   >
                     {organizationName}
                   </span>
