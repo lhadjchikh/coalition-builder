@@ -30,8 +30,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-fullstack-${{ hashFiles('backend/Dockerfile', 'backend/pyproject.toml', 'backend/poetry.lock', 'frontend/Dockerfile', 'frontend/package-lock.json') }}
+          key: ${{ runner.os }}-buildx-fullstack-${{ hashFiles('backend/Dockerfile', 'backend/pyproject.toml', 'backend/poetry.lock', 'frontend/Dockerfile', 'frontend/package-lock.json') }}-${{ github.run_id }}
           restore-keys: |
+            ${{ runner.os }}-buildx-fullstack-${{ hashFiles('backend/Dockerfile', 'backend/pyproject.toml', 'backend/poetry.lock', 'frontend/Dockerfile', 'frontend/package-lock.json') }}-
             ${{ runner.os }}-buildx-fullstack-
 
       # Build the Docker images with caching
