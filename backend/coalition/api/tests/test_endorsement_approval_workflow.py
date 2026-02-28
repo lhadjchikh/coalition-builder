@@ -82,6 +82,7 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
 
         # Endorsement should NOT appear in public list
         response = self.client.get("/api/endorsements/")
+        assert response.status_code == 200
         assert len(response.json()) == 0
 
         # Step 2: Verify email
@@ -95,6 +96,7 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
 
         # Still NOT in public list (not yet approved)
         response = self.client.get("/api/endorsements/")
+        assert response.status_code == 200
         assert len(response.json()) == 0
 
         # Step 3: Admin approves
@@ -111,6 +113,7 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
         # Still NOT in public list (display_publicly not set by admin)
         self.client.logout()
         response = self.client.get("/api/endorsements/")
+        assert response.status_code == 200
         assert len(response.json()) == 0
 
         # Step 4: Admin selects for public display
@@ -119,6 +122,7 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
 
         # NOW it appears in public list
         response = self.client.get("/api/endorsements/")
+        assert response.status_code == 200
         data = response.json()
         assert len(data) == 1
         assert data[0]["id"] == endorsement_id
@@ -141,6 +145,7 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
 
         # Still not publicly displayed until admin selects for display
         response = self.client.get("/api/endorsements/")
+        assert response.status_code == 200
         assert len(response.json()) == 0
 
         # Admin selects for display
@@ -148,6 +153,7 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
         endorsement.save()
 
         response = self.client.get("/api/endorsements/")
+        assert response.status_code == 200
         assert len(response.json()) == 1
 
     def test_rejected_endorsement_never_displayed(self) -> None:
@@ -157,7 +163,8 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
 
         # Verify email
         token = str(endorsement.verification_token)
-        self.client.post(f"/api/endorsements/verify/{token}/")
+        response = self.client.post(f"/api/endorsements/verify/{token}/")
+        assert response.status_code == 200
 
         # Admin rejects
         self.client.force_login(self.admin_user)
@@ -175,6 +182,7 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
 
         self.client.logout()
         response = self.client.get("/api/endorsements/")
+        assert response.status_code == 200
         assert len(response.json()) == 0
 
     def test_pending_and_verified_appear_in_admin_pending_list(self) -> None:
@@ -515,6 +523,7 @@ class ApprovalWorkflowDisplayConditionsTest(BaseTestCase):
 
         # Initially visible
         response = self.client.get("/api/endorsements/")
+        assert response.status_code == 200
         assert len(response.json()) == 1
 
         # User withdraws consent
@@ -522,6 +531,7 @@ class ApprovalWorkflowDisplayConditionsTest(BaseTestCase):
         endorsement.save()
 
         response = self.client.get("/api/endorsements/")
+        assert response.status_code == 200
         assert len(response.json()) == 0
 
     def test_admin_removes_from_display_hides_endorsement(self) -> None:
@@ -541,6 +551,7 @@ class ApprovalWorkflowDisplayConditionsTest(BaseTestCase):
 
         # Initially visible
         response = self.client.get("/api/endorsements/")
+        assert response.status_code == 200
         assert len(response.json()) == 1
 
         # Admin removes from display
@@ -548,4 +559,5 @@ class ApprovalWorkflowDisplayConditionsTest(BaseTestCase):
         endorsement.save()
 
         response = self.client.get("/api/endorsements/")
+        assert response.status_code == 200
         assert len(response.json()) == 0
