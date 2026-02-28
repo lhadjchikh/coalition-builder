@@ -25,8 +25,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-backend-${{ hashFiles('backend/Dockerfile', 'backend/pyproject.toml', 'backend/poetry.lock') }}
+          key: ${{ runner.os }}-buildx-backend-${{ hashFiles('backend/Dockerfile', 'backend/pyproject.toml', 'backend/poetry.lock') }}-${{ github.run_id }}
           restore-keys: |
+            ${{ runner.os }}-buildx-backend-${{ hashFiles('backend/Dockerfile', 'backend/pyproject.toml', 'backend/poetry.lock') }}-
             ${{ runner.os }}-buildx-backend-
 
       # Build the Docker image with caching
