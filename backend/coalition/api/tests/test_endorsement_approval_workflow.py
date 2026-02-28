@@ -17,18 +17,8 @@ from django.test import Client, override_settings
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.models import Endorsement
+from coalition.endorsements.tests.utils import get_valid_form_metadata
 from coalition.test_base import BaseTestCase
-
-
-def get_valid_form_metadata() -> dict[str, str]:
-    """Return valid form metadata for testing"""
-    return {
-        "timestamp": "2024-01-01T10:00:00Z",
-        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        "referrer": "https://example.com/campaign-page",
-        "ip_address": "192.168.1.100",
-        "session_id": "test-session-123",
-    }
 
 
 class EndorsementApprovalLifecycleTest(BaseTestCase):
