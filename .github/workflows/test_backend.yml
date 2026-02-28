@@ -1,7 +1,7 @@
 name: Backend Tests
 
 on:
-  workflow_call: # Allow this workflow to be called by other workflows
+  workflow_dispatch: # Manual trigger only (called inline by check_backend.yml)
 
 # Set explicit permissions for the GITHUB_TOKEN
 permissions:
@@ -12,8 +12,6 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    # We'll run with simplified tests for non-backend changes to save resources
-    # but still ensure the deployment workflow is triggered
 
     steps:
       - uses: actions/checkout@v4
@@ -27,14 +25,15 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-backend-${{ hashFiles('backend/Dockerfile', 'backend/pyproject.toml', 'backend/poetry.lock') }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-buildx-backend-
 
       # Build the Docker image with caching
-      - name: Build Docker image
+      - name: Build Docker image (dev target)
         run: |
           docker buildx build \
+            --target dev \
             --cache-from=type=local,src=/tmp/.buildx-cache \
             --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
             --load \
@@ -70,29 +69,7 @@ jobs:
             exit 1
           fi
 
-      - name: Check if tests are necessary
-        id: check_tests
-        run: |
-          # Use git to check if any backend files were changed
-          git fetch origin main
-          CHANGES=$(git diff --name-only HEAD origin/main | grep -E "^(backend/|docker-compose.yml)" -c || echo 0)
-
-          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" && $CHANGES -eq 0 ]]; then
-            echo "Running minimal tests for non-backend changes to main branch"
-            echo "skip_full_tests=true" >> $GITHUB_OUTPUT
-          else
-            echo "Running full test suite"
-            echo "skip_full_tests=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Run minimal test (for non-relevant changes)
-        if: steps.check_tests.outputs.skip_full_tests == 'true'
-        run: |
-          echo "Skipping intensive tests for non-relevant changes to ensure deployment workflow gets triggered"
-          docker compose run --rm -e PYTHONUNBUFFERED=1 api sh -c "python -c 'print(\"Minimal test passed, allowing deployment workflow to trigger\")'"
-
       - name: Run backend tests with coverage
-        if: steps.check_tests.outputs.skip_full_tests != 'true'
         run: |
           # Create coverage directory on host
           mkdir -p ./backend_coverage
@@ -105,13 +82,11 @@ jobs:
             -e ENVIRONMENT=test \
             -e DATABASE_URL=postgis://coalition_admin:admin_password@db:5432/coalition \
             api sh -c "
-              poetry install --with dev &&
               cd /app/coverage &&
-              poetry run pytest -n auto --dist loadscope /app
+              pytest -n auto --dist loadscope /app
             "
 
       - name: Upload coverage to Codecov
-        if: steps.check_tests.outputs.skip_full_tests != 'true'
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

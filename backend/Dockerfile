@@ -35,8 +35,8 @@ RUN pip install --no-cache-dir GDAL==$(gdal-config --version)
 RUN pip install --no-cache-dir poetry && \
     poetry config virtualenvs.create false
 
-# Stage 2: Python dependencies
-# This stage installs Python dependencies which change less frequently than code
+# Stage 2: Production dependencies
+# This stage installs only production Python dependencies
 FROM python-base AS python-deps
 
 WORKDIR /app
@@ -44,12 +44,26 @@ WORKDIR /app
 # Copy only dependency files first
 COPY pyproject.toml poetry.lock /app/
 
-# Install Python dependencies
+# Install production dependencies only
 # This layer will be cached as long as the dependencies don't change
+RUN poetry install --no-root --only main
+
+# Stage 3: Dev dependencies (for CI lint + test)
+FROM python-deps AS python-dev-deps
+
+# Install all dependencies (adds dev group on top of production)
 RUN poetry install --no-root
 
-# Stage 3: Final image
-# This combines the Python base with dependencies and adds application code
+# Stage 4: Dev image (CI target — lint + test)
+# Minimal: deps + code, no entrypoint/healthcheck (CI overrides entrypoint)
+FROM python-dev-deps AS dev
+
+WORKDIR /app
+
+COPY . /app/
+
+# Stage 5: Final production image
+# This combines the production dependencies with application code
 FROM python-deps AS final
 
 WORKDIR /app
