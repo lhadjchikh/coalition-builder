@@ -23,7 +23,8 @@
       "USE_GEODJANGO": "true",
       "GDAL_DATA": "/opt/share/gdal",
       "PROJ_LIB": "/opt/share/proj",
-      "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64"
+      "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
+      "AWS_LOCATION_PLACE_INDEX_NAME": "coalition-geocoding-index"
     },
     "exclude": [
       "*.gz",

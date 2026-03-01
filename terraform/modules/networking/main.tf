@@ -275,6 +275,7 @@ locals {
     ecr_api        = "com.amazonaws.${var.aws_region}.ecr.api"
     ecr_dkr        = "com.amazonaws.${var.aws_region}.ecr.dkr"
     logs           = "com.amazonaws.${var.aws_region}.logs"
+    geo_places     = "com.amazonaws.${var.aws_region}.geo.places"
   }
   endpoint_subnet_ids = (
     length(local.private_subnet_ids) > 0 && var.enable_single_az_endpoints
