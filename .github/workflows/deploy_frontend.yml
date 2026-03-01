@@ -104,6 +104,39 @@ jobs:
         run: vercel pull --yes --environment=${{ steps.vercel_env.outputs.vercel_env }} --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: ./frontend
 
+      - name: Set Vercel runtime environment variables
+        run: |
+          API_URL="${{ steps.api.outputs.api_url }}"
+          VERCEL_ENV="${{ steps.vercel_env.outputs.vercel_env }}"
+
+          # Set API_URL for server-side rendering at Vercel runtime
+          # Use Vercel REST API to upsert env vars
+          for KEY in API_URL NEXT_PUBLIC_API_URL; do
+            # Check if env var exists
+            EXISTING=$(curl -s -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+              "https://api.vercel.com/v9/projects/${{ secrets.VERCEL_PROJECT_ID }}/env?teamId=${{ secrets.VERCEL_ORG_ID }}" \
+              | jq -r ".envs[] | select(.key == \"$KEY\" and (.target[] == \"$VERCEL_ENV\")) | .id")
+
+            if [ -n "$EXISTING" ]; then
+              # Update existing env var
+              curl -s -X PATCH \
+                -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+                -H "Content-Type: application/json" \
+                "https://api.vercel.com/v9/projects/${{ secrets.VERCEL_PROJECT_ID }}/env/$EXISTING?teamId=${{ secrets.VERCEL_ORG_ID }}" \
+                -d "{\"value\":\"$API_URL\"}" > /dev/null
+              echo "Updated $KEY for $VERCEL_ENV"
+            else
+              # Create new env var
+              curl -s -X POST \
+                -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+                -H "Content-Type: application/json" \
+                "https://api.vercel.com/v10/projects/${{ secrets.VERCEL_PROJECT_ID }}/env?teamId=${{ secrets.VERCEL_ORG_ID }}" \
+                -d "{\"type\":\"encrypted\",\"key\":\"$KEY\",\"value\":\"$API_URL\",\"target\":[\"$VERCEL_ENV\"]}" > /dev/null
+              echo "Created $KEY for $VERCEL_ENV"
+            fi
+          done
+        working-directory: ./frontend
+
       - name: Build Project Artifacts
         run: |
           if [[ "${{ steps.env.outputs.environment }}" == "prod" ]]; then

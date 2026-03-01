@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const path = require("path");
 
 /** @type {import('next').NextConfig} */
@@ -36,10 +37,13 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
 
-  // Environment variables - only pass through if explicitly set
+  // Environment variables - inline at build time for server components
+  // These are replaced by webpack DefinePlugin so they're available
+  // in both client and server code without needing Vercel runtime env vars
   env: {
-    // Only include NEXT_PUBLIC_API_URL if explicitly set (for CI/testing)
-    // Production uses relative paths handled by rewrites
+    ...(process.env.API_URL && {
+      API_URL: process.env.API_URL,
+    }),
     ...(process.env.NEXT_PUBLIC_API_URL && {
       NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     }),
