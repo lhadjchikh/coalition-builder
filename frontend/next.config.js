@@ -70,6 +70,8 @@ const nextConfig = {
       },
       {
         source: "/api/:path*",
+        // :path* never includes a trailing slash (trailingSlash strips it),
+        // so the explicit "/" here is safe and required by Django.
         destination: `${API_BASE_URL}/api/:path*/`,
       },
     ];
