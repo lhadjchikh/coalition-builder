@@ -42,7 +42,7 @@ export default async function RootLayout({
   try {
     // Fetch homepage data without caching for layout
     const response = await fetch(
-      `${process.env.API_URL || "http://localhost:8000"}/api/homepage/`,
+      `${process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/homepage/`,
       {
         cache: "no-store", // Disable caching for layout data
       }
@@ -66,7 +66,7 @@ export default async function RootLayout({
   // Fetch theme data
   try {
     const response = await fetch(
-      `${process.env.API_URL || "http://localhost:8000"}/api/themes/active/`,
+      `${process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/themes/active/`,
       {
         cache: "no-store", // Disable caching for theme data
       }
@@ -78,7 +78,7 @@ export default async function RootLayout({
       // Generate CSS without @import statements
       const cssResponse = await fetch(
         `${
-          process.env.API_URL || "http://localhost:8000"
+          process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
         }/api/themes/active/css/`,
         {
           cache: "no-store",
