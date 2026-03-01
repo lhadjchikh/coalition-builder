@@ -78,7 +78,9 @@ export default async function RootLayout({
       // Generate CSS without @import statements
       const cssResponse = await fetch(
         `${
-          process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+          process.env.API_URL ||
+          process.env.NEXT_PUBLIC_API_URL ||
+          "http://localhost:8000"
         }/api/themes/active/css/`,
         {
           cache: "no-store",
