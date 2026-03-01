@@ -13,6 +13,10 @@ import { DEFAULT_NAV_ITEMS } from "../types";
 import { getFallbackHomepage } from "../utils/homepage-data";
 
 const org = process.env.ORGANIZATION_NAME || "Coalition Builder";
+const apiBaseUrl =
+  process.env.API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:8000";
 
 export const metadata: Metadata = {
   title: org,
@@ -41,12 +45,9 @@ export default async function RootLayout({
 
   try {
     // Fetch homepage data without caching for layout
-    const response = await fetch(
-      `${process.env.API_URL || "http://localhost:8000"}/api/homepage/`,
-      {
-        cache: "no-store", // Disable caching for layout data
-      }
-    );
+    const response = await fetch(`${apiBaseUrl}/api/homepage/`, {
+      cache: "no-store", // Disable caching for layout data
+    });
     if (response.ok) {
       homepage = await response.json();
       organizationName = homepage.organization_name;
@@ -65,25 +66,17 @@ export default async function RootLayout({
 
   // Fetch theme data
   try {
-    const response = await fetch(
-      `${process.env.API_URL || "http://localhost:8000"}/api/themes/active/`,
-      {
-        cache: "no-store", // Disable caching for theme data
-      }
-    );
+    const response = await fetch(`${apiBaseUrl}/api/themes/active/`, {
+      cache: "no-store", // Disable caching for theme data
+    });
     if (response.ok) {
       const theme = await response.json();
       googleFonts = theme.google_fonts || [];
 
       // Generate CSS without @import statements
-      const cssResponse = await fetch(
-        `${
-          process.env.API_URL || "http://localhost:8000"
-        }/api/themes/active/css/`,
-        {
-          cache: "no-store",
-        }
-      );
+      const cssResponse = await fetch(`${apiBaseUrl}/api/themes/active/css/`, {
+        cache: "no-store",
+      });
       if (cssResponse.ok) {
         const data = await cssResponse.json();
         // Remove @import statements from css_variables

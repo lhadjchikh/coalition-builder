@@ -1,4 +1,13 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const path = require("path");
+
+// Resolve API URL once at config time — this value gets inlined into
+// both client and server bundles via DefinePlugin, so server components
+// don't need runtime env vars on Vercel.
+const API_BASE_URL =
+  process.env.API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:8000";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -36,13 +45,12 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
 
-  // Environment variables - only pass through if explicitly set
+  // Inline API_URL into both client and server bundles via DefinePlugin.
+  // Server components on Vercel don't have access to build-time env vars
+  // at runtime, so we must embed the resolved URL as a constant.
   env: {
-    // Only include NEXT_PUBLIC_API_URL if explicitly set (for CI/testing)
-    // Production uses relative paths handled by rewrites
-    ...(process.env.NEXT_PUBLIC_API_URL && {
-      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    }),
+    API_URL: API_BASE_URL,
+    NEXT_PUBLIC_API_URL: API_BASE_URL,
   },
 
   // Rewrites for API calls - routes relative paths to backend
@@ -51,9 +59,7 @@ const nextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: `${
-          process.env.API_URL || "http://localhost:8000"
-        }/api/:path*`,
+        destination: `${API_BASE_URL}/api/:path*`,
       },
     ];
   },

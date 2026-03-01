@@ -69,6 +69,12 @@ module "zappa" {
   tags = var.tags
 }
 
+# Attach Location Service policy to Zappa Lambda role
+resource "aws_iam_role_policy_attachment" "zappa_location_access" {
+  role       = module.zappa.zappa_deployment_role_name
+  policy_arn = module.aws_location.location_policy_arn
+}
+
 # Security Module
 module "security" {
   source = "./modules/security"
