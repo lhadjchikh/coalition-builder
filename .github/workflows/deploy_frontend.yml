@@ -113,10 +113,12 @@ jobs:
           fi
         working-directory: ./frontend
         env:
+          API_URL: ${{ steps.api.outputs.api_url }}
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
           NEXT_PUBLIC_ENVIRONMENT: ${{ steps.env.outputs.environment }}
           NEXT_PUBLIC_SITE_URL: ${{ steps.api.outputs.site_url }}
           NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: ${{ vars.GOOGLE_ANALYTICS_ID }}
+          AWS_STORAGE_BUCKET_NAME: ${{ vars.AWS_STORAGE_BUCKET_NAME }}
 
       - name: Deploy to Vercel
         id: deploy
