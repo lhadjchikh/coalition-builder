@@ -21,7 +21,7 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({
   organizationName = "Coalition Builder",
   logoUrl,
-  logoAltText: _logoAltText,
+  logoAltText,
   navItems = [],
   className,
   currentView: _currentView,
@@ -166,8 +166,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   <div className="relative h-14 w-14 sm:h-16 sm:w-16 lg:h-20 lg:w-20 flex-shrink-0">
                     <Image
                       src={logoUrl}
-                      alt=""
-                      aria-hidden="true"
+                      alt={logoAltText || `${organizationName} logo`}
                       fill
                       className="object-contain"
                       sizes="(max-width: 640px) 56px, (max-width: 1024px) 64px, 80px"
