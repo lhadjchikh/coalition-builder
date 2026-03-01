@@ -53,13 +53,26 @@ const nextConfig = {
     NEXT_PUBLIC_API_URL: API_BASE_URL,
   },
 
-  // Rewrites for API calls - routes relative paths to backend
-  // This handles both SSR server-side calls and client-side relative paths
+  // Rewrites for API calls - routes relative paths to backend.
+  // With trailingSlash: true, Next.js strips the trailing slash from :path*
+  // before building the destination URL. Django requires trailing slashes
+  // (APPEND_SLASH=True), so we must add one back to avoid an infinite
+  // 301 redirect loop: Vercel proxy → Django 301 → Vercel proxy → …
   async rewrites() {
     return [
       {
+        source: "/api",
+        destination: `${API_BASE_URL}/api/`,
+      },
+      {
+        source: "/api/",
+        destination: `${API_BASE_URL}/api/`,
+      },
+      {
         source: "/api/:path*",
-        destination: `${API_BASE_URL}/api/:path*`,
+        // :path* never includes a trailing slash (trailingSlash strips it),
+        // so the explicit "/" here is safe and required by Django.
+        destination: `${API_BASE_URL}/api/:path*/`,
       },
     ];
   },
