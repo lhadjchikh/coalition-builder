@@ -1,6 +1,14 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const path = require("path");
 
+// Resolve API URL once at config time — this value gets inlined into
+// both client and server bundles via DefinePlugin, so server components
+// don't need runtime env vars on Vercel.
+const API_BASE_URL =
+  process.env.API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:8000";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Enable standalone output for Docker
@@ -37,16 +45,12 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
 
-  // Environment variables - inline at build time for server components
-  // These are replaced by webpack DefinePlugin so they're available
-  // in both client and server code without needing Vercel runtime env vars
+  // Inline API_URL into both client and server bundles via DefinePlugin.
+  // Server components on Vercel don't have access to build-time env vars
+  // at runtime, so we must embed the resolved URL as a constant.
   env: {
-    ...(process.env.API_URL && {
-      API_URL: process.env.API_URL,
-    }),
-    ...(process.env.NEXT_PUBLIC_API_URL && {
-      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    }),
+    API_URL: API_BASE_URL,
+    NEXT_PUBLIC_API_URL: API_BASE_URL,
   },
 
   // Rewrites for API calls - routes relative paths to backend
@@ -55,9 +59,7 @@ const nextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: `${
-          process.env.API_URL || "http://localhost:8000"
-        }/api/:path*`,
+        destination: `${API_BASE_URL}/api/:path*`,
       },
     ];
   },
