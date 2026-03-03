@@ -66,7 +66,6 @@ variable "app_db_password" {
   description = "Application database password"
   type        = string
   sensitive   = true
-  default     = ""
 }
 
 variable "site_password" {
