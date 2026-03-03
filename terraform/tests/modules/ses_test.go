@@ -1,6 +1,7 @@
 package modules
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -33,6 +34,7 @@ func TestSESModulePlanCreatesExpectedResources(t *testing.T) {
 		"dmarc_email":            "dmarc@test.example.com",
 	})
 	terraformOptions.TerraformDir = testConfig.TerraformDir
+	terraformOptions.PlanFilePath = filepath.Join(testConfig.TerraformDir, "tfplan")
 
 	planStruct := terraform.InitAndPlanAndShowWithStruct(t, terraformOptions)
 
@@ -81,6 +83,7 @@ func TestSESModulePlanWithDomainVerification(t *testing.T) {
 		"dmarc_email":            "",
 	})
 	terraformOptions.TerraformDir = testConfig.TerraformDir
+	terraformOptions.PlanFilePath = filepath.Join(testConfig.TerraformDir, "tfplan")
 
 	planStruct := terraform.InitAndPlanAndShowWithStruct(t, terraformOptions)
 
@@ -120,6 +123,7 @@ func TestSESModulePlanWithNotificationsDisabled(t *testing.T) {
 		"dmarc_email":            "",
 	})
 	terraformOptions.TerraformDir = testConfig.TerraformDir
+	terraformOptions.PlanFilePath = filepath.Join(testConfig.TerraformDir, "tfplan")
 
 	planStruct := terraform.InitAndPlanAndShowWithStruct(t, terraformOptions)
 
