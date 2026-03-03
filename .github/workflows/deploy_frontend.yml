@@ -8,7 +8,7 @@ on:
       - development
     paths:
       - "frontend/**"
-      - ".github/workflows/deploy-frontend.yml"
+      - ".github/workflows/deploy_frontend.yml"
   pull_request:
     paths:
       - "frontend/**"
