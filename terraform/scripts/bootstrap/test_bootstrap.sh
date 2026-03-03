@@ -492,6 +492,26 @@ sys.exit(1)
   fi
 done
 
+# Verify S3 mutate is not wildcard-scoped (s3:* on Resource "*" is too broad)
+if echo "$INFRA_POLICY_STMTS" | python3 -c "
+import json, sys
+stmts = json.load(sys.stdin)
+for s in stmts:
+    sid = s.get('Sid', '')
+    if sid == 'S3' or sid == 'S3Mutate':
+        actions = s.get('Action', [])
+        resource = s.get('Resource', '')
+        has_wildcard_action = 's3:*' in actions or actions == 's3:*'
+        has_wildcard_resource = resource == '*' or resource == ['*']
+        if has_wildcard_action and has_wildcard_resource:
+            sys.exit(1)
+sys.exit(0)
+" 2>/dev/null; then
+  pass "S3 mutate actions are not wildcard-scoped"
+else
+  fail "S3 statement grants s3:* on Resource * (should scope mutate to project buckets)"
+fi
+
 # Verify no STS statement with arn:aws:iam::*:role/ wildcard account
 if echo "$INFRA_POLICY_STMTS" | grep -q 'arn:aws:iam::\*:role/'; then
   fail "STS statement should not use wildcard (*) account in IAM ARN"

@@ -154,12 +154,42 @@ resource "aws_iam_role_policy" "infrastructure" {
           Resource = "*"
         },
 
-        # --- Truly global services (no account ID in ARN) ---
+        # --- S3: read-only at * (list/describe need it), mutate scoped to project buckets ---
         {
-          Sid      = "S3"
+          Sid      = "S3ReadOnly"
           Effect   = "Allow"
-          Action   = ["s3:*"]
+          Action   = ["s3:Get*", "s3:List*", "s3:HeadBucket", "s3:HeadObject"]
           Resource = "*"
+        },
+        {
+          Sid    = "S3Mutate"
+          Effect = "Allow"
+          Action = [
+            "s3:PutObject",
+            "s3:DeleteObject",
+            "s3:CreateBucket",
+            "s3:DeleteBucket",
+            "s3:PutBucketPolicy",
+            "s3:DeleteBucketPolicy",
+            "s3:PutBucketVersioning",
+            "s3:PutBucketEncryption",
+            "s3:PutBucketPublicAccessBlock",
+            "s3:PutBucketLifecycleConfiguration",
+            "s3:PutBucketTagging",
+            "s3:PutBucketCORS",
+            "s3:PutBucketNotification",
+            "s3:PutBucketLogging",
+            "s3:PutBucketWebsite",
+            "s3:DeleteBucketWebsite",
+            "s3:PutObjectAcl",
+            "s3:PutBucketAcl",
+          ]
+          Resource = [
+            "arn:aws:s3:::${var.resource_prefix}-*",
+            "arn:aws:s3:::${var.resource_prefix}-*/*",
+            "arn:aws:s3:::coalition-terraform-state-*",
+            "arn:aws:s3:::coalition-terraform-state-*/*",
+          ]
         },
         {
           Sid      = "Route53"
