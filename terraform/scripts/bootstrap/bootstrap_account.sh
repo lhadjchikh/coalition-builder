@@ -280,5 +280,5 @@ if [[ "$ENVIRONMENT" == "shared" ]]; then
   echo -e "  Peering role:    ${GREEN}${PEERING_ROLE_ARN}${NC}"
 fi
 
-# Output the OIDC role ARN for use by the orchestrator
-echo "$OIDC_ROLE_ARN"
+# Output the OIDC role ARN for use by the orchestrator (prefixed for robust parsing)
+echo "OIDC_ROLE_ARN=$OIDC_ROLE_ARN"

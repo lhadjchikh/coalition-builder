@@ -122,9 +122,9 @@ if [[ -z "$GITHUB_ORG" || -z "$GITHUB_REPO" ]]; then
 fi
 
 # Helper to extract the OIDC role ARN from bootstrap output.
-# bootstrap_account.sh prints the ARN as the very last line of output.
+# bootstrap_account.sh prints "OIDC_ROLE_ARN=<arn>" as its final line.
 extract_role_arn() {
-  tail -n 1
+  grep '^OIDC_ROLE_ARN=' | tail -n 1 | cut -d= -f2-
 }
 
 # Helper to extract the account ID from an ARN (arn:aws:iam::ACCOUNT_ID:role/...)
