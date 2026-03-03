@@ -188,16 +188,16 @@ module "monitoring" {
 module "ses" {
   source = "../../modules/ses"
 
-  prefix               = var.prefix
-  aws_region           = var.aws_region
-  domain_name          = var.domain_name
-  from_email           = var.ses_from_email
+  prefix                 = var.prefix
+  aws_region             = var.aws_region
+  domain_name            = var.domain_name
+  from_email             = var.ses_from_email
   verify_domain          = true
   route53_zone_id        = aws_route53_zone.main.zone_id
   create_route53_records = true
-  dmarc_email          = var.ses_notification_email
-  notification_email   = var.ses_notification_email
-  enable_notifications = true
+  dmarc_email            = var.ses_notification_email
+  notification_email     = var.ses_notification_email
+  enable_notifications   = true
 }
 
 # Storage Module - S3 + CloudFront for static assets
