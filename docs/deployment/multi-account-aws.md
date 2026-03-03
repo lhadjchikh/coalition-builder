@@ -56,11 +56,11 @@ flowchart TB
 
 ### Account Structure
 
-| Account | Contains | Purpose |
-|---------|----------|---------|
-| **Shared** | VPC, RDS PostgreSQL, Bastion, Monitoring | Centralized database and networking |
-| **Production** | VPC, Lambda, API Gateway, S3, CloudFront, ECR, SES, WAF, Route53, ACM | Production application workloads |
-| **Development** | VPC, Lambda, S3, ECR | Development/testing (minimal infrastructure) |
+| Account         | Contains                                                              | Purpose                                      |
+| --------------- | --------------------------------------------------------------------- | -------------------------------------------- |
+| **Shared**      | VPC, RDS PostgreSQL, Bastion, Monitoring                              | Centralized database and networking          |
+| **Production**  | VPC, Lambda, API Gateway, S3, CloudFront, ECR, SES, WAF, Route53, ACM | Production application workloads             |
+| **Development** | VPC, Lambda, S3, ECR                                                  | Development/testing (minimal infrastructure) |
 
 ### Key Design Decisions
 
@@ -142,13 +142,13 @@ Use `bootstrap_account.sh` to bootstrap one account at a time:
 
 #### What Each Bootstrap Creates
 
-| Resource | Description |
-|----------|-------------|
-| **S3 bucket** | `coalition-terraform-state-{account_id}` — versioned, encrypted, private |
-| **DynamoDB table** | `coalition-terraform-locks` — pay-per-request state locking |
-| **OIDC provider** | GitHub Actions OIDC federation endpoint |
-| **IAM role** | `github-actions-{environment}` — assumable by GitHub Actions via OIDC |
-| **Peering role** (shared only) | `vpc-peering-accepter` — allows prod/dev to accept VPC peering |
+| Resource                       | Description                                                              |
+| ------------------------------ | ------------------------------------------------------------------------ |
+| **S3 bucket**                  | `coalition-terraform-state-{account_id}` — versioned, encrypted, private |
+| **DynamoDB table**             | `coalition-terraform-locks` — pay-per-request state locking              |
+| **OIDC provider**              | GitHub Actions OIDC federation endpoint                                  |
+| **IAM role**                   | `github-actions-{environment}` — assumable by GitHub Actions via OIDC    |
+| **Peering role** (shared only) | `vpc-peering-accepter` — allows prod/dev to accept VPC peering           |
 
 ### Configure GitHub Environments
 
@@ -167,12 +167,12 @@ If you used `--skip-github` with `bootstrap_all.sh`, or need to reconfigure GitH
 
 This creates three GitHub environments (`shared`, `prod`, `dev`) with:
 
-| Setting | Type | Value |
-|---------|------|-------|
-| `AWS_ROLE_ARN` | Secret | OIDC role ARN for the environment |
-| `AWS_ACCOUNT_ID` | Variable | AWS account ID |
-| `AWS_REGION` | Variable | AWS region (default: `us-east-1`) |
-| `ENVIRONMENT` | Variable | Environment name |
+| Setting          | Type     | Value                             |
+| ---------------- | -------- | --------------------------------- |
+| `AWS_ROLE_ARN`   | Secret   | OIDC role ARN for the environment |
+| `AWS_ACCOUNT_ID` | Variable | AWS account ID                    |
+| `AWS_REGION`     | Variable | AWS region (default: `us-east-1`) |
+| `ENVIRONMENT`    | Variable | Environment name                  |
 
 ### Import Bootstrap Resources into Terraform
 
@@ -231,11 +231,11 @@ terraform apply
 
 Each environment stores its state in the account's own S3 bucket:
 
-| Environment | S3 Bucket | State Key |
-|-------------|-----------|-----------|
-| shared | `coalition-terraform-state-{shared_account_id}` | `shared/terraform.tfstate` |
-| prod | `coalition-terraform-state-{prod_account_id}` | `prod/terraform.tfstate` |
-| dev | `coalition-terraform-state-{dev_account_id}` | `dev/terraform.tfstate` |
+| Environment | S3 Bucket                                       | State Key                  |
+| ----------- | ----------------------------------------------- | -------------------------- |
+| shared      | `coalition-terraform-state-{shared_account_id}` | `shared/terraform.tfstate` |
+| prod        | `coalition-terraform-state-{prod_account_id}`   | `prod/terraform.tfstate`   |
+| dev         | `coalition-terraform-state-{dev_account_id}`    | `dev/terraform.tfstate`    |
 
 Prod and dev environments read the shared account's state using a `terraform_remote_state` data source to get outputs like `vpc_id`, `database_endpoint`, and `db_subnet_cidrs`.
 
@@ -280,10 +280,10 @@ flowchart LR
 
 The VPC CIDRs must not overlap:
 
-| Account | VPC CIDR |
-|---------|----------|
-| Shared | `10.0.0.0/16` |
-| Production | `10.1.0.0/16` |
+| Account     | VPC CIDR      |
+| ----------- | ------------- |
+| Shared      | `10.0.0.0/16` |
+| Production  | `10.1.0.0/16` |
 | Development | `10.2.0.0/16` |
 
 ## OIDC Authentication
@@ -301,11 +301,11 @@ GitHub Actions authenticates to AWS using OpenID Connect (OIDC) federation inste
 
 Each environment's OIDC role restricts which GitHub contexts can assume it:
 
-| Environment | Allowed Subjects |
-|-------------|-----------------|
-| **shared** | `environment:shared`, `ref:refs/heads/main` |
-| **prod** | `environment:prod`, `ref:refs/heads/main` |
-| **dev** | `environment:dev`, `ref:refs/heads/development`, `pull_request` |
+| Environment | Allowed Subjects                                                |
+| ----------- | --------------------------------------------------------------- |
+| **shared**  | `environment:shared`, `ref:refs/heads/main`                     |
+| **prod**    | `environment:prod`, `ref:refs/heads/main`                       |
+| **dev**     | `environment:dev`, `ref:refs/heads/development`, `pull_request` |
 
 ### Workflow Configuration
 
@@ -314,7 +314,7 @@ All deployment workflows use OIDC. The key configuration:
 ```yaml
 permissions:
   contents: read
-  id-token: write    # Required for OIDC
+  id-token: write # Required for OIDC
 
 steps:
   - name: Configure AWS credentials via OIDC
@@ -330,10 +330,10 @@ No `AWS_ACCESS_KEY_ID` or `AWS_SECRET_ACCESS_KEY` secrets are needed.
 
 Three workflows use the multi-account setup:
 
-| Workflow | File | Purpose |
-|----------|------|---------|
-| **Deploy to Lambda** | `deploy-lambda.yml` | Builds Docker image, pushes to ECR, deploys via Zappa |
-| **Deploy Serverless** | `deploy_serverless.yml` | Full-stack deploy (backend + frontend) |
-| **Terraform CI/CD** | `deploy_infra.yml` | Plans and applies Terraform for a selected environment |
+| Workflow              | File                    | Purpose                                                |
+| --------------------- | ----------------------- | ------------------------------------------------------ |
+| **Deploy to Lambda**  | `deploy-lambda.yml`     | Builds Docker image, pushes to ECR, deploys via Zappa  |
+| **Deploy Serverless** | `deploy_serverless.yml` | Full-stack deploy (backend + frontend)                 |
+| **Terraform CI/CD**   | `deploy_infra.yml`      | Plans and applies Terraform for a selected environment |
 
 All three authenticate via OIDC and select the target environment based on branch or manual input. See [GitHub Workflows](workflows.md) for details.
