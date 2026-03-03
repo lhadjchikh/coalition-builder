@@ -192,9 +192,22 @@ resource "aws_iam_role_policy" "infrastructure" {
           ]
         },
         {
-          Sid      = "Route53"
-          Effect   = "Allow"
-          Action   = ["route53:*"]
+          Sid    = "Route53"
+          Effect = "Allow"
+          Action = [
+            "route53:GetHostedZone",
+            "route53:ListHostedZones",
+            "route53:ListHostedZonesByName",
+            "route53:GetHostedZoneCount",
+            "route53:ChangeResourceRecordSets",
+            "route53:GetChange",
+            "route53:ListResourceRecordSets",
+            "route53:ListTagsForResource",
+            "route53:ChangeTagsForResource",
+            "route53:CreateHostedZone",
+            "route53:GetDNSSEC",
+            "route53:ListTagsForResources",
+          ]
           Resource = "*"
         },
         {
