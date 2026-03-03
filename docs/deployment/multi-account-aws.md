@@ -394,7 +394,7 @@ Three workflows use the multi-account setup:
 
 | Workflow              | File                    | Purpose                                                |
 | --------------------- | ----------------------- | ------------------------------------------------------ |
-| **Deploy to Lambda**  | `deploy-lambda.yml`     | Builds Docker image, pushes to ECR, deploys via Zappa  |
+| **Deploy to Lambda**  | `deploy_lambda.yml`     | Builds Docker image, pushes to ECR, deploys via Zappa  |
 | **Deploy Serverless** | `deploy_serverless.yml` | Full-stack deploy (backend + frontend)                 |
 | **Terraform CI/CD**   | `deploy_infra.yml`      | Plans and applies Terraform for a selected environment |
 
