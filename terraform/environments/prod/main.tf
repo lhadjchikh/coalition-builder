@@ -348,5 +348,6 @@ module "github_oidc" {
     "repo:${var.github_repo}:ref:refs/heads/main",
   ]
 
-  enable_terraform_policy = true
+  enable_terraform_policy      = true
+  enable_infrastructure_policy = true
 }

@@ -97,7 +97,41 @@ Resources:
               - Sid: IAM
                 Effect: Allow
                 Action:
-                  - iam:*
+                  - iam:GetRole
+                  - iam:CreateRole
+                  - iam:DeleteRole
+                  - iam:UpdateRole
+                  - iam:TagRole
+                  - iam:UntagRole
+                  - iam:ListRolePolicies
+                  - iam:ListAttachedRolePolicies
+                  - iam:ListInstanceProfilesForRole
+                  - iam:GetRolePolicy
+                  - iam:PutRolePolicy
+                  - iam:DeleteRolePolicy
+                  - iam:AttachRolePolicy
+                  - iam:DetachRolePolicy
+                  - iam:PassRole
+                  - iam:CreatePolicy
+                  - iam:DeletePolicy
+                  - iam:GetPolicy
+                  - iam:GetPolicyVersion
+                  - iam:ListPolicyVersions
+                  - iam:CreatePolicyVersion
+                  - iam:DeletePolicyVersion
+                  - iam:CreateInstanceProfile
+                  - iam:DeleteInstanceProfile
+                  - iam:AddRoleToInstanceProfile
+                  - iam:RemoveRoleFromInstanceProfile
+                  - iam:GetInstanceProfile
+                  - iam:GetOpenIDConnectProvider
+                  - iam:CreateOpenIDConnectProvider
+                  - iam:DeleteOpenIDConnectProvider
+                  - iam:TagOpenIDConnectProvider
+                  - iam:UpdateOpenIDConnectProviderThumbprint
+                  - iam:AddClientIDToOpenIDConnectProvider
+                  - iam:CreateServiceLinkedRole
+                  - iam:ListRoleTags
                 Resource: "*"
               - Sid: S3
                 Effect: Allow
@@ -189,8 +223,9 @@ Resources:
               - Sid: STS
                 Effect: Allow
                 Action:
-                  - sts:*
-                Resource: "*"
+                  - sts:AssumeRole
+                Resource:
+                  - "arn:aws:iam::*:role/vpc-peering-accepter"
       Tags:
         - Key: Name
           Value: !Sub "github-actions-${Environment}"

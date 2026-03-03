@@ -31,3 +31,9 @@ variable "enable_terraform_policy" {
   type        = bool
   default     = true
 }
+
+variable "enable_infrastructure_policy" {
+  description = "Whether to attach the inline infrastructure management policy for Terraform CI/CD"
+  type        = bool
+  default     = false
+}

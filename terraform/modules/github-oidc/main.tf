@@ -70,7 +70,7 @@ resource "aws_iam_role_policy_attachment" "github_actions" {
   policy_arn = var.policy_arns[count.index]
 }
 
-# Inline policy for Terraform operations (S3 state, DynamoDB locks, and infra management)
+# Inline policy for Terraform operations (S3 state, DynamoDB locks)
 resource "aws_iam_role_policy" "terraform_operations" {
   count = var.enable_terraform_policy ? 1 : 0
 
@@ -104,6 +104,178 @@ resource "aws_iam_role_policy" "terraform_operations" {
         ]
         Resource = "arn:aws:dynamodb:*:*:table/coalition-terraform-locks"
       }
+    ]
+  })
+}
+
+# Inline policy for infrastructure management (Terraform plan/apply)
+resource "aws_iam_role_policy" "infrastructure" {
+  count = var.enable_infrastructure_policy ? 1 : 0
+
+  name = "${var.environment}-infrastructure"
+  role = aws_iam_role.github_actions.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid      = "EC2AndVPC"
+        Effect   = "Allow"
+        Action   = ["ec2:*"]
+        Resource = "*"
+      },
+      {
+        Sid    = "IAM"
+        Effect = "Allow"
+        Action = [
+          "iam:GetRole",
+          "iam:CreateRole",
+          "iam:DeleteRole",
+          "iam:UpdateRole",
+          "iam:TagRole",
+          "iam:UntagRole",
+          "iam:ListRolePolicies",
+          "iam:ListAttachedRolePolicies",
+          "iam:ListInstanceProfilesForRole",
+          "iam:GetRolePolicy",
+          "iam:PutRolePolicy",
+          "iam:DeleteRolePolicy",
+          "iam:AttachRolePolicy",
+          "iam:DetachRolePolicy",
+          "iam:PassRole",
+          "iam:CreatePolicy",
+          "iam:DeletePolicy",
+          "iam:GetPolicy",
+          "iam:GetPolicyVersion",
+          "iam:ListPolicyVersions",
+          "iam:CreatePolicyVersion",
+          "iam:DeletePolicyVersion",
+          "iam:CreateInstanceProfile",
+          "iam:DeleteInstanceProfile",
+          "iam:AddRoleToInstanceProfile",
+          "iam:RemoveRoleFromInstanceProfile",
+          "iam:GetInstanceProfile",
+          "iam:GetOpenIDConnectProvider",
+          "iam:CreateOpenIDConnectProvider",
+          "iam:DeleteOpenIDConnectProvider",
+          "iam:TagOpenIDConnectProvider",
+          "iam:UpdateOpenIDConnectProviderThumbprint",
+          "iam:AddClientIDToOpenIDConnectProvider",
+          "iam:CreateServiceLinkedRole",
+          "iam:ListRoleTags",
+        ]
+        Resource = "*"
+      },
+      {
+        Sid      = "S3"
+        Effect   = "Allow"
+        Action   = ["s3:*"]
+        Resource = "*"
+      },
+      {
+        Sid      = "RDS"
+        Effect   = "Allow"
+        Action   = ["rds:*"]
+        Resource = "*"
+      },
+      {
+        Sid      = "Lambda"
+        Effect   = "Allow"
+        Action   = ["lambda:*"]
+        Resource = "*"
+      },
+      {
+        Sid      = "APIGateway"
+        Effect   = "Allow"
+        Action   = ["apigateway:*"]
+        Resource = "*"
+      },
+      {
+        Sid      = "ECR"
+        Effect   = "Allow"
+        Action   = ["ecr:*"]
+        Resource = "*"
+      },
+      {
+        Sid      = "SecretsManager"
+        Effect   = "Allow"
+        Action   = ["secretsmanager:*"]
+        Resource = "*"
+      },
+      {
+        Sid      = "SSM"
+        Effect   = "Allow"
+        Action   = ["ssm:*"]
+        Resource = "*"
+      },
+      {
+        Sid      = "KMS"
+        Effect   = "Allow"
+        Action   = ["kms:*"]
+        Resource = "*"
+      },
+      {
+        Sid      = "CloudWatch"
+        Effect   = "Allow"
+        Action   = ["cloudwatch:*", "logs:*"]
+        Resource = "*"
+      },
+      {
+        Sid      = "CloudFront"
+        Effect   = "Allow"
+        Action   = ["cloudfront:*"]
+        Resource = "*"
+      },
+      {
+        Sid      = "WAF"
+        Effect   = "Allow"
+        Action   = ["wafv2:*"]
+        Resource = "*"
+      },
+      {
+        Sid      = "SES"
+        Effect   = "Allow"
+        Action   = ["ses:*"]
+        Resource = "*"
+      },
+      {
+        Sid      = "Route53"
+        Effect   = "Allow"
+        Action   = ["route53:*"]
+        Resource = "*"
+      },
+      {
+        Sid      = "ACM"
+        Effect   = "Allow"
+        Action   = ["acm:*"]
+        Resource = "*"
+      },
+      {
+        Sid      = "Location"
+        Effect   = "Allow"
+        Action   = ["geo:*"]
+        Resource = "*"
+      },
+      {
+        Sid      = "Budgets"
+        Effect   = "Allow"
+        Action   = ["budgets:*", "ce:*"]
+        Resource = "*"
+      },
+      {
+        Sid      = "SNS"
+        Effect   = "Allow"
+        Action   = ["sns:*"]
+        Resource = "*"
+      },
+      {
+        Sid    = "STS"
+        Effect = "Allow"
+        Action = ["sts:AssumeRole"]
+        Resource = [
+          "arn:aws:iam::*:role/vpc-peering-accepter"
+        ]
+      },
     ]
   })
 }

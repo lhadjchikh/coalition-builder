@@ -183,5 +183,6 @@ module "github_oidc" {
     "repo:${var.github_repo}:pull_request",
   ]
 
-  enable_terraform_policy = true
+  enable_terraform_policy      = true
+  enable_infrastructure_policy = true
 }
