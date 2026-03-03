@@ -99,7 +99,7 @@ jobs:
 
     env:
       TF_DIRECTORY: ${{ needs.determine-environment.outputs.tf_directory }}
-      # Environment-specific secrets (from GitHub environment)
+      # Secrets (from GitHub environment)
       TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
       TF_VAR_db_username: ${{ secrets.DB_USERNAME }}
       TF_VAR_app_db_username: ${{ secrets.APP_DB_USERNAME }}
@@ -107,13 +107,17 @@ jobs:
       TF_VAR_bastion_public_key: ${{ secrets.TF_VAR_BASTION_PUBLIC_KEY }}
       TF_VAR_site_password: ${{ secrets.SITE_PASSWORD }}
       TF_VAR_shared_peering_role_arn: ${{ secrets.SHARED_PEERING_ROLE_ARN }}
-      # Environment-specific variables (from GitHub environment)
-      TF_VAR_route53_zone_id: ${{ vars.TF_VAR_ROUTE53_ZONE_ID }}
+      # Variables (from GitHub environment)
+      TF_VAR_shared_account_id: ${{ vars.SHARED_ACCOUNT_ID }}
+      TF_VAR_github_repo: ${{ vars.GITHUB_REPO }}
       TF_VAR_domain_name: ${{ vars.TF_VAR_DOMAIN_NAME }}
       TF_VAR_api_gateway_id: ${{ vars.TF_VAR_API_GATEWAY_ID }}
       TF_VAR_alert_email: ${{ vars.TF_VAR_ALERT_EMAIL }}
       TF_VAR_ses_from_email: ${{ vars.SES_FROM_EMAIL }}
       TF_VAR_ses_notification_email: ${{ vars.SES_NOTIFICATION_EMAIL }}
+      TF_VAR_bastion_key_name: ${{ vars.BASTION_KEY_NAME }}
+      TF_VAR_allowed_bastion_cidrs: ${{ vars.ALLOWED_BASTION_CIDRS }}
+      TF_VAR_allowed_lambda_cidrs: ${{ vars.ALLOWED_LAMBDA_CIDRS }}
 
     steps:
       - name: Checkout

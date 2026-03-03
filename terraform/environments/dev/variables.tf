@@ -1,6 +1,7 @@
 variable "prefix" {
   description = "Prefix to use for resource names"
   type        = string
+  default     = "coalition"
 }
 
 variable "aws_region" {
@@ -12,6 +13,11 @@ variable "aws_region" {
 variable "tags" {
   description = "Default tags to apply to all resources"
   type        = map(string)
+  default = {
+    Project     = "coalition-builder"
+    Environment = "dev"
+    ManagedBy   = "terraform"
+  }
 }
 
 # Cross-account references
@@ -29,22 +35,26 @@ variable "shared_peering_role_arn" {
 variable "vpc_cidr" {
   description = "CIDR block for the dev VPC"
   type        = string
+  default     = "10.2.0.0/16"
 }
 
 variable "private_subnet_a_cidr" {
   description = "CIDR block for private app subnet A"
   type        = string
+  default     = "10.2.3.0/24"
 }
 
 variable "private_subnet_b_cidr" {
   description = "CIDR block for private app subnet B"
   type        = string
+  default     = "10.2.4.0/24"
 }
 
 # Database (in shared account, accessed via peering)
 variable "db_name" {
   description = "Database name in the shared RDS instance (dev database)"
   type        = string
+  default     = "coalition"
 }
 
 variable "app_db_username" {
