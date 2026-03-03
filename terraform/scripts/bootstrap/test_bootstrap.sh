@@ -369,6 +369,81 @@ for script in bootstrap_account.sh configure_github.sh bootstrap_all.sh; do
 done
 
 # ============================================================
+# OIDC IAM scoping tests
+# ============================================================
+echo -e "\n${BLUE}OIDC IAM permission scoping${NC}"
+
+# Verify SharedAccountId parameter exists (for STS scoping)
+if yaml_has_key "$OIDC_TEMPLATE" '["Parameters", "SharedAccountId"]'; then
+  pass "github-oidc-role.cfn.yml has SharedAccountId parameter"
+else
+  fail "github-oidc-role.cfn.yml missing SharedAccountId parameter"
+fi
+
+# Verify IAM is split into separate read and mutate statements
+INFRA_POLICY_STMTS=$(yaml_query "$OIDC_TEMPLATE" '["Resources", "GitHubActionsRole", "Properties", "Policies", 1, "PolicyDocument", "Statement"]')
+if echo "$INFRA_POLICY_STMTS" | grep -q '"Sid": "IAMReadOnly"'; then
+  pass "IAM has separate IAMReadOnly statement"
+else
+  fail "IAM missing IAMReadOnly statement (read/mutate split)"
+fi
+
+if echo "$INFRA_POLICY_STMTS" | grep -q '"Sid": "IAMMutate"'; then
+  pass "IAM has separate IAMMutate statement"
+else
+  fail "IAM missing IAMMutate statement (read/mutate split)"
+fi
+
+# Verify IAMMutate does NOT use Resource: "*"
+# Find the IAMMutate statement and check its Resource is not "*"
+if echo "$INFRA_POLICY_STMTS" | python3 -c "
+import json, sys
+stmts = json.load(sys.stdin)
+for s in stmts:
+    if s.get('Sid') == 'IAMMutate':
+        resource = s.get('Resource', '*')
+        if resource == '*' or resource == ['*']:
+            sys.exit(1)
+        sys.exit(0)
+sys.exit(1)  # IAMMutate not found
+" 2>/dev/null; then
+  pass "IAMMutate Resource is not wildcard (*)"
+else
+  fail "IAMMutate Resource should be scoped, not wildcard (*)"
+fi
+
+# Verify account-scoped services use ${AWS::AccountId} in resource ARNs
+for sid in RDS Lambda ECR SecretsManager SSM SNS CloudWatch; do
+  if echo "$INFRA_POLICY_STMTS" | grep -q "\"Sid\": \"$sid\""; then
+    # Check that the statement's Resource contains AWS::AccountId reference
+    if echo "$INFRA_POLICY_STMTS" | python3 -c "
+import json, sys
+stmts = json.load(sys.stdin)
+for s in stmts:
+    if s.get('Sid') == '$sid':
+        resource = s.get('Resource', '*')
+        res_str = json.dumps(resource)
+        if 'AccountId' in res_str or 'account_id' in res_str:
+            sys.exit(0)
+        else:
+            sys.exit(1)
+sys.exit(1)
+" 2>/dev/null; then
+      pass "$sid statement uses account-scoped resource ARN"
+    else
+      fail "$sid statement should use account-scoped resource ARN (not *)"
+    fi
+  fi
+done
+
+# Verify no STS statement with arn:aws:iam::*:role/ wildcard account
+if echo "$INFRA_POLICY_STMTS" | grep -q 'arn:aws:iam::\*:role/'; then
+  fail "STS statement should not use wildcard (*) account in IAM ARN"
+else
+  pass "No wildcard account in STS AssumeRole ARN"
+fi
+
+# ============================================================
 # Naming consistency tests (CFN matches Terraform)
 # ============================================================
 echo -e "\n${BLUE}Naming consistency (CFN ↔ Terraform)${NC}"

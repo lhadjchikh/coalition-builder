@@ -48,3 +48,15 @@ variable "enable_infrastructure_policy" {
   type        = bool
   default     = false
 }
+
+variable "peering_account_ids" {
+  description = "Account IDs for STS AssumeRole (VPC peering). Empty = no STS."
+  type        = list(string)
+  default     = []
+}
+
+variable "resource_prefix" {
+  description = "Prefix for IAM resource ARN scoping"
+  type        = string
+  default     = "coalition"
+}

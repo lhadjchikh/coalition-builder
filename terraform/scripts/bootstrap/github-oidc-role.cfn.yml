@@ -20,10 +20,23 @@ Parameters:
     Type: String
     Description: GitHub repository name (e.g., coalition-builder)
 
+  SharedAccountId:
+    Type: String
+    Default: ""
+    Description: >
+      Account ID for STS AssumeRole (VPC peering). Leave empty for shared
+      account or when cross-account peering is not needed.
+
+  ResourcePrefix:
+    Type: String
+    Default: coalition
+    Description: Prefix for IAM resource ARN scoping
+
 Conditions:
   IsShared: !Equals [!Ref Environment, shared]
   IsProd: !Equals [!Ref Environment, prod]
   IsDev: !Equals [!Ref Environment, dev]
+  HasPeeringAccount: !Not [!Equals [!Ref SharedAccountId, ""]]
 
 Resources:
   GitHubOIDCProvider:
@@ -90,95 +103,16 @@ Resources:
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
+              # --- Global services (no account in ARN or required by Terraform) ---
               - Sid: EC2AndVPC
                 Effect: Allow
                 Action:
                   - ec2:*
                 Resource: "*"
-              - Sid: IAM
-                Effect: Allow
-                Action:
-                  - iam:GetRole
-                  - iam:CreateRole
-                  - iam:DeleteRole
-                  - iam:UpdateRole
-                  - iam:TagRole
-                  - iam:UntagRole
-                  - iam:ListRolePolicies
-                  - iam:ListAttachedRolePolicies
-                  - iam:ListInstanceProfilesForRole
-                  - iam:GetRolePolicy
-                  - iam:PutRolePolicy
-                  - iam:DeleteRolePolicy
-                  - iam:AttachRolePolicy
-                  - iam:DetachRolePolicy
-                  - iam:PassRole
-                  - iam:CreatePolicy
-                  - iam:DeletePolicy
-                  - iam:GetPolicy
-                  - iam:GetPolicyVersion
-                  - iam:ListPolicyVersions
-                  - iam:CreatePolicyVersion
-                  - iam:DeletePolicyVersion
-                  - iam:CreateInstanceProfile
-                  - iam:DeleteInstanceProfile
-                  - iam:AddRoleToInstanceProfile
-                  - iam:RemoveRoleFromInstanceProfile
-                  - iam:GetInstanceProfile
-                  - iam:GetOpenIDConnectProvider
-                  - iam:CreateOpenIDConnectProvider
-                  - iam:DeleteOpenIDConnectProvider
-                  - iam:TagOpenIDConnectProvider
-                  - iam:UpdateOpenIDConnectProviderThumbprint
-                  - iam:AddClientIDToOpenIDConnectProvider
-                  - iam:CreateServiceLinkedRole
-                  - iam:ListRoleTags
-                Resource: "*"
               - Sid: S3
                 Effect: Allow
                 Action:
                   - s3:*
-                Resource: "*"
-              - Sid: RDS
-                Effect: Allow
-                Action:
-                  - rds:*
-                Resource: "*"
-              - Sid: Lambda
-                Effect: Allow
-                Action:
-                  - lambda:*
-                Resource: "*"
-              - Sid: APIGateway
-                Effect: Allow
-                Action:
-                  - apigateway:*
-                Resource: "*"
-              - Sid: ECR
-                Effect: Allow
-                Action:
-                  - ecr:*
-                Resource: "*"
-              - Sid: SecretsManager
-                Effect: Allow
-                Action:
-                  - secretsmanager:*
-                Resource: "*"
-              - Sid: SSM
-                Effect: Allow
-                Action:
-                  - ssm:*
-                Resource: "*"
-              - Sid: KMS
-                Effect: Allow
-                Action:
-                  - kms:*
-                Resource: "*"
-              - Sid: CloudWatch
-                Effect: Allow
-                Action:
-                  - cloudwatch:*
-                  - logs:*
                 Resource: "*"
               - Sid: CloudFront
                 Effect: Allow
@@ -205,6 +139,16 @@ Resources:
                 Action:
                   - acm:*
                 Resource: "*"
+              - Sid: APIGateway
+                Effect: Allow
+                Action:
+                  - apigateway:*
+                Resource: "*"
+              - Sid: KMS
+                Effect: Allow
+                Action:
+                  - kms:*
+                Resource: "*"
               - Sid: Location
                 Effect: Allow
                 Action:
@@ -216,17 +160,104 @@ Resources:
                   - budgets:*
                   - ce:*
                 Resource: "*"
+              # --- IAM read-only (safe at *) ---
+              - Sid: IAMReadOnly
+                Effect: Allow
+                Action:
+                  - iam:GetRole
+                  - iam:GetRolePolicy
+                  - iam:GetPolicy
+                  - iam:GetPolicyVersion
+                  - iam:GetInstanceProfile
+                  - iam:GetOpenIDConnectProvider
+                  - iam:ListRolePolicies
+                  - iam:ListAttachedRolePolicies
+                  - iam:ListInstanceProfilesForRole
+                  - iam:ListPolicyVersions
+                  - iam:ListRoleTags
+                Resource: "*"
+              # --- IAM mutate (scoped to prefix and OIDC provider) ---
+              - Sid: IAMMutate
+                Effect: Allow
+                Action:
+                  - iam:CreateRole
+                  - iam:DeleteRole
+                  - iam:UpdateRole
+                  - iam:TagRole
+                  - iam:UntagRole
+                  - iam:PutRolePolicy
+                  - iam:DeleteRolePolicy
+                  - iam:AttachRolePolicy
+                  - iam:DetachRolePolicy
+                  - iam:PassRole
+                  - iam:CreatePolicy
+                  - iam:DeletePolicy
+                  - iam:CreatePolicyVersion
+                  - iam:DeletePolicyVersion
+                  - iam:CreateInstanceProfile
+                  - iam:DeleteInstanceProfile
+                  - iam:AddRoleToInstanceProfile
+                  - iam:RemoveRoleFromInstanceProfile
+                  - iam:CreateOpenIDConnectProvider
+                  - iam:DeleteOpenIDConnectProvider
+                  - iam:TagOpenIDConnectProvider
+                  - iam:UpdateOpenIDConnectProviderThumbprint
+                  - iam:AddClientIDToOpenIDConnectProvider
+                  - iam:CreateServiceLinkedRole
+                Resource:
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ResourcePrefix}-*"
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:policy/${ResourcePrefix}-*"
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:instance-profile/${ResourcePrefix}-*"
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:oidc-provider/*"
+              # --- Account-scoped services ---
+              - Sid: RDS
+                Effect: Allow
+                Action:
+                  - rds:*
+                Resource: !Sub "arn:aws:rds:*:${AWS::AccountId}:*"
+              - Sid: Lambda
+                Effect: Allow
+                Action:
+                  - lambda:*
+                Resource: !Sub "arn:aws:lambda:*:${AWS::AccountId}:*"
+              - Sid: ECR
+                Effect: Allow
+                Action:
+                  - ecr:*
+                Resource: !Sub "arn:aws:ecr:*:${AWS::AccountId}:*"
+              - Sid: SecretsManager
+                Effect: Allow
+                Action:
+                  - secretsmanager:*
+                Resource: !Sub "arn:aws:secretsmanager:*:${AWS::AccountId}:*"
+              - Sid: SSM
+                Effect: Allow
+                Action:
+                  - ssm:*
+                Resource: !Sub "arn:aws:ssm:*:${AWS::AccountId}:*"
               - Sid: SNS
                 Effect: Allow
                 Action:
                   - sns:*
-                Resource: "*"
-              - Sid: STS
+                Resource: !Sub "arn:aws:sns:*:${AWS::AccountId}:*"
+              - Sid: CloudWatch
                 Effect: Allow
                 Action:
-                  - sts:AssumeRole
+                  - cloudwatch:*
+                  - logs:*
                 Resource:
-                  - "arn:aws:iam::*:role/vpc-peering-accepter"
+                  - !Sub "arn:aws:cloudwatch:*:${AWS::AccountId}:*"
+                  - !Sub "arn:aws:logs:*:${AWS::AccountId}:*"
+              # --- STS: conditional on SharedAccountId ---
+              - !If
+                - HasPeeringAccount
+                - Sid: STS
+                  Effect: Allow
+                  Action:
+                    - sts:AssumeRole
+                  Resource:
+                    - !Sub "arn:aws:iam::${SharedAccountId}:role/vpc-peering-accepter"
+                - !Ref "AWS::NoValue"
       Tags:
         - Key: Name
           Value: !Sub "github-actions-${Environment}"
