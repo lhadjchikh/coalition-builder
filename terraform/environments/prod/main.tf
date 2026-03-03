@@ -325,7 +325,7 @@ resource "aws_route53_record" "apex" {
   name    = var.domain_name
   type    = "A"
   ttl     = 300
-  records = ["76.76.21.21"]
+  records = [var.vercel_ip]
 }
 
 resource "aws_route53_record" "www" {

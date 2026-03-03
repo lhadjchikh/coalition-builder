@@ -89,6 +89,12 @@ variable "site_password" {
 }
 
 # Domain & DNS
+variable "vercel_ip" {
+  description = "Vercel's anycast IP for apex domain A record (https://vercel.com/docs/projects/domains)"
+  type        = string
+  default     = "76.76.21.21"
+}
+
 variable "domain_name" {
   description = "The domain name for the application"
   type        = string
