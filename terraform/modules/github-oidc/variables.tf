@@ -3,6 +3,12 @@ variable "environment" {
   type        = string
 }
 
+variable "aws_region" {
+  description = "AWS region for scoping resource ARNs"
+  type        = string
+  default     = "us-east-1"
+}
+
 variable "create_oidc_provider" {
   description = "Whether to create the OIDC provider (only needed once per account)"
   type        = bool
@@ -13,6 +19,11 @@ variable "existing_oidc_provider_arn" {
   description = "ARN of an existing OIDC provider (used when create_oidc_provider is false)"
   type        = string
   default     = ""
+
+  validation {
+    condition     = var.existing_oidc_provider_arn != "" || var.create_oidc_provider
+    error_message = "existing_oidc_provider_arn must be set when create_oidc_provider is false."
+  }
 }
 
 variable "github_subjects" {

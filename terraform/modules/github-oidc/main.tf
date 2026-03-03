@@ -13,6 +13,8 @@ terraform {
   }
 }
 
+data "aws_caller_identity" "current" {}
+
 # GitHub OIDC Provider
 # Only one provider per account is needed (GitHub's thumbprint is stable)
 resource "aws_iam_openid_connect_provider" "github" {
@@ -102,7 +104,7 @@ resource "aws_iam_role_policy" "terraform_operations" {
           "dynamodb:PutItem",
           "dynamodb:DeleteItem"
         ]
-        Resource = "arn:aws:dynamodb:*:*:table/coalition-terraform-locks"
+        Resource = "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/coalition-terraform-locks"
       }
     ]
   })
