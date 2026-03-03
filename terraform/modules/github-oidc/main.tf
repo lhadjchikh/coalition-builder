@@ -232,6 +232,7 @@ resource "aws_iam_role_policy" "infrastructure" {
           ]
           Resource = [
             "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.resource_prefix}-*",
+            "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/github-actions-*",
             "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/${var.resource_prefix}-*",
             "arn:aws:iam::${data.aws_caller_identity.current.account_id}:instance-profile/${var.resource_prefix}-*",
             "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/*",

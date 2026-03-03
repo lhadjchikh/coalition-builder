@@ -199,6 +199,7 @@ Resources:
                   - iam:CreateServiceLinkedRole
                 Resource:
                   - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ResourcePrefix}-*"
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:role/github-actions-*"
                   - !Sub "arn:aws:iam::${AWS::AccountId}:policy/${ResourcePrefix}-*"
                   - !Sub "arn:aws:iam::${AWS::AccountId}:instance-profile/${ResourcePrefix}-*"
                   - !Sub "arn:aws:iam::${AWS::AccountId}:oidc-provider/*"

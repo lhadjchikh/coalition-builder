@@ -419,6 +419,23 @@ else
   fail "IAMMutate Resource should be scoped, not wildcard (*)"
 fi
 
+# Verify IAMMutate includes github-actions-* role pattern (so the role can manage itself)
+if echo "$INFRA_POLICY_STMTS" | python3 -c "
+import json, sys
+stmts = json.load(sys.stdin)
+for s in stmts:
+    if s.get('Sid') == 'IAMMutate':
+        res_str = json.dumps(s.get('Resource', ''))
+        if 'github-actions-' in res_str:
+            sys.exit(0)
+        sys.exit(1)
+sys.exit(1)
+" 2>/dev/null; then
+  pass "IAMMutate includes github-actions-* role pattern"
+else
+  fail "IAMMutate missing github-actions-* role pattern (cannot manage its own OIDC role)"
+fi
+
 # Verify EC2 is split into read and mutate statements
 if echo "$INFRA_POLICY_STMTS" | grep -q '"Sid": "EC2ReadOnly"'; then
   pass "EC2 has separate EC2ReadOnly statement"
