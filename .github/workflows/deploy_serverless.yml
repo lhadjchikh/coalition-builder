@@ -82,11 +82,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/github-actions-${{ needs.determine-environment.outputs.environment }}
           aws-region: us-east-1
 
       - name: Login to Amazon ECR
@@ -111,7 +110,7 @@ jobs:
       - name: Configure Zappa settings
         working-directory: ./backend
         env:
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
           AWS_REGION: us-east-1
           ZAPPA_S3_BUCKET: ${{ vars.ZAPPA_S3_BUCKET }}
           DEV_ASSETS_BUCKET: ${{ vars.DEV_ASSETS_BUCKET }}
@@ -130,7 +129,7 @@ jobs:
         working-directory: ./backend
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_ACCOUNT: ${{ vars.AWS_ACCOUNT_ID }}
           ENV: ${{ needs.determine-environment.outputs.environment }}
         run: |
           # Pull and tag base image if not building it
@@ -264,7 +263,14 @@ jobs:
     needs: [deploy-backend, deploy-frontend, determine-environment]
     if: success()
     runs-on: ubuntu-latest
+    environment: ${{ needs.determine-environment.outputs.environment }}
     steps:
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/github-actions-${{ needs.determine-environment.outputs.environment }}
+          aws-region: us-east-1
+
       - name: Set API URL
         id: api-url
         env:
@@ -308,8 +314,8 @@ jobs:
           ENV: ${{ needs.determine-environment.outputs.environment }}
         run: |
           if [ "${{ needs.smoke-test.result }}" = "success" ]; then
-            echo "✅ Deployment to $ENV environment successful!"
+            echo "Deployment to $ENV environment successful!"
           else
-            echo "❌ Deployment to $ENV environment failed!"
+            echo "Deployment to $ENV environment failed!"
             exit 1
           fi
