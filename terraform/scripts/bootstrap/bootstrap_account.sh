@@ -154,9 +154,11 @@ log_info "Checking S3 state bucket: $S3_BUCKET_NAME"
 
 if ! aws_cmd s3api head-bucket --bucket "$S3_BUCKET_NAME" 2>/dev/null; then
   log_info "Creating S3 bucket for Terraform state..."
-  aws_cmd s3api create-bucket \
-    --bucket "$S3_BUCKET_NAME" \
-    --region "$REGION"
+  CREATE_BUCKET_ARGS=(s3api create-bucket --bucket "$S3_BUCKET_NAME" --region "$REGION")
+  if [[ "$REGION" != "us-east-1" ]]; then
+    CREATE_BUCKET_ARGS+=(--create-bucket-configuration "LocationConstraint=${REGION}")
+  fi
+  aws_cmd "${CREATE_BUCKET_ARGS[@]}"
 
   # Enable versioning
   aws_cmd s3api put-bucket-versioning \
