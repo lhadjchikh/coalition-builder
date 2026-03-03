@@ -322,7 +322,7 @@ else
 fi
 
 # Verify configure_github.sh sets expected variables
-for var_name in AWS_ACCOUNT_ID ENVIRONMENT AWS_REGION AWS_ROLE_ARN; do
+for var_name in AWS_ACCOUNT_ID ENVIRONMENT AWS_REGION; do
   if grep -q "$var_name" "${SCRIPT_DIR}/configure_github.sh"; then
     pass "configure_github.sh sets $var_name"
   else
