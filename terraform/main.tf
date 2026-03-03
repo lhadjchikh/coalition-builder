@@ -83,6 +83,8 @@ module "security" {
   vpc_id                   = module.networking.vpc_id
   allowed_bastion_cidrs    = var.allowed_bastion_cidrs
   lambda_security_group_id = module.zappa.lambda_security_group_id
+  create_bastion_sg        = true
+  create_waf               = true
 }
 
 # Monitoring Module
@@ -175,21 +177,20 @@ module "storage" {
   static_cache_max_ttl     = var.cloudfront_static_cache_max_ttl
 }
 
-# Serverless Storage Module - Creates S3 buckets for Lambda/serverless deployments
-# This module creates separate buckets for dev, staging, and production environments
-# automatically, making it easy for open-source contributors to get started
+# Serverless Storage Module - Creates S3 bucket for Lambda/serverless deployments
 module "serverless_storage" {
   source = "./modules/serverless-storage"
 
-  project_name                 = var.prefix
-  force_destroy_non_production = var.environment != "prod"
-  enable_lifecycle_rules       = true
-  enable_cloudfront            = var.environment == "prod" || var.environment == "staging"
+  project_name           = var.prefix
+  environment            = var.environment == "prod" ? "production" : var.environment
+  force_destroy          = var.environment != "prod"
+  enable_lifecycle_rules = true
+  enable_cloudfront      = var.environment == "prod" || var.environment == "staging"
 
-  production_cors_origins = [
+  cors_origins = var.environment == "prod" ? [
     "https://${var.domain_name}",
     "https://www.${var.domain_name}"
-  ]
+  ] : ["*"]
 }
 
 # Lambda ECR Module - Creates ECR repositories for Lambda deployment
@@ -211,20 +212,14 @@ resource "aws_acm_certificate" "main" {
 }
 
 resource "aws_route53_record" "cert_validation" {
-  for_each = {
-    for dvo in aws_acm_certificate.main.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      record = dvo.resource_record_value
-      type   = dvo.resource_record_type
-    }
-  }
+  for_each = toset([var.domain_name, "*.${var.domain_name}"])
 
   allow_overwrite = true
   zone_id         = var.route53_zone_id
-  name            = each.value.name
-  type            = each.value.type
+  name            = one([for dvo in aws_acm_certificate.main.domain_validation_options : dvo.resource_record_name if dvo.domain_name == each.key])
+  type            = one([for dvo in aws_acm_certificate.main.domain_validation_options : dvo.resource_record_type if dvo.domain_name == each.key])
   ttl             = 60
-  records         = [each.value.record]
+  records         = [one([for dvo in aws_acm_certificate.main.domain_validation_options : dvo.resource_record_value if dvo.domain_name == each.key])]
 }
 
 resource "aws_acm_certificate_validation" "main" {

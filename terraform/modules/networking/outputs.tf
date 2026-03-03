@@ -44,8 +44,18 @@ output "s3_endpoint_prefix_list_id" {
 }
 
 output "private_app_route_table_id" {
-  description = "ID of the private app route table (for testing purposes)"
+  description = "ID of the private app route table"
   value       = length(aws_route_table.private_app) > 0 ? aws_route_table.private_app[0].id : null
+}
+
+output "private_db_route_table_id" {
+  description = "ID of the private DB route table"
+  value       = length(aws_route_table.private_db) > 0 ? aws_route_table.private_db[0].id : null
+}
+
+output "public_route_table_id" {
+  description = "ID of the public route table"
+  value       = length(aws_route_table.public) > 0 ? aws_route_table.public[0].id : null
 }
 
 output "interface_endpoints" {

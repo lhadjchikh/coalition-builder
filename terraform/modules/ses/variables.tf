@@ -36,6 +36,12 @@ variable "route53_zone_id" {
   default     = ""
 }
 
+variable "create_route53_records" {
+  description = "Whether to create Route53 DNS records for SES verification"
+  type        = bool
+  default     = true
+}
+
 variable "create_spf_record" {
   description = "Whether to create SPF record for better deliverability"
   type        = bool

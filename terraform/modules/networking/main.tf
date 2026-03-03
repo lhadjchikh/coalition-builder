@@ -211,42 +211,42 @@ resource "aws_route_table" "private_db" {
 
 # Route table associations - only created if corresponding subnets are created
 resource "aws_route_table_association" "public_a" {
-  count = var.create_public_subnets && length(aws_route_table.public) > 0 ? 1 : 0
+  count = var.create_public_subnets ? 1 : 0
 
   subnet_id      = aws_subnet.public_a[0].id
   route_table_id = aws_route_table.public[0].id
 }
 
 resource "aws_route_table_association" "public_b" {
-  count = var.create_public_subnets && length(aws_route_table.public) > 0 ? 1 : 0
+  count = var.create_public_subnets ? 1 : 0
 
   subnet_id      = aws_subnet.public_b[0].id
   route_table_id = aws_route_table.public[0].id
 }
 
 resource "aws_route_table_association" "private_app_a" {
-  count = var.create_private_subnets && length(aws_route_table.private_app) > 0 ? 1 : 0
+  count = var.create_private_subnets ? 1 : 0
 
   subnet_id      = aws_subnet.private_a[0].id
   route_table_id = aws_route_table.private_app[0].id
 }
 
 resource "aws_route_table_association" "private_app_b" {
-  count = var.create_private_subnets && length(aws_route_table.private_app) > 0 ? 1 : 0
+  count = var.create_private_subnets ? 1 : 0
 
   subnet_id      = aws_subnet.private_b[0].id
   route_table_id = aws_route_table.private_app[0].id
 }
 
 resource "aws_route_table_association" "private_db_a" {
-  count = var.create_db_subnets && length(aws_route_table.private_db) > 0 ? 1 : 0
+  count = var.create_db_subnets ? 1 : 0
 
   subnet_id      = aws_subnet.private_db_a[0].id
   route_table_id = aws_route_table.private_db[0].id
 }
 
 resource "aws_route_table_association" "private_db_b" {
-  count = var.create_db_subnets && length(aws_route_table.private_db) > 0 ? 1 : 0
+  count = var.create_db_subnets ? 1 : 0
 
   subnet_id      = aws_subnet.private_db_b[0].id
   route_table_id = aws_route_table.private_db[0].id

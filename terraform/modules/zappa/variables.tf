@@ -43,6 +43,12 @@ variable "secrets_kms_key_arn" {
   }
 }
 
+variable "project_name" {
+  description = "Zappa project name (used for Lambda function naming, e.g. 'coalition' creates 'coalition-prod')"
+  type        = string
+  default     = ""
+}
+
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)

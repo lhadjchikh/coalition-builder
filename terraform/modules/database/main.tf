@@ -8,7 +8,7 @@ locals {
   # Parameter group names based on prevent_destroy setting
   parameter_group_name = var.prevent_destroy ? aws_db_parameter_group.postgres[0].name : aws_db_parameter_group.postgres_testing[0].name
 
-  db_setup_script_path = "${path.root}/scripts/db_setup.sh"
+  db_setup_script_path = "${path.module}/scripts/db_setup.sh"
 }
 
 # KMS key for RDS encryption

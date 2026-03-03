@@ -5,10 +5,10 @@ output "db_security_group_id" {
 
 output "bastion_security_group_id" {
   description = "ID of the bastion host security group"
-  value       = aws_security_group.bastion_sg.id
+  value       = length(aws_security_group.bastion_sg) > 0 ? aws_security_group.bastion_sg[0].id : null
 }
 
 output "waf_web_acl_arn" {
   description = "ARN of the WAF Web ACL"
-  value       = aws_wafv2_web_acl.main.arn
+  value       = length(aws_wafv2_web_acl.main) > 0 ? aws_wafv2_web_acl.main[0].arn : null
 }

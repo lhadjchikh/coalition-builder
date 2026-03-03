@@ -243,6 +243,28 @@ resource "aws_sns_topic" "cost_anomaly_alerts" {
   }
 }
 
+resource "aws_sns_topic_policy" "cost_anomaly_alerts" {
+  arn = aws_sns_topic.cost_anomaly_alerts.arn
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowCostAnomalyDetectionPublish"
+        Effect    = "Allow"
+        Principal = { Service = "costalerts.amazonaws.com" }
+        Action    = "SNS:Publish"
+        Resource  = aws_sns_topic.cost_anomaly_alerts.arn
+        Condition = {
+          StringEquals = {
+            "aws:SourceAccount" = data.aws_caller_identity.current.account_id
+          }
+        }
+      }
+    ]
+  })
+}
+
 # SNS Topic Subscription for Email Alerts
 resource "aws_sns_topic_subscription" "cost_anomaly_email" {
   topic_arn = aws_sns_topic.cost_anomaly_alerts.arn

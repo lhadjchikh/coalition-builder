@@ -16,6 +16,25 @@ variable "allowed_bastion_cidrs" {
 }
 
 variable "lambda_security_group_id" {
-  description = "ID of the Lambda security group (from the Zappa module)"
+  description = "ID of the Lambda security group (from the Zappa module). Used for same-account SG-based ingress."
   type        = string
+  default     = ""
+}
+
+variable "allowed_lambda_cidrs" {
+  description = "CIDR blocks allowed to access the database (for cross-account access where SG references don't work)"
+  type        = list(string)
+  default     = []
+}
+
+variable "create_waf" {
+  description = "Whether to create the WAF Web ACL (set to false for dev environments)"
+  type        = bool
+  default     = true
+}
+
+variable "create_bastion_sg" {
+  description = "Whether to create the bastion security group (only needed in shared account)"
+  type        = bool
+  default     = true
 }
