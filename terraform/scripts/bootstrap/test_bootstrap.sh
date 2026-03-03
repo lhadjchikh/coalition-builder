@@ -1,0 +1,410 @@
+#!/bin/bash
+# Tests for bootstrap scripts and CloudFormation templates.
+# Validates: shellcheck linting, YAML structure, naming conventions,
+# and consistency with the Terraform github-oidc module.
+#
+# Usage: ./test_bootstrap.sh
+
+set -euo pipefail
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+export YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PASS=0
+FAIL=0
+
+pass() {
+  echo -e "  ${GREEN}PASS${NC} $1"
+  PASS=$((PASS + 1))
+}
+
+fail() {
+  echo -e "  ${RED}FAIL${NC} $1"
+  FAIL=$((FAIL + 1))
+}
+
+# ============================================================
+# ShellCheck tests
+# ============================================================
+echo -e "${BLUE}ShellCheck linting${NC}"
+
+for script in bootstrap_account.sh configure_github.sh bootstrap_all.sh; do
+  if shellcheck "${SCRIPT_DIR}/${script}"; then
+    pass "${script} passes shellcheck"
+  else
+    fail "${script} fails shellcheck"
+  fi
+done
+
+# ============================================================
+# CloudFormation YAML structure tests
+# ============================================================
+echo -e "\n${BLUE}CloudFormation template validation${NC}"
+
+# Python helper script that handles CloudFormation YAML tags (!Sub, !If, etc.)
+CFN_YAML_HELPER=$(cat <<'PYEOF'
+import yaml, sys, json
+
+# Register constructors for CloudFormation intrinsic functions
+def cfn_constructor(loader, tag_suffix, node):
+    if isinstance(node, yaml.ScalarNode):
+        return {("Fn::" + tag_suffix) if tag_suffix != "Ref" else tag_suffix: loader.construct_scalar(node)}
+    elif isinstance(node, yaml.SequenceNode):
+        return {("Fn::" + tag_suffix) if tag_suffix != "Ref" else tag_suffix: loader.construct_sequence(node)}
+    elif isinstance(node, yaml.MappingNode):
+        return {("Fn::" + tag_suffix) if tag_suffix != "Ref" else tag_suffix: loader.construct_mapping(node)}
+
+for tag in ["Sub", "Ref", "If", "Equals", "GetAtt", "Select", "Join", "Split", "Not", "And", "Or", "Condition"]:
+    yaml.SafeLoader.add_constructor(
+        "!" + tag,
+        lambda loader, node, t=tag: cfn_constructor(loader, t, node)
+    )
+
+def load_cfn(path):
+    with open(path) as f:
+        return yaml.safe_load(f)
+
+def navigate(data, keys):
+    for k in keys:
+        if isinstance(k, int):
+            data = data[k]
+        else:
+            data = data[k]
+    return data
+
+if __name__ == "__main__":
+    cmd = sys.argv[1]
+    path = sys.argv[2]
+    data = load_cfn(path)
+    if cmd == "get":
+        keys = json.loads(sys.argv[3])
+        try:
+            result = navigate(data, keys)
+            if result is None:
+                sys.exit(1)
+            if isinstance(result, (dict, list)):
+                print(json.dumps(result))
+            else:
+                print(result)
+        except (KeyError, TypeError, IndexError):
+            sys.exit(1)
+    elif cmd == "has":
+        keys = json.loads(sys.argv[3])
+        try:
+            result = navigate(data, keys)
+            sys.exit(0 if result is not None else 1)
+        except (KeyError, TypeError, IndexError):
+            sys.exit(1)
+    elif cmd == "valid":
+        sys.exit(0)
+PYEOF
+)
+
+yaml_query() {
+  local file="$1"
+  local keys_json="$2"
+  python3 -c "$CFN_YAML_HELPER" get "$file" "$keys_json"
+}
+
+yaml_has_key() {
+  local file="$1"
+  local keys_json="$2"
+  python3 -c "$CFN_YAML_HELPER" has "$file" "$keys_json" 2>/dev/null
+}
+
+
+# --- github-oidc-role.cfn.yml ---
+OIDC_TEMPLATE="${SCRIPT_DIR}/github-oidc-role.cfn.yml"
+
+if yaml_has_key "$OIDC_TEMPLATE" '["AWSTemplateFormatVersion"]'; then
+  pass "github-oidc-role.cfn.yml is valid YAML with AWSTemplateFormatVersion"
+else
+  fail "github-oidc-role.cfn.yml missing or invalid AWSTemplateFormatVersion"
+fi
+
+if yaml_has_key "$OIDC_TEMPLATE" '["Parameters", "Environment"]'; then
+  pass "github-oidc-role.cfn.yml has Environment parameter"
+else
+  fail "github-oidc-role.cfn.yml missing Environment parameter"
+fi
+
+if yaml_has_key "$OIDC_TEMPLATE" '["Parameters", "GitHubOrg"]'; then
+  pass "github-oidc-role.cfn.yml has GitHubOrg parameter"
+else
+  fail "github-oidc-role.cfn.yml missing GitHubOrg parameter"
+fi
+
+if yaml_has_key "$OIDC_TEMPLATE" '["Parameters", "GitHubRepo"]'; then
+  pass "github-oidc-role.cfn.yml has GitHubRepo parameter"
+else
+  fail "github-oidc-role.cfn.yml missing GitHubRepo parameter"
+fi
+
+if yaml_has_key "$OIDC_TEMPLATE" '["Resources", "GitHubOIDCProvider"]'; then
+  pass "github-oidc-role.cfn.yml has GitHubOIDCProvider resource"
+else
+  fail "github-oidc-role.cfn.yml missing GitHubOIDCProvider resource"
+fi
+
+if yaml_has_key "$OIDC_TEMPLATE" '["Resources", "GitHubActionsRole"]'; then
+  pass "github-oidc-role.cfn.yml has GitHubActionsRole resource"
+else
+  fail "github-oidc-role.cfn.yml missing GitHubActionsRole resource"
+fi
+
+if yaml_has_key "$OIDC_TEMPLATE" '["Outputs", "OIDCProviderArn"]'; then
+  pass "github-oidc-role.cfn.yml has OIDCProviderArn output"
+else
+  fail "github-oidc-role.cfn.yml missing OIDCProviderArn output"
+fi
+
+if yaml_has_key "$OIDC_TEMPLATE" '["Outputs", "RoleArn"]'; then
+  pass "github-oidc-role.cfn.yml has RoleArn output"
+else
+  fail "github-oidc-role.cfn.yml missing RoleArn output"
+fi
+
+# Verify OIDC provider URL matches Terraform module
+OIDC_URL=$(yaml_query "$OIDC_TEMPLATE" '["Resources", "GitHubOIDCProvider", "Properties", "Url"]')
+if [[ "$OIDC_URL" == "https://token.actions.githubusercontent.com" ]]; then
+  pass "OIDC provider URL matches Terraform module"
+else
+  fail "OIDC provider URL mismatch (got: $OIDC_URL)"
+fi
+
+# Verify audience matches Terraform module
+OIDC_AUD=$(yaml_query "$OIDC_TEMPLATE" '["Resources", "GitHubOIDCProvider", "Properties", "ClientIdList", 0]')
+if [[ "$OIDC_AUD" == "sts.amazonaws.com" ]]; then
+  pass "OIDC audience matches Terraform module"
+else
+  fail "OIDC audience mismatch (got: $OIDC_AUD)"
+fi
+
+# Verify thumbprint matches Terraform module
+OIDC_THUMB=$(yaml_query "$OIDC_TEMPLATE" '["Resources", "GitHubOIDCProvider", "Properties", "ThumbprintList", 0]')
+if [[ "$OIDC_THUMB" == "ffffffffffffffffffffffffffffffffffffffff" ]]; then
+  pass "OIDC thumbprint matches Terraform module"
+else
+  fail "OIDC thumbprint mismatch (got: $OIDC_THUMB)"
+fi
+
+# Verify GitHubOrg has no hardcoded default (should be a required parameter)
+if ! yaml_has_key "$OIDC_TEMPLATE" '["Parameters", "GitHubOrg", "Default"]'; then
+  pass "GitHubOrg has no hardcoded default"
+else
+  fail "GitHubOrg should not have a hardcoded default"
+fi
+
+# Verify GitHubRepo has no hardcoded default (should be a required parameter)
+if ! yaml_has_key "$OIDC_TEMPLATE" '["Parameters", "GitHubRepo", "Default"]'; then
+  pass "GitHubRepo has no hardcoded default"
+else
+  fail "GitHubRepo should not have a hardcoded default"
+fi
+
+# Verify Environment allowed values
+ENV_ALLOWED=$(yaml_query "$OIDC_TEMPLATE" '["Parameters", "Environment", "AllowedValues"]')
+if [[ "$ENV_ALLOWED" == '["dev", "prod", "shared"]' || "$ENV_ALLOWED" == '["shared", "prod", "dev"]' ]]; then
+  pass "Environment parameter allows shared, prod, dev"
+else
+  fail "Environment parameter allowed values wrong (got: $ENV_ALLOWED)"
+fi
+
+# --- peering-role.cfn.yml ---
+PEERING_TEMPLATE="${SCRIPT_DIR}/peering-role.cfn.yml"
+
+if yaml_has_key "$PEERING_TEMPLATE" '["AWSTemplateFormatVersion"]'; then
+  pass "peering-role.cfn.yml is valid YAML with AWSTemplateFormatVersion"
+else
+  fail "peering-role.cfn.yml missing or invalid AWSTemplateFormatVersion"
+fi
+
+if yaml_has_key "$PEERING_TEMPLATE" '["Resources", "VPCPeeringAccepterRole"]'; then
+  pass "peering-role.cfn.yml has VPCPeeringAccepterRole resource"
+else
+  fail "peering-role.cfn.yml missing VPCPeeringAccepterRole resource"
+fi
+
+if yaml_has_key "$PEERING_TEMPLATE" '["Parameters", "ProdAccountId"]'; then
+  pass "peering-role.cfn.yml has ProdAccountId parameter"
+else
+  fail "peering-role.cfn.yml missing ProdAccountId parameter"
+fi
+
+if yaml_has_key "$PEERING_TEMPLATE" '["Parameters", "DevAccountId"]'; then
+  pass "peering-role.cfn.yml has DevAccountId parameter"
+else
+  fail "peering-role.cfn.yml missing DevAccountId parameter"
+fi
+
+# Verify ProdAccountId has no hardcoded default (should be a required parameter)
+if ! yaml_has_key "$PEERING_TEMPLATE" '["Parameters", "ProdAccountId", "Default"]'; then
+  pass "ProdAccountId has no hardcoded default"
+else
+  fail "ProdAccountId should not have a hardcoded default"
+fi
+
+# Verify DevAccountId has no hardcoded default (should be a required parameter)
+if ! yaml_has_key "$PEERING_TEMPLATE" '["Parameters", "DevAccountId", "Default"]'; then
+  pass "DevAccountId has no hardcoded default"
+else
+  fail "DevAccountId should not have a hardcoded default"
+fi
+
+# Verify peering role name matches what prod/dev Terraform expects
+PEERING_ROLE_NAME=$(yaml_query "$PEERING_TEMPLATE" '["Resources", "VPCPeeringAccepterRole", "Properties", "RoleName"]')
+if [[ "$PEERING_ROLE_NAME" == "vpc-peering-accepter" ]]; then
+  pass "Peering role name is vpc-peering-accepter"
+else
+  fail "Peering role name mismatch (got: $PEERING_ROLE_NAME)"
+fi
+
+# Verify peering role has required EC2 permissions
+PEERING_ACTIONS=$(yaml_query "$PEERING_TEMPLATE" '["Resources", "VPCPeeringAccepterRole", "Properties", "Policies", 0, "PolicyDocument", "Statement", 0, "Action"]')
+for action in "ec2:AcceptVpcPeeringConnection" "ec2:DescribeVpcPeeringConnections" "ec2:CreateRoute" "ec2:DescribeRouteTables" "ec2:DescribeVpcs"; do
+  if echo "$PEERING_ACTIONS" | grep -qF "$action"; then
+    pass "Peering role has $action permission"
+  else
+    fail "Peering role missing $action permission"
+  fi
+done
+
+# ============================================================
+# Script content tests
+# ============================================================
+echo -e "\n${BLUE}Script content validation${NC}"
+
+# Verify bootstrap_account.sh references correct bucket naming convention
+if grep -q 'coalition-terraform-state-' "${SCRIPT_DIR}/bootstrap_account.sh"; then
+  pass "bootstrap_account.sh uses coalition-terraform-state- bucket prefix"
+else
+  fail "bootstrap_account.sh missing coalition-terraform-state- bucket prefix"
+fi
+
+# Verify bootstrap_account.sh references correct DynamoDB table
+if grep -q 'coalition-terraform-locks' "${SCRIPT_DIR}/bootstrap_account.sh"; then
+  pass "bootstrap_account.sh uses coalition-terraform-locks table name"
+else
+  fail "bootstrap_account.sh missing coalition-terraform-locks table name"
+fi
+
+# Verify bootstrap_account.sh uses set -euo pipefail
+if head -10 "${SCRIPT_DIR}/bootstrap_account.sh" | grep -q 'set -euo pipefail'; then
+  pass "bootstrap_account.sh uses set -euo pipefail"
+else
+  fail "bootstrap_account.sh missing set -euo pipefail"
+fi
+
+# Verify bootstrap_account.sh deploys OIDC stack
+if grep -q 'github-oidc-role.cfn.yml' "${SCRIPT_DIR}/bootstrap_account.sh"; then
+  pass "bootstrap_account.sh deploys github-oidc-role.cfn.yml"
+else
+  fail "bootstrap_account.sh missing github-oidc-role.cfn.yml deployment"
+fi
+
+# Verify bootstrap_account.sh deploys peering stack for shared only
+if grep -q 'peering-role.cfn.yml' "${SCRIPT_DIR}/bootstrap_account.sh"; then
+  pass "bootstrap_account.sh deploys peering-role.cfn.yml"
+else
+  fail "bootstrap_account.sh missing peering-role.cfn.yml deployment"
+fi
+
+# Verify configure_github.sh accepts --repo parameter
+if grep -q '\-\-repo' "${SCRIPT_DIR}/configure_github.sh"; then
+  pass "configure_github.sh accepts --repo parameter"
+else
+  fail "configure_github.sh missing --repo parameter"
+fi
+
+# Verify configure_github.sh sets expected variables
+for var_name in AWS_ACCOUNT_ID ENVIRONMENT AWS_REGION AWS_ROLE_ARN; do
+  if grep -q "$var_name" "${SCRIPT_DIR}/configure_github.sh"; then
+    pass "configure_github.sh sets $var_name"
+  else
+    fail "configure_github.sh missing $var_name"
+  fi
+done
+
+# Verify bootstrap_all.sh handles all three environments
+for env in shared prod dev; do
+  if grep -q "\-\-environment ${env}" "${SCRIPT_DIR}/bootstrap_all.sh"; then
+    pass "bootstrap_all.sh bootstraps ${env} environment"
+  else
+    fail "bootstrap_all.sh missing ${env} environment"
+  fi
+done
+
+# Verify bootstrap_all.sh prints terraform import commands
+if grep -q 'terraform import' "${SCRIPT_DIR}/bootstrap_all.sh"; then
+  pass "bootstrap_all.sh prints terraform import commands"
+else
+  fail "bootstrap_all.sh missing terraform import commands"
+fi
+
+# Verify bootstrap_all.sh imports both OIDC provider and role
+if grep -q 'aws_iam_openid_connect_provider' "${SCRIPT_DIR}/bootstrap_all.sh"; then
+  pass "bootstrap_all.sh imports OIDC provider"
+else
+  fail "bootstrap_all.sh missing OIDC provider import"
+fi
+
+if grep -q 'aws_iam_role.github_actions' "${SCRIPT_DIR}/bootstrap_all.sh"; then
+  pass "bootstrap_all.sh imports GitHub Actions role"
+else
+  fail "bootstrap_all.sh missing GitHub Actions role import"
+fi
+
+# Verify all scripts are executable
+for script in bootstrap_account.sh configure_github.sh bootstrap_all.sh; do
+  if [[ -x "${SCRIPT_DIR}/${script}" ]]; then
+    pass "${script} is executable"
+  else
+    fail "${script} is not executable"
+  fi
+done
+
+# ============================================================
+# Naming consistency tests (CFN matches Terraform)
+# ============================================================
+echo -e "\n${BLUE}Naming consistency (CFN ↔ Terraform)${NC}"
+
+# Role name pattern: github-actions-{environment}
+# CFN !Sub produces {"Fn::Sub": "github-actions-${Environment}"} in our loader
+ROLE_NAME_JSON=$(yaml_query "$OIDC_TEMPLATE" '["Resources", "GitHubActionsRole", "Properties", "RoleName"]')
+# shellcheck disable=SC2016 # Intentional: literal CFN ${Environment} syntax
+EXPECTED_ROLE='{"Fn::Sub": "github-actions-${Environment}"}'
+if [[ "$ROLE_NAME_JSON" == "$EXPECTED_ROLE" ]]; then
+  pass "CFN role name pattern matches Terraform (github-actions-\${Environment})"
+else
+  fail "CFN role name pattern mismatch (got: $ROLE_NAME_JSON)"
+fi
+
+# Terraform operations policy name: {environment}-terraform-operations
+POLICY_NAME_JSON=$(yaml_query "$OIDC_TEMPLATE" '["Resources", "GitHubActionsRole", "Properties", "Policies", 0, "PolicyName"]')
+# shellcheck disable=SC2016 # Intentional: literal CFN ${Environment} syntax
+EXPECTED_POLICY='{"Fn::Sub": "${Environment}-terraform-operations"}'
+if [[ "$POLICY_NAME_JSON" == "$EXPECTED_POLICY" ]]; then
+  pass "CFN terraform-operations policy name matches Terraform module"
+else
+  fail "CFN terraform-operations policy name mismatch (got: $POLICY_NAME_JSON)"
+fi
+
+# ============================================================
+# Summary
+# ============================================================
+echo
+TOTAL=$((PASS + FAIL))
+echo -e "${BLUE}Results: ${PASS}/${TOTAL} passed${NC}"
+
+if [[ $FAIL -gt 0 ]]; then
+  echo -e "${RED}${FAIL} test(s) failed${NC}"
+  exit 1
+else
+  echo -e "${GREEN}All tests passed${NC}"
+  exit 0
+fi

@@ -1,0 +1,211 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Bootstrap GitHub Actions OIDC provider and IAM role.
+  Matches the Terraform github-oidc module so resources can be imported later.
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues:
+      - shared
+      - prod
+      - dev
+    Description: Environment name (determines role name and trust policy subjects)
+
+  GitHubOrg:
+    Type: String
+    Description: GitHub organization or user name (e.g., my-org)
+
+  GitHubRepo:
+    Type: String
+    Description: GitHub repository name (e.g., coalition-builder)
+
+Conditions:
+  IsShared: !Equals [!Ref Environment, shared]
+  IsProd: !Equals [!Ref Environment, prod]
+  IsDev: !Equals [!Ref Environment, dev]
+
+Resources:
+  GitHubOIDCProvider:
+    Type: AWS::IAM::OIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      ThumbprintList:
+        - ffffffffffffffffffffffffffffffffffffffff
+      Tags:
+        - Key: Name
+          Value: github-actions-oidc
+
+  GitHubActionsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "github-actions-${Environment}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !GetAtt GitHubOIDCProvider.Arn
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                "token.actions.githubusercontent.com:aud": sts.amazonaws.com
+              StringLike:
+                "token.actions.githubusercontent.com:sub": !If
+                  - IsShared
+                  - - !Sub "repo:${GitHubOrg}/${GitHubRepo}:environment:shared"
+                    - !Sub "repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/main"
+                  - !If
+                    - IsProd
+                    - - !Sub "repo:${GitHubOrg}/${GitHubRepo}:environment:prod"
+                      - !Sub "repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/main"
+                    - - !Sub "repo:${GitHubOrg}/${GitHubRepo}:environment:dev"
+                      - !Sub "repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/*"
+      Policies:
+        - PolicyName: !Sub "${Environment}-terraform-operations"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: TerraformStateAccess
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:ListBucket
+                Resource:
+                  - "arn:aws:s3:::coalition-terraform-state-*"
+                  - "arn:aws:s3:::coalition-terraform-state-*/*"
+              - Sid: TerraformLockAccess
+                Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:DeleteItem
+                Resource: !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/coalition-terraform-locks"
+        - PolicyName: !Sub "${Environment}-infrastructure"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: EC2AndVPC
+                Effect: Allow
+                Action:
+                  - ec2:*
+                Resource: "*"
+              - Sid: IAM
+                Effect: Allow
+                Action:
+                  - iam:*
+                Resource: "*"
+              - Sid: S3
+                Effect: Allow
+                Action:
+                  - s3:*
+                Resource: "*"
+              - Sid: RDS
+                Effect: Allow
+                Action:
+                  - rds:*
+                Resource: "*"
+              - Sid: Lambda
+                Effect: Allow
+                Action:
+                  - lambda:*
+                Resource: "*"
+              - Sid: APIGateway
+                Effect: Allow
+                Action:
+                  - apigateway:*
+                Resource: "*"
+              - Sid: ECR
+                Effect: Allow
+                Action:
+                  - ecr:*
+                Resource: "*"
+              - Sid: SecretsManager
+                Effect: Allow
+                Action:
+                  - secretsmanager:*
+                Resource: "*"
+              - Sid: SSM
+                Effect: Allow
+                Action:
+                  - ssm:*
+                Resource: "*"
+              - Sid: KMS
+                Effect: Allow
+                Action:
+                  - kms:*
+                Resource: "*"
+              - Sid: CloudWatch
+                Effect: Allow
+                Action:
+                  - cloudwatch:*
+                  - logs:*
+                Resource: "*"
+              - Sid: CloudFront
+                Effect: Allow
+                Action:
+                  - cloudfront:*
+                Resource: "*"
+              - Sid: WAF
+                Effect: Allow
+                Action:
+                  - wafv2:*
+                Resource: "*"
+              - Sid: SES
+                Effect: Allow
+                Action:
+                  - ses:*
+                Resource: "*"
+              - Sid: Route53
+                Effect: Allow
+                Action:
+                  - route53:*
+                Resource: "*"
+              - Sid: ACM
+                Effect: Allow
+                Action:
+                  - acm:*
+                Resource: "*"
+              - Sid: Location
+                Effect: Allow
+                Action:
+                  - geo:*
+                Resource: "*"
+              - Sid: Budgets
+                Effect: Allow
+                Action:
+                  - budgets:*
+                  - ce:*
+                Resource: "*"
+              - Sid: SNS
+                Effect: Allow
+                Action:
+                  - sns:*
+                Resource: "*"
+              - Sid: STS
+                Effect: Allow
+                Action:
+                  - sts:*
+                Resource: "*"
+      Tags:
+        - Key: Name
+          Value: !Sub "github-actions-${Environment}"
+        - Key: Environment
+          Value: !Ref Environment
+
+Outputs:
+  OIDCProviderArn:
+    Description: ARN of the GitHub OIDC provider
+    Value: !GetAtt GitHubOIDCProvider.Arn
+
+  RoleArn:
+    Description: ARN of the GitHub Actions IAM role
+    Value: !GetAtt GitHubActionsRole.Arn
+
+  RoleName:
+    Description: Name of the GitHub Actions IAM role
+    Value: !Ref GitHubActionsRole
