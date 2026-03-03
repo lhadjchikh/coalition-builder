@@ -211,7 +211,7 @@ _Figure 1: Workflow dependency tree showing how push/PR events trigger orchestra
 
 #### Serverless Backend Deployment (`deploy_serverless.yml`)
 
-- **Triggered by**: push to main/staging/dev branches or manual dispatch
+- **Triggered by**: push to main/dev branches or manual dispatch
 - Deploys Django backend to AWS Lambda using Zappa
 - Builds custom Docker images with GeoDjango support (GDAL/GEOS/PROJ)
 - Manages Lambda functions with environment-specific configurations
@@ -221,7 +221,7 @@ _Figure 1: Workflow dependency tree showing how push/PR events trigger orchestra
 
 #### Lambda Deployment (`deploy_lambda.yml`)
 
-- **Triggered by**: push to main/staging/development branches or manual dispatch
+- **Triggered by**: push to main/development branches or manual dispatch
 - Alternative Lambda deployment workflow with simplified configuration
 - Builds and pushes Docker images to ECR
 - Updates Zappa settings with ECR image URIs
@@ -285,14 +285,12 @@ Workflows that interact with external resources support manual triggers via `wor
 
 ## AWS Credentials
 
-The deployment and infrastructure workflows require AWS credentials to be configured as GitHub environment secrets:
+The deployment workflows authenticate via OIDC (OpenID Connect) using GitHub's identity provider. Each GitHub environment (dev, prod) has an `AWS_ACCOUNT_ID` variable and an IAM role (`github-actions-<env>`) that GitHub Actions assumes.
+
+Legacy workflows (lambda\_management, geodata\_import) still use static credentials:
 
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
-
-These credentials should be configured in the GitHub "prod" environment and have the necessary permissions for ECR, ECS, and any other AWS services used in the application.
-
-All production-related jobs have been configured to use the "prod" environment to access these secrets.
 
 ## Adding New Workflows
 

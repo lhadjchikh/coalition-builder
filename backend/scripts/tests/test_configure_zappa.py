@@ -59,10 +59,10 @@ class TestDefaultSecretARNs:
         settings = _generate_settings(tmp_path)
         assert settings["dev"]["aws_environment_variables"]["SECRET_KEY"] == ""
 
-    def test_all_stages_have_empty_defaults(self, tmp_path: Path) -> None:
-        """All stages should have empty string defaults for secret ARNs."""
+    def test_all_default_stages_have_empty_defaults(self, tmp_path: Path) -> None:
+        """Default stages (dev, prod) have empty string defaults."""
         settings = _generate_settings(tmp_path)
-        for stage in ("dev", "staging", "prod"):
+        for stage in ("dev", "prod"):
             env_vars = settings[stage]["aws_environment_variables"]
             assert env_vars["DATABASE_URL"] == "", f"{stage} DATABASE_URL not empty"
             assert env_vars["SECRET_KEY"] == "", f"{stage} SECRET_KEY not empty"
@@ -141,3 +141,49 @@ class TestCIValidation:
         settings = _generate_settings(tmp_path)
         db_url = settings["dev"]["aws_environment_variables"]
         assert db_url["DATABASE_URL"] == ""
+
+
+class TestStagingGating:
+    """Tests for ENABLE_STAGING environment variable gating."""
+
+    def test_staging_excluded_by_default(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Without ENABLE_STAGING, staging key should not exist."""
+        settings = _generate_settings(tmp_path)
+        assert "staging" not in settings
+
+    def test_staging_included_when_enabled(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """With ENABLE_STAGING=true, staging key should exist."""
+        settings = _generate_settings(
+            tmp_path,
+            {"ENABLE_STAGING": "true"},
+        )
+        assert "staging" in settings
+        assert settings["staging"]["stage"] == "staging"
+
+    def test_staging_excluded_when_env_var_false(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """With ENABLE_STAGING=false, staging should not exist."""
+        settings = _generate_settings(
+            tmp_path,
+            {"ENABLE_STAGING": "false"},
+        )
+        assert "staging" not in settings
+
+    def test_default_stages_are_dev_and_prod(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """By default only dev and prod stages should be present."""
+        settings = _generate_settings(tmp_path)
+        stage_keys = {
+            k for k in settings if k != "base"
+        }
+        assert stage_keys == {"dev", "prod"}

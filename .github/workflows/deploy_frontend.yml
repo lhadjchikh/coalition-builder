@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - staging
       - development
     paths:
       - "frontend/**"
@@ -54,8 +53,6 @@ jobs:
             ENV="${{ github.event.inputs.environment }}"
           elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             ENV="prod"
-          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
-            ENV="staging"
           elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
             ENV="preview"
           else
@@ -74,9 +71,6 @@ jobs:
           if [[ "$ENV" == "prod" ]]; then
             API_URL="${{ vars.PRODUCTION_API_URL }}"
             SITE_URL="${{ vars.PRODUCTION_SITE_URL }}"
-          elif [[ "$ENV" == "staging" ]]; then
-            API_URL="${{ vars.STAGING_API_URL }}"
-            SITE_URL="${{ vars.STAGING_SITE_URL }}"
           else
             API_URL="${{ vars.DEVELOPMENT_API_URL }}"
             SITE_URL="${{ vars.DEVELOPMENT_SITE_URL }}"
@@ -94,8 +88,6 @@ jobs:
           ENV="${{ steps.env.outputs.environment }}"
           if [[ "$ENV" == "prod" ]]; then
             echo "vercel_env=production" >> $GITHUB_OUTPUT
-          elif [[ "$ENV" == "staging" ]]; then
-            echo "vercel_env=preview" >> $GITHUB_OUTPUT
           else
             echo "vercel_env=preview" >> $GITHUB_OUTPUT
           fi

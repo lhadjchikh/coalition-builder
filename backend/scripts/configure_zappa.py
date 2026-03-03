@@ -34,11 +34,16 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         "coalition-zappa-deployments",
     )
 
+    # Check if staging environment is enabled (off by default)
+    enable_staging = (
+        get_env_or_default("ENABLE_STAGING", "false").lower()
+        == "true"
+    )
+
     # Get asset bucket names
-    dev_assets_bucket = get_env_or_default("DEV_ASSETS_BUCKET", "coalition-dev-assets")
-    staging_assets_bucket = get_env_or_default(
-        "STAGING_ASSETS_BUCKET",
-        "coalition-staging-assets",
+    dev_assets_bucket = get_env_or_default(
+        "DEV_ASSETS_BUCKET",
+        "coalition-dev-assets",
     )
     production_assets_bucket = get_env_or_default(
         "PRODUCTION_ASSETS_BUCKET",
@@ -47,7 +52,6 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
 
     # Get database names
     dev_db_name = get_env_or_default("DEV_DB_NAME", "coalition_dev")
-    staging_db_name = get_env_or_default("STAGING_DB_NAME", "coalition_staging")
     production_db_name = get_env_or_default(
         "PRODUCTION_DB_NAME",
         "coalition",
@@ -55,11 +59,16 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
 
     # Get VPC configuration (optional)
     vpc_subnet_ids = get_env_or_default("VPC_SUBNET_IDS", "").split(",")
-    vpc_security_group_ids = get_env_or_default("VPC_SECURITY_GROUP_IDS", "").split(",")
+    vpc_security_group_ids = get_env_or_default(
+        "VPC_SECURITY_GROUP_IDS",
+        "",
+    ).split(",")
 
     # Clean up empty strings from lists
     vpc_subnet_ids = [s.strip() for s in vpc_subnet_ids if s.strip()]
-    vpc_security_group_ids = [s.strip() for s in vpc_security_group_ids if s.strip()]
+    vpc_security_group_ids = [
+        s.strip() for s in vpc_security_group_ids if s.strip()
+    ]
 
     # Get secret ARNs (empty default = local dev; CI provides real ARNs)
     db_secret_arn = get_env_or_default("DATABASE_SECRET_ARN", "")
@@ -77,29 +86,31 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         ]
         if missing:
             raise RuntimeError(
-                "Missing required env var(s) in CI: " + ", ".join(missing),
+                "Missing required env var(s) in CI: "
+                + ", ".join(missing),
             )
 
     # Docker image configuration
     # USE_CUSTOM_DOCKER=true: deploy as container image (docker_image_uri)
-    # USE_CUSTOM_DOCKER=false: package inside Docker, deploy as zip (docker_image)
+    # USE_CUSTOM_DOCKER=false: package inside Docker, deploy as zip
     use_custom_docker = (
-        get_env_or_default("USE_CUSTOM_DOCKER", "false").lower() == "true"
+        get_env_or_default("USE_CUSTOM_DOCKER", "false").lower()
+        == "true"
     )
 
     if use_custom_docker:
         docker_image_key = "docker_image_uri"
         dev_docker_image = f"{ecr_registry}/coalition-dev:latest"
-        staging_docker_image = f"{ecr_registry}/coalition-staging:latest"
-        production_docker_image = f"{ecr_registry}/coalition-prod:latest"
+        production_docker_image = (
+            f"{ecr_registry}/coalition-prod:latest"
+        )
     else:
         docker_image_key = "docker_image"
         dev_docker_image = "public.ecr.aws/lambda/python:3.13"
-        staging_docker_image = "public.ecr.aws/lambda/python:3.13"
         production_docker_image = "public.ecr.aws/lambda/python:3.13"
 
     # Build the configuration
-    settings = {
+    settings: dict[str, dict] = {
         "base": {
             "aws_region": aws_region,
             "django_settings": "coalition.core.settings",
@@ -177,28 +188,6 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
                 "throttle_rate_limit": 25,
             },
         },
-        "staging": {
-            "extends": "base",
-            "stage": "staging",
-            docker_image_key: staging_docker_image,
-            "memory_size": 512,
-            "keep_warm": True,
-            "keep_warm_expression": "rate(10 minutes)",
-            "environment_variables": {
-                "ENVIRONMENT": "staging",
-                "DEBUG": "false",
-                "DATABASE_NAME": staging_db_name,
-                "AWS_STORAGE_BUCKET_NAME": staging_assets_bucket,
-            },
-            "aws_environment_variables": {
-                "DATABASE_URL": db_secret_arn,
-                "SECRET_KEY": django_secret_arn,
-            },
-            "apigateway_settings": {
-                "throttle_burst_limit": 75,
-                "throttle_rate_limit": 40,
-            },
-        },
         "prod": {
             "extends": "base",
             "stage": "prod",
@@ -224,8 +213,53 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         },
     }
 
+    # Optionally include staging (off by default)
+    if enable_staging:
+        staging_assets_bucket = get_env_or_default(
+            "STAGING_ASSETS_BUCKET",
+            "coalition-staging-assets",
+        )
+        staging_db_name = get_env_or_default(
+            "STAGING_DB_NAME",
+            "coalition_staging",
+        )
+        if use_custom_docker:
+            staging_docker_image = (
+                f"{ecr_registry}/coalition-staging:latest"
+            )
+        else:
+            staging_docker_image = (
+                "public.ecr.aws/lambda/python:3.13"
+            )
+
+        settings["staging"] = {
+            "extends": "base",
+            "stage": "staging",
+            docker_image_key: staging_docker_image,
+            "memory_size": 512,
+            "keep_warm": True,
+            "keep_warm_expression": "rate(10 minutes)",
+            "environment_variables": {
+                "ENVIRONMENT": "staging",
+                "DEBUG": "false",
+                "DATABASE_NAME": staging_db_name,
+                "AWS_STORAGE_BUCKET_NAME": staging_assets_bucket,
+            },
+            "aws_environment_variables": {
+                "DATABASE_URL": db_secret_arn,
+                "SECRET_KEY": django_secret_arn,
+            },
+            "apigateway_settings": {
+                "throttle_burst_limit": 75,
+                "throttle_rate_limit": 40,
+            },
+        }
+
     # Write the configuration with Prettier-compatible formatting
-    config_path = output_path or Path(__file__).parent.parent / "zappa_settings.json"
+    config_path = (
+        output_path
+        or Path(__file__).parent.parent / "zappa_settings.json"
+    )
     with open(config_path, "w") as f:
         # Add trailing newline for Prettier compatibility
         json.dump(settings, f, indent=2)
@@ -238,13 +272,17 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
     print(f"  Zappa Bucket: {zappa_deployment_bucket}")
     print("  Asset Buckets:")
     print(f"    - Dev: {dev_assets_bucket}")
-    print(f"    - Staging: {staging_assets_bucket}")
+    if enable_staging:
+        print(f"    - Staging: {staging_assets_bucket}")
     print(f"    - Production: {production_assets_bucket}")
     print(f"  Custom Docker: {use_custom_docker}")
     if vpc_subnet_ids:
         print(f"  VPC Subnets: {', '.join(vpc_subnet_ids)}")
     if vpc_security_group_ids:
-        print(f"  Security Groups: {', '.join(vpc_security_group_ids)}")
+        print(
+            "  Security Groups: "
+            f"{', '.join(vpc_security_group_ids)}",
+        )
 
 
 def main() -> None:

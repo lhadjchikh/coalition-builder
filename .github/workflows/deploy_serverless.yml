@@ -2,7 +2,7 @@ name: Deploy Serverless Infrastructure
 
 on:
   push:
-    branches: [main, staging, dev]
+    branches: [main, dev]
   workflow_dispatch:
     inputs:
       environment:
@@ -11,7 +11,6 @@ on:
         type: choice
         options:
           - dev
-          - staging
           - prod
 
 permissions:
@@ -30,8 +29,6 @@ jobs:
             echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
             echo "environment=prod" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
-            echo "environment=staging" >> $GITHUB_OUTPUT
           else
             echo "environment=dev" >> $GITHUB_OUTPUT
           fi
@@ -114,7 +111,6 @@ jobs:
           AWS_REGION: us-east-1
           ZAPPA_S3_BUCKET: ${{ vars.ZAPPA_S3_BUCKET }}
           DEV_ASSETS_BUCKET: ${{ vars.DEV_ASSETS_BUCKET }}
-          STAGING_ASSETS_BUCKET: ${{ vars.STAGING_ASSETS_BUCKET }}
           PRODUCTION_ASSETS_BUCKET: ${{ vars.PRODUCTION_ASSETS_BUCKET }}
           USE_CUSTOM_DOCKER: true
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -236,8 +232,6 @@ jobs:
             echo "url=" >> $GITHUB_OUTPUT
           elif [ "$ENV" = "prod" ]; then
             echo "url=https://api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
-          elif [ "$ENV" = "staging" ]; then
-            echo "url=https://staging-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           else
             echo "url=https://dev-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           fi
@@ -281,8 +275,6 @@ jobs:
             echo "url=" >> $GITHUB_OUTPUT
           elif [ "$ENV" = "prod" ]; then
             echo "url=https://api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
-          elif [ "$ENV" = "staging" ]; then
-            echo "url=https://staging-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           else
             echo "url=https://dev-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           fi
