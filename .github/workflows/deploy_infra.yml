@@ -145,25 +145,25 @@ jobs:
 
       - name: Setup Remote State and Backend
         run: |
-          cd $TF_DIRECTORY
+          cd "$TF_DIRECTORY"
           # Make the setup script executable and run it
           chmod +x ../../scripts/setup_remote_state.sh
           ../../scripts/setup_remote_state.sh "${{ needs.determine-environment.outputs.environment }}"
 
       - name: Terraform Init
         run: |
-          cd $TF_DIRECTORY
+          cd "$TF_DIRECTORY"
           timeout 5m terraform init -backend-config=backend.hcl -input=false
 
       - name: Terraform Validate
         run: |
-          cd $TF_DIRECTORY
+          cd "$TF_DIRECTORY"
           terraform validate
 
       - name: Terraform Plan
         id: plan
         run: |
-          cd $TF_DIRECTORY
+          cd "$TF_DIRECTORY"
 
           echo "Running terraform plan..."
           set +e
@@ -193,7 +193,7 @@ jobs:
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && steps.plan.outputs.has_changes == 'true'
         run: |
-          cd $TF_DIRECTORY
+          cd "$TF_DIRECTORY"
 
           echo "Applying infrastructure changes..."
 
