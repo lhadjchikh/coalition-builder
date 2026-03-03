@@ -8,7 +8,7 @@ resource "aws_ses_domain_identity" "main" {
 
 # SES Domain Verification Record (for Route53)
 resource "aws_route53_record" "ses_verification" {
-  count   = var.verify_domain && var.create_route53_records ? 1 : 0
+  count   = var.verify_domain && var.create_route53_records && var.route53_zone_id != "" ? 1 : 0
   zone_id = var.route53_zone_id
   name    = "_amazonses.${var.domain_name}"
   type    = "TXT"
@@ -18,7 +18,7 @@ resource "aws_route53_record" "ses_verification" {
 
 # Wait for domain verification
 resource "aws_ses_domain_identity_verification" "main" {
-  count      = var.verify_domain && var.create_route53_records ? 1 : 0
+  count      = var.verify_domain && var.create_route53_records && var.route53_zone_id != "" ? 1 : 0
   domain     = aws_ses_domain_identity.main[0].id
   depends_on = [aws_route53_record.ses_verification]
 }
@@ -31,7 +31,7 @@ resource "aws_ses_domain_dkim" "main" {
 
 # DKIM verification records in Route53
 resource "aws_route53_record" "dkim" {
-  count   = var.verify_domain && var.create_route53_records ? 3 : 0
+  count   = var.verify_domain && var.create_route53_records && var.route53_zone_id != "" ? 3 : 0
   zone_id = var.route53_zone_id
   name    = "${element(aws_ses_domain_dkim.main[0].dkim_tokens, count.index)}._domainkey.${var.domain_name}"
   type    = "CNAME"
@@ -41,7 +41,7 @@ resource "aws_route53_record" "dkim" {
 
 # SPF record for domain
 resource "aws_route53_record" "spf" {
-  count   = var.verify_domain && var.create_route53_records && var.create_spf_record ? 1 : 0
+  count   = var.verify_domain && var.create_route53_records && var.route53_zone_id != "" && var.create_spf_record ? 1 : 0
   zone_id = var.route53_zone_id
   name    = var.domain_name
   type    = "TXT"
@@ -51,7 +51,7 @@ resource "aws_route53_record" "spf" {
 
 # DMARC record for domain
 resource "aws_route53_record" "dmarc" {
-  count   = var.verify_domain && var.create_route53_records && var.create_dmarc_record && var.dmarc_email != "" ? 1 : 0
+  count   = var.verify_domain && var.create_route53_records && var.route53_zone_id != "" && var.create_dmarc_record && var.dmarc_email != "" ? 1 : 0
   zone_id = var.route53_zone_id
   name    = "_dmarc.${var.domain_name}"
   type    = "TXT"
