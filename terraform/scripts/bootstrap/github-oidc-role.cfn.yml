@@ -62,7 +62,8 @@ Resources:
                     - - !Sub "repo:${GitHubOrg}/${GitHubRepo}:environment:prod"
                       - !Sub "repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/main"
                     - - !Sub "repo:${GitHubOrg}/${GitHubRepo}:environment:dev"
-                      - !Sub "repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/*"
+                      - !Sub "repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/development"
+                      - !Sub "repo:${GitHubOrg}/${GitHubRepo}:pull_request"
       Policies:
         - PolicyName: !Sub "${Environment}-terraform-operations"
           PolicyDocument:
