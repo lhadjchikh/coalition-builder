@@ -250,7 +250,41 @@ OIDC_ROLE_ARN=$(aws_cmd cloudformation describe-stacks \
 
 log_success "GitHub OIDC role deployed: $OIDC_ROLE_ARN"
 
-# --- Step 4: VPC peering accepter role (shared account only) ---
+# --- Step 4: Cross-account state bucket policy (shared account only) ---
+# Prod and dev accounts read the shared Terraform state via terraform_remote_state.
+# S3 cross-account access requires both an IAM policy on the requester AND a
+# bucket policy on the source bucket.
+if [[ "$ENVIRONMENT" == "shared" ]]; then
+  log_info "Adding cross-account read policy to state bucket for prod/dev OIDC roles..."
+  aws_cmd s3api put-bucket-policy \
+    --bucket "$S3_BUCKET_NAME" \
+    --policy "{
+      \"Version\": \"2012-10-17\",
+      \"Statement\": [
+        {
+          \"Sid\": \"AllowCrossAccountTerraformStateRead\",
+          \"Effect\": \"Allow\",
+          \"Principal\": {
+            \"AWS\": [
+              \"arn:aws:iam::${PROD_ACCOUNT_ID}:role/github-actions-prod\",
+              \"arn:aws:iam::${DEV_ACCOUNT_ID}:role/github-actions-dev\"
+            ]
+          },
+          \"Action\": [
+            \"s3:GetObject\",
+            \"s3:ListBucket\"
+          ],
+          \"Resource\": [
+            \"arn:aws:s3:::${S3_BUCKET_NAME}\",
+            \"arn:aws:s3:::${S3_BUCKET_NAME}/*\"
+          ]
+        }
+      ]
+    }"
+  log_success "Cross-account bucket policy applied"
+fi
+
+# --- Step 5: VPC peering accepter role (shared account only) ---
 if [[ "$ENVIRONMENT" == "shared" ]]; then
   PEERING_STACK_NAME="vpc-peering-accepter"
   log_info "Deploying CloudFormation stack: $PEERING_STACK_NAME (shared account only)"

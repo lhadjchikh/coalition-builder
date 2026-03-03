@@ -314,6 +314,13 @@ else
   fail "bootstrap_account.sh missing peering-role.cfn.yml deployment"
 fi
 
+# Verify bootstrap_account.sh adds cross-account bucket policy for shared account
+if grep -q 'put-bucket-policy' "${SCRIPT_DIR}/bootstrap_account.sh"; then
+  pass "bootstrap_account.sh adds cross-account bucket policy for shared state"
+else
+  fail "bootstrap_account.sh missing cross-account bucket policy (prod/dev need read access to shared state)"
+fi
+
 # Verify configure_github.sh accepts --repo parameter
 if grep -q '\-\-repo' "${SCRIPT_DIR}/configure_github.sh"; then
   pass "configure_github.sh accepts --repo parameter"
