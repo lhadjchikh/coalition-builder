@@ -1,6 +1,6 @@
 output "db_security_group_id" {
   description = "ID of the database security group"
-  value       = aws_security_group.db_sg.id
+  value       = length(aws_security_group.db_sg) > 0 ? aws_security_group.db_sg[0].id : null
 }
 
 output "bastion_security_group_id" {

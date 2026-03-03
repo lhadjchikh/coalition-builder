@@ -131,7 +131,8 @@ module "security" {
   prefix = var.prefix
   vpc_id = module.networking.vpc_id
 
-  # No DB in this account
+  # No DB in this account — skip DB security group
+  create_db_sg             = false
   lambda_security_group_id = ""
   allowed_lambda_cidrs     = []
 

@@ -27,6 +27,12 @@ variable "allowed_lambda_cidrs" {
   default     = []
 }
 
+variable "create_db_sg" {
+  description = "Whether to create the database security group (only needed in shared account)"
+  type        = bool
+  default     = true
+}
+
 variable "create_waf" {
   description = "Whether to create the WAF Web ACL (set to false for dev environments)"
   type        = bool
