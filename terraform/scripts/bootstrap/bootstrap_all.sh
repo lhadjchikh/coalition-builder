@@ -184,11 +184,8 @@ else
   log_info "Step 4/4: Configuring GitHub environments..."
   "${SCRIPT_DIR}/configure_github.sh" \
     --repo "${GITHUB_ORG}/${GITHUB_REPO}" \
-    --shared-role-arn "$SHARED_ROLE_ARN" \
     --shared-account-id "$SHARED_ACCOUNT_ID" \
-    --prod-role-arn "$PROD_ROLE_ARN" \
     --prod-account-id "$PROD_ACCOUNT_ID" \
-    --dev-role-arn "$DEV_ROLE_ARN" \
     --dev-account-id "$DEV_ACCOUNT_ID" \
     --region "$REGION"
 fi
