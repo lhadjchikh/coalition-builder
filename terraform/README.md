@@ -12,6 +12,7 @@ This directory contains the Terraform configuration for deploying Coalition Buil
 
 Quick links:
 
+- [Multi-Account AWS Guide](../docs/deployment/multi-account-aws.md) - Bootstrap, OIDC, VPC peering, environment workflow
 - [AWS Serverless Guide](../docs/deployment/aws.md) - Complete serverless deployment walkthrough
 - [Lambda Deployment](../docs/lambda_deployment.md) - Django on Lambda setup
 - [Vercel Deployment](../docs/vercel_deployment.md) - Next.js on Vercel setup
@@ -28,30 +29,41 @@ Quick links:
 
 ## Project Structure
 
-```
+```text
 terraform/
+├── environments/
+│   ├── shared/               # Shared account (VPC, RDS, Bastion)
+│   ├── prod/                 # Production account (Lambda, API GW, S3, SES)
+│   └── dev/                  # Development account (Lambda, S3)
 ├── modules/
-│   ├── dynamodb/             # DynamoDB for serverless rate limiting
-│   ├── zappa/                # S3 and IAM for Lambda deployment
-│   ├── geodata-import/       # ECS for TIGER shapefile processing
+│   ├── networking/           # VPC, Subnets
 │   ├── database/             # RDS PostgreSQL with PostGIS
-│   ├── networking/           # VPC, Subnets (existing infrastructure)
-│   ├── security/             # Security groups
-│   └── ses/                  # Email service configuration
-│
-│   # Legacy modules (deprecated but kept for reference):
-│   ├── compute/              # ECS, ECR, Bastion host
-│   ├── loadbalancer/         # ALB, Target groups
+│   ├── security/             # Security groups, WAF
+│   ├── zappa/                # S3 and IAM for Lambda deployment
+│   ├── lambda-ecr/           # ECR repositories for Lambda images
+│   ├── secrets/              # Secrets Manager
+│   ├── ssm/                  # SSM Parameter Store
+│   ├── ses/                  # Email service configuration
 │   ├── storage/              # S3, CloudFront CDN
-│   └── monitoring/           # CloudWatch alerts
+│   ├── serverless-storage/   # S3 for Lambda deployments
+│   ├── monitoring/           # CloudWatch, Budgets
+│   ├── bastion/              # Bastion host for DB access
+│   ├── github-oidc/          # GitHub Actions OIDC provider and IAM role
+│   ├── vpc-peering/          # Cross-account VPC peering
+│   ├── aws-location/         # AWS Location Service
+│   ├── geodata-import/       # ECS for TIGER shapefile processing
+│   └── compute/              # ECS, ECR (legacy, deprecated)
 ├── scripts/
-│   ├── setup_remote_state.sh # Remote state helper
-│   └── db_setup.sh           # Database setup
+│   ├── bootstrap/            # Multi-account bootstrap scripts
+│   │   ├── bootstrap_all.sh  # Orchestrator for all accounts
+│   │   ├── bootstrap_account.sh  # Single account bootstrap
+│   │   └── configure_github.sh   # GitHub environment setup
+│   └── setup_remote_state.sh # Remote state helper
 ├── tests/                    # Terratest integration tests
 │   ├── modules/              # Module-specific tests
 │   ├── integration/          # Full-stack tests
 │   └── common/               # Test utilities
-├── main.tf                   # Main configuration
+├── main.tf                   # Root configuration (single-account, legacy)
 ├── variables.tf              # Input variables
 ├── outputs.tf                # Output values
 └── backend.tf                # Remote state configuration
@@ -130,44 +142,53 @@ flowchart TB
 - **Auto-scaling**: Automatic scaling based on demand
 - **Budget Alerts**: Proactive cost monitoring and alerting
 
+## Multi-Account Deployment
+
+The infrastructure uses a multi-account AWS setup with three accounts (shared, prod, dev), GitHub OIDC authentication, and cross-account VPC peering. For the full walkthrough, see the **[Multi-Account AWS Guide](../docs/deployment/multi-account-aws.md)**.
+
+Key concepts:
+
+- **Shared account**: VPC, RDS, Bastion — centralized database
+- **Prod/Dev accounts**: Lambda, API Gateway, S3 — application workloads
+- **Bootstrap scripts**: Set up S3 state buckets, DynamoDB locks, and OIDC roles
+- **GitHub OIDC**: No long-lived AWS access keys — workflows authenticate via OIDC federation
+- **VPC peering**: Lambda in prod/dev connects to RDS in shared via peering
+
 ## Quick Start
 
 ### Prerequisites
 
-1. **AWS Account**: With appropriate permissions
+1. **Three AWS accounts** with admin access (shared, prod, dev)
 2. **Terraform**: Version 1.12 or higher
-3. **AWS CLI**: Configured with credentials
-4. **Domain**: Registered domain with Route53 hosted zone
-5. **SSL Certificate**: ACM certificate for HTTPS
+3. **AWS CLI**: Configured with profiles for each account
+4. **GitHub CLI**: Authenticated (`gh auth login`)
+5. **Domain**: Registered domain with Route53 hosted zone
 
-### Basic Deployment
+### Bootstrap and Deploy
 
 ```bash
-# Clone the repository
-git clone https://github.com/lhadjchikh/coalition-builder.git
-cd coalition-builder/terraform
+# 1. Bootstrap all accounts (creates state buckets, OIDC roles, GitHub environments)
+cd terraform/scripts/bootstrap
+./bootstrap_all.sh \
+  --shared-profile shared-admin \
+  --prod-profile prod-admin \
+  --dev-profile dev-admin \
+  --github-org your-org \
+  --github-repo coalition-builder
 
-# Initialize Terraform
-terraform init
+# 2. Deploy shared account first (VPC, RDS, Bastion)
+cd ../../environments/shared
+terraform init -backend-config=backend.hcl
+terraform apply
 
-# Create terraform.tfvars with your configuration
-cat > terraform.tfvars <<EOF
-aws_region = "us-east-1"
-domain_name = "yourdomain.com"
-route53_zone_id = "Z1234567890ABC"
-acm_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/..."
-alert_email = "admin@yourdomain.com"
+# 3. Deploy prod account (Lambda, API Gateway, S3, SES)
+cd ../prod
+terraform init -backend-config=backend.hcl
+terraform apply
 
-# Email configuration (AWS SES)
-ses_from_email = "noreply@yourdomain.com"
-ses_verify_domain = true
-ses_notification_email = "admin@yourdomain.com"
-EOF
-
-# Plan the deployment
-terraform plan
-
-# Apply the configuration
+# 4. Deploy dev account (Lambda, S3)
+cd ../dev
+terraform init -backend-config=backend.hcl
 terraform apply
 ```
 
