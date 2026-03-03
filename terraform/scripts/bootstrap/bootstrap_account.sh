@@ -12,21 +12,21 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Logging functions
+# Logging functions (write to stderr so progress is visible when stdout is piped)
 log_info() {
-  echo -e "${BLUE}[INFO]${NC} $1"
+  echo -e "${BLUE}[INFO]${NC} $1" >&2
 }
 
 log_success() {
-  echo -e "${GREEN}[SUCCESS]${NC} $1"
+  echo -e "${GREEN}[SUCCESS]${NC} $1" >&2
 }
 
 log_warning() {
-  echo -e "${YELLOW}[WARNING]${NC} $1"
+  echo -e "${YELLOW}[WARNING]${NC} $1" >&2
 }
 
 log_error() {
-  echo -e "${RED}[ERROR]${NC} $1"
+  echo -e "${RED}[ERROR]${NC} $1" >&2
 }
 
 # Script directory (for finding CloudFormation templates)
@@ -306,14 +306,14 @@ if [[ "$ENVIRONMENT" == "shared" ]]; then
   log_success "VPC peering accepter role deployed: $PEERING_ROLE_ARN"
 fi
 
-# --- Summary ---
-echo
+# --- Summary (to stderr so it's visible when stdout is piped) ---
+echo >&2
 log_success "Bootstrap complete for $ENVIRONMENT account ($ACCOUNT_ID)"
-echo -e "  S3 bucket:      ${GREEN}${S3_BUCKET_NAME}${NC}"
-echo -e "  DynamoDB table:  ${GREEN}${DYNAMODB_TABLE_NAME}${NC}"
-echo -e "  OIDC role ARN:   ${GREEN}${OIDC_ROLE_ARN}${NC}"
+echo -e "  S3 bucket:      ${GREEN}${S3_BUCKET_NAME}${NC}" >&2
+echo -e "  DynamoDB table:  ${GREEN}${DYNAMODB_TABLE_NAME}${NC}" >&2
+echo -e "  OIDC role ARN:   ${GREEN}${OIDC_ROLE_ARN}${NC}" >&2
 if [[ "$ENVIRONMENT" == "shared" ]]; then
-  echo -e "  Peering role:    ${GREEN}${PEERING_ROLE_ARN}${NC}"
+  echo -e "  Peering role:    ${GREEN}${PEERING_ROLE_ARN}${NC}" >&2
 fi
 
 # Output the OIDC role ARN for use by the orchestrator (prefixed for robust parsing)
