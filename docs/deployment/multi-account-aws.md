@@ -157,11 +157,8 @@ If you used `--skip-github` with `bootstrap_all.sh`, or need to reconfigure GitH
 ```bash
 ./configure_github.sh \
   --repo your-org/coalition-builder \
-  --shared-role-arn arn:aws:iam::SHARED_ID:role/github-actions-shared \
   --shared-account-id SHARED_ID \
-  --prod-role-arn arn:aws:iam::PROD_ID:role/github-actions-prod \
   --prod-account-id PROD_ID \
-  --dev-role-arn arn:aws:iam::DEV_ID:role/github-actions-dev \
   --dev-account-id DEV_ID
 ```
 
@@ -169,10 +166,9 @@ This creates three GitHub environments (`shared`, `prod`, `dev`) with:
 
 | Setting          | Type     | Value                             |
 | ---------------- | -------- | --------------------------------- |
-| `AWS_ROLE_ARN`   | Secret   | OIDC role ARN for the environment |
 | `AWS_ACCOUNT_ID` | Variable | AWS account ID                    |
-| `AWS_REGION`     | Variable | AWS region (default: `us-east-1`) |
 | `ENVIRONMENT`    | Variable | Environment name                  |
+| `AWS_REGION`     | Variable | AWS region (default: `us-east-1`) |
 
 ### Import Bootstrap Resources into Terraform
 
