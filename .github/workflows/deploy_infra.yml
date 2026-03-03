@@ -135,7 +135,7 @@ jobs:
           cd $TF_DIRECTORY
           # Make the setup script executable and run it
           chmod +x ../../scripts/setup_remote_state.sh
-          ../../scripts/setup_remote_state.sh
+          ../../scripts/setup_remote_state.sh "${{ needs.determine-environment.outputs.environment }}"
 
       - name: Terraform Init
         run: |
