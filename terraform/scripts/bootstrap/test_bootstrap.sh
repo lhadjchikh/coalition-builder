@@ -412,8 +412,40 @@ else
   fail "IAMMutate Resource should be scoped, not wildcard (*)"
 fi
 
+# Verify EC2 is split into read and mutate statements
+if echo "$INFRA_POLICY_STMTS" | grep -q '"Sid": "EC2ReadOnly"'; then
+  pass "EC2 has separate EC2ReadOnly statement"
+else
+  fail "EC2 missing EC2ReadOnly statement (read/mutate split)"
+fi
+
+if echo "$INFRA_POLICY_STMTS" | grep -q '"Sid": "EC2Mutate"'; then
+  pass "EC2 has separate EC2Mutate statement"
+else
+  fail "EC2 missing EC2Mutate statement (read/mutate split)"
+fi
+
+# Verify EC2Mutate uses account-scoped resource ARN
+if echo "$INFRA_POLICY_STMTS" | python3 -c "
+import json, sys
+stmts = json.load(sys.stdin)
+for s in stmts:
+    if s.get('Sid') == 'EC2Mutate':
+        resource = s.get('Resource', '*')
+        res_str = json.dumps(resource)
+        if 'AccountId' in res_str or 'account_id' in res_str:
+            sys.exit(0)
+        else:
+            sys.exit(1)
+sys.exit(1)
+" 2>/dev/null; then
+  pass "EC2Mutate uses account-scoped resource ARN"
+else
+  fail "EC2Mutate should use account-scoped resource ARN"
+fi
+
 # Verify account-scoped services use ${AWS::AccountId} in resource ARNs
-for sid in RDS Lambda ECR SecretsManager SSM SNS CloudWatch; do
+for sid in RDS Lambda ECR SecretsManager SSM SNS CloudWatch CloudFront WAF SES ACM KMS Location Budgets; do
   if echo "$INFRA_POLICY_STMTS" | grep -q "\"Sid\": \"$sid\""; then
     # Check that the statement's Resource contains AWS::AccountId reference
     if echo "$INFRA_POLICY_STMTS" | python3 -c "

@@ -103,61 +103,54 @@ Resources:
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
-              # --- Global services (no account in ARN or required by Terraform) ---
-              - Sid: EC2AndVPC
+              # --- Read-only across services (some list/describe require Resource: *) ---
+              - Sid: ServiceReadOnly
                 Effect: Allow
                 Action:
-                  - ec2:*
+                  - ec2:Describe*
+                  - ec2:Get*
+                  - ec2:List*
+                  - cloudfront:Get*
+                  - cloudfront:List*
+                  - wafv2:Describe*
+                  - wafv2:Get*
+                  - wafv2:List*
+                  - ses:Describe*
+                  - ses:Get*
+                  - ses:List*
+                  - acm:Describe*
+                  - acm:Get*
+                  - acm:List*
+                  - acm:Export*
+                  - kms:Describe*
+                  - kms:Get*
+                  - kms:List*
+                  - geo:Describe*
+                  - geo:Get*
+                  - geo:List*
+                  - geo:Search*
+                  - budgets:Describe*
+                  - budgets:View*
                 Resource: "*"
+              # --- Truly global services (no account ID in ARN) ---
               - Sid: S3
                 Effect: Allow
                 Action:
                   - s3:*
-                Resource: "*"
-              - Sid: CloudFront
-                Effect: Allow
-                Action:
-                  - cloudfront:*
-                Resource: "*"
-              - Sid: WAF
-                Effect: Allow
-                Action:
-                  - wafv2:*
-                Resource: "*"
-              - Sid: SES
-                Effect: Allow
-                Action:
-                  - ses:*
                 Resource: "*"
               - Sid: Route53
                 Effect: Allow
                 Action:
                   - route53:*
                 Resource: "*"
-              - Sid: ACM
-                Effect: Allow
-                Action:
-                  - acm:*
-                Resource: "*"
               - Sid: APIGateway
                 Effect: Allow
                 Action:
                   - apigateway:*
                 Resource: "*"
-              - Sid: KMS
+              - Sid: CostExplorer
                 Effect: Allow
                 Action:
-                  - kms:*
-                Resource: "*"
-              - Sid: Location
-                Effect: Allow
-                Action:
-                  - geo:*
-                Resource: "*"
-              - Sid: Budgets
-                Effect: Allow
-                Action:
-                  - budgets:*
                   - ce:*
                 Resource: "*"
               # --- IAM read-only (safe at *) ---
@@ -209,7 +202,19 @@ Resources:
                   - !Sub "arn:aws:iam::${AWS::AccountId}:policy/${ResourcePrefix}-*"
                   - !Sub "arn:aws:iam::${AWS::AccountId}:instance-profile/${ResourcePrefix}-*"
                   - !Sub "arn:aws:iam::${AWS::AccountId}:oidc-provider/*"
-              # --- Account-scoped services ---
+              # --- Account-scoped services (regional) ---
+              - Sid: EC2ReadOnly
+                Effect: Allow
+                Action:
+                  - ec2:Describe*
+                  - ec2:Get*
+                  - ec2:List*
+                Resource: "*"
+              - Sid: EC2Mutate
+                Effect: Allow
+                Action:
+                  - ec2:*
+                Resource: !Sub "arn:aws:ec2:*:${AWS::AccountId}:*"
               - Sid: RDS
                 Effect: Allow
                 Action:
@@ -248,6 +253,42 @@ Resources:
                 Resource:
                   - !Sub "arn:aws:cloudwatch:*:${AWS::AccountId}:*"
                   - !Sub "arn:aws:logs:*:${AWS::AccountId}:*"
+              - Sid: WAF
+                Effect: Allow
+                Action:
+                  - wafv2:*
+                Resource: !Sub "arn:aws:wafv2:*:${AWS::AccountId}:*"
+              - Sid: SES
+                Effect: Allow
+                Action:
+                  - ses:*
+                Resource: !Sub "arn:aws:ses:*:${AWS::AccountId}:*"
+              - Sid: ACM
+                Effect: Allow
+                Action:
+                  - acm:*
+                Resource: !Sub "arn:aws:acm:*:${AWS::AccountId}:*"
+              - Sid: KMS
+                Effect: Allow
+                Action:
+                  - kms:*
+                Resource: !Sub "arn:aws:kms:*:${AWS::AccountId}:*"
+              - Sid: Location
+                Effect: Allow
+                Action:
+                  - geo:*
+                Resource: !Sub "arn:aws:geo:*:${AWS::AccountId}:*"
+              # --- Account-scoped services (global, no region) ---
+              - Sid: CloudFront
+                Effect: Allow
+                Action:
+                  - cloudfront:*
+                Resource: !Sub "arn:aws:cloudfront::${AWS::AccountId}:*"
+              - Sid: Budgets
+                Effect: Allow
+                Action:
+                  - budgets:*
+                Resource: !Sub "arn:aws:budgets::${AWS::AccountId}:*"
               # --- STS: conditional on SharedAccountId ---
               - !If
                 - HasPeeringAccount

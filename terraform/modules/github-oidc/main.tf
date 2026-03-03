@@ -121,35 +121,44 @@ resource "aws_iam_role_policy" "infrastructure" {
     Version = "2012-10-17"
     Statement = concat(
       [
-        # --- Global services (no account in ARN or required by Terraform) ---
+        # --- Read-only across all services (some list/describe actions require Resource: *) ---
         {
-          Sid      = "EC2AndVPC"
-          Effect   = "Allow"
-          Action   = ["ec2:*"]
+          Sid    = "ServiceReadOnly"
+          Effect = "Allow"
+          Action = [
+            "ec2:Describe*",
+            "ec2:Get*",
+            "ec2:List*",
+            "cloudfront:Get*",
+            "cloudfront:List*",
+            "wafv2:Describe*",
+            "wafv2:Get*",
+            "wafv2:List*",
+            "ses:Describe*",
+            "ses:Get*",
+            "ses:List*",
+            "acm:Describe*",
+            "acm:Get*",
+            "acm:List*",
+            "acm:Export*",
+            "kms:Describe*",
+            "kms:Get*",
+            "kms:List*",
+            "geo:Describe*",
+            "geo:Get*",
+            "geo:List*",
+            "geo:Search*",
+            "budgets:Describe*",
+            "budgets:View*",
+          ]
           Resource = "*"
         },
+
+        # --- Truly global services (no account ID in ARN) ---
         {
           Sid      = "S3"
           Effect   = "Allow"
           Action   = ["s3:*"]
-          Resource = "*"
-        },
-        {
-          Sid      = "CloudFront"
-          Effect   = "Allow"
-          Action   = ["cloudfront:*"]
-          Resource = "*"
-        },
-        {
-          Sid      = "WAF"
-          Effect   = "Allow"
-          Action   = ["wafv2:*"]
-          Resource = "*"
-        },
-        {
-          Sid      = "SES"
-          Effect   = "Allow"
-          Action   = ["ses:*"]
           Resource = "*"
         },
         {
@@ -159,33 +168,15 @@ resource "aws_iam_role_policy" "infrastructure" {
           Resource = "*"
         },
         {
-          Sid      = "ACM"
-          Effect   = "Allow"
-          Action   = ["acm:*"]
-          Resource = "*"
-        },
-        {
           Sid      = "APIGateway"
           Effect   = "Allow"
           Action   = ["apigateway:*"]
           Resource = "*"
         },
         {
-          Sid      = "KMS"
+          Sid      = "CostExplorer"
           Effect   = "Allow"
-          Action   = ["kms:*"]
-          Resource = "*"
-        },
-        {
-          Sid      = "Location"
-          Effect   = "Allow"
-          Action   = ["geo:*"]
-          Resource = "*"
-        },
-        {
-          Sid      = "Budgets"
-          Effect   = "Allow"
-          Action   = ["budgets:*", "ce:*"]
+          Action   = ["ce:*"]
           Resource = "*"
         },
 
@@ -247,7 +238,19 @@ resource "aws_iam_role_policy" "infrastructure" {
           ]
         },
 
-        # --- Account-scoped services ---
+        # --- Account-scoped services (regional) ---
+        {
+          Sid      = "EC2ReadOnly"
+          Effect   = "Allow"
+          Action   = ["ec2:Describe*", "ec2:Get*", "ec2:List*"]
+          Resource = "*"
+        },
+        {
+          Sid      = "EC2Mutate"
+          Effect   = "Allow"
+          Action   = ["ec2:*"]
+          Resource = "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:*"
+        },
         {
           Sid      = "RDS"
           Effect   = "Allow"
@@ -292,6 +295,50 @@ resource "aws_iam_role_policy" "infrastructure" {
             "arn:aws:cloudwatch:${var.aws_region}:${data.aws_caller_identity.current.account_id}:*",
             "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:*",
           ]
+        },
+        {
+          Sid      = "WAF"
+          Effect   = "Allow"
+          Action   = ["wafv2:*"]
+          Resource = "arn:aws:wafv2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:*"
+        },
+        {
+          Sid      = "SES"
+          Effect   = "Allow"
+          Action   = ["ses:*"]
+          Resource = "arn:aws:ses:${var.aws_region}:${data.aws_caller_identity.current.account_id}:*"
+        },
+        {
+          Sid      = "ACM"
+          Effect   = "Allow"
+          Action   = ["acm:*"]
+          Resource = "arn:aws:acm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:*"
+        },
+        {
+          Sid      = "KMS"
+          Effect   = "Allow"
+          Action   = ["kms:*"]
+          Resource = "arn:aws:kms:${var.aws_region}:${data.aws_caller_identity.current.account_id}:*"
+        },
+        {
+          Sid      = "Location"
+          Effect   = "Allow"
+          Action   = ["geo:*"]
+          Resource = "arn:aws:geo:${var.aws_region}:${data.aws_caller_identity.current.account_id}:*"
+        },
+
+        # --- Account-scoped services (global, no region) ---
+        {
+          Sid      = "CloudFront"
+          Effect   = "Allow"
+          Action   = ["cloudfront:*"]
+          Resource = "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:*"
+        },
+        {
+          Sid      = "Budgets"
+          Effect   = "Allow"
+          Action   = ["budgets:*"]
+          Resource = "arn:aws:budgets::${data.aws_caller_identity.current.account_id}:*"
         },
       ],
 

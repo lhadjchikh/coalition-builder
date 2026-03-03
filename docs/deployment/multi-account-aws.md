@@ -150,6 +150,30 @@ Use `bootstrap_account.sh` to bootstrap one account at a time:
 | **IAM role**                   | `github-actions-{environment}` — assumable by GitHub Actions via OIDC    |
 | **Peering role** (shared only) | `vpc-peering-accepter` — allows prod/dev to accept VPC peering           |
 
+#### CloudFormation Parameters
+
+The OIDC CloudFormation template (`github-oidc-role.cfn.yml`) accepts these parameters:
+
+| Parameter | Required | Default | Description |
+| --- | --- | --- | --- |
+| `Environment` | Yes | — | `shared`, `prod`, or `dev` |
+| `GitHubOrg` | Yes | — | GitHub org/user name |
+| `GitHubRepo` | Yes | — | GitHub repository name |
+| `SharedAccountId` | No | `""` | Shared account ID for STS cross-account peering. Leave empty for shared account. |
+| `ResourcePrefix` | No | `coalition` | Prefix for IAM resource ARN scoping |
+
+When `SharedAccountId` is empty, the STS statement is omitted. The bootstrap script does not pass `SharedAccountId` — cross-account STS permissions are applied when Terraform takes over management via import.
+
+#### Per-Environment Terraform Configuration
+
+After importing bootstrap resources, each environment's `github_oidc` module configures IAM scoping:
+
+| Environment | `resource_prefix` | `peering_account_ids` | STS Statement |
+| --- | --- | --- | --- |
+| **shared** | `var.prefix` | `[]` | Omitted (no cross-account peering) |
+| **prod** | `var.prefix` | `[var.shared_account_id]` | Allows `sts:AssumeRole` to shared account's `vpc-peering-accepter` |
+| **dev** | `var.prefix` | `[var.shared_account_id]` | Same as prod |
+
 ### Configure GitHub Environments
 
 If you used `--skip-github` with `bootstrap_all.sh`, or need to reconfigure GitHub environments:
@@ -321,6 +345,48 @@ steps:
 ```
 
 No `AWS_ACCESS_KEY_ID` or `AWS_SECRET_ACCESS_KEY` secrets are needed.
+
+### IAM Permission Scoping
+
+The `github-actions-{environment}` role's infrastructure policy follows least-privilege scoping rather than granting `Resource: "*"` everywhere.
+
+**Read-only access** — a combined `ServiceReadOnly` statement grants `Describe*`/`Get*`/`List*` at `Resource: "*"` for services whose list operations require it (EC2, CloudFront, WAF, SES, ACM, KMS, Geo, Budgets). This is safe since read-only actions have no side effects.
+
+**IAM actions — split into read vs mutate:**
+
+| Category | Actions | Resource Scope |
+| --- | --- | --- |
+| **Read-only** | `Get*`, `List*` | `*` (safe — no side effects) |
+| **Mutate** | `Create*`, `Delete*`, `Update*`, `Put*`, `Attach*`, `Detach*`, `PassRole`, etc. | `arn:aws:iam::{account_id}:role/{prefix}-*`, `policy/{prefix}-*`, `instance-profile/{prefix}-*`, `oidc-provider/*` |
+
+The `resource_prefix` variable (default: `coalition`) controls the prefix pattern. This prevents the OIDC role from modifying IAM resources outside the project's namespace.
+
+**EC2 — split into read vs mutate:**
+
+| Category | Actions | Resource Scope |
+| --- | --- | --- |
+| **Read-only** | `ec2:Describe*`, `ec2:Get*`, `ec2:List*` | `*` (some EC2 describe actions like `DescribeRegions` require `*`) |
+| **All actions** | `ec2:*` | `arn:aws:ec2:{region}:{account_id}:*` |
+
+**Account-scoped services** — restricted to the current account using ARN patterns:
+
+| Scope | Services |
+| --- | --- |
+| **Regional** (`arn:aws:<svc>:{region}:{account_id}:*`) | RDS, Lambda, ECR, Secrets Manager, SSM, SNS, CloudWatch/Logs, WAF, SES, ACM, KMS, Geo |
+| **Global** (`arn:aws:<svc>::{account_id}:*`) | CloudFront, Budgets |
+
+**Truly global services** — kept at `Resource: "*"` (no account ID in ARN):
+
+- S3, Route53, API Gateway, Cost Explorer
+
+**STS (cross-account peering)** — conditionally included:
+
+- Prod/dev: `sts:AssumeRole` scoped to `arn:aws:iam::{shared_account_id}:role/vpc-peering-accepter`
+- Shared: no STS statement (no cross-account role assumption needed)
+
+The `peering_account_ids` variable controls which accounts appear in the STS statement. When empty, the STS statement is omitted entirely.
+
+> **Note**: The bootstrap CloudFormation template creates the role without the STS statement (since `SharedAccountId` defaults to empty). The full policy — including account-scoped STS — is applied when Terraform takes over management via `terraform import` and `terraform apply`.
 
 ## CI/CD Workflows
 
