@@ -154,13 +154,13 @@ Use `bootstrap_account.sh` to bootstrap one account at a time:
 
 The OIDC CloudFormation template (`github-oidc-role.cfn.yml`) accepts these parameters:
 
-| Parameter | Required | Default | Description |
-| --- | --- | --- | --- |
-| `Environment` | Yes | — | `shared`, `prod`, or `dev` |
-| `GitHubOrg` | Yes | — | GitHub org/user name |
-| `GitHubRepo` | Yes | — | GitHub repository name |
-| `SharedAccountId` | No | `""` | Shared account ID for STS cross-account peering. Leave empty for shared account. |
-| `ResourcePrefix` | No | `coalition` | Prefix for IAM resource ARN scoping |
+| Parameter         | Required | Default     | Description                                                                      |
+| ----------------- | -------- | ----------- | -------------------------------------------------------------------------------- |
+| `Environment`     | Yes      | —           | `shared`, `prod`, or `dev`                                                       |
+| `GitHubOrg`       | Yes      | —           | GitHub org/user name                                                             |
+| `GitHubRepo`      | Yes      | —           | GitHub repository name                                                           |
+| `SharedAccountId` | No       | `""`        | Shared account ID for STS cross-account peering. Leave empty for shared account. |
+| `ResourcePrefix`  | No       | `coalition` | Prefix for IAM resource ARN scoping                                              |
 
 When `SharedAccountId` is empty, the STS statement is omitted. The bootstrap script does not pass `SharedAccountId` — cross-account STS permissions are applied when Terraform takes over management via import.
 
@@ -168,11 +168,11 @@ When `SharedAccountId` is empty, the STS statement is omitted. The bootstrap scr
 
 After importing bootstrap resources, each environment's `github_oidc` module configures IAM scoping:
 
-| Environment | `resource_prefix` | `peering_account_ids` | STS Statement |
-| --- | --- | --- | --- |
-| **shared** | `var.prefix` | `[]` | Omitted (no cross-account peering) |
-| **prod** | `var.prefix` | `[var.shared_account_id]` | Allows `sts:AssumeRole` to shared account's `vpc-peering-accepter` |
-| **dev** | `var.prefix` | `[var.shared_account_id]` | Same as prod |
+| Environment | `resource_prefix` | `peering_account_ids`     | STS Statement                                                      |
+| ----------- | ----------------- | ------------------------- | ------------------------------------------------------------------ |
+| **shared**  | `var.prefix`      | `[]`                      | Omitted (no cross-account peering)                                 |
+| **prod**    | `var.prefix`      | `[var.shared_account_id]` | Allows `sts:AssumeRole` to shared account's `vpc-peering-accepter` |
+| **dev**     | `var.prefix`      | `[var.shared_account_id]` | Same as prod                                                       |
 
 ### Configure GitHub Environments
 
@@ -354,26 +354,26 @@ The `github-actions-{environment}` role's infrastructure policy follows least-pr
 
 **IAM actions — split into read vs mutate:**
 
-| Category | Actions | Resource Scope |
-| --- | --- | --- |
-| **Read-only** | `Get*`, `List*` | `*` (safe — no side effects) |
-| **Mutate** | `Create*`, `Delete*`, `Update*`, `Put*`, `Attach*`, `Detach*`, `PassRole`, etc. | `arn:aws:iam::{account_id}:role/{prefix}-*`, `policy/{prefix}-*`, `instance-profile/{prefix}-*`, `oidc-provider/*` |
+| Category      | Actions                                                                         | Resource Scope                                                                                                     |
+| ------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **Read-only** | `Get*`, `List*`                                                                 | `*` (safe — no side effects)                                                                                       |
+| **Mutate**    | `Create*`, `Delete*`, `Update*`, `Put*`, `Attach*`, `Detach*`, `PassRole`, etc. | `arn:aws:iam::{account_id}:role/{prefix}-*`, `policy/{prefix}-*`, `instance-profile/{prefix}-*`, `oidc-provider/*` |
 
 The `resource_prefix` variable (default: `coalition`) controls the prefix pattern. This prevents the OIDC role from modifying IAM resources outside the project's namespace.
 
 **EC2 — split into read vs mutate:**
 
-| Category | Actions | Resource Scope |
-| --- | --- | --- |
-| **Read-only** | `ec2:Describe*`, `ec2:Get*`, `ec2:List*` | `*` (some EC2 describe actions like `DescribeRegions` require `*`) |
-| **All actions** | `ec2:*` | `arn:aws:ec2:{region}:{account_id}:*` |
+| Category        | Actions                                  | Resource Scope                                                     |
+| --------------- | ---------------------------------------- | ------------------------------------------------------------------ |
+| **Read-only**   | `ec2:Describe*`, `ec2:Get*`, `ec2:List*` | `*` (some EC2 describe actions like `DescribeRegions` require `*`) |
+| **All actions** | `ec2:*`                                  | `arn:aws:ec2:{region}:{account_id}:*`                              |
 
 **Account-scoped services** — restricted to the current account using ARN patterns:
 
-| Scope | Services |
-| --- | --- |
+| Scope                                                  | Services                                                                              |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------- |
 | **Regional** (`arn:aws:<svc>:{region}:{account_id}:*`) | RDS, Lambda, ECR, Secrets Manager, SSM, SNS, CloudWatch/Logs, WAF, SES, ACM, KMS, Geo |
-| **Global** (`arn:aws:<svc>::{account_id}:*`) | CloudFront, Budgets |
+| **Global** (`arn:aws:<svc>::{account_id}:*`)           | CloudFront, Budgets                                                                   |
 
 **Truly global services** — kept at `Resource: "*"` (no account ID in ARN):
 

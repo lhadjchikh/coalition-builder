@@ -287,7 +287,7 @@ Workflows that interact with external resources support manual triggers via `wor
 
 The deployment workflows authenticate via OIDC (OpenID Connect) using GitHub's identity provider. Each GitHub environment (dev, prod) has an `AWS_ACCOUNT_ID` variable and an IAM role (`github-actions-<env>`) that GitHub Actions assumes.
 
-Legacy workflows (lambda\_management, geodata\_import) still use static credentials:
+Legacy workflows (lambda_management, geodata_import) still use static credentials:
 
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
