@@ -111,7 +111,7 @@ jobs:
       TF_VAR_shared_peering_role_arn: ${{ secrets.SHARED_PEERING_ROLE_ARN }}
       # Variables (from GitHub environment)
       TF_VAR_shared_account_id: ${{ vars.SHARED_ACCOUNT_ID }}
-      TF_VAR_github_repo: ${{ vars.GITHUB_REPO }}
+      TF_VAR_github_repo: ${{ vars.REPO_FULL_NAME }}
       TF_VAR_domain_name: ${{ vars.TF_VAR_DOMAIN_NAME }}
       TF_VAR_api_gateway_id: ${{ vars.TF_VAR_API_GATEWAY_ID }}
       TF_VAR_alert_email: ${{ vars.TF_VAR_ALERT_EMAIL }}
