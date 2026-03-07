@@ -204,8 +204,7 @@ def delete_theme(request: HttpRequest, theme_id: int) -> dict:
         if theme.is_active:
             raise HttpError(
                 400,
-                "Cannot delete the active theme. "
-                "Please activate another theme first.",
+                "Cannot delete the active theme. Please activate another theme first.",
             )
 
         theme.delete()

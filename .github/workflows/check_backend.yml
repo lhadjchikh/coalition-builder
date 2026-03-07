@@ -52,7 +52,7 @@ jobs:
       - name: Run linters and type checker
         run: |
           docker run --rm coalition:dev \
-            bash -c "cd /app && black --check . && ruff check . && mypy coalition/ --config-file pyproject.toml"
+            bash -c "cd /app && ruff format --check . && ruff check . && mypy coalition/ --config-file pyproject.toml"
 
       - name: Start database container
         run: |
