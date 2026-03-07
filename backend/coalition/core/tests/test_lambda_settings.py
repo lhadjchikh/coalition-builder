@@ -56,6 +56,6 @@ class LambdaStorageSettingsTest(TestCase):
             reload(settings_module)
 
             staticfiles_backend = settings_module.STORAGES["staticfiles"]["BACKEND"]
-            assert (
-                staticfiles_backend == "coalition.core.storage.StaticStorage"
-            ), f"Expected StaticStorage for Lambda, got {staticfiles_backend}"
+            assert staticfiles_backend == "coalition.core.storage.StaticStorage", (
+                f"Expected StaticStorage for Lambda, got {staticfiles_backend}"
+            )
