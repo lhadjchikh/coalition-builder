@@ -452,7 +452,8 @@ USE_TZ = True
 CLOUDFRONT_DOMAIN = os.getenv("CLOUDFRONT_DOMAIN")
 STATIC_URL = f"https://{CLOUDFRONT_DOMAIN}/static/" if CLOUDFRONT_DOMAIN else "/static/"
 
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+if not IS_LAMBDA:
+    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Static files directories - where Django will look for static files during development
 STATICFILES_DIRS = [
@@ -641,8 +642,7 @@ TINYMCE_MINIMAL_CONFIG = {
     "statusbar": False,
     # Allow basic SVG elements even in minimal config
     "extended_valid_elements": (
-        "svg[*],path[*],circle[*],rect[*],a[href|target|rel|title],"
-        "style[type],*[style]"
+        "svg[*],path[*],circle[*],rect[*],a[href|target|rel|title],style[type],*[style]"
     ),
     "valid_children": "+body[svg],+p[svg],+div[svg]",
     # Enable target option in link dialog

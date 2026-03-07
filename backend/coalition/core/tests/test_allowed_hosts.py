@@ -59,15 +59,15 @@ class AllowedHostsConfigurationTest(TestCase):
 
             # Check production domains are included
             for host in production_hosts:
-                assert (
-                    host in actual_hosts
-                ), f"Production host {host} should be in ALLOWED_HOSTS"
+                assert host in actual_hosts, (
+                    f"Production host {host} should be in ALLOWED_HOSTS"
+                )
 
             # Check internal service names are included
             for host in internal_hosts:
-                assert (
-                    host in actual_hosts
-                ), f"Internal service {host} should be in ALLOWED_HOSTS"
+                assert host in actual_hosts, (
+                    f"Internal service {host} should be in ALLOWED_HOSTS"
+                )
 
     def test_ecs_metadata_integration(self) -> None:
         """Test that ECS container IP is added to ALLOWED_HOSTS."""
@@ -90,9 +90,9 @@ class AllowedHostsConfigurationTest(TestCase):
         ):
             reload(settings_module)
 
-            assert (
-                "172.17.0.5" in settings_module.ALLOWED_HOSTS
-            ), "ECS container IP should be added to ALLOWED_HOSTS"
+            assert "172.17.0.5" in settings_module.ALLOWED_HOSTS, (
+                "ECS container IP should be added to ALLOWED_HOSTS"
+            )
 
     def test_csrf_trusted_origins_configuration(self) -> None:
         """Test that CSRF_TRUSTED_ORIGINS is configured correctly for production."""
@@ -106,9 +106,9 @@ class AllowedHostsConfigurationTest(TestCase):
             expected_origins = ["https://coalition.org", "https://www.coalition.org"]
 
             for origin in expected_origins:
-                assert (
-                    origin in settings_module.CSRF_TRUSTED_ORIGINS
-                ), f"CSRF trusted origin {origin} should be configured"
+                assert origin in settings_module.CSRF_TRUSTED_ORIGINS, (
+                    f"CSRF trusted origin {origin} should be configured"
+                )
 
     def test_json_array_allowed_hosts_parsing(self) -> None:
         """Test that ALLOWED_HOSTS supports JSON array format."""

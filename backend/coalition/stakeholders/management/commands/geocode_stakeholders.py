@@ -87,7 +87,7 @@ class Command(BaseCommand):
             for i, stakeholder in enumerate(stakeholders[:10]):  # Show first 10
                 address_info = stakeholder.full_address or "Incomplete address"
                 full_name = f"{stakeholder.first_name} {stakeholder.last_name}"
-                self.stdout.write(f"  {i+1}. {full_name} - {address_info}")
+                self.stdout.write(f"  {i + 1}. {full_name} - {address_info}")
             if total_count > 10:
                 self.stdout.write(f"  ... and {total_count - 10} more")
             return

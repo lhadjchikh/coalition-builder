@@ -266,7 +266,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         print(f"  VPC Subnets: {', '.join(vpc_subnet_ids)}")
     if vpc_security_group_ids:
         print(
-            "  Security Groups: " f"{', '.join(vpc_security_group_ids)}",
+            f"  Security Groups: {', '.join(vpc_security_group_ids)}",
         )
 
 

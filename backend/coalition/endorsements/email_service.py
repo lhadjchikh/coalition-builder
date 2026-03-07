@@ -86,8 +86,7 @@ class EndorsementEmailService:
 
         except TemplateDoesNotExist as e:
             logger.error(
-                f"Email template not found for endorsement "
-                f"{endorsement.id}: {str(e)}",
+                f"Email template not found for endorsement {endorsement.id}: {str(e)}",
             )
             return False
         except SMTPException as e:

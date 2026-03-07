@@ -20,7 +20,7 @@ def validate_video_file_extension(value: Any) -> None:
     if ext not in VALID_VIDEO_EXTENSIONS:
         raise ValidationError(
             f"Unsupported file extension {ext}. "
-            f'Allowed extensions: {", ".join(VALID_VIDEO_EXTENSIONS)}',
+            f"Allowed extensions: {', '.join(VALID_VIDEO_EXTENSIONS)}",
         )
 
 

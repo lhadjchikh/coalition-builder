@@ -656,14 +656,14 @@ class EndorsementAPIEnhancedTest(BaseTestCase):
 
         # First 3 should succeed
         for i in range(3):
-            assert (
-                responses[i].status_code == 200
-            ), f"Request {i + 1} should succeed but got {responses[i].status_code}"
+            assert responses[i].status_code == 200, (
+                f"Request {i + 1} should succeed but got {responses[i].status_code}"
+            )
 
         # 4th request should be rate limited
-        assert (
-            responses[3].status_code == 429
-        ), f"Request 4 should be rate limited but got {responses[3].status_code}"
+        assert responses[3].status_code == 429, (
+            f"Request 4 should be rate limited but got {responses[3].status_code}"
+        )
         data = responses[3].json()
         assert "too many" in data["detail"].lower()
 

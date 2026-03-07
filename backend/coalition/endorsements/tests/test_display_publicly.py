@@ -110,9 +110,9 @@ class DisplayPubliclyTest(BaseTestCase):
                 setattr(self.endorsement, field, False)
 
             self.endorsement.save()
-            assert (
-                self.endorsement.should_display_publicly is False
-            ), f"should_display_publicly should be False when {field} is not met"
+            assert self.endorsement.should_display_publicly is False, (
+                f"should_display_publicly should be False when {field} is not met"
+            )
 
         # All conditions met
         for field, value in conditions.items():

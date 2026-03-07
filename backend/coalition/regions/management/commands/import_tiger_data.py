@@ -170,15 +170,13 @@ class Command(BaseCommand):
         if dry_run:
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"DRY RUN: Would import {imported_count} "
-                    f"{district_type} districts",
+                    f"DRY RUN: Would import {imported_count} {district_type} districts",
                 ),
             )
         else:
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"Successfully imported {imported_count} "
-                    f"{district_type} districts",
+                    f"Successfully imported {imported_count} {district_type} districts",
                 ),
             )
 
