@@ -69,13 +69,17 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
     db_secret_arn = get_env_or_default("DATABASE_SECRET_ARN", "")
     django_secret_arn = get_env_or_default("DJANGO_SECRET_ARN", "")
 
-    # Fail fast in CI if secret ARNs are missing
+    # Get role name (validated in CI below)
+    zappa_role_name = get_env_or_default("ZAPPA_ROLE_NAME", "")
+
+    # Fail fast in CI if required env vars are missing
     if os.environ.get("CI"):
         missing = [
             name
             for name, value in (
                 ("DATABASE_SECRET_ARN", db_secret_arn),
                 ("DJANGO_SECRET_ARN", django_secret_arn),
+                ("ZAPPA_ROLE_NAME", zappa_role_name),
             )
             if not value
         ]
@@ -113,10 +117,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
                 "SecurityGroupIds": vpc_security_group_ids,
             },
             "manage_roles": False,
-            "role_name": get_env_or_default(
-                "ZAPPA_ROLE_NAME",
-                "coalition-zappa-deployment",
-            ),
+            "role_name": zappa_role_name or "coalition-zappa-deployment",
             "timeout_seconds": 30,
             "slim_handler": False,
             "use_precompiled_packages": False,

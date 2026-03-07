@@ -122,17 +122,33 @@ class TestCIValidation:
                 {"CI": "true", "DATABASE_SECRET_ARN": self._arn},
             )
 
-    def test_ci_succeeds_when_both_arns_provided(
+    def test_ci_raises_when_zappa_role_name_missing(
         self,
         tmp_path: Path,
     ) -> None:
-        """In CI, providing both ARNs should not raise."""
+        """In CI, missing ZAPPA_ROLE_NAME should raise."""
+        with pytest.raises(RuntimeError, match="ZAPPA_ROLE_NAME"):
+            _generate_settings(
+                tmp_path,
+                {
+                    "CI": "true",
+                    "DATABASE_SECRET_ARN": self._arn,
+                    "DJANGO_SECRET_ARN": self._arn,
+                },
+            )
+
+    def test_ci_succeeds_when_all_required_vars_provided(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """In CI, providing all required vars should not raise."""
         settings = _generate_settings(
             tmp_path,
             {
                 "CI": "true",
                 "DATABASE_SECRET_ARN": self._arn,
                 "DJANGO_SECRET_ARN": self._arn,
+                "ZAPPA_ROLE_NAME": "my-role",
             },
         )
         db_url = settings["prod"]["aws_environment_variables"]
