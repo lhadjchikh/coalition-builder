@@ -372,12 +372,36 @@ resource "aws_iam_role_policy" "infrastructure" {
         {
           Sid    = "CloudWatch"
           Effect = "Allow"
-          Action = ["cloudwatch:*", "logs:*", "events:*"]
+          Action = ["cloudwatch:*", "logs:*"]
           Resource = [
             "arn:aws:cloudwatch:${var.aws_region}:${data.aws_caller_identity.current.account_id}:*",
             "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:*",
-            "arn:aws:events:${var.aws_region}:${data.aws_caller_identity.current.account_id}:*",
           ]
+        },
+        {
+          Sid    = "EventBridgeRead"
+          Effect = "Allow"
+          Action = [
+            "events:DescribeRule",
+            "events:ListRules",
+            "events:ListRuleNamesByTarget",
+            "events:ListTargetsByRule",
+            "events:ListTagsForResource",
+          ]
+          Resource = "*"
+        },
+        {
+          Sid    = "EventBridgeWrite"
+          Effect = "Allow"
+          Action = [
+            "events:PutRule",
+            "events:PutTargets",
+            "events:DeleteRule",
+            "events:RemoveTargets",
+            "events:TagResource",
+            "events:UntagResource",
+          ]
+          Resource = "arn:aws:events:${var.aws_region}:${data.aws_caller_identity.current.account_id}:rule/*"
         },
         {
           Sid      = "WAF"
