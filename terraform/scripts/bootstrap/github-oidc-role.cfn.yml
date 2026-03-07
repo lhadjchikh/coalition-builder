@@ -253,8 +253,6 @@ Resources:
                   - iam:DeleteUserPolicy
                   - iam:CreateAccessKey
                   - iam:DeleteAccessKey
-                  - iam:AttachUserPolicy
-                  - iam:DetachUserPolicy
                 Resource:
                   - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ResourcePrefix}-*"
                   - !Sub "arn:aws:iam::${AWS::AccountId}:role/github-actions-*"

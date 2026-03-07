@@ -288,8 +288,6 @@ resource "aws_iam_role_policy" "infrastructure" {
             "iam:DeleteUserPolicy",
             "iam:CreateAccessKey",
             "iam:DeleteAccessKey",
-            "iam:AttachUserPolicy",
-            "iam:DetachUserPolicy",
           ]
           Resource = [
             "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.resource_prefix}-*",
