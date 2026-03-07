@@ -239,11 +239,6 @@ Resources:
                   - iam:DeleteInstanceProfile
                   - iam:AddRoleToInstanceProfile
                   - iam:RemoveRoleFromInstanceProfile
-                  - iam:CreateOpenIDConnectProvider
-                  - iam:DeleteOpenIDConnectProvider
-                  - iam:TagOpenIDConnectProvider
-                  - iam:UpdateOpenIDConnectProviderThumbprint
-                  - iam:AddClientIDToOpenIDConnectProvider
                   - iam:CreateServiceLinkedRole
                   - iam:CreateUser
                   - iam:DeleteUser
@@ -258,8 +253,16 @@ Resources:
                   - !Sub "arn:aws:iam::${AWS::AccountId}:role/github-actions-*"
                   - !Sub "arn:aws:iam::${AWS::AccountId}:policy/${ResourcePrefix}-*"
                   - !Sub "arn:aws:iam::${AWS::AccountId}:instance-profile/${ResourcePrefix}-*"
-                  - !Sub "arn:aws:iam::${AWS::AccountId}:oidc-provider/*"
                   - !Sub "arn:aws:iam::${AWS::AccountId}:user/ses/${ResourcePrefix}-*"
+              # --- OIDC provider management (scoped to single GitHub provider) ---
+              - Sid: OIDCProviderMutate
+                Effect: Allow
+                Action:
+                  - iam:DeleteOpenIDConnectProvider
+                  - iam:TagOpenIDConnectProvider
+                  - iam:UpdateOpenIDConnectProviderThumbprint
+                  - iam:AddClientIDToOpenIDConnectProvider
+                Resource: !Sub "arn:aws:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com"
               # --- CloudFormation Cloud Control API (required by awscc provider) ---
               - Sid: CloudControlAPI
                 Effect: Allow

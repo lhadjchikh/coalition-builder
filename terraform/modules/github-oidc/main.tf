@@ -274,11 +274,6 @@ resource "aws_iam_role_policy" "infrastructure" {
             "iam:DeleteInstanceProfile",
             "iam:AddRoleToInstanceProfile",
             "iam:RemoveRoleFromInstanceProfile",
-            "iam:CreateOpenIDConnectProvider",
-            "iam:DeleteOpenIDConnectProvider",
-            "iam:TagOpenIDConnectProvider",
-            "iam:UpdateOpenIDConnectProviderThumbprint",
-            "iam:AddClientIDToOpenIDConnectProvider",
             "iam:CreateServiceLinkedRole",
             "iam:CreateUser",
             "iam:DeleteUser",
@@ -294,9 +289,21 @@ resource "aws_iam_role_policy" "infrastructure" {
             "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/github-actions-*",
             "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/${var.resource_prefix}-*",
             "arn:aws:iam::${data.aws_caller_identity.current.account_id}:instance-profile/${var.resource_prefix}-*",
-            "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/*",
             "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/ses/${var.resource_prefix}-*",
           ]
+        },
+
+        # --- OIDC provider management (scoped to single GitHub provider) ---
+        {
+          Sid    = "OIDCProviderMutate"
+          Effect = "Allow"
+          Action = [
+            "iam:DeleteOpenIDConnectProvider",
+            "iam:TagOpenIDConnectProvider",
+            "iam:UpdateOpenIDConnectProviderThumbprint",
+            "iam:AddClientIDToOpenIDConnectProvider",
+          ]
+          Resource = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/token.actions.githubusercontent.com"
         },
 
         # --- CloudFormation Cloud Control API (required by awscc provider) ---
