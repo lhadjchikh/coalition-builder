@@ -98,6 +98,9 @@ Resources:
                   - dynamodb:GetItem
                   - dynamodb:PutItem
                   - dynamodb:DeleteItem
+                  - dynamodb:CreateTable
+                  - dynamodb:DescribeTable
+                  - dynamodb:TagResource
                 Resource: !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/coalition-terraform-locks"
         - PolicyName: !Sub "${Environment}-infrastructure"
           PolicyDocument:

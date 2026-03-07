@@ -102,7 +102,10 @@ resource "aws_iam_role_policy" "terraform_operations" {
         Action = [
           "dynamodb:GetItem",
           "dynamodb:PutItem",
-          "dynamodb:DeleteItem"
+          "dynamodb:DeleteItem",
+          "dynamodb:CreateTable",
+          "dynamodb:DescribeTable",
+          "dynamodb:TagResource"
         ]
         Resource = "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/coalition-terraform-locks"
       }
