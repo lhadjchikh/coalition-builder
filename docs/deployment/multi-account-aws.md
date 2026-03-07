@@ -380,7 +380,7 @@ The `resource_prefix` variable (default: `coalition`) controls the prefix patter
 
 **Truly global services** — kept at `Resource: "*"` (no account ID in ARN):
 
-- S3, Route53, API Gateway, Cost Explorer
+- S3, Route53, API Gateway, Cost Explorer, Cloud Control API (CloudFormation)
 
 **STS (cross-account peering)** — conditionally included:
 
