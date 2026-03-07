@@ -24,8 +24,13 @@ def _generate_settings(
     return json.loads(output_file.read_text())
 
 
-class TestRoleName:
-    """Tests for role_name in generated settings."""
+class TestRoleManagement:
+    """Tests for manage_roles and role_name in generated settings."""
+
+    def test_manage_roles_is_false(self, tmp_path: Path) -> None:
+        """manage_roles should be False so Zappa uses the Terraform-managed role."""
+        settings = _generate_settings(tmp_path)
+        assert settings["base"]["manage_roles"] is False
 
     def test_base_config_includes_role_name(self, tmp_path: Path) -> None:
         """role_name should be present in the base config."""

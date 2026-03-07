@@ -112,6 +112,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
                 "SubnetIds": vpc_subnet_ids,
                 "SecurityGroupIds": vpc_security_group_ids,
             },
+            "manage_roles": False,
             "role_name": get_env_or_default(
                 "ZAPPA_ROLE_NAME",
                 "coalition-zappa-deployment",
