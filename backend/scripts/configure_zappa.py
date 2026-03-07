@@ -35,10 +35,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
     )
 
     # Check if staging environment is enabled (off by default)
-    enable_staging = (
-        get_env_or_default("ENABLE_STAGING", "false").lower()
-        == "true"
-    )
+    enable_staging = get_env_or_default("ENABLE_STAGING", "false").lower() == "true"
 
     # Get asset bucket names
     dev_assets_bucket = get_env_or_default(
@@ -66,9 +63,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
 
     # Clean up empty strings from lists
     vpc_subnet_ids = [s.strip() for s in vpc_subnet_ids if s.strip()]
-    vpc_security_group_ids = [
-        s.strip() for s in vpc_security_group_ids if s.strip()
-    ]
+    vpc_security_group_ids = [s.strip() for s in vpc_security_group_ids if s.strip()]
 
     # Get secret ARNs (empty default = local dev; CI provides real ARNs)
     db_secret_arn = get_env_or_default("DATABASE_SECRET_ARN", "")
@@ -86,24 +81,20 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         ]
         if missing:
             raise RuntimeError(
-                "Missing required env var(s) in CI: "
-                + ", ".join(missing),
+                "Missing required env var(s) in CI: " + ", ".join(missing),
             )
 
     # Docker image configuration
     # USE_CUSTOM_DOCKER=true: deploy as container image (docker_image_uri)
     # USE_CUSTOM_DOCKER=false: package inside Docker, deploy as zip
     use_custom_docker = (
-        get_env_or_default("USE_CUSTOM_DOCKER", "false").lower()
-        == "true"
+        get_env_or_default("USE_CUSTOM_DOCKER", "false").lower() == "true"
     )
 
     if use_custom_docker:
         docker_image_key = "docker_image_uri"
         dev_docker_image = f"{ecr_registry}/coalition-dev:latest"
-        production_docker_image = (
-            f"{ecr_registry}/coalition-prod:latest"
-        )
+        production_docker_image = f"{ecr_registry}/coalition-prod:latest"
     else:
         docker_image_key = "docker_image"
         dev_docker_image = "public.ecr.aws/lambda/python:3.13"
@@ -224,13 +215,9 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             "coalition_staging",
         )
         if use_custom_docker:
-            staging_docker_image = (
-                f"{ecr_registry}/coalition-staging:latest"
-            )
+            staging_docker_image = f"{ecr_registry}/coalition-staging:latest"
         else:
-            staging_docker_image = (
-                "public.ecr.aws/lambda/python:3.13"
-            )
+            staging_docker_image = "public.ecr.aws/lambda/python:3.13"
 
         settings["staging"] = {
             "extends": "base",
@@ -256,10 +243,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         }
 
     # Write the configuration with Prettier-compatible formatting
-    config_path = (
-        output_path
-        or Path(__file__).parent.parent / "zappa_settings.json"
-    )
+    config_path = output_path or Path(__file__).parent.parent / "zappa_settings.json"
     with open(config_path, "w") as f:
         # Add trailing newline for Prettier compatibility
         json.dump(settings, f, indent=2)
@@ -280,8 +264,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         print(f"  VPC Subnets: {', '.join(vpc_subnet_ids)}")
     if vpc_security_group_ids:
         print(
-            "  Security Groups: "
-            f"{', '.join(vpc_security_group_ids)}",
+            "  Security Groups: " f"{', '.join(vpc_security_group_ids)}",
         )
 
 

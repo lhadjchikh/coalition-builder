@@ -197,7 +197,8 @@ module "serverless_storage" {
 module "lambda_ecr" {
   source = "./modules/lambda-ecr"
 
-  tags = var.tags
+  environment = var.environment
+  tags        = var.tags
 }
 
 # ACM certificate for domain and all subdomains

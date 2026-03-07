@@ -183,7 +183,5 @@ class TestStagingGating:
     ) -> None:
         """By default only dev and prod stages should be present."""
         settings = _generate_settings(tmp_path)
-        stage_keys = {
-            k for k in settings if k != "base"
-        }
+        stage_keys = {k for k in settings if k != "base"}
         assert stage_keys == {"dev", "prod"}
