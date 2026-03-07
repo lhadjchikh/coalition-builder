@@ -642,8 +642,7 @@ TINYMCE_MINIMAL_CONFIG = {
     "statusbar": False,
     # Allow basic SVG elements even in minimal config
     "extended_valid_elements": (
-        "svg[*],path[*],circle[*],rect[*],a[href|target|rel|title],"
-        "style[type],*[style]"
+        "svg[*],path[*],circle[*],rect[*],a[href|target|rel|title],style[type],*[style]"
     ),
     "valid_children": "+body[svg],+p[svg],+div[svg]",
     # Enable target option in link dialog
