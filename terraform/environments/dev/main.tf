@@ -166,8 +166,9 @@ module "serverless_storage" {
 
 # Lambda ECR Module
 module "lambda_ecr" {
-  source = "../../modules/lambda-ecr"
-  tags   = var.tags
+  source      = "../../modules/lambda-ecr"
+  environment = "dev"
+  tags        = var.tags
 }
 
 # GitHub OIDC for CI/CD

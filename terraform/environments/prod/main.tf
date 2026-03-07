@@ -245,8 +245,9 @@ module "serverless_storage" {
 
 # Lambda ECR Module
 module "lambda_ecr" {
-  source = "../../modules/lambda-ecr"
-  tags   = var.tags
+  source      = "../../modules/lambda-ecr"
+  environment = "prod"
+  tags        = var.tags
 }
 
 # Route53 Zone
