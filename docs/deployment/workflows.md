@@ -10,14 +10,14 @@ All workflows are located in `.github/workflows/`:
 
 ### Deployment Workflows
 
-#### `deploy-lambda.yml`
+#### `deploy_lambda.yml`
 
 Deploys the Django backend to AWS Lambda using Zappa.
 
 **Triggers:**
 
-- Push to `main`, `staging`, or `development` branches
-- Manual workflow dispatch with environment selection (`dev`, `staging`, `prod`)
+- Push to `main` or `development` branches
+- Manual workflow dispatch with environment selection (`dev`, `prod`)
 
 **Authentication:**
 
@@ -35,13 +35,13 @@ Uses GitHub OIDC to assume the `github-actions-{environment}` IAM role — no lo
 5. Deploys or updates Lambda function
 6. Runs health checks
 
-#### `deploy-frontend.yml`
+#### `deploy_frontend.yml`
 
 Deploys the Next.js frontend to Vercel.
 
 **Triggers:**
 
-- Push to `main`, `staging`, or `development` branches (when frontend files change)
+- Push to `main` or `development` branches (when frontend files change)
 - Pull requests (creates preview deployments)
 - Manual workflow dispatch
 
@@ -51,7 +51,6 @@ Deploys the Next.js frontend to Vercel.
 - `VERCEL_ORG_ID` (secret)
 - `VERCEL_PROJECT_ID` (secret)
 - `PRODUCTION_API_URL` (variable)
-- `STAGING_API_URL` (variable)
 - `DEVELOPMENT_API_URL` (variable)
 
 **Process:**
@@ -91,12 +90,12 @@ Full-stack deployment of backend (Lambda) and frontend (Vercel).
 
 **Triggers:**
 
-- Push to `main`, `staging`, or `dev` branches
-- Manual workflow dispatch with environment selection (`dev`, `staging`, `prod`)
+- Push to `main` or `dev` branches
+- Manual workflow dispatch with environment selection (`dev`, `prod`)
 
 **Authentication:**
 
-Uses GitHub OIDC — same pattern as `deploy-lambda.yml`.
+Uses GitHub OIDC — same pattern as `deploy_lambda.yml`.
 
 **Process:**
 
@@ -191,16 +190,6 @@ Lambda Stage: dev
 Vercel: Preview deployment
 ```
 
-### Staging Environment
-
-```yaml
-Environment: staging
-Branch: staging
-Lambda Stage: staging
-Vercel: Staging deployment
-Keep-warm: Yes (10 minutes)
-```
-
 ### Production Environment
 
 ```yaml
@@ -215,7 +204,7 @@ X-Ray: Enabled
 ## Setting Up GitHub Environments
 
 1. Go to Settings → Environments
-2. Create three environments: `development`, `staging`, `production`
+2. Create two environments: `dev`, `prod`
 3. Add environment-specific variables:
 
 ### Development
@@ -224,14 +213,6 @@ X-Ray: Enabled
 DOMAIN_NAME=api-dev.yourdomain.com
 CERTIFICATE_ARN=arn:aws:acm:us-east-1:...
 DEVELOPMENT_API_URL=https://api-dev.yourdomain.com
-```
-
-### Staging
-
-```bash
-DOMAIN_NAME=api-staging.yourdomain.com
-CERTIFICATE_ARN=arn:aws:acm:us-east-1:...
-STAGING_API_URL=https://api-staging.yourdomain.com
 ```
 
 ### Production
@@ -248,7 +229,7 @@ PRODUCTION_API_URL=https://api.yourdomain.com
 
 ```bash
 # Using GitHub Actions
-gh workflow run deploy-lambda.yml --ref main
+gh workflow run deploy_lambda.yml --ref main
 
 # Using Zappa directly
 cd backend
@@ -259,7 +240,7 @@ poetry run zappa deploy prod
 
 ```bash
 # Using GitHub Actions
-gh workflow run deploy-frontend.yml --ref main
+gh workflow run deploy_frontend.yml --ref main
 
 # Using Vercel CLI
 cd frontend
