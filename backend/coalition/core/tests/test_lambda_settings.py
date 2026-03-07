@@ -19,6 +19,25 @@ class LambdaStorageSettingsTest(TestCase):
         os.environ.clear()
         os.environ.update(self.original_env)
 
+    def test_static_root_uses_tmp_in_lambda(self) -> None:
+        """STATIC_ROOT must use /tmp in Lambda (filesystem is read-only)."""
+        from coalition.core import settings as settings_module
+
+        with patch.dict(
+            os.environ,
+            {
+                "AWS_LAMBDA_FUNCTION_NAME": "test-function",
+                "SECRET_KEY": "test-secret-key",
+                "ENVIRONMENT": "test",
+            },
+            clear=False,
+        ):
+            reload(settings_module)
+
+            assert settings_module.STATIC_ROOT == "/tmp/static/", (
+                f"Expected /tmp/static/ for Lambda, got {settings_module.STATIC_ROOT}"
+            )
+
     def test_staticfiles_storage_uses_s3_in_lambda(self) -> None:
         """Staticfiles backend must use S3 when in Lambda with USE_S3=true."""
         from coalition.core import settings as settings_module

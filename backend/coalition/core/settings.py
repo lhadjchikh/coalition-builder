@@ -452,7 +452,8 @@ USE_TZ = True
 CLOUDFRONT_DOMAIN = os.getenv("CLOUDFRONT_DOMAIN")
 STATIC_URL = f"https://{CLOUDFRONT_DOMAIN}/static/" if CLOUDFRONT_DOMAIN else "/static/"
 
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+if not IS_LAMBDA:
+    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Static files directories - where Django will look for static files during development
 STATICFILES_DIRS = [
