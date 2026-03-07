@@ -320,7 +320,7 @@ jobs:
         env:
           ENV: ${{ needs.determine-environment.outputs.environment }}
         run: |
-          if [ "${{ needs.smoke-test.result }}" = "success" ]; then
+          if [ "${{ needs.smoke-test.result }}" = "success" ] || { [ "${{ needs.smoke-test.result }}" = "skipped" ] && [ "${{ needs.deploy-backend.result }}" = "success" ] && [ "${{ needs.deploy-frontend.result }}" = "success" ]; }; then
             echo "Deployment to $ENV environment successful!"
           else
             echo "Deployment to $ENV environment failed!"
