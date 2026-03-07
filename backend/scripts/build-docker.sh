@@ -135,7 +135,7 @@ list_images() {
     --output table 2>/dev/null || echo "  No geolambda images found"
 
   # List environment images
-  for env in dev staging prod; do
+  for env in dev prod; do
     echo -e "\n${GREEN}Coalition-${env} images:${NC}"
     aws ecr describe-images --repository-name "coalition-${env}" --region "${AWS_REGION}" \
       --query 'imageDetails[*].[imageTags[0],imagePushedAt]' \
@@ -148,7 +148,7 @@ cleanup_old_images() {
   local KEEP_COUNT=${1:-3}
   log_info "Cleaning up old images (keeping latest ${KEEP_COUNT} per repository)..."
 
-  for repo in geolambda coalition-dev coalition-staging coalition-prod; do
+  for repo in geolambda coalition-dev coalition-prod; do
     # Get image digests to delete (keep latest N)
     DIGESTS=$(aws ecr describe-images --repository-name "${repo}" --region "${AWS_REGION}" \
       --query "imageDetails[?imagePushedAt] | sort_by(@, &imagePushedAt) | [0:-${KEEP_COUNT}].[imageDigest]" \
@@ -177,7 +177,6 @@ case "${1}" in
   all)
     build_geolambda
     build_app dev
-    build_app staging
     build_app prod
     ;;
   list)
@@ -192,15 +191,16 @@ case "${1}" in
     echo "Commands:"
     echo "  geolambda    - Build and push the geolambda base image (run once)"
     echo "  dev          - Build and push development environment image"
-    echo "  staging      - Build and push staging environment image"
+    echo "  staging      - Build and push staging environment image (opt-in)"
     echo "  prod         - Build and push production environment image"
-    echo "  all          - Build all images (base + all environments)"
+    echo "  all          - Build all default images (base + dev + prod)"
     echo "  list         - List all images in ECR"
     echo "  cleanup N    - Remove old images, keeping latest N (default: 3)"
     echo ""
     echo "Examples:"
     echo "  $0 geolambda        # Build base image (first time only)"
     echo "  $0 dev              # Build dev environment"
+    echo "  $0 staging          # Build staging (if staging account exists)"
     echo "  $0 prod             # Build production environment"
     echo "  $0 list             # Show all ECR images"
     echo "  $0 cleanup 5        # Keep only 5 latest images per repo"

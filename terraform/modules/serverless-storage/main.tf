@@ -1,5 +1,5 @@
-# Serverless Storage Module - S3 buckets for Lambda/serverless deployments
-# Creates environment-specific S3 buckets for static assets and uploads
+# Serverless Storage Module - S3 bucket for Lambda/serverless deployments
+# Creates a single environment-specific S3 bucket for static assets and uploads
 
 terraform {
   required_version = ">= 1.0"
@@ -16,119 +16,96 @@ terraform {
   }
 }
 
-# Single random suffix shared by all buckets (only if enabled)
+# Random suffix for bucket uniqueness (only if enabled)
 resource "random_id" "bucket_suffix" {
+  count       = var.use_random_suffix ? 1 : 0
   byte_length = 4
-
-  # Only create if random suffix is enabled
-  count = var.use_random_suffix ? 1 : 0
 }
 
 locals {
-  # Use a single random suffix for all buckets (easier to manage)
-  suffix = var.use_random_suffix && length(random_id.bucket_suffix) > 0 ? "-${random_id.bucket_suffix[0].hex}" : ""
-
-  # Generate bucket names with the same suffix for consistency
-  bucket_names = {
-    dev        = "${var.bucket_prefix}-dev-assets${local.suffix}"
-    staging    = "${var.bucket_prefix}-staging-assets${local.suffix}"
-    production = "${var.bucket_prefix}-production-assets${local.suffix}"
-  }
+  suffix      = var.use_random_suffix && length(random_id.bucket_suffix) > 0 ? "-${random_id.bucket_suffix[0].hex}" : ""
+  bucket_name = "${var.bucket_prefix}-${var.environment}-assets${local.suffix}"
+  is_prod     = var.environment == "production" || var.environment == "prod"
 }
 
-# Create S3 buckets for each environment
-resource "aws_s3_bucket" "environment_assets" {
-  for_each = local.bucket_names
-
-  bucket        = each.value
-  force_destroy = var.force_destroy_non_production || each.key == "dev"
+# S3 bucket for this environment
+resource "aws_s3_bucket" "assets" {
+  bucket        = local.bucket_name
+  force_destroy = var.force_destroy
 
   tags = {
-    Name        = each.value
-    Environment = each.key
-    Purpose     = "Static assets for ${each.key} environment"
+    Name        = local.bucket_name
+    Environment = var.environment
+    Purpose     = "Static assets for ${var.environment} environment"
     ManagedBy   = "Terraform"
     Project     = var.project_name
   }
 }
 
-# Bucket versioning (enabled for staging and production)
-resource "aws_s3_bucket_versioning" "environment_assets" {
-  for_each = local.bucket_names
-
-  bucket = aws_s3_bucket.environment_assets[each.key].id
+# Bucket versioning
+resource "aws_s3_bucket_versioning" "assets" {
+  bucket = aws_s3_bucket.assets.id
 
   versioning_configuration {
-    status = each.key == "production" || each.key == "staging" ? "Enabled" : "Suspended"
+    status = local.is_prod ? "Enabled" : "Suspended"
   }
 }
 
-# Public access block - more restrictive for production
-resource "aws_s3_bucket_public_access_block" "environment_assets" {
-  for_each = local.bucket_names
+# Public access block
+resource "aws_s3_bucket_public_access_block" "assets" {
+  bucket = aws_s3_bucket.assets.id
 
-  bucket = aws_s3_bucket.environment_assets[each.key].id
-
-  # Production should be more restrictive
-  block_public_acls       = each.key == "production"
+  block_public_acls       = local.is_prod
   block_public_policy     = false
-  ignore_public_acls      = each.key == "production"
+  ignore_public_acls      = local.is_prod
   restrict_public_buckets = false
 }
 
-# CORS configuration for each bucket
-resource "aws_s3_bucket_cors_configuration" "environment_assets" {
-  for_each = local.bucket_names
-
-  bucket = aws_s3_bucket.environment_assets[each.key].id
+# CORS configuration
+resource "aws_s3_bucket_cors_configuration" "assets" {
+  bucket = aws_s3_bucket.assets.id
 
   cors_rule {
     allowed_headers = ["*"]
     allowed_methods = ["GET", "POST", "PUT", "HEAD"]
-    allowed_origins = each.key == "production" ? var.production_cors_origins : ["*"]
+    allowed_origins = var.cors_origins
     expose_headers  = ["ETag"]
     max_age_seconds = 3600
   }
 }
 
-# Lifecycle rules for cost optimization (non-production)
-resource "aws_s3_bucket_lifecycle_configuration" "environment_assets" {
-  for_each = var.enable_lifecycle_rules ? { for k, v in local.bucket_names : k => v if k != "production" } : {}
+# Lifecycle rules for cost optimization
+resource "aws_s3_bucket_lifecycle_configuration" "assets" {
+  count = var.enable_lifecycle_rules && !local.is_prod ? 1 : 0
 
-  bucket = aws_s3_bucket.environment_assets[each.key].id
+  bucket = aws_s3_bucket.assets.id
 
   rule {
     id     = "cleanup-old-files"
     status = "Enabled"
 
-    # Delete incomplete multipart uploads after 7 days
     abort_incomplete_multipart_upload {
       days_after_initiation = 7
     }
 
-    # Transition to cheaper storage after 30 days (dev/staging only)
     transition {
       days          = 30
       storage_class = "STANDARD_IA"
     }
 
-    # Delete old files after 90 days in dev, 180 days in staging
     expiration {
-      days = each.key == "dev" ? 90 : 180
+      days = var.environment == "dev" ? 90 : 180
     }
 
-    # Clean up old versions
     noncurrent_version_expiration {
-      noncurrent_days = each.key == "dev" ? 7 : 30
+      noncurrent_days = var.environment == "dev" ? 7 : 30
     }
   }
 }
 
-# Bucket policies for public read access
-resource "aws_s3_bucket_policy" "environment_assets" {
-  for_each = local.bucket_names
-
-  bucket = aws_s3_bucket.environment_assets[each.key].id
+# Bucket policy for public read access
+resource "aws_s3_bucket_policy" "assets" {
+  bucket = aws_s3_bucket.assets.id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -139,12 +116,12 @@ resource "aws_s3_bucket_policy" "environment_assets" {
           Effect    = "Allow"
           Principal = "*"
           Action    = "s3:GetObject"
-          Resource  = "${aws_s3_bucket.environment_assets[each.key].arn}/*"
+          Resource  = "${aws_s3_bucket.assets.arn}/*"
         },
-        each.key == "production" && length(var.production_ip_whitelist) > 0 ? {
+        local.is_prod && length(var.ip_whitelist) > 0 ? {
           Condition = {
             IpAddress = {
-              "aws:SourceIp" = var.production_ip_whitelist
+              "aws:SourceIp" = var.ip_whitelist
             }
           }
         } : {}
@@ -152,32 +129,32 @@ resource "aws_s3_bucket_policy" "environment_assets" {
     ]
   })
 
-  depends_on = [aws_s3_bucket_public_access_block.environment_assets]
+  depends_on = [aws_s3_bucket_public_access_block.assets]
 }
 
-# CloudFront distributions for production and staging (optional)
+# CloudFront distribution (optional)
 resource "aws_cloudfront_distribution" "cdn" {
-  for_each = var.enable_cloudfront ? { for k, v in local.bucket_names : k => v if k != "dev" } : {}
+  count = var.enable_cloudfront ? 1 : 0
 
   enabled             = true
   is_ipv6_enabled     = true
-  comment             = "CDN for ${each.key} static assets"
+  comment             = "CDN for ${var.environment} static assets"
   default_root_object = "index.html"
-  price_class         = each.key == "production" ? "PriceClass_All" : "PriceClass_100"
+  price_class         = local.is_prod ? "PriceClass_All" : "PriceClass_100"
 
   origin {
-    domain_name = aws_s3_bucket.environment_assets[each.key].bucket_regional_domain_name
-    origin_id   = "S3-${each.value}"
+    domain_name = aws_s3_bucket.assets.bucket_regional_domain_name
+    origin_id   = "S3-${local.bucket_name}"
 
     s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.cdn[each.key].cloudfront_access_identity_path
+      origin_access_identity = aws_cloudfront_origin_access_identity.cdn[0].cloudfront_access_identity_path
     }
   }
 
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD", "OPTIONS"]
-    target_origin_id = "S3-${each.value}"
+    target_origin_id = "S3-${local.bucket_name}"
 
     forwarded_values {
       query_string = true
@@ -190,8 +167,8 @@ resource "aws_cloudfront_distribution" "cdn" {
 
     viewer_protocol_policy = "redirect-to-https"
     min_ttl                = 0
-    default_ttl            = each.key == "production" ? 86400 : 3600
-    max_ttl                = each.key == "production" ? 31536000 : 86400
+    default_ttl            = local.is_prod ? 86400 : 3600
+    max_ttl                = local.is_prod ? 31536000 : 86400
     compress               = true
   }
 
@@ -206,24 +183,22 @@ resource "aws_cloudfront_distribution" "cdn" {
   }
 
   tags = {
-    Environment = each.key
-    Purpose     = "CDN for ${each.key} static assets"
+    Environment = var.environment
+    Purpose     = "CDN for ${var.environment} static assets"
   }
 }
 
 # CloudFront OAI for secure S3 access
 resource "aws_cloudfront_origin_access_identity" "cdn" {
-  for_each = var.enable_cloudfront ? { for k, v in local.bucket_names : k => v if k != "dev" } : {}
+  count = var.enable_cloudfront ? 1 : 0
 
-  comment = "OAI for ${each.key} environment CDN"
+  comment = "OAI for ${var.environment} environment CDN"
 }
 
-# IAM policy for Lambda to access buckets
+# IAM policy for Lambda to access this bucket
 resource "aws_iam_policy" "lambda_s3_access" {
-  for_each = local.bucket_names
-
-  name        = "${each.value}-lambda-access"
-  description = "Allow Lambda functions to access ${each.key} S3 bucket"
+  name        = "${local.bucket_name}-lambda-access"
+  description = "Allow Lambda functions to access ${var.environment} S3 bucket"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -237,8 +212,8 @@ resource "aws_iam_policy" "lambda_s3_access" {
           "s3:ListBucket"
         ]
         Resource = [
-          aws_s3_bucket.environment_assets[each.key].arn,
-          "${aws_s3_bucket.environment_assets[each.key].arn}/*"
+          aws_s3_bucket.assets.arn,
+          "${aws_s3_bucket.assets.arn}/*"
         ]
       }
     ]

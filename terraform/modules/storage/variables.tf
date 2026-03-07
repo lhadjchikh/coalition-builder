@@ -38,6 +38,12 @@ variable "noncurrent_version_expiration_days" {
   default     = 30
 }
 
+variable "enable_cloudfront" {
+  description = "Whether to create CloudFront distribution (set to false for dev environments)"
+  type        = bool
+  default     = true
+}
+
 # CloudFront TTL variables for S3 content (user uploads, media files)
 variable "s3_cache_min_ttl" {
   description = "Minimum TTL for S3 content in seconds"

@@ -21,9 +21,9 @@ resource "aws_s3_bucket" "static_assets" {
 resource "aws_s3_bucket_public_access_block" "static_assets" {
   bucket = aws_s3_bucket.static_assets.id
 
-  block_public_acls       = false
+  block_public_acls       = var.enable_cloudfront
   block_public_policy     = false
-  ignore_public_acls      = false
+  ignore_public_acls      = var.enable_cloudfront
   restrict_public_buckets = false
 }
 
@@ -36,8 +36,10 @@ resource "aws_s3_bucket_ownership_controls" "static_assets" {
   }
 }
 
-# Bucket ACL
+# Bucket ACL (only when CloudFront is disabled for direct public access)
 resource "aws_s3_bucket_acl" "static_assets" {
+  count = var.enable_cloudfront ? 0 : 1
+
   bucket = aws_s3_bucket.static_assets.id
   acl    = "public-read"
 
@@ -99,8 +101,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "static_assets" {
   }
 }
 
-# Bucket Policy for CloudFront access only
-resource "aws_s3_bucket_policy" "static_assets" {
+# Bucket Policy for CloudFront access only (when CloudFront is enabled)
+resource "aws_s3_bucket_policy" "static_assets_cloudfront" {
+  count = var.enable_cloudfront ? 1 : 0
+
   bucket = aws_s3_bucket.static_assets.id
 
   policy = jsonencode({
@@ -110,7 +114,7 @@ resource "aws_s3_bucket_policy" "static_assets" {
         Sid    = "AllowCloudFrontAccess"
         Effect = "Allow"
         Principal = {
-          AWS = aws_cloudfront_origin_access_identity.static_assets.iam_arn
+          AWS = aws_cloudfront_origin_access_identity.static_assets[0].iam_arn
         }
         Action   = "s3:GetObject"
         Resource = "${aws_s3_bucket.static_assets.arn}/*"
@@ -124,20 +128,46 @@ resource "aws_s3_bucket_policy" "static_assets" {
   ]
 }
 
+# Bucket Policy for direct public read access (when CloudFront is disabled)
+resource "aws_s3_bucket_policy" "static_assets_public" {
+  count = var.enable_cloudfront ? 0 : 1
+
+  bucket = aws_s3_bucket.static_assets.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "PublicReadGetObject"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = "${aws_s3_bucket.static_assets.arn}/*"
+      }
+    ]
+  })
+
+  depends_on = [aws_s3_bucket_public_access_block.static_assets]
+}
+
 # CloudFront Origin Access Identity
 resource "aws_cloudfront_origin_access_identity" "static_assets" {
+  count = var.enable_cloudfront ? 1 : 0
+
   comment = "OAI for ${var.prefix} static assets"
 }
 
 # CloudFront Distribution for static assets
 resource "aws_cloudfront_distribution" "static_assets" {
+  count = var.enable_cloudfront ? 1 : 0
+
   # S3 origin for user uploads and media files
   origin {
     domain_name = aws_s3_bucket.static_assets.bucket_regional_domain_name
     origin_id   = "S3-${aws_s3_bucket.static_assets.id}"
 
     s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.static_assets.cloudfront_access_identity_path
+      origin_access_identity = aws_cloudfront_origin_access_identity.static_assets[0].cloudfront_access_identity_path
     }
   }
 

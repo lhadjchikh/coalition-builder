@@ -102,7 +102,7 @@ The `/frontend` directory contains a Next.js application that serves as the prim
 
 #### Request Routing
 
-```
+```text
 /* → Next.js Frontend (SSR)
 /api/* → Django API
 /admin/* → Django Admin
@@ -147,6 +147,7 @@ Comprehensive guides for managing your coalition platform:
 
 ## Deployment Guides
 
+- **[Multi-Account AWS](deployment/multi-account-aws.md)** - Multi-account architecture, bootstrap, OIDC, and VPC peering
 - **[Lambda Deployment](LAMBDA_DEPLOYMENT.md)** - Deploy Django to AWS Lambda with Zappa
 - **[Vercel Deployment](VERCEL_DEPLOYMENT.md)** - Deploy Next.js to Vercel Edge Network
 - **[GitHub Workflows](deployment/workflows.md)** - CI/CD pipelines for automated deployment

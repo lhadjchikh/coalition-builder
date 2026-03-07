@@ -83,6 +83,9 @@ module "security" {
   vpc_id                   = module.networking.vpc_id
   allowed_bastion_cidrs    = var.allowed_bastion_cidrs
   lambda_security_group_id = module.zappa.lambda_security_group_id
+  enable_lambda_sg_rules   = true
+  create_bastion_sg        = true
+  create_waf               = true
 }
 
 # Monitoring Module
@@ -175,28 +178,28 @@ module "storage" {
   static_cache_max_ttl     = var.cloudfront_static_cache_max_ttl
 }
 
-# Serverless Storage Module - Creates S3 buckets for Lambda/serverless deployments
-# This module creates separate buckets for dev, staging, and production environments
-# automatically, making it easy for open-source contributors to get started
+# Serverless Storage Module - Creates S3 bucket for Lambda/serverless deployments
 module "serverless_storage" {
   source = "./modules/serverless-storage"
 
-  project_name                 = var.prefix
-  force_destroy_non_production = var.environment != "prod"
-  enable_lifecycle_rules       = true
-  enable_cloudfront            = var.environment == "prod" || var.environment == "staging"
+  project_name           = var.prefix
+  environment            = var.environment == "prod" ? "production" : var.environment
+  force_destroy          = var.environment != "prod"
+  enable_lifecycle_rules = true
+  enable_cloudfront      = var.environment == "prod" || var.environment == "staging"
 
-  production_cors_origins = [
+  cors_origins = var.environment == "prod" ? [
     "https://${var.domain_name}",
     "https://www.${var.domain_name}"
-  ]
+  ] : ["*"]
 }
 
 # Lambda ECR Module - Creates ECR repositories for Lambda deployment
 module "lambda_ecr" {
   source = "./modules/lambda-ecr"
 
-  tags = var.tags
+  environment = var.environment
+  tags        = var.tags
 }
 
 # ACM certificate for domain and all subdomains

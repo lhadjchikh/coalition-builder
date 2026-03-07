@@ -27,7 +27,6 @@ on:
         type: choice
         options:
           - dev
-          - staging
           - prod
       custom_command:
         description: "Custom import command (for custom import type)"
@@ -104,8 +103,6 @@ jobs:
 
           if [ "$ENV" = "prod" ]; then
             PREFIX="coalition-prod"
-          elif [ "$ENV" = "staging" ]; then
-            PREFIX="coalition-staging"
           fi
 
           echo "cluster_name=${PREFIX}-geodata-import" >> $GITHUB_OUTPUT

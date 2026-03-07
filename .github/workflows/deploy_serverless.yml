@@ -2,7 +2,7 @@ name: Deploy Serverless Infrastructure
 
 on:
   push:
-    branches: [main, staging, dev]
+    branches: [main, dev]
   workflow_dispatch:
     inputs:
       environment:
@@ -11,7 +11,6 @@ on:
         type: choice
         options:
           - dev
-          - staging
           - prod
 
 permissions:
@@ -30,8 +29,6 @@ jobs:
             echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
             echo "environment=prod" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
-            echo "environment=staging" >> $GITHUB_OUTPUT
           else
             echo "environment=dev" >> $GITHUB_OUTPUT
           fi
@@ -82,11 +79,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
+      - name: Validate AWS Account ID
+        run: |
+          if [ -z "${{ vars.AWS_ACCOUNT_ID }}" ]; then
+            echo "::error::AWS_ACCOUNT_ID variable is not set in the '${{ needs.determine-environment.outputs.environment }}' GitHub environment"
+            exit 1
+          fi
+
+      - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/github-actions-${{ needs.determine-environment.outputs.environment }}
           aws-region: us-east-1
 
       - name: Login to Amazon ECR
@@ -111,11 +114,10 @@ jobs:
       - name: Configure Zappa settings
         working-directory: ./backend
         env:
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
           AWS_REGION: us-east-1
           ZAPPA_S3_BUCKET: ${{ vars.ZAPPA_S3_BUCKET }}
           DEV_ASSETS_BUCKET: ${{ vars.DEV_ASSETS_BUCKET }}
-          STAGING_ASSETS_BUCKET: ${{ vars.STAGING_ASSETS_BUCKET }}
           PRODUCTION_ASSETS_BUCKET: ${{ vars.PRODUCTION_ASSETS_BUCKET }}
           USE_CUSTOM_DOCKER: true
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -130,7 +132,7 @@ jobs:
         working-directory: ./backend
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_ACCOUNT: ${{ vars.AWS_ACCOUNT_ID }}
           ENV: ${{ needs.determine-environment.outputs.environment }}
         run: |
           # Pull and tag base image if not building it
@@ -237,8 +239,6 @@ jobs:
             echo "url=" >> $GITHUB_OUTPUT
           elif [ "$ENV" = "prod" ]; then
             echo "url=https://api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
-          elif [ "$ENV" = "staging" ]; then
-            echo "url=https://staging-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           else
             echo "url=https://dev-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           fi
@@ -264,7 +264,21 @@ jobs:
     needs: [deploy-backend, deploy-frontend, determine-environment]
     if: success()
     runs-on: ubuntu-latest
+    environment: ${{ needs.determine-environment.outputs.environment }}
     steps:
+      - name: Validate AWS Account ID
+        run: |
+          if [ -z "${{ vars.AWS_ACCOUNT_ID }}" ]; then
+            echo "::error::AWS_ACCOUNT_ID variable is not set in the '${{ needs.determine-environment.outputs.environment }}' GitHub environment"
+            exit 1
+          fi
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/github-actions-${{ needs.determine-environment.outputs.environment }}
+          aws-region: us-east-1
+
       - name: Set API URL
         id: api-url
         env:
@@ -275,8 +289,6 @@ jobs:
             echo "url=" >> $GITHUB_OUTPUT
           elif [ "$ENV" = "prod" ]; then
             echo "url=https://api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
-          elif [ "$ENV" = "staging" ]; then
-            echo "url=https://staging-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           else
             echo "url=https://dev-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           fi
@@ -308,8 +320,8 @@ jobs:
           ENV: ${{ needs.determine-environment.outputs.environment }}
         run: |
           if [ "${{ needs.smoke-test.result }}" = "success" ]; then
-            echo "✅ Deployment to $ENV environment successful!"
+            echo "Deployment to $ENV environment successful!"
           else
-            echo "❌ Deployment to $ENV environment failed!"
+            echo "Deployment to $ENV environment failed!"
             exit 1
           fi

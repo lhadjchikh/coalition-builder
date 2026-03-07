@@ -163,7 +163,10 @@ resource "aws_iam_policy" "zappa_deployment" {
           "lambda:GetAlias",
           "lambda:ListVersionsByFunction"
         ]
-        Resource = "arn:aws:lambda:${var.aws_region}:*:function:${var.prefix}-*"
+        Resource = concat(
+          ["arn:aws:lambda:${var.aws_region}:*:function:${var.prefix}-*"],
+          var.project_name != "" ? ["arn:aws:lambda:${var.aws_region}:*:function:${var.project_name}-*"] : []
+        )
       },
       {
         Effect = "Allow"
@@ -208,7 +211,10 @@ resource "aws_iam_policy" "zappa_deployment" {
           "events:DeleteRule",
           "events:DescribeRule"
         ]
-        Resource = "arn:aws:events:${var.aws_region}:*:rule/${var.prefix}-*"
+        Resource = concat(
+          ["arn:aws:events:${var.aws_region}:*:rule/${var.prefix}-*"],
+          var.project_name != "" ? ["arn:aws:events:${var.aws_region}:*:rule/${var.project_name}-*"] : []
+        )
       },
       {
         Effect = "Allow"

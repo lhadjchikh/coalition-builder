@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - staging
       - development
   workflow_dispatch:
     inputs:
@@ -15,7 +14,6 @@ on:
         type: choice
         options:
           - dev
-          - staging
           - prod
 
 permissions:
@@ -28,17 +26,23 @@ jobs:
     runs-on: ubuntu-latest
 
     # Set environment based on branch or input
-    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || (github.ref == 'refs/heads/staging' && 'staging') || 'dev' }}
+    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
+      - name: Validate AWS Account ID
+        run: |
+          if [ -z "${{ vars.AWS_ACCOUNT_ID }}" ]; then
+            echo "::error::AWS_ACCOUNT_ID variable is not set in the GitHub environment"
+            exit 1
+          fi
+
+      - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/github-actions-${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}
           aws-region: us-east-1
 
       - name: Login to Amazon ECR
@@ -51,7 +55,7 @@ jobs:
       - name: Get environment variables
         id: env
         run: |
-          ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || (github.ref == 'refs/heads/staging' && 'staging') || 'dev' }}"
+          ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}"
           echo "environment=$ENV" >> $GITHUB_OUTPUT
           echo "image_tag=${{ github.sha }}" >> $GITHUB_OUTPUT
           echo "ecr_registry=${{ steps.login-ecr.outputs.registry }}" >> $GITHUB_OUTPUT
@@ -78,7 +82,7 @@ jobs:
       - name: Configure Zappa settings
         working-directory: ./backend
         env:
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
           AWS_REGION: us-east-1
           ZAPPA_S3_BUCKET: ${{ vars.ZAPPA_S3_BUCKET }}
           PRODUCTION_ASSETS_BUCKET: ${{ vars.PRODUCTION_ASSETS_BUCKET }}
@@ -179,7 +183,7 @@ jobs:
 
           echo "api_url=$FINAL_URL" >> $GITHUB_OUTPUT
           echo "gateway_url=$API_URL" >> $GITHUB_OUTPUT
-          echo "### 🚀 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "### Deployment Complete!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Environment:** ${{ steps.env.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
           echo "**API URL:** $FINAL_URL" >> $GITHUB_STEP_SUMMARY
@@ -229,7 +233,7 @@ jobs:
             const apiUrl = '${{ steps.deployment.outputs.api_url }}';
             const imageTag = '${{ steps.env.outputs.image_tag }}';
 
-            const body = `## 🚀 Lambda Deployment Successful!
+            const body = `## Lambda Deployment Successful!
 
             **Environment:** ${environment}
             **API URL:** ${apiUrl}

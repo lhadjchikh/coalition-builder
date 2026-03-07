@@ -10,38 +10,38 @@ All workflows are located in `.github/workflows/`:
 
 ### Deployment Workflows
 
-#### `deploy-lambda.yml`
+#### `deploy_lambda.yml`
 
 Deploys the Django backend to AWS Lambda using Zappa.
 
 **Triggers:**
 
-- Push to `main`, `staging`, or `development` branches
-- Manual workflow dispatch
+- Push to `main` or `development` branches
+- Manual workflow dispatch with environment selection (`dev`, `prod`)
 
-**Environment Variables Required:**
+**Authentication:**
 
-- `AWS_ACCESS_KEY_ID` (secret)
-- `AWS_SECRET_ACCESS_KEY` (secret)
-- `DOMAIN_NAME` (variable, optional)
-- `CERTIFICATE_ARN` (variable, optional)
+Uses GitHub OIDC to assume the `github-actions-{environment}` IAM role — no long-lived AWS access keys required. The workflow needs:
+
+- `AWS_ACCOUNT_ID` (variable, per GitHub environment)
+- `id-token: write` permission for OIDC
 
 **Process:**
 
-1. Builds Docker image with GeoDjango support
-2. Pushes to Amazon ECR
-3. Updates Zappa configuration
-4. Deploys or updates Lambda function
-5. Configures custom domain (if provided)
+1. Authenticates to AWS via OIDC (`aws-actions/configure-aws-credentials`)
+2. Builds Docker image with GeoDjango support
+3. Pushes to Amazon ECR
+4. Updates Zappa configuration
+5. Deploys or updates Lambda function
 6. Runs health checks
 
-#### `deploy-frontend.yml`
+#### `deploy_frontend.yml`
 
 Deploys the Next.js frontend to Vercel.
 
 **Triggers:**
 
-- Push to `main`, `staging`, or `development` branches (when frontend files change)
+- Push to `main` or `development` branches (when frontend files change)
 - Pull requests (creates preview deployments)
 - Manual workflow dispatch
 
@@ -51,7 +51,6 @@ Deploys the Next.js frontend to Vercel.
 - `VERCEL_ORG_ID` (secret)
 - `VERCEL_PROJECT_ID` (secret)
 - `PRODUCTION_API_URL` (variable)
-- `STAGING_API_URL` (variable)
 - `DEVELOPMENT_API_URL` (variable)
 
 **Process:**
@@ -62,9 +61,55 @@ Deploys the Next.js frontend to Vercel.
 4. Creates preview URL for PRs
 5. Runs smoke tests
 
+#### `deploy_infra.yml`
+
+Plans and applies Terraform infrastructure changes for a selected environment.
+
+**Triggers:**
+
+- Push to `main` (when `terraform/` files change)
+- Pull requests to `main` (plan only, no apply)
+- Manual workflow dispatch with environment selection (`shared`, `prod`, `dev`)
+
+**Authentication:**
+
+Uses GitHub OIDC to assume the `github-actions-{environment}` IAM role. Each environment's Terraform runs in `terraform/environments/{env}/` with its own backend config.
+
+**Process:**
+
+1. Determines target environment from branch or manual input
+2. Waits for Terraform test workflow to pass (on push)
+3. Authenticates to AWS via OIDC
+4. Runs `terraform init` with environment-specific `backend.hcl`
+5. Runs `terraform plan`
+6. Applies changes on `main` branch pushes (skips on PRs)
+
+#### `deploy_serverless.yml`
+
+Full-stack deployment of backend (Lambda) and frontend (Vercel).
+
+**Triggers:**
+
+- Push to `main` or `dev` branches
+- Manual workflow dispatch with environment selection (`dev`, `prod`)
+
+**Authentication:**
+
+Uses GitHub OIDC — same pattern as `deploy_lambda.yml`.
+
+**Process:**
+
+1. Runs backend tests (non-prod or manual dispatch)
+2. Authenticates to AWS via OIDC
+3. Builds and pushes Docker image to ECR
+4. Deploys backend via Zappa
+5. Creates cache table, runs migrations, collects static files
+6. Deploys frontend to Vercel
+7. Runs smoke tests (health check, Lambda log check)
+
 ### Management Workflows
 
-#### `lambda-management.yml`
+#### `lambda_management.yml`
 
 Manages Lambda functions post-deployment.
 
@@ -85,7 +130,7 @@ Manages Lambda functions post-deployment.
 Actions → Lambda Management → Run workflow → Select action
 ```
 
-#### `geodata-import.yml`
+#### `geodata_import.yml`
 
 Runs geographic data imports using ECS Fargate.
 
@@ -145,16 +190,6 @@ Lambda Stage: dev
 Vercel: Preview deployment
 ```
 
-### Staging Environment
-
-```yaml
-Environment: staging
-Branch: staging
-Lambda Stage: staging
-Vercel: Staging deployment
-Keep-warm: Yes (10 minutes)
-```
-
 ### Production Environment
 
 ```yaml
@@ -169,28 +204,20 @@ X-Ray: Enabled
 ## Setting Up GitHub Environments
 
 1. Go to Settings → Environments
-2. Create three environments: `development`, `staging`, `production`
+2. Create two environments: `dev`, `prod`
 3. Add environment-specific variables:
 
 ### Development
 
-```
+```bash
 DOMAIN_NAME=api-dev.yourdomain.com
 CERTIFICATE_ARN=arn:aws:acm:us-east-1:...
 DEVELOPMENT_API_URL=https://api-dev.yourdomain.com
 ```
 
-### Staging
-
-```
-DOMAIN_NAME=api-staging.yourdomain.com
-CERTIFICATE_ARN=arn:aws:acm:us-east-1:...
-STAGING_API_URL=https://api-staging.yourdomain.com
-```
-
 ### Production
 
-```
+```bash
 DOMAIN_NAME=api.yourdomain.com
 CERTIFICATE_ARN=arn:aws:acm:us-east-1:...
 PRODUCTION_API_URL=https://api.yourdomain.com
@@ -202,7 +229,7 @@ PRODUCTION_API_URL=https://api.yourdomain.com
 
 ```bash
 # Using GitHub Actions
-gh workflow run deploy-lambda.yml --ref main
+gh workflow run deploy_lambda.yml --ref main
 
 # Using Zappa directly
 cd backend
@@ -213,7 +240,7 @@ poetry run zappa deploy prod
 
 ```bash
 # Using GitHub Actions
-gh workflow run deploy-frontend.yml --ref main
+gh workflow run deploy_frontend.yml --ref main
 
 # Using Vercel CLI
 cd frontend
@@ -249,7 +276,7 @@ vercel logs --follow
 
 ```bash
 # Via GitHub Actions
-gh workflow run lambda-management.yml -f action=rollback -f environment=prod
+gh workflow run lambda_management.yml -f action=rollback -f environment=prod
 
 # Via Zappa
 poetry run zappa rollback prod -n 1
@@ -269,10 +296,11 @@ vercel rollback
 
 ### Lambda Deployment Fails
 
-1. Check AWS credentials are set correctly
-2. Verify ECR repository exists
-3. Check Zappa settings syntax
-4. Review CloudWatch logs
+1. Check OIDC role trust policy allows the GitHub environment/branch
+2. Verify `AWS_ACCOUNT_ID` variable is set in the GitHub environment
+3. Verify ECR repository exists
+4. Check Zappa settings syntax
+5. Review CloudWatch logs
 
 ### Vercel Deployment Fails
 

@@ -21,7 +21,6 @@ on:
         type: choice
         options:
           - dev
-          - staging
           - prod
       rollback_steps:
         description: "Number of versions to rollback (for rollback action)"

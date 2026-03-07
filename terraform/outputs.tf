@@ -114,24 +114,24 @@ output "cloudfront_distribution_id" {
 }
 
 # Serverless Storage Outputs (Lambda deployment)
-output "serverless_bucket_names" {
-  description = "Map of environment to S3 bucket names for serverless deployments"
-  value       = module.serverless_storage.bucket_names
+output "serverless_bucket_name" {
+  description = "S3 bucket name for serverless deployments"
+  value       = module.serverless_storage.bucket_name
 }
 
 output "serverless_bucket_configuration" {
-  description = "Configuration summary for all serverless S3 buckets"
+  description = "Configuration summary for serverless S3 bucket"
   value       = module.serverless_storage.configuration_summary
 }
 
-output "serverless_cloudfront_domains" {
-  description = "CloudFront domains for serverless buckets (if enabled)"
-  value       = module.serverless_storage.cloudfront_domains
+output "serverless_cloudfront_domain" {
+  description = "CloudFront domain for serverless bucket (if enabled)"
+  value       = module.serverless_storage.cloudfront_domain
 }
 
-output "serverless_lambda_policy_arns" {
-  description = "IAM policy ARNs for Lambda to access S3 buckets"
-  value       = module.serverless_storage.lambda_s3_policy_arns
+output "serverless_lambda_policy_arn" {
+  description = "IAM policy ARN for Lambda to access S3 bucket"
+  value       = module.serverless_storage.lambda_s3_policy_arn
 }
 
 # Lambda ECR Outputs

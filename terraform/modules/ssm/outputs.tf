@@ -11,7 +11,7 @@ output "db_url_parameter_names" {
 # Provide direct access for production (default for ECS)
 output "production_db_url_arn" {
   description = "ARN of the production database URL parameter"
-  value       = aws_ssm_parameter.db_url["prod"].arn
+  value       = contains(keys(aws_ssm_parameter.db_url), "prod") ? aws_ssm_parameter.db_url["prod"].arn : null
 }
 
 output "secret_key_parameter_arn" {

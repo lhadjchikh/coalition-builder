@@ -2,6 +2,7 @@ name: Terraform Infrastructure CI/CD
 
 permissions:
   contents: read
+  id-token: write
 
 on:
   push:
@@ -15,16 +16,41 @@ on:
       - "terraform/**"
       - ".github/workflows/deploy_infra.yml"
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy"
+        required: true
+        default: "prod"
+        type: choice
+        options:
+          - shared
+          - prod
+          - dev
 
-# Define environment variables at the workflow level
-# NOTE: When using 'environment: prod' at the job level, both secrets and variables
-# are environment-specific and must be defined within each job
 env:
   TF_LOG: error
 
 jobs:
-  # Wait for terraform tests to complete successfully before deploying to production
-  # This only runs when there are terraform changes (same trigger as this workflow)
+  # Determine which environment to deploy
+  determine-environment:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.env.outputs.environment }}
+      tf_directory: ${{ steps.env.outputs.tf_directory }}
+    steps:
+      - id: env
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            ENV="${{ github.event.inputs.environment }}"
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            ENV="dev"
+          else
+            ENV="prod"
+          fi
+          echo "environment=$ENV" >> $GITHUB_OUTPUT
+          echo "tf_directory=terraform/environments/$ENV" >> $GITHUB_OUTPUT
+
+  # Wait for terraform tests to complete successfully before deploying
   wait_for_tests:
     name: Wait for Terraform Tests
     runs-on: ubuntu-latest
@@ -33,16 +59,14 @@ jobs:
       - name: Checkout to check for terraform changes
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2 # Need at least 2 commits to compare
+          fetch-depth: 2
 
       - name: Check if terraform tests should be running
         id: check_terraform_changes
         run: |
-          # Skip waiting for tests on workflow_dispatch
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "terraform_changed=false" >> $GITHUB_OUTPUT
             echo "Manual trigger - skipping test wait"
-          # Check if there are terraform changes in this push
           elif git diff --name-only HEAD~1 HEAD | grep -E '^terraform/'; then
             echo "terraform_changed=true" >> $GITHUB_OUTPUT
             echo "Terraform files changed - will wait for tests"
@@ -59,8 +83,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           checkName: Terraform Check / Terraform Tests / Terraform Tests Complete
           ref: ${{ github.event.after || github.sha }}
-          timeoutSeconds: 1800 # 30 minutes timeout
-          intervalSeconds: 60 # Check every minute
+          timeoutSeconds: 1800
+          intervalSeconds: 60
 
       - name: Check terraform tests result
         if: github.event_name == 'push' && steps.check_terraform_changes.outputs.terraform_changed == 'true' && steps.wait_for_tests.outputs.conclusion != 'success'
@@ -69,49 +93,50 @@ jobs:
           exit 1
 
   terraform_deploy:
-    name: Terraform Plan & Apply
+    name: Terraform Plan & Apply (${{ needs.determine-environment.outputs.environment }})
     runs-on: ubuntu-latest
-    environment: prod
-    needs: [wait_for_tests]
-    if: always() && (needs.wait_for_tests.result == 'success' || needs.wait_for_tests.result == 'skipped')
+    environment: ${{ needs.determine-environment.outputs.environment }}
+    needs: [determine-environment, wait_for_tests]
+    if: always() && needs.determine-environment.result == 'success' && (needs.wait_for_tests.result == 'success' || needs.wait_for_tests.result == 'skipped')
 
     env:
-      # Environment-specific secrets (from prod environment)
+      TF_DIRECTORY: ${{ needs.determine-environment.outputs.tf_directory }}
+      # Secrets (from GitHub environment)
       TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
       TF_VAR_db_username: ${{ secrets.DB_USERNAME }}
       TF_VAR_app_db_username: ${{ secrets.APP_DB_USERNAME }}
       TF_VAR_app_db_password: ${{ secrets.APP_DB_PASSWORD }}
       TF_VAR_bastion_public_key: ${{ secrets.TF_VAR_BASTION_PUBLIC_KEY }}
       TF_VAR_site_password: ${{ secrets.SITE_PASSWORD }}
-      # Environment-specific variables (from prod environment)
-      TF_VAR_route53_zone_id: ${{ vars.TF_VAR_ROUTE53_ZONE_ID }}
+      TF_VAR_shared_peering_role_arn: ${{ secrets.SHARED_PEERING_ROLE_ARN }}
+      # Variables (from GitHub environment)
+      TF_VAR_shared_account_id: ${{ vars.SHARED_ACCOUNT_ID }}
+      TF_VAR_github_repo: ${{ vars.REPO_FULL_NAME }}
       TF_VAR_domain_name: ${{ vars.TF_VAR_DOMAIN_NAME }}
-      TF_VAR_acm_certificate_arn: ${{ vars.TF_VAR_ACM_CERTIFICATE_ARN }}
       TF_VAR_api_gateway_id: ${{ vars.TF_VAR_API_GATEWAY_ID }}
       TF_VAR_alert_email: ${{ vars.TF_VAR_ALERT_EMAIL }}
-      TF_VAR_allowed_hosts: "localhost,127.0.0.1,${{ vars.TF_VAR_DOMAIN_NAME }},*.${{ vars.TF_VAR_DOMAIN_NAME }}"
-      TF_VAR_csrf_trusted_origins: "https://${{ vars.TF_VAR_DOMAIN_NAME }},https://www.${{ vars.TF_VAR_DOMAIN_NAME }}"
-      # Site configuration
-      TF_VAR_site_password_enabled: ${{ vars.SITE_PASSWORD_ENABLED }}
-      TF_VAR_site_username: ${{ vars.SITE_USERNAME }}
-      # SES Email Configuration
       TF_VAR_ses_from_email: ${{ vars.SES_FROM_EMAIL }}
-      TF_VAR_ses_verify_domain: ${{ vars.SES_VERIFY_DOMAIN }}
       TF_VAR_ses_notification_email: ${{ vars.SES_NOTIFICATION_EMAIL }}
-      # Organization Configuration (these will be added to ECS task)
-      TF_VAR_contact_email: ${{ vars.CONTACT_EMAIL }}
-      TF_VAR_admin_notification_emails: ${{ vars.ADMIN_NOTIFICATION_EMAILS }}
-      TF_VAR_organization_name: ${{ vars.ORGANIZATION_NAME }}
+      # Shared-only variables (unused by dev/prod but harmless as empty env vars)
+      TF_VAR_bastion_key_name: ${{ vars.BASTION_KEY_NAME }}
+      TF_VAR_allowed_bastion_cidrs: ${{ vars.ALLOWED_BASTION_CIDRS }}
+      TF_VAR_allowed_lambda_cidrs: ${{ vars.ALLOWED_LAMBDA_CIDRS }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
+      - name: Validate AWS Account ID
+        run: |
+          if [ -z "${{ vars.AWS_ACCOUNT_ID }}" ]; then
+            echo "::error::AWS_ACCOUNT_ID variable is not set in the '${{ needs.determine-environment.outputs.environment }}' GitHub environment"
+            exit 1
+          fi
+
+      - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/github-actions-${{ needs.determine-environment.outputs.environment }}
           aws-region: us-east-1
 
       - name: Setup Terraform
@@ -121,42 +146,34 @@ jobs:
 
       - name: Setup Remote State and Backend
         run: |
-          cd terraform
-          # Make the setup script executable
-          chmod +x ./scripts/setup_remote_state.sh
-          # Run the setup script to create S3 bucket and DynamoDB table
-          ./scripts/setup_remote_state.sh
-
-          # Setup backend configuration for production deployment
-          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          echo "Using backend bucket: coalition-terraform-state-${ACCOUNT_ID}"
-          echo "Using state key: production/terraform.tfstate"
+          cd "$TF_DIRECTORY"
+          # Make the setup script executable and run it
+          chmod +x ../../scripts/setup_remote_state.sh
+          ../../scripts/setup_remote_state.sh "${{ needs.determine-environment.outputs.environment }}"
 
       - name: Terraform Init
         run: |
-          cd terraform
-          # Use -input=false to prevent interactive prompts
+          cd "$TF_DIRECTORY"
           timeout 5m terraform init -backend-config=backend.hcl -input=false
 
       - name: Terraform Validate
         run: |
-          cd terraform
+          cd "$TF_DIRECTORY"
           terraform validate
 
       - name: Terraform Plan
         id: plan
         run: |
-          cd terraform
+          cd "$TF_DIRECTORY"
 
           echo "Running terraform plan..."
-          set +e  # Don't exit on error
+          set +e
           terraform plan -no-color -input=false -out=tfplan > plan_output.txt 2>&1
           PLAN_EXIT_CODE=$?
-          set -e  # Resume exiting on error
+          set -e
 
           echo "Plan completed with exit code: $PLAN_EXIT_CODE"
 
-          # Output plan for review
           echo "::group::Terraform Plan Output"
           cat plan_output.txt
           echo "::endgroup::"
@@ -166,7 +183,6 @@ jobs:
             exit 1
           fi
 
-          # Check if there are changes to apply
           if grep -q "No changes. Your infrastructure matches the configuration." plan_output.txt; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
             echo "::notice::No infrastructure changes detected"
@@ -175,50 +191,17 @@ jobs:
             echo "::notice::Infrastructure changes detected"
           fi
 
-      - name: Debug Terraform State
-        if: always()
-        run: |
-          echo "::group::Environment Variables"
-          echo "Checking for Terraform variables"
-          env | grep -E "^TF_VAR_" | cut -d= -f1 | sort
-          echo "::endgroup::"
-
-          cd terraform
-          echo "::group::Terraform Environment"
-          terraform version
-          ls -la
-          echo "::endgroup::"
-
-          echo "::group::Terraform Provider Lock File"
-          if [ -f .terraform.lock.hcl ]; then
-            cat .terraform.lock.hcl
-          else
-            echo "No .terraform.lock.hcl file found"
-          fi
-          echo "::endgroup::"
-
-          echo "::group::Terraform Directory Structure"
-          if [ -d .terraform ]; then
-            ls -la .terraform
-            echo "Providers:"
-            find .terraform -name "*.tf" -o -name "*.hcl" | sort
-          else
-            echo "No .terraform directory found"
-          fi
-          echo "::endgroup::"
-
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && steps.plan.outputs.has_changes == 'true'
         run: |
-          cd terraform
+          cd "$TF_DIRECTORY"
 
           echo "Applying infrastructure changes..."
 
-          # Apply the saved plan
           if terraform apply tfplan; then
-            echo "✅ Terraform apply completed successfully"
+            echo "Terraform apply completed successfully"
             echo "::notice::Infrastructure changes have been successfully applied"
           else
-            echo "❌ Terraform apply failed"
+            echo "Terraform apply failed"
             exit 1
           fi

@@ -18,7 +18,7 @@ resource "aws_ecr_repository" "geolambda" {
 }
 
 resource "aws_ecr_repository" "lambda" {
-  name                 = "coalition-builder-lambda"
+  name                 = "coalition-${var.environment}"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
@@ -28,8 +28,9 @@ resource "aws_ecr_repository" "lambda" {
   tags = merge(
     var.tags,
     {
-      Name    = "coalition-builder-lambda"
-      Purpose = "Lambda application image"
+      Name        = "coalition-${var.environment}"
+      Purpose     = "Lambda application image"
+      Environment = var.environment
     }
   )
 }

@@ -82,7 +82,7 @@ module "geodata_import" {
 The geodata-import workflow triggers ECS tasks:
 
 ```yaml
-# .github/workflows/geodata-import.yml
+# .github/workflows/geodata_import.yml
 - name: Run ECS Task
   run: |
     aws ecs run-task \

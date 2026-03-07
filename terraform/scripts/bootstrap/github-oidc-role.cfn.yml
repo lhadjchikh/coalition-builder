@@ -1,0 +1,363 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Bootstrap GitHub Actions OIDC provider and IAM role.
+  Matches the Terraform github-oidc module so resources can be imported later.
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues:
+      - shared
+      - prod
+      - dev
+    Description: Environment name (determines role name and trust policy subjects)
+
+  GitHubOrg:
+    Type: String
+    Description: GitHub organization or user name (e.g., my-org)
+
+  GitHubRepo:
+    Type: String
+    Description: GitHub repository name (e.g., coalition-builder)
+
+  SharedAccountId:
+    Type: String
+    Default: ""
+    Description: >
+      Account ID for STS AssumeRole (VPC peering). Leave empty for shared
+      account or when cross-account peering is not needed.
+
+  ResourcePrefix:
+    Type: String
+    Default: coalition
+    Description: Prefix for IAM resource ARN scoping
+
+Conditions:
+  IsShared: !Equals [!Ref Environment, shared]
+  IsProd: !Equals [!Ref Environment, prod]
+  IsDev: !Equals [!Ref Environment, dev]
+  HasPeeringAccount: !Not [!Equals [!Ref SharedAccountId, ""]]
+
+Resources:
+  GitHubOIDCProvider:
+    Type: AWS::IAM::OIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      ThumbprintList:
+        - ffffffffffffffffffffffffffffffffffffffff
+      Tags:
+        - Key: Name
+          Value: github-actions-oidc
+
+  GitHubActionsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "github-actions-${Environment}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !GetAtt GitHubOIDCProvider.Arn
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                "token.actions.githubusercontent.com:aud": sts.amazonaws.com
+              StringLike:
+                "token.actions.githubusercontent.com:sub": !If
+                  - IsShared
+                  - - !Sub "repo:${GitHubOrg}/${GitHubRepo}:environment:shared"
+                    - !Sub "repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/main"
+                  - !If
+                    - IsProd
+                    - - !Sub "repo:${GitHubOrg}/${GitHubRepo}:environment:prod"
+                      - !Sub "repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/main"
+                    - - !Sub "repo:${GitHubOrg}/${GitHubRepo}:environment:dev"
+                      - !Sub "repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/development"
+                      - !Sub "repo:${GitHubOrg}/${GitHubRepo}:pull_request"
+      Policies:
+        - PolicyName: !Sub "${Environment}-terraform-operations"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: TerraformStateAccess
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:ListBucket
+                Resource:
+                  - "arn:aws:s3:::coalition-terraform-state-*"
+                  - "arn:aws:s3:::coalition-terraform-state-*/*"
+              - Sid: TerraformLockAccess
+                Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:CreateTable
+                  - dynamodb:DescribeTable
+                  - dynamodb:TagResource
+                Resource: !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/coalition-terraform-locks"
+        - PolicyName: !Sub "${Environment}-infrastructure"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # --- Read-only across services (some list/describe require Resource: *) ---
+              - Sid: ServiceReadOnly
+                Effect: Allow
+                Action:
+                  - ec2:Describe*
+                  - ec2:Get*
+                  - ec2:List*
+                  - cloudfront:Get*
+                  - cloudfront:List*
+                  - wafv2:Describe*
+                  - wafv2:Get*
+                  - wafv2:List*
+                  - ses:Describe*
+                  - ses:Get*
+                  - ses:List*
+                  - acm:Describe*
+                  - acm:Get*
+                  - acm:List*
+                  - kms:Describe*
+                  - kms:Get*
+                  - kms:List*
+                  - geo:Describe*
+                  - geo:Get*
+                  - geo:List*
+                  - geo:Search*
+                  - budgets:Describe*
+                  - budgets:View*
+                  - ecr:GetAuthorizationToken
+                Resource: "*"
+              # --- Truly global services (no account ID in ARN) ---
+              - Sid: S3ReadOnly
+                Effect: Allow
+                Action:
+                  - s3:Get*
+                  - s3:List*
+                  - s3:HeadBucket
+                  - s3:HeadObject
+                Resource: "*"
+              - Sid: S3Mutate
+                Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:CreateBucket
+                  - s3:DeleteBucket
+                  - s3:PutBucketPolicy
+                  - s3:DeleteBucketPolicy
+                  - s3:PutBucketVersioning
+                  - s3:PutBucketEncryption
+                  - s3:PutBucketPublicAccessBlock
+                  - s3:PutBucketLifecycleConfiguration
+                  - s3:PutBucketTagging
+                  - s3:PutBucketCORS
+                  - s3:PutBucketNotification
+                  - s3:PutBucketLogging
+                  - s3:PutBucketWebsite
+                  - s3:DeleteBucketWebsite
+                  - s3:PutObjectAcl
+                  - s3:PutBucketAcl
+                Resource:
+                  - !Sub "arn:aws:s3:::${ResourcePrefix}-*"
+                  - !Sub "arn:aws:s3:::${ResourcePrefix}-*/*"
+                  - "arn:aws:s3:::coalition-terraform-state-*"
+                  - "arn:aws:s3:::coalition-terraform-state-*/*"
+              - Sid: Route53
+                Effect: Allow
+                Action:
+                  - route53:GetHostedZone
+                  - route53:ListHostedZones
+                  - route53:ListHostedZonesByName
+                  - route53:GetHostedZoneCount
+                  - route53:ChangeResourceRecordSets
+                  - route53:GetChange
+                  - route53:ListResourceRecordSets
+                  - route53:ListTagsForResource
+                  - route53:ChangeTagsForResource
+                  - route53:CreateHostedZone
+                  - route53:GetDNSSEC
+                  - route53:ListTagsForResources
+                Resource: "*"
+              - Sid: APIGateway
+                Effect: Allow
+                Action:
+                  - apigateway:*
+                Resource: "*"
+              - Sid: CostExplorer
+                Effect: Allow
+                Action:
+                  - ce:*
+                Resource: "*"
+              # --- IAM read-only (safe at *) ---
+              - Sid: IAMReadOnly
+                Effect: Allow
+                Action:
+                  - iam:GetRole
+                  - iam:GetRolePolicy
+                  - iam:GetPolicy
+                  - iam:GetPolicyVersion
+                  - iam:GetInstanceProfile
+                  - iam:GetOpenIDConnectProvider
+                  - iam:ListRolePolicies
+                  - iam:ListAttachedRolePolicies
+                  - iam:ListInstanceProfilesForRole
+                  - iam:ListPolicyVersions
+                  - iam:ListRoleTags
+                Resource: "*"
+              # --- IAM mutate (scoped to prefix and OIDC provider) ---
+              - Sid: IAMMutate
+                Effect: Allow
+                Action:
+                  - iam:CreateRole
+                  - iam:DeleteRole
+                  - iam:UpdateRole
+                  - iam:TagRole
+                  - iam:UntagRole
+                  - iam:PutRolePolicy
+                  - iam:DeleteRolePolicy
+                  - iam:AttachRolePolicy
+                  - iam:DetachRolePolicy
+                  - iam:PassRole
+                  - iam:CreatePolicy
+                  - iam:DeletePolicy
+                  - iam:CreatePolicyVersion
+                  - iam:DeletePolicyVersion
+                  - iam:CreateInstanceProfile
+                  - iam:DeleteInstanceProfile
+                  - iam:AddRoleToInstanceProfile
+                  - iam:RemoveRoleFromInstanceProfile
+                  - iam:CreateOpenIDConnectProvider
+                  - iam:DeleteOpenIDConnectProvider
+                  - iam:TagOpenIDConnectProvider
+                  - iam:UpdateOpenIDConnectProviderThumbprint
+                  - iam:AddClientIDToOpenIDConnectProvider
+                  - iam:CreateServiceLinkedRole
+                Resource:
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ResourcePrefix}-*"
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:role/github-actions-*"
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:policy/${ResourcePrefix}-*"
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:instance-profile/${ResourcePrefix}-*"
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:oidc-provider/*"
+              # --- Account-scoped services (regional) ---
+              - Sid: EC2ReadOnly
+                Effect: Allow
+                Action:
+                  - ec2:Describe*
+                  - ec2:Get*
+                  - ec2:List*
+                Resource: "*"
+              - Sid: EC2Mutate
+                Effect: Allow
+                Action:
+                  - ec2:*
+                Resource: !Sub "arn:aws:ec2:*:${AWS::AccountId}:*"
+              - Sid: RDS
+                Effect: Allow
+                Action:
+                  - rds:*
+                Resource: !Sub "arn:aws:rds:*:${AWS::AccountId}:*"
+              - Sid: Lambda
+                Effect: Allow
+                Action:
+                  - lambda:*
+                Resource: !Sub "arn:aws:lambda:*:${AWS::AccountId}:*"
+              - Sid: ECR
+                Effect: Allow
+                Action:
+                  - ecr:*
+                Resource: !Sub "arn:aws:ecr:*:${AWS::AccountId}:*"
+              - Sid: SecretsManager
+                Effect: Allow
+                Action:
+                  - secretsmanager:*
+                Resource: !Sub "arn:aws:secretsmanager:*:${AWS::AccountId}:*"
+              - Sid: SSM
+                Effect: Allow
+                Action:
+                  - ssm:*
+                Resource: !Sub "arn:aws:ssm:*:${AWS::AccountId}:*"
+              - Sid: SNS
+                Effect: Allow
+                Action:
+                  - sns:*
+                Resource: !Sub "arn:aws:sns:*:${AWS::AccountId}:*"
+              - Sid: CloudWatch
+                Effect: Allow
+                Action:
+                  - cloudwatch:*
+                  - logs:*
+                Resource:
+                  - !Sub "arn:aws:cloudwatch:*:${AWS::AccountId}:*"
+                  - !Sub "arn:aws:logs:*:${AWS::AccountId}:*"
+              - Sid: WAF
+                Effect: Allow
+                Action:
+                  - wafv2:*
+                Resource: !Sub "arn:aws:wafv2:*:${AWS::AccountId}:*"
+              - Sid: SES
+                Effect: Allow
+                Action:
+                  - ses:*
+                Resource: !Sub "arn:aws:ses:*:${AWS::AccountId}:*"
+              - Sid: ACM
+                Effect: Allow
+                Action:
+                  - acm:*
+                Resource: !Sub "arn:aws:acm:*:${AWS::AccountId}:*"
+              - Sid: KMS
+                Effect: Allow
+                Action:
+                  - kms:*
+                Resource: !Sub "arn:aws:kms:*:${AWS::AccountId}:*"
+              - Sid: Location
+                Effect: Allow
+                Action:
+                  - geo:*
+                Resource: !Sub "arn:aws:geo:*:${AWS::AccountId}:*"
+              # --- Account-scoped services (global, no region) ---
+              - Sid: CloudFront
+                Effect: Allow
+                Action:
+                  - cloudfront:*
+                Resource: !Sub "arn:aws:cloudfront::${AWS::AccountId}:*"
+              - Sid: Budgets
+                Effect: Allow
+                Action:
+                  - budgets:*
+                Resource: !Sub "arn:aws:budgets::${AWS::AccountId}:*"
+              # --- STS: conditional on SharedAccountId ---
+              - !If
+                - HasPeeringAccount
+                - Sid: STS
+                  Effect: Allow
+                  Action:
+                    - sts:AssumeRole
+                  Resource:
+                    - !Sub "arn:aws:iam::${SharedAccountId}:role/vpc-peering-accepter"
+                - !Ref "AWS::NoValue"
+      Tags:
+        - Key: Name
+          Value: !Sub "github-actions-${Environment}"
+        - Key: Environment
+          Value: !Ref Environment
+
+Outputs:
+  OIDCProviderArn:
+    Description: ARN of the GitHub OIDC provider
+    Value: !GetAtt GitHubOIDCProvider.Arn
+
+  RoleArn:
+    Description: ARN of the GitHub Actions IAM role
+    Value: !GetAtt GitHubActionsRole.Arn
+
+  RoleName:
+    Description: Name of the GitHub Actions IAM role
+    Value: !Ref GitHubActionsRole
