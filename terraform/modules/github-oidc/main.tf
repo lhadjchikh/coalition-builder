@@ -143,7 +143,6 @@ resource "aws_iam_role_policy" "infrastructure" {
             "acm:Describe*",
             "acm:Get*",
             "acm:List*",
-            "acm:Export*",
             "kms:Describe*",
             "kms:Get*",
             "kms:List*",
