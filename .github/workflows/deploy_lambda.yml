@@ -140,8 +140,8 @@ jobs:
         run: |
           IMAGE_URI="${{ steps.env.outputs.ecr_registry }}/${{ steps.env.outputs.ecr_repository }}:${{ steps.env.outputs.image_tag }}"
 
-          # Check if deployment exists
-          if poetry run zappa status ${{ steps.env.outputs.environment }} 2>/dev/null; then
+          # Check if Lambda function already exists
+          if aws lambda get-function --function-name "coalition-${{ steps.env.outputs.environment }}" 2>/dev/null; then
             echo "Waiting for any in-progress updates to complete..."
             aws lambda wait function-updated --function-name "coalition-${{ steps.env.outputs.environment }}"
             echo "Updating existing deployment..."

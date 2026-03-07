@@ -357,10 +357,10 @@ The `github-actions-{environment}` role's infrastructure policy follows least-pr
 
 **IAM actions — split into read vs mutate:**
 
-| Category      | Actions                                                                         | Resource Scope                                                                                                     |
-| ------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| **Read-only** | `Get*`, `List*`                                                                 | `*` (safe — no side effects)                                                                                       |
-| **Mutate**    | `Create*`, `Delete*`, `Update*`, `Put*`, `Attach*`, `Detach*`, `PassRole`, etc. | `arn:aws:iam::{account_id}:role/{prefix}-*`, `policy/{prefix}-*`, `instance-profile/{prefix}-*`, `oidc-provider/*` |
+| Category      | Actions                                                                         | Resource Scope                                                                                                                            |
+| ------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **Read-only** | `Get*`, `List*`                                                                 | `*` (safe — no side effects)                                                                                                              |
+| **Mutate**    | `Create*`, `Delete*`, `Update*`, `Put*`, `Attach*`, `Detach*`, `PassRole`, etc. | `arn:aws:iam::{account_id}:role/{prefix}-*`, `policy/{prefix}-*`, `instance-profile/{prefix}-*`, `oidc-provider/*`, `user/ses/{prefix}-*` |
 
 The `resource_prefix` variable (default: `coalition`) controls the prefix pattern. This prevents the OIDC role from modifying IAM resources outside the project's namespace.
 
@@ -380,7 +380,7 @@ The `resource_prefix` variable (default: `coalition`) controls the prefix patter
 
 **Truly global services** — kept at `Resource: "*"` (no account ID in ARN):
 
-- S3, Route53, API Gateway, Cost Explorer
+- S3, Route53, API Gateway, Cost Explorer, Cloud Control API (CloudFormation)
 
 **STS (cross-account peering)** — conditionally included:
 
