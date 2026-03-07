@@ -24,8 +24,13 @@ def _generate_settings(
     return json.loads(output_file.read_text())
 
 
-class TestRoleName:
-    """Tests for role_name in generated settings."""
+class TestRoleManagement:
+    """Tests for manage_roles and role_name in generated settings."""
+
+    def test_manage_roles_is_false(self, tmp_path: Path) -> None:
+        """manage_roles should be False so Zappa uses the Terraform-managed role."""
+        settings = _generate_settings(tmp_path)
+        assert settings["base"]["manage_roles"] is False
 
     def test_base_config_includes_role_name(self, tmp_path: Path) -> None:
         """role_name should be present in the base config."""
@@ -117,17 +122,33 @@ class TestCIValidation:
                 {"CI": "true", "DATABASE_SECRET_ARN": self._arn},
             )
 
-    def test_ci_succeeds_when_both_arns_provided(
+    def test_ci_raises_when_zappa_role_name_missing(
         self,
         tmp_path: Path,
     ) -> None:
-        """In CI, providing both ARNs should not raise."""
+        """In CI, missing ZAPPA_ROLE_NAME should raise."""
+        with pytest.raises(RuntimeError, match="ZAPPA_ROLE_NAME"):
+            _generate_settings(
+                tmp_path,
+                {
+                    "CI": "true",
+                    "DATABASE_SECRET_ARN": self._arn,
+                    "DJANGO_SECRET_ARN": self._arn,
+                },
+            )
+
+    def test_ci_succeeds_when_all_required_vars_provided(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """In CI, providing all required vars should not raise."""
         settings = _generate_settings(
             tmp_path,
             {
                 "CI": "true",
                 "DATABASE_SECRET_ARN": self._arn,
                 "DJANGO_SECRET_ARN": self._arn,
+                "ZAPPA_ROLE_NAME": "my-role",
             },
         )
         db_url = settings["prod"]["aws_environment_variables"]

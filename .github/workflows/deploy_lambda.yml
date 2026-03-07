@@ -92,6 +92,7 @@ jobs:
           VPC_SECURITY_GROUP_IDS: ${{ vars.VPC_SECURITY_GROUP_IDS }}
           DATABASE_SECRET_ARN: ${{ secrets.DATABASE_SECRET_ARN }}
           DJANGO_SECRET_ARN: ${{ secrets.DJANGO_SECRET_ARN }}
+          ZAPPA_ROLE_NAME: ${{ vars.ZAPPA_ROLE_NAME }}
         run: |
           poetry run python scripts/configure_zappa.py
           poetry run zappa save-python-settings-file ${{ steps.env.outputs.environment }}
