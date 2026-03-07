@@ -17,6 +17,13 @@ resource "aws_security_group" "db_sg" {
 resource "aws_security_group_rule" "db_ingress_lambda_sg" {
   count = var.create_db_sg && var.enable_lambda_sg_rules ? 1 : 0
 
+  lifecycle {
+    precondition {
+      condition     = var.lambda_security_group_id != ""
+      error_message = "lambda_security_group_id must be set when enable_lambda_sg_rules is true."
+    }
+  }
+
   type                     = "ingress"
   from_port                = 5432
   to_port                  = 5432
