@@ -176,17 +176,23 @@ cd terraform/scripts/bootstrap
   --github-org your-org \
   --github-repo coalition-builder
 
-# 2. Deploy shared account first (VPC, RDS, Bastion)
-cd ../../environments/shared
+# 2. Configure remote state backends (generates backend.hcl for each environment)
+cd ..
+./setup_remote_state.sh shared
+./setup_remote_state.sh prod
+./setup_remote_state.sh dev
+
+# 3. Deploy shared account first (VPC, RDS, Bastion)
+cd ../environments/shared
 terraform init -backend-config=backend.hcl
 terraform apply
 
-# 3. Deploy prod account (Lambda, API Gateway, S3, SES)
+# 4. Deploy prod account (Lambda, API Gateway, S3, SES)
 cd ../prod
 terraform init -backend-config=backend.hcl
 terraform apply
 
-# 4. Deploy dev account (Lambda, S3)
+# 5. Deploy dev account (Lambda, S3)
 cd ../dev
 terraform init -backend-config=backend.hcl
 terraform apply

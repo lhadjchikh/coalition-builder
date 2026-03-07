@@ -237,9 +237,12 @@ terraform/environments/
 ### Deploying an Environment
 
 ```bash
-cd terraform/environments/prod
+# Generate backend.hcl (if not already created by bootstrap)
+cd terraform/scripts
+./setup_remote_state.sh prod
 
 # Initialize with the environment's backend config
+cd ../environments/prod
 terraform init -backend-config=backend.hcl
 
 # Plan and apply
