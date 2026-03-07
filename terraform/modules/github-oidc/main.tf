@@ -379,6 +379,31 @@ resource "aws_iam_role_policy" "infrastructure" {
           ]
         },
         {
+          Sid    = "EventBridgeRead"
+          Effect = "Allow"
+          Action = [
+            "events:DescribeRule",
+            "events:ListRules",
+            "events:ListRuleNamesByTarget",
+            "events:ListTargetsByRule",
+            "events:ListTagsForResource",
+          ]
+          Resource = "*"
+        },
+        {
+          Sid    = "EventBridgeWrite"
+          Effect = "Allow"
+          Action = [
+            "events:PutRule",
+            "events:PutTargets",
+            "events:DeleteRule",
+            "events:RemoveTargets",
+            "events:TagResource",
+            "events:UntagResource",
+          ]
+          Resource = "arn:aws:events:${var.aws_region}:${data.aws_caller_identity.current.account_id}:rule/*"
+        },
+        {
           Sid      = "WAF"
           Effect   = "Allow"
           Action   = ["wafv2:*"]

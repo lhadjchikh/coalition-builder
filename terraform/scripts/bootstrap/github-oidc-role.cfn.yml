@@ -324,6 +324,25 @@ Resources:
                 Resource:
                   - !Sub "arn:aws:cloudwatch:*:${AWS::AccountId}:*"
                   - !Sub "arn:aws:logs:*:${AWS::AccountId}:*"
+              - Sid: EventBridgeRead
+                Effect: Allow
+                Action:
+                  - events:DescribeRule
+                  - events:ListRules
+                  - events:ListRuleNamesByTarget
+                  - events:ListTargetsByRule
+                  - events:ListTagsForResource
+                Resource: "*"
+              - Sid: EventBridgeWrite
+                Effect: Allow
+                Action:
+                  - events:PutRule
+                  - events:PutTargets
+                  - events:DeleteRule
+                  - events:RemoveTargets
+                  - events:TagResource
+                  - events:UntagResource
+                Resource: !Sub "arn:aws:events:*:${AWS::AccountId}:rule/*"
               - Sid: WAF
                 Effect: Allow
                 Action:
