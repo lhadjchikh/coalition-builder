@@ -117,6 +117,7 @@ jobs:
       TF_VAR_alert_email: ${{ vars.TF_VAR_ALERT_EMAIL }}
       TF_VAR_ses_from_email: ${{ vars.SES_FROM_EMAIL }}
       TF_VAR_ses_notification_email: ${{ vars.SES_NOTIFICATION_EMAIL }}
+      # Shared-only variables (unused by dev/prod but harmless as empty env vars)
       TF_VAR_bastion_key_name: ${{ vars.BASTION_KEY_NAME }}
       TF_VAR_allowed_bastion_cidrs: ${{ vars.ALLOWED_BASTION_CIDRS }}
       TF_VAR_allowed_lambda_cidrs: ${{ vars.ALLOWED_LAMBDA_CIDRS }}
