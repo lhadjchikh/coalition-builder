@@ -321,9 +321,11 @@ Resources:
                 Action:
                   - cloudwatch:*
                   - logs:*
+                  - events:*
                 Resource:
                   - !Sub "arn:aws:cloudwatch:*:${AWS::AccountId}:*"
                   - !Sub "arn:aws:logs:*:${AWS::AccountId}:*"
+                  - !Sub "arn:aws:events:*:${AWS::AccountId}:*"
               - Sid: WAF
                 Effect: Allow
                 Action:

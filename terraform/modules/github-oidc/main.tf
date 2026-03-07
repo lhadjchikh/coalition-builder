@@ -372,10 +372,11 @@ resource "aws_iam_role_policy" "infrastructure" {
         {
           Sid    = "CloudWatch"
           Effect = "Allow"
-          Action = ["cloudwatch:*", "logs:*"]
+          Action = ["cloudwatch:*", "logs:*", "events:*"]
           Resource = [
             "arn:aws:cloudwatch:${var.aws_region}:${data.aws_caller_identity.current.account_id}:*",
             "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:*",
+            "arn:aws:events:${var.aws_region}:${data.aws_caller_identity.current.account_id}:*",
           ]
         },
         {
