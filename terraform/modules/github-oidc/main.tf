@@ -150,6 +150,7 @@ resource "aws_iam_role_policy" "infrastructure" {
             "geo:Search*",
             "budgets:Describe*",
             "budgets:View*",
+            "ecr:GetAuthorizationToken",
           ]
           Resource = "*"
         },

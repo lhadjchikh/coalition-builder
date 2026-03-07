@@ -131,6 +131,7 @@ Resources:
                   - geo:Search*
                   - budgets:Describe*
                   - budgets:View*
+                  - ecr:GetAuthorizationToken
                 Resource: "*"
               # --- Truly global services (no account ID in ARN) ---
               - Sid: S3ReadOnly

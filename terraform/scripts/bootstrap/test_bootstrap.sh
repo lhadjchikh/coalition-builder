@@ -387,6 +387,23 @@ else
   fail "github-oidc-role.cfn.yml missing SharedAccountId parameter"
 fi
 
+# Verify ecr:GetAuthorizationToken is in ServiceReadOnly (requires Resource: *)
+if echo "$INFRA_POLICY_STMTS" | python3 -c "
+import json, sys
+stmts = json.load(sys.stdin)
+for s in stmts:
+    if s.get('Sid') == 'ServiceReadOnly':
+        actions = s.get('Action', [])
+        if 'ecr:GetAuthorizationToken' in actions:
+            sys.exit(0)
+        sys.exit(1)
+sys.exit(1)
+" 2>/dev/null; then
+  pass "ServiceReadOnly includes ecr:GetAuthorizationToken"
+else
+  fail "ServiceReadOnly missing ecr:GetAuthorizationToken (requires Resource: *, needed for ECR login)"
+fi
+
 # Verify IAM is split into separate read and mutate statements
 INFRA_POLICY_STMTS=$(yaml_query "$OIDC_TEMPLATE" '["Resources", "GitHubActionsRole", "Properties", "Policies", 1, "PolicyDocument", "Statement"]')
 if echo "$INFRA_POLICY_STMTS" | grep -q '"Sid": "IAMReadOnly"'; then
