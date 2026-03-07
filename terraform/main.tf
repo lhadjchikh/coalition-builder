@@ -83,6 +83,7 @@ module "security" {
   vpc_id                   = module.networking.vpc_id
   allowed_bastion_cidrs    = var.allowed_bastion_cidrs
   lambda_security_group_id = module.zappa.lambda_security_group_id
+  enable_lambda_sg_rules   = true
   create_bastion_sg        = true
   create_waf               = true
 }

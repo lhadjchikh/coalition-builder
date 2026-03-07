@@ -21,6 +21,12 @@ variable "lambda_security_group_id" {
   default     = ""
 }
 
+variable "enable_lambda_sg_rules" {
+  description = "Whether to create SG rules for Lambda access to database. Use this instead of checking lambda_security_group_id, which may be unknown at plan time."
+  type        = bool
+  default     = false
+}
+
 variable "allowed_lambda_cidrs" {
   description = "CIDR blocks allowed to access the database (for cross-account access where SG references don't work)"
   type        = list(string)

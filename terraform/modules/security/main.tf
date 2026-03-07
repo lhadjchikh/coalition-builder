@@ -15,7 +15,7 @@ resource "aws_security_group" "db_sg" {
 
 # Same-account Lambda SG-based ingress (used when Lambda is in the same account)
 resource "aws_security_group_rule" "db_ingress_lambda_sg" {
-  count = var.create_db_sg && var.lambda_security_group_id != "" ? 1 : 0
+  count = var.create_db_sg && var.enable_lambda_sg_rules ? 1 : 0
 
   type                     = "ingress"
   from_port                = 5432
@@ -27,7 +27,7 @@ resource "aws_security_group_rule" "db_ingress_lambda_sg" {
 }
 
 resource "aws_security_group_rule" "db_egress_lambda_sg" {
-  count = var.create_db_sg && var.lambda_security_group_id != "" ? 1 : 0
+  count = var.create_db_sg && var.enable_lambda_sg_rules ? 1 : 0
 
   type                     = "egress"
   from_port                = 0
