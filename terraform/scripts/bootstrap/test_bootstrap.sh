@@ -387,6 +387,9 @@ else
   fail "github-oidc-role.cfn.yml missing SharedAccountId parameter"
 fi
 
+# Load infrastructure policy statements for subsequent checks
+INFRA_POLICY_STMTS=$(yaml_query "$OIDC_TEMPLATE" '["Resources", "GitHubActionsRole", "Properties", "Policies", 1, "PolicyDocument", "Statement"]')
+
 # Verify ecr:GetAuthorizationToken is in ServiceReadOnly (requires Resource: *)
 if echo "$INFRA_POLICY_STMTS" | python3 -c "
 import json, sys
@@ -405,7 +408,6 @@ else
 fi
 
 # Verify IAM is split into separate read and mutate statements
-INFRA_POLICY_STMTS=$(yaml_query "$OIDC_TEMPLATE" '["Resources", "GitHubActionsRole", "Properties", "Policies", 1, "PolicyDocument", "Statement"]')
 if echo "$INFRA_POLICY_STMTS" | grep -q '"Sid": "IAMReadOnly"'; then
   pass "IAM has separate IAMReadOnly statement"
 else
