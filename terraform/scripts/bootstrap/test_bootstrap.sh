@@ -531,6 +531,47 @@ else
   fail "S3 statement grants s3:* on Resource * (should scope mutate to project buckets)"
 fi
 
+# Verify CloudControlAPI statement exists (required by awscc provider)
+if echo "$INFRA_POLICY_STMTS" | grep -q '"Sid": "CloudControlAPI"'; then
+  pass "Infrastructure policy has CloudControlAPI statement"
+else
+  fail "Infrastructure policy missing CloudControlAPI statement (required by awscc provider)"
+fi
+
+# Verify IAMReadOnly includes iam:GetUser (needed for SES IAM user management)
+if echo "$INFRA_POLICY_STMTS" | python3 -c "
+import json, sys
+stmts = json.load(sys.stdin)
+for s in stmts:
+    if s.get('Sid') == 'IAMReadOnly':
+        actions = s.get('Action', [])
+        if 'iam:GetUser' in actions:
+            sys.exit(0)
+        sys.exit(1)
+sys.exit(1)
+" 2>/dev/null; then
+  pass "IAMReadOnly includes iam:GetUser"
+else
+  fail "IAMReadOnly missing iam:GetUser (needed for SES IAM user management)"
+fi
+
+# Verify IAMMutate includes IAM user actions (needed for SES SMTP user)
+if echo "$INFRA_POLICY_STMTS" | python3 -c "
+import json, sys
+stmts = json.load(sys.stdin)
+for s in stmts:
+    if s.get('Sid') == 'IAMMutate':
+        actions = s.get('Action', [])
+        if 'iam:CreateUser' in actions and 'iam:CreateAccessKey' in actions:
+            sys.exit(0)
+        sys.exit(1)
+sys.exit(1)
+" 2>/dev/null; then
+  pass "IAMMutate includes IAM user management actions"
+else
+  fail "IAMMutate missing IAM user management actions (iam:CreateUser, iam:CreateAccessKey)"
+fi
+
 # Verify no STS statement with arn:aws:iam::*:role/ wildcard account
 if echo "$INFRA_POLICY_STMTS" | grep -q 'arn:aws:iam::\*:role/'; then
   fail "STS statement should not use wildcard (*) account in IAM ARN"

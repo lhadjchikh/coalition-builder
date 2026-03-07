@@ -237,11 +237,16 @@ resource "aws_iam_role_policy" "infrastructure" {
             "iam:GetPolicyVersion",
             "iam:GetInstanceProfile",
             "iam:GetOpenIDConnectProvider",
+            "iam:GetUser",
+            "iam:GetUserPolicy",
             "iam:ListRolePolicies",
             "iam:ListAttachedRolePolicies",
             "iam:ListInstanceProfilesForRole",
             "iam:ListPolicyVersions",
             "iam:ListRoleTags",
+            "iam:ListUserPolicies",
+            "iam:ListUserTags",
+            "iam:ListAccessKeys",
           ]
           Resource = "*"
         },
@@ -275,6 +280,16 @@ resource "aws_iam_role_policy" "infrastructure" {
             "iam:UpdateOpenIDConnectProviderThumbprint",
             "iam:AddClientIDToOpenIDConnectProvider",
             "iam:CreateServiceLinkedRole",
+            "iam:CreateUser",
+            "iam:DeleteUser",
+            "iam:TagUser",
+            "iam:UntagUser",
+            "iam:PutUserPolicy",
+            "iam:DeleteUserPolicy",
+            "iam:CreateAccessKey",
+            "iam:DeleteAccessKey",
+            "iam:AttachUserPolicy",
+            "iam:DetachUserPolicy",
           ]
           Resource = [
             "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.resource_prefix}-*",
@@ -282,7 +297,22 @@ resource "aws_iam_role_policy" "infrastructure" {
             "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/${var.resource_prefix}-*",
             "arn:aws:iam::${data.aws_caller_identity.current.account_id}:instance-profile/${var.resource_prefix}-*",
             "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/*",
+            "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/ses/${var.resource_prefix}-*",
           ]
+        },
+
+        # --- CloudFormation Cloud Control API (required by awscc provider) ---
+        {
+          Sid    = "CloudControlAPI"
+          Effect = "Allow"
+          Action = [
+            "cloudformation:GetResource",
+            "cloudformation:CreateResource",
+            "cloudformation:UpdateResource",
+            "cloudformation:DeleteResource",
+            "cloudformation:ListResources",
+          ]
+          Resource = "*"
         },
 
         # --- Account-scoped services (regional) ---

@@ -206,11 +206,16 @@ Resources:
                   - iam:GetPolicyVersion
                   - iam:GetInstanceProfile
                   - iam:GetOpenIDConnectProvider
+                  - iam:GetUser
+                  - iam:GetUserPolicy
                   - iam:ListRolePolicies
                   - iam:ListAttachedRolePolicies
                   - iam:ListInstanceProfilesForRole
                   - iam:ListPolicyVersions
                   - iam:ListRoleTags
+                  - iam:ListUserPolicies
+                  - iam:ListUserTags
+                  - iam:ListAccessKeys
                 Resource: "*"
               # --- IAM mutate (scoped to prefix and OIDC provider) ---
               - Sid: IAMMutate
@@ -240,12 +245,33 @@ Resources:
                   - iam:UpdateOpenIDConnectProviderThumbprint
                   - iam:AddClientIDToOpenIDConnectProvider
                   - iam:CreateServiceLinkedRole
+                  - iam:CreateUser
+                  - iam:DeleteUser
+                  - iam:TagUser
+                  - iam:UntagUser
+                  - iam:PutUserPolicy
+                  - iam:DeleteUserPolicy
+                  - iam:CreateAccessKey
+                  - iam:DeleteAccessKey
+                  - iam:AttachUserPolicy
+                  - iam:DetachUserPolicy
                 Resource:
                   - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ResourcePrefix}-*"
                   - !Sub "arn:aws:iam::${AWS::AccountId}:role/github-actions-*"
                   - !Sub "arn:aws:iam::${AWS::AccountId}:policy/${ResourcePrefix}-*"
                   - !Sub "arn:aws:iam::${AWS::AccountId}:instance-profile/${ResourcePrefix}-*"
                   - !Sub "arn:aws:iam::${AWS::AccountId}:oidc-provider/*"
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:user/ses/${ResourcePrefix}-*"
+              # --- CloudFormation Cloud Control API (required by awscc provider) ---
+              - Sid: CloudControlAPI
+                Effect: Allow
+                Action:
+                  - cloudformation:GetResource
+                  - cloudformation:CreateResource
+                  - cloudformation:UpdateResource
+                  - cloudformation:DeleteResource
+                  - cloudformation:ListResources
+                Resource: "*"
               # --- Account-scoped services (regional) ---
               - Sid: EC2ReadOnly
                 Effect: Allow
