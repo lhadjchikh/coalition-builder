@@ -47,7 +47,7 @@ OPTIONS:
     --github-repo REPO       GitHub repository name (required)
     --prod-account-id ID     Prod AWS account ID (required for shared environment)
     --dev-account-id ID      Dev AWS account ID (required for shared environment)
-    --hosted-zone-id ID      Route53 hosted zone ID (required for shared environment)
+    --hosted-zone-id ID      Route53 hosted zone ID (optional; scopes DNS permissions)
     -p, --profile PROFILE    AWS CLI profile to use (optional)
     -r, --region REGION      AWS region (default: $DEFAULT_REGION)
     -h, --help               Show this help message
@@ -141,9 +141,8 @@ if [[ "$ENVIRONMENT" == "shared" && ( -z "$PROD_ACCOUNT_ID" || -z "$DEV_ACCOUNT_
 fi
 
 if [[ "$ENVIRONMENT" == "shared" && -z "$HOSTED_ZONE_ID" ]]; then
-  log_error "--hosted-zone-id is required for the shared environment"
-  usage
-  exit 1
+  log_warning "--hosted-zone-id not provided; DNS policy will not be scoped to a specific zone."
+  log_warning "Re-run with --hosted-zone-id after the Route53 zone is created by Terraform."
 fi
 
 # Helper to run AWS CLI with optional profile

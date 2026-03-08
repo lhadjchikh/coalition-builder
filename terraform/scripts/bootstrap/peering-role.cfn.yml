@@ -15,7 +15,13 @@ Parameters:
 
   HostedZoneId:
     Type: String
-    Description: Route53 hosted zone ID to scope DNS permissions to
+    Default: ""
+    Description: >
+      Route53 hosted zone ID to scope DNS permissions to.
+      If empty, Route53 permissions use wildcard resource.
+
+Conditions:
+  HasHostedZoneId: !Not [!Equals [!Ref HostedZoneId, ""]]
 
 Resources:
   VPCPeeringAccepterRole:
@@ -69,7 +75,10 @@ Resources:
                   - route53:ChangeResourceRecordSets
                   - route53:GetHostedZone
                   - route53:ListResourceRecordSets
-                Resource: !Sub "arn:aws:route53:::hostedzone/${HostedZoneId}"
+                Resource: !If
+                  - HasHostedZoneId
+                  - !Sub "arn:aws:route53:::hostedzone/${HostedZoneId}"
+                  - "*"
               - Effect: Allow
                 Action:
                   - route53:GetChange
