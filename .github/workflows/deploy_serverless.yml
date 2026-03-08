@@ -255,9 +255,9 @@ jobs:
           NEXT_PUBLIC_API_URL: ${{ steps.api-url.outputs.url }}
         run: |
           if [ "$ENV" = "prod" ]; then
-            vercel --prod --token $VERCEL_TOKEN --yes
+            vercel --prod --token $VERCEL_TOKEN --yes --archive=tgz
           else
-            vercel --token $VERCEL_TOKEN --yes \
+            vercel --token $VERCEL_TOKEN --yes --archive=tgz \
               --env NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
               --name coalition-$ENV
           fi
