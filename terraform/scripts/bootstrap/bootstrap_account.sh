@@ -300,13 +300,18 @@ if [[ "$ENVIRONMENT" == "shared" ]]; then
   PEERING_STACK_NAME="vpc-peering-accepter"
   log_info "Deploying CloudFormation stack: $PEERING_STACK_NAME (shared account only)"
 
+  PEERING_PARAMS=(
+    "ProdAccountId=${PROD_ACCOUNT_ID}"
+    "DevAccountId=${DEV_ACCOUNT_ID}"
+  )
+  if [[ -n "$HOSTED_ZONE_ID" ]]; then
+    PEERING_PARAMS+=("HostedZoneId=${HOSTED_ZONE_ID}")
+  fi
+
   aws_cmd cloudformation deploy \
     --template-file "${SCRIPT_DIR}/peering-role.cfn.yml" \
     --stack-name "$PEERING_STACK_NAME" \
-    --parameter-overrides \
-      "ProdAccountId=${PROD_ACCOUNT_ID}" \
-      "DevAccountId=${DEV_ACCOUNT_ID}" \
-      "HostedZoneId=${HOSTED_ZONE_ID}" \
+    --parameter-overrides "${PEERING_PARAMS[@]}" \
     --capabilities CAPABILITY_NAMED_IAM \
     --no-fail-on-empty-changeset
 
