@@ -343,7 +343,7 @@ func TestVPCEndpointsConfiguration(t *testing.T) {
 	assert.NotEmpty(t, interfaceEndpoints, "Interface endpoints should be created")
 
 	// Verify expected endpoints exist
-	expectedServices := []string{"ecr_api", "ecr_dkr", "logs", "secretsmanager"}
+	expectedServices := []string{"logs", "secretsmanager", "geo_places"}
 	for _, service := range expectedServices {
 		endpointID, exists := interfaceEndpoints[service]
 		assert.True(t, exists, fmt.Sprintf("Interface endpoint for %s should exist", service))

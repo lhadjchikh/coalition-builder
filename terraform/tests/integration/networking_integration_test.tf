@@ -72,10 +72,9 @@ output "test_results" {
     interface_endpoints_created = length(module.networking_integration_test.interface_endpoints) > 0
     interface_endpoints_count   = length(module.networking_integration_test.interface_endpoints)
     required_endpoints_exist = alltrue([
-      contains(keys(module.networking_integration_test.interface_endpoints), "ecr_api"),
-      contains(keys(module.networking_integration_test.interface_endpoints), "ecr_dkr"),
       contains(keys(module.networking_integration_test.interface_endpoints), "logs"),
-      contains(keys(module.networking_integration_test.interface_endpoints), "secretsmanager")
+      contains(keys(module.networking_integration_test.interface_endpoints), "secretsmanager"),
+      contains(keys(module.networking_integration_test.interface_endpoints), "geo_places")
     ])
   }
 }
