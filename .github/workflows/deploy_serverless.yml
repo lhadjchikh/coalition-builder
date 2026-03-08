@@ -174,7 +174,7 @@ jobs:
             fi
           else
             echo "Creating new deployment..."
-            poetry run zappa deploy $ENV
+            poetry run zappa deploy $ENV --docker-image-uri "$IMAGE_URI"
           fi
 
       - name: Create cache table
