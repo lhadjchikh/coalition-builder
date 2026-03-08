@@ -211,8 +211,7 @@ resource "aws_ses_domain_identity_verification" "main" {
 resource "aws_route53_record" "ses_verification" {
   provider = aws.shared
 
-  allow_overwrite = true
-  zone_id         = data.terraform_remote_state.shared.outputs.route53_zone_id
+  zone_id = data.terraform_remote_state.shared.outputs.route53_zone_id
   name            = "_amazonses.${var.domain_name}"
   type            = "TXT"
   ttl             = 600
@@ -223,8 +222,7 @@ resource "aws_route53_record" "ses_dkim" {
   provider = aws.shared
   count    = 3
 
-  allow_overwrite = true
-  zone_id         = data.terraform_remote_state.shared.outputs.route53_zone_id
+  zone_id = data.terraform_remote_state.shared.outputs.route53_zone_id
   name            = "${module.ses.ses_dkim_tokens[count.index]}._domainkey.${var.domain_name}"
   type            = "CNAME"
   ttl             = 600
@@ -236,8 +234,7 @@ resource "aws_route53_record" "ses_dkim" {
 resource "aws_route53_record" "ses_spf" {
   provider = aws.shared
 
-  allow_overwrite = true
-  zone_id         = data.terraform_remote_state.shared.outputs.route53_zone_id
+  zone_id = data.terraform_remote_state.shared.outputs.route53_zone_id
   name            = var.domain_name
   type            = "TXT"
   ttl             = 600
@@ -247,8 +244,7 @@ resource "aws_route53_record" "ses_spf" {
 resource "aws_route53_record" "ses_dmarc" {
   provider = aws.shared
 
-  allow_overwrite = true
-  zone_id         = data.terraform_remote_state.shared.outputs.route53_zone_id
+  zone_id = data.terraform_remote_state.shared.outputs.route53_zone_id
   name            = "_dmarc.${var.domain_name}"
   type            = "TXT"
   ttl             = 600
