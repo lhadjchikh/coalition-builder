@@ -88,11 +88,11 @@ resource "null_resource" "assert_s3_endpoint_created" {
   }
 }
 
-# Assert that exactly 4 interface VPC endpoints are created
+# Assert that exactly 3 interface VPC endpoints are created
 resource "null_resource" "assert_interface_endpoints_created" {
-  count = length(module.networking_integration_test.interface_endpoints) != 4 ? 1 : 0
+  count = length(module.networking_integration_test.interface_endpoints) != 3 ? 1 : 0
 
   provisioner "local-exec" {
-    command = "echo 'ERROR: Exactly 4 interface VPC endpoints (ECR API, ECR DKR, CloudWatch Logs, Secrets Manager) should be created, got ${length(module.networking_integration_test.interface_endpoints)}' && exit 1"
+    command = "echo 'ERROR: Exactly 3 interface VPC endpoints (CloudWatch Logs, Secrets Manager, Geo Places) should be created, got ${length(module.networking_integration_test.interface_endpoints)}' && exit 1"
   }
 }
