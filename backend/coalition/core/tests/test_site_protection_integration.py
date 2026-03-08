@@ -140,4 +140,5 @@ class TestSiteProtectionIntegration:
         prefix, demonstrating why we removed the anchors."""
         response = client.get("/api/campaigns/", SCRIPT_NAME="/dev")
         # With ^ anchor, /dev/api/campaigns/ doesn't match ^/api/ — lockdown kicks in
+        assert response.status_code == 200
         assert b"Password:" in response.content
