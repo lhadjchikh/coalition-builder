@@ -36,6 +36,7 @@ jobs:
   test-backend:
     needs: determine-environment
     runs-on: ubuntu-latest
+    # Skip for prod (tested by check_app.yml) and workflow_dispatch (no GDAL in runner)
     if: github.event_name == 'push' && needs.determine-environment.outputs.environment != 'prod'
     steps:
       - uses: actions/checkout@v4
