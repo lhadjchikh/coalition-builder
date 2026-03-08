@@ -201,6 +201,12 @@ module "ses" {
   enable_notifications   = true
 }
 
+# Wait for SES domain verification (record is created cross-account below)
+resource "aws_ses_domain_identity_verification" "main" {
+  domain     = var.domain_name
+  depends_on = [aws_route53_record.ses_verification]
+}
+
 # SES DNS records in shared account's Route53 zone
 resource "aws_route53_record" "ses_verification" {
   provider = aws.shared
