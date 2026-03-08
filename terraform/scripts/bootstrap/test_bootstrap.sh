@@ -271,7 +271,15 @@ else
 fi
 
 # Verify dns-record-writer policy scopes Route53 to specific hosted zone
-DNS_POLICY_STMTS=$(yaml_query "$PEERING_TEMPLATE" '["Resources", "VPCPeeringAccepterRole", "Properties", "Policies", 1, "PolicyDocument", "Statement"]')
+DNS_POLICY_STMTS=$(yaml_query "$PEERING_TEMPLATE" '["Resources", "VPCPeeringAccepterRole", "Properties", "Policies"]' | python3 -c "
+import json, sys
+policies = json.load(sys.stdin)
+for p in policies:
+    if p.get('PolicyName') == 'dns-record-writer':
+        json.dump(p['PolicyDocument']['Statement'], sys.stdout)
+        sys.exit(0)
+sys.exit(1)
+")
 if echo "$DNS_POLICY_STMTS" | python3 -c "
 import json, sys
 stmts = json.load(sys.stdin)
