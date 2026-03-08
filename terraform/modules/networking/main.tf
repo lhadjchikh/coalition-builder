@@ -270,8 +270,6 @@ resource "aws_vpc_endpoint" "s3" {
 
 # Interface VPC Endpoints - allow Lambda in private subnets to reach AWS services
 locals {
-  # ECR endpoints not needed: Lambda pulls container images via AWS internal
-  # network, not through the function's VPC networking.
   interface_endpoints = {
     secretsmanager = "com.amazonaws.${var.aws_region}.secretsmanager"
     logs           = "com.amazonaws.${var.aws_region}.logs"
