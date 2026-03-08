@@ -94,23 +94,11 @@ variable "budget_limit_amount" {
   default     = "30"
 }
 
-# Domain & API Gateway
+# Domain
 variable "domain_name" {
-  description = "The domain name for the application"
+  description = "The domain name for the application (enables test-api subdomain when set)"
   type        = string
   default     = ""
-}
-
-variable "api_gateway_id" {
-  description = "The ID of the Zappa-managed API Gateway REST API"
-  type        = string
-  default     = ""
-}
-
-variable "api_gateway_stage" {
-  description = "The stage name of the API Gateway"
-  type        = string
-  default     = "dev"
 }
 
 # GitHub OIDC
