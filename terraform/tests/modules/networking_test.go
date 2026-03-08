@@ -177,7 +177,7 @@ func TestNetworkingModuleCreatesVPCEndpoints(t *testing.T) {
 	// Validate VPC endpoints exist
 	vpcID := terraform.Output(t, terraformOptions, "vpc_id")
 
-	// We should have interface endpoints for ECR, CloudWatch Logs, and Secrets Manager
+	// We should have interface endpoints for CloudWatch Logs, Secrets Manager, and Geo Places
 	// Plus a gateway endpoint for S3
 	// Note: Direct validation of VPC endpoints would require custom AWS SDK calls
 	// as Terratest doesn't have built-in VPC endpoint support
@@ -343,7 +343,7 @@ func TestVPCEndpointsConfiguration(t *testing.T) {
 	assert.NotEmpty(t, interfaceEndpoints, "Interface endpoints should be created")
 
 	// Verify expected endpoints exist
-	expectedServices := []string{"ecr_api", "ecr_dkr", "logs", "secretsmanager"}
+	expectedServices := []string{"logs", "secretsmanager", "geo_places"}
 	for _, service := range expectedServices {
 		endpointID, exists := interfaceEndpoints[service]
 		assert.True(t, exists, fmt.Sprintf("Interface endpoint for %s should exist", service))
