@@ -46,7 +46,7 @@ variable "secrets_kms_key_arn" {
 variable "zappa_bucket_name" {
   description = "Override the Zappa S3 bucket name (default: {prefix}-zappa-deployments)"
   type        = string
-  default     = ""
+  default     = null
 }
 
 variable "project_name" {
