@@ -229,7 +229,7 @@ resource "aws_acm_certificate_validation" "api" {
 
 # API custom domain (conditional — requires api_gateway_id from Zappa deployment)
 resource "aws_api_gateway_domain_name" "api" {
-  count = var.api_gateway_id != "" ? 1 : 0
+  count = var.domain_name != "" && var.api_gateway_id != "" ? 1 : 0
 
   domain_name              = "test-api.${var.domain_name}"
   regional_certificate_arn = aws_acm_certificate_validation.api[0].certificate_arn
@@ -240,7 +240,7 @@ resource "aws_api_gateway_domain_name" "api" {
 }
 
 resource "aws_api_gateway_base_path_mapping" "api" {
-  count = var.api_gateway_id != "" ? 1 : 0
+  count = var.domain_name != "" && var.api_gateway_id != "" ? 1 : 0
 
   api_id      = var.api_gateway_id
   stage_name  = var.api_gateway_stage
@@ -250,7 +250,7 @@ resource "aws_api_gateway_base_path_mapping" "api" {
 # API DNS record in shared account's Route53 zone
 resource "aws_route53_record" "api" {
   provider = aws.shared
-  count    = var.api_gateway_id != "" ? 1 : 0
+  count    = var.domain_name != "" && var.api_gateway_id != "" ? 1 : 0
 
   allow_overwrite = true
   zone_id         = data.terraform_remote_state.shared.outputs.route53_zone_id
