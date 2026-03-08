@@ -118,7 +118,7 @@ class TestSiteProtectionIntegration:
     @override_settings(
         LOCKDOWN_ENABLED=True,
         LOCKDOWN_PASSWORDS=["integration-test-password"],
-        LOCKDOWN_URL_EXCEPTIONS=[r"/api/"],  # No ^ anchor to handle stage prefix
+        LOCKDOWN_URL_EXCEPTIONS=[r"^(/[^/]+)?/api(/|$)"],
     )
     def test_api_bypasses_lockdown_with_stage_prefix(self, client: Client) -> None:
         """Test that API endpoints bypass lockdown when request.path has a stage
