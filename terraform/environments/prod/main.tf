@@ -1,6 +1,7 @@
 # Production Account
 # Contains: VPC, Lambda/Zappa, API Gateway + custom domain, S3 + CloudFront,
-# ECR, SES, WAF, Route53, ACM, Monitoring, VPC peering to shared, GitHub OIDC
+# ECR, SES, WAF, ACM, Monitoring, VPC peering to shared, GitHub OIDC
+# DNS: Route53 zone lives in shared account; prod writes records via cross-account role
 
 provider "aws" {
   region = var.aws_region
@@ -185,7 +186,7 @@ module "monitoring" {
   alert_email         = var.alert_email
 }
 
-# SES Module
+# SES Module (Route53 records created separately with shared provider)
 module "ses" {
   source = "../../modules/ses"
 
@@ -194,11 +195,60 @@ module "ses" {
   domain_name            = var.domain_name
   from_email             = var.ses_from_email
   verify_domain          = true
-  route53_zone_id        = aws_route53_zone.main.zone_id
-  create_route53_records = true
+  create_route53_records = false
   dmarc_email            = var.ses_notification_email
   notification_email     = var.ses_notification_email
   enable_notifications   = true
+}
+
+# Wait for SES domain verification (record is created cross-account below)
+resource "aws_ses_domain_identity_verification" "main" {
+  domain     = var.domain_name
+  depends_on = [aws_route53_record.ses_verification]
+}
+
+# SES DNS records in shared account's Route53 zone
+resource "aws_route53_record" "ses_verification" {
+  provider = aws.shared
+
+  zone_id = data.terraform_remote_state.shared.outputs.route53_zone_id
+  name    = "_amazonses.${var.domain_name}"
+  type    = "TXT"
+  ttl     = 600
+  records = [module.ses.ses_verification_token]
+}
+
+resource "aws_route53_record" "ses_dkim" {
+  provider = aws.shared
+  count    = 3
+
+  zone_id = data.terraform_remote_state.shared.outputs.route53_zone_id
+  name    = "${module.ses.ses_dkim_tokens[count.index]}._domainkey.${var.domain_name}"
+  type    = "CNAME"
+  ttl     = 600
+  records = ["${module.ses.ses_dkim_tokens[count.index]}.dkim.amazonses.com"]
+}
+
+# NOTE: This manages the only TXT record at the apex. If other services need
+# apex TXT records (e.g. domain verification), add them to the records list here.
+resource "aws_route53_record" "ses_spf" {
+  provider = aws.shared
+
+  zone_id = data.terraform_remote_state.shared.outputs.route53_zone_id
+  name    = var.domain_name
+  type    = "TXT"
+  ttl     = 600
+  records = ["v=spf1 include:amazonses.com -all"]
+}
+
+resource "aws_route53_record" "ses_dmarc" {
+  provider = aws.shared
+
+  zone_id = data.terraform_remote_state.shared.outputs.route53_zone_id
+  name    = "_dmarc.${var.domain_name}"
+  type    = "TXT"
+  ttl     = 600
+  records = ["v=DMARC1; p=quarantine; rua=mailto:${var.ses_notification_email}"]
 }
 
 # Storage Module - S3 + CloudFront for static assets
@@ -250,15 +300,6 @@ module "lambda_ecr" {
   tags        = var.tags
 }
 
-# Route53 Zone
-resource "aws_route53_zone" "main" {
-  name = var.domain_name
-
-  tags = {
-    Name = var.domain_name
-  }
-}
-
 # ACM certificate for domain and all subdomains
 resource "aws_acm_certificate" "main" {
   domain_name               = var.domain_name
@@ -270,7 +311,10 @@ resource "aws_acm_certificate" "main" {
   }
 }
 
+# Cert validation records in shared account's Route53 zone
 resource "aws_route53_record" "cert_validation" {
+  provider = aws.shared
+
   for_each = {
     for dvo in aws_acm_certificate.main.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
@@ -280,7 +324,7 @@ resource "aws_route53_record" "cert_validation" {
   }
 
   allow_overwrite = true
-  zone_id         = aws_route53_zone.main.zone_id
+  zone_id         = data.terraform_remote_state.shared.outputs.route53_zone_id
   name            = each.value.name
   type            = each.value.type
   ttl             = 60
@@ -312,36 +356,21 @@ resource "aws_api_gateway_base_path_mapping" "api" {
   domain_name = aws_api_gateway_domain_name.api[0].domain_name
 }
 
-# DNS Records
+# API DNS record in shared account's Route53 zone
 resource "aws_route53_record" "api" {
-  count = var.api_gateway_id != "" ? 1 : 0
+  provider = aws.shared
+  count    = var.api_gateway_id != "" ? 1 : 0
 
-  zone_id = aws_route53_zone.main.zone_id
-  name    = "api.${var.domain_name}"
-  type    = "A"
+  allow_overwrite = true
+  zone_id         = data.terraform_remote_state.shared.outputs.route53_zone_id
+  name            = "api.${var.domain_name}"
+  type            = "A"
 
   alias {
     name                   = aws_api_gateway_domain_name.api[0].regional_domain_name
     zone_id                = aws_api_gateway_domain_name.api[0].regional_zone_id
     evaluate_target_health = true
   }
-}
-
-# Point apex domain to Vercel
-resource "aws_route53_record" "apex" {
-  zone_id = aws_route53_zone.main.zone_id
-  name    = var.domain_name
-  type    = "A"
-  ttl     = 300
-  records = [var.vercel_ip]
-}
-
-resource "aws_route53_record" "www" {
-  zone_id = aws_route53_zone.main.zone_id
-  name    = "www.${var.domain_name}"
-  type    = "CNAME"
-  ttl     = 300
-  records = ["cname.vercel-dns.com"]
 }
 
 # GitHub OIDC for CI/CD

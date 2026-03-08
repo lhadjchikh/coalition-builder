@@ -58,6 +58,17 @@ output "budget_info" {
   value       = module.monitoring.budget_info
 }
 
+# DNS
+output "route53_zone_id" {
+  description = "Route53 zone ID (used by prod and dev for DNS records)"
+  value       = aws_route53_zone.main.zone_id
+}
+
+output "route53_nameservers" {
+  description = "Route53 zone nameservers (update at domain registrar)"
+  value       = aws_route53_zone.main.name_servers
+}
+
 # GitHub OIDC
 output "github_oidc_role_arn" {
   description = "ARN of the GitHub Actions role for the shared account"

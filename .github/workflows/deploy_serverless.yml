@@ -36,7 +36,8 @@ jobs:
   test-backend:
     needs: determine-environment
     runs-on: ubuntu-latest
-    if: needs.determine-environment.outputs.environment != 'prod' || github.event_name == 'workflow_dispatch'
+    # Skip for prod (tested by check_app.yml) and workflow_dispatch (no GDAL in runner)
+    if: github.event_name == 'push' && needs.determine-environment.outputs.environment != 'prod'
     steps:
       - uses: actions/checkout@v4
 
@@ -174,7 +175,7 @@ jobs:
             fi
           else
             echo "Creating new deployment..."
-            poetry run zappa deploy $ENV
+            poetry run zappa deploy $ENV --docker-image-uri "$IMAGE_URI"
           fi
 
       - name: Create cache table

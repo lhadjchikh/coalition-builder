@@ -147,6 +147,18 @@ variable "budget_limit_amount" {
   default     = "30"
 }
 
+# Domain
+variable "domain_name" {
+  description = "The domain name for the application"
+  type        = string
+}
+
+variable "vercel_ip" {
+  description = "Vercel's anycast IP for apex domain A record"
+  type        = string
+  default     = "76.76.21.21"
+}
+
 # GitHub OIDC
 variable "github_repo" {
   description = "GitHub repository in org/repo format"

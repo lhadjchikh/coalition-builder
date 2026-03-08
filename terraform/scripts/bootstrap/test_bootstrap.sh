@@ -242,6 +242,12 @@ else
   fail "peering-role.cfn.yml missing DevAccountId parameter"
 fi
 
+if yaml_has_key "$PEERING_TEMPLATE" '["Parameters", "HostedZoneId"]'; then
+  pass "peering-role.cfn.yml has HostedZoneId parameter"
+else
+  fail "peering-role.cfn.yml missing HostedZoneId parameter"
+fi
+
 # Verify ProdAccountId has no hardcoded default (should be a required parameter)
 if ! yaml_has_key "$PEERING_TEMPLATE" '["Parameters", "ProdAccountId", "Default"]'; then
   pass "ProdAccountId has no hardcoded default"
@@ -262,6 +268,39 @@ if [[ "$PEERING_ROLE_NAME" == "vpc-peering-accepter" ]]; then
   pass "Peering role name is vpc-peering-accepter"
 else
   fail "Peering role name mismatch (got: $PEERING_ROLE_NAME)"
+fi
+
+# Verify dns-record-writer policy scopes Route53 to specific hosted zone
+if DNS_POLICY_STMTS=$(yaml_query "$PEERING_TEMPLATE" '["Resources", "VPCPeeringAccepterRole", "Properties", "Policies"]' | python3 -c "
+import json, sys
+policies = json.load(sys.stdin)
+for p in policies:
+    if p.get('PolicyName') == 'dns-record-writer':
+        json.dump(p['PolicyDocument']['Statement'], sys.stdout)
+        sys.exit(0)
+sys.exit(1)
+"); then
+  if echo "$DNS_POLICY_STMTS" | python3 -c "
+import json, sys
+stmts = json.load(sys.stdin)
+for s in stmts:
+    res = s.get('Resource', '')
+    # Handle Fn::If conditional: [condition, if_true, if_false]
+    if isinstance(res, dict) and 'Fn::If' in res:
+        branches = res['Fn::If']
+        true_branch = json.dumps(branches[1]) if len(branches) > 1 else ''
+        if 'hostedzone' not in true_branch.lower():
+            sys.exit(1)
+    elif res == '*' or res == ['*']:
+        sys.exit(1)
+sys.exit(0)
+" 2>/dev/null; then
+    pass "dns-record-writer Route53 resources are not wildcard (*)"
+  else
+    fail "dns-record-writer Route53 resources should be scoped to specific hosted zone"
+  fi
+else
+  fail "dns-record-writer policy not found in peering-role.cfn.yml"
 fi
 
 # Verify peering role has required EC2 permissions

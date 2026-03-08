@@ -43,6 +43,12 @@ variable "secrets_kms_key_arn" {
   }
 }
 
+variable "zappa_bucket_name" {
+  description = "Override the Zappa S3 bucket name (default: {prefix}-zappa-deployments)"
+  type        = string
+  default     = null
+}
+
 variable "project_name" {
   description = "Zappa project name (used for Lambda function naming, e.g. 'coalition' creates 'coalition-prod')"
   type        = string

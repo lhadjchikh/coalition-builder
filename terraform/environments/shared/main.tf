@@ -1,6 +1,6 @@
 # Shared Account
 # Contains: VPC, RDS, Bastion, DB security group, Secrets (master), Monitoring,
-# VPC peering accepter (for prod and dev), GitHub OIDC
+# Route53 zone (centralized DNS), VPC peering accepter (for prod and dev), GitHub OIDC
 
 provider "aws" {
   region = var.aws_region
@@ -101,6 +101,42 @@ module "monitoring" {
   vpc_id              = module.networking.vpc_id
   budget_limit_amount = var.budget_limit_amount
   alert_email         = var.alert_email
+}
+
+# Route53 Zone (centralized DNS for all environments)
+resource "aws_route53_zone" "main" {
+  name = var.domain_name
+
+  tags = {
+    Name = var.domain_name
+  }
+}
+
+# Apex domain -> Vercel (production frontend)
+resource "aws_route53_record" "apex" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = var.domain_name
+  type    = "A"
+  ttl     = 300
+  records = [var.vercel_ip]
+}
+
+resource "aws_route53_record" "www" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = "www.${var.domain_name}"
+  type    = "CNAME"
+  ttl     = 300
+  records = ["cname.vercel-dns.com"]
+}
+
+# Dev frontend -> Vercel (test subdomain)
+# Update or remove this record if the dev Vercel project changes
+resource "aws_route53_record" "test" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = "test.${var.domain_name}"
+  type    = "CNAME"
+  ttl     = 300
+  records = ["cname.vercel-dns.com"]
 }
 
 # GitHub OIDC for CI/CD
