@@ -116,9 +116,9 @@ jobs:
         id: deploy
         run: |
           if [[ "${{ steps.env.outputs.environment }}" == "prod" ]]; then
-            DEPLOY_URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+            DEPLOY_URL=$(vercel deploy --prebuilt --prod --archive=tgz --token=${{ secrets.VERCEL_TOKEN }})
           else
-            DEPLOY_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+            DEPLOY_URL=$(vercel deploy --prebuilt --archive=tgz --token=${{ secrets.VERCEL_TOKEN }})
           fi
 
           echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
