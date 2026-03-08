@@ -1,6 +1,6 @@
 # S3 bucket for Zappa deployments
 resource "aws_s3_bucket" "zappa_deployments" {
-  bucket = "${var.prefix}-zappa-deployments"
+  bucket = var.zappa_bucket_name != "" ? var.zappa_bucket_name : "${var.prefix}-zappa-deployments"
 
   tags = merge(
     var.tags,
