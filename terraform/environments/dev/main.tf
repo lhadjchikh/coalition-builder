@@ -25,6 +25,10 @@ provider "aws" {
   }
 }
 
+provider "awscc" {
+  region = var.aws_region
+}
+
 # Read shared account outputs
 data "terraform_remote_state" "shared" {
   backend = "s3"
