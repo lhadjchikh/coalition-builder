@@ -284,8 +284,14 @@ sys.exit(1)
 import json, sys
 stmts = json.load(sys.stdin)
 for s in stmts:
-    res = json.dumps(s.get('Resource', ''))
-    if res == '\"*\"' or res == '[\"*\"]':
+    res = s.get('Resource', '')
+    # Handle Fn::If conditional: [condition, if_true, if_false]
+    if isinstance(res, dict) and 'Fn::If' in res:
+        branches = res['Fn::If']
+        true_branch = json.dumps(branches[1]) if len(branches) > 1 else ''
+        if 'hostedzone' not in true_branch.lower():
+            sys.exit(1)
+    elif res == '*' or res == ['*']:
         sys.exit(1)
 sys.exit(0)
 " 2>/dev/null; then
