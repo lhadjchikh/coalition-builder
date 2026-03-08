@@ -316,6 +316,24 @@ vercel rollback
 3. Run `zappa certify` for Lambda
 4. Check DNS propagation
 
+## Cost Control
+
+### Dev VPC Endpoints Toggle
+
+The dev environment's VPC endpoints (~$22/month) can be disabled when you're not actively developing to save costs. Use the **Dev Cost Control** workflow:
+
+```bash
+# Disable VPC endpoints (saves ~$22/mo)
+gh workflow run dev_cost_control.yml -f vpc_endpoints=disable
+
+# Re-enable before developing
+gh workflow run dev_cost_control.yml -f vpc_endpoints=enable
+```
+
+Or use the GitHub UI: **Actions > Dev Cost Control > Run workflow**.
+
+When VPC endpoints are disabled, Lambda functions in the dev environment cannot reach Secrets Manager, CloudWatch Logs, or Geo Places via private networking. Re-enable them before deploying or testing the dev backend.
+
 ## Cost Monitoring
 
 The serverless architecture significantly reduces costs:
