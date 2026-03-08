@@ -26,9 +26,18 @@ Resources:
               AWS:
                 - !Sub "arn:aws:iam::${ProdAccountId}:role/github-actions-prod"
                 - !Sub "arn:aws:iam::${DevAccountId}:role/github-actions-dev"
+            Action: sts:AssumeRole
+          - Effect: Allow
+            Principal:
+              AWS:
                 - !Sub "arn:aws:iam::${ProdAccountId}:root"
                 - !Sub "arn:aws:iam::${DevAccountId}:root"
             Action: sts:AssumeRole
+            Condition:
+              ArnLike:
+                aws:PrincipalArn:
+                  - !Sub "arn:aws:iam::${ProdAccountId}:role/aws-reserved/sso.amazonaws.com/AWSReservedSSO_AdministratorAccess_*"
+                  - !Sub "arn:aws:iam::${DevAccountId}:role/aws-reserved/sso.amazonaws.com/AWSReservedSSO_AdministratorAccess_*"
       Policies:
         - PolicyName: vpc-peering-accepter
           PolicyDocument:
