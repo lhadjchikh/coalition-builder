@@ -1,6 +1,6 @@
 # Development Account
 # Contains: VPC (private app subnets only), Lambda/Zappa (512MB, no keep-warm),
-# ECR, S3 (no CloudFront), VPC peering to shared, GitHub OIDC
+# ECR, S3 (no CloudFront), VPC peering to shared, Monitoring, GitHub OIDC
 # Minimal infrastructure — no WAF, no SES, no custom domain, no Route53
 
 provider "aws" {
@@ -151,6 +151,16 @@ module "ssm" {
 resource "aws_iam_role_policy_attachment" "zappa_ssm_access" {
   role       = module.zappa.zappa_deployment_role_name
   policy_arn = module.ssm.ssm_read_policy_arn
+}
+
+# Monitoring Module
+module "monitoring" {
+  source = "../../modules/monitoring"
+
+  prefix              = var.prefix
+  vpc_id              = module.networking.vpc_id
+  budget_limit_amount = var.budget_limit_amount
+  alert_email         = var.alert_email
 }
 
 # Serverless Storage Module - S3 bucket (no CloudFront)

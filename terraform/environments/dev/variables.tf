@@ -82,6 +82,18 @@ variable "site_password" {
   sensitive   = true
 }
 
+# Monitoring
+variable "alert_email" {
+  description = "Email address to receive alerts"
+  type        = string
+}
+
+variable "budget_limit_amount" {
+  description = "Monthly budget limit amount in USD"
+  type        = string
+  default     = "30"
+}
+
 # GitHub OIDC
 variable "github_repo" {
   description = "GitHub repository in org/repo format"
