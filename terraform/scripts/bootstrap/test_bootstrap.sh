@@ -242,6 +242,12 @@ else
   fail "peering-role.cfn.yml missing DevAccountId parameter"
 fi
 
+if yaml_has_key "$PEERING_TEMPLATE" '["Parameters", "HostedZoneId"]'; then
+  pass "peering-role.cfn.yml has HostedZoneId parameter"
+else
+  fail "peering-role.cfn.yml missing HostedZoneId parameter"
+fi
+
 # Verify ProdAccountId has no hardcoded default (should be a required parameter)
 if ! yaml_has_key "$PEERING_TEMPLATE" '["Parameters", "ProdAccountId", "Default"]'; then
   pass "ProdAccountId has no hardcoded default"
@@ -262,6 +268,22 @@ if [[ "$PEERING_ROLE_NAME" == "vpc-peering-accepter" ]]; then
   pass "Peering role name is vpc-peering-accepter"
 else
   fail "Peering role name mismatch (got: $PEERING_ROLE_NAME)"
+fi
+
+# Verify dns-record-writer policy scopes Route53 to specific hosted zone
+DNS_POLICY_STMTS=$(yaml_query "$PEERING_TEMPLATE" '["Resources", "VPCPeeringAccepterRole", "Properties", "Policies", 1, "PolicyDocument", "Statement"]')
+if echo "$DNS_POLICY_STMTS" | python3 -c "
+import json, sys
+stmts = json.load(sys.stdin)
+for s in stmts:
+    res = json.dumps(s.get('Resource', ''))
+    if res == '\"*\"' or res == '[\"*\"]':
+        sys.exit(1)
+sys.exit(0)
+" 2>/dev/null; then
+  pass "dns-record-writer Route53 resources are not wildcard (*)"
+else
+  fail "dns-record-writer Route53 resources should be scoped to specific hosted zone"
 fi
 
 # Verify peering role has required EC2 permissions

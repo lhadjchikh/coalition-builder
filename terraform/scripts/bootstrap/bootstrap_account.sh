@@ -47,12 +47,13 @@ OPTIONS:
     --github-repo REPO       GitHub repository name (required)
     --prod-account-id ID     Prod AWS account ID (required for shared environment)
     --dev-account-id ID      Dev AWS account ID (required for shared environment)
+    --hosted-zone-id ID      Route53 hosted zone ID (required for shared environment)
     -p, --profile PROFILE    AWS CLI profile to use (optional)
     -r, --region REGION      AWS region (default: $DEFAULT_REGION)
     -h, --help               Show this help message
 
 EXAMPLES:
-    $0 --environment shared --github-org my-org --github-repo coalition-builder --profile shared-admin --prod-account-id 111111111111 --dev-account-id 222222222222
+    $0 --environment shared --github-org my-org --github-repo coalition-builder --profile shared-admin --prod-account-id 111111111111 --dev-account-id 222222222222 --hosted-zone-id Z0123456789ABC
     $0 --environment prod --github-org my-org --github-repo coalition-builder --profile prod-admin
     $0 --environment dev --github-org my-org --github-repo coalition-builder
 
@@ -65,6 +66,7 @@ GITHUB_ORG=""
 GITHUB_REPO=""
 PROD_ACCOUNT_ID=""
 DEV_ACCOUNT_ID=""
+HOSTED_ZONE_ID=""
 AWS_PROFILE_ARG=""
 REGION="$DEFAULT_REGION"
 
@@ -88,6 +90,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --dev-account-id)
       DEV_ACCOUNT_ID="$2"
+      shift 2
+      ;;
+    --hosted-zone-id)
+      HOSTED_ZONE_ID="$2"
       shift 2
       ;;
     -p | --profile)
@@ -130,6 +136,12 @@ fi
 
 if [[ "$ENVIRONMENT" == "shared" && ( -z "$PROD_ACCOUNT_ID" || -z "$DEV_ACCOUNT_ID" ) ]]; then
   log_error "--prod-account-id and --dev-account-id are required for the shared environment"
+  usage
+  exit 1
+fi
+
+if [[ "$ENVIRONMENT" == "shared" && -z "$HOSTED_ZONE_ID" ]]; then
+  log_error "--hosted-zone-id is required for the shared environment"
   usage
   exit 1
 fi
@@ -295,6 +307,7 @@ if [[ "$ENVIRONMENT" == "shared" ]]; then
     --parameter-overrides \
       "ProdAccountId=${PROD_ACCOUNT_ID}" \
       "DevAccountId=${DEV_ACCOUNT_ID}" \
+      "HostedZoneId=${HOSTED_ZONE_ID}" \
     --capabilities CAPABILITY_NAMED_IAM \
     --no-fail-on-empty-changeset
 
