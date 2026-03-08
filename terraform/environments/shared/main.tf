@@ -130,6 +130,7 @@ resource "aws_route53_record" "www" {
 }
 
 # Dev frontend -> Vercel (test subdomain)
+# Update or remove this record if the dev Vercel project changes
 resource "aws_route53_record" "test" {
   zone_id = aws_route53_zone.main.zone_id
   name    = "test.${var.domain_name}"
