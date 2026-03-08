@@ -101,6 +101,19 @@ variable "domain_name" {
   default     = ""
 }
 
+# API Gateway (set after initial Zappa deployment)
+variable "api_gateway_id" {
+  description = "The ID of the Zappa-managed API Gateway REST API"
+  type        = string
+  default     = ""
+}
+
+variable "api_gateway_stage" {
+  description = "The stage name of the API Gateway"
+  type        = string
+  default     = "dev"
+}
+
 # GitHub OIDC
 variable "github_repo" {
   description = "GitHub repository in org/repo format"
