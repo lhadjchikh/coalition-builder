@@ -36,7 +36,7 @@ jobs:
   test-backend:
     needs: determine-environment
     runs-on: ubuntu-latest
-    if: needs.determine-environment.outputs.environment != 'prod' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' && needs.determine-environment.outputs.environment != 'prod'
     steps:
       - uses: actions/checkout@v4
 
