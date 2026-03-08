@@ -114,3 +114,30 @@ class TestSiteProtectionIntegration:
         assert b"Password:" not in response.content
         # Should return JSON data, not password form
         assert "application/json" in response["content-type"]
+
+    @override_settings(
+        LOCKDOWN_ENABLED=True,
+        LOCKDOWN_PASSWORDS=["integration-test-password"],
+        LOCKDOWN_URL_EXCEPTIONS=[r"/api/"],  # No ^ anchor to handle stage prefix
+    )
+    def test_api_bypasses_lockdown_with_stage_prefix(self, client: Client) -> None:
+        """Test that API endpoints bypass lockdown when request.path has a stage
+        prefix (e.g. /dev/api/health/), as happens with Zappa on API Gateway."""
+        # Simulate Zappa setting SCRIPT_NAME to the API Gateway stage,
+        # which makes Django's request.path = "/dev/api/campaigns/"
+        response = client.get("/api/campaigns/", SCRIPT_NAME="/dev")
+        assert response.status_code == 200
+        assert b"Password:" not in response.content
+        assert "application/json" in response["content-type"]
+
+    @override_settings(
+        LOCKDOWN_ENABLED=True,
+        LOCKDOWN_PASSWORDS=["integration-test-password"],
+        LOCKDOWN_URL_EXCEPTIONS=[r"^/api/"],  # ^ anchor fails with stage prefix
+    )
+    def test_anchored_pattern_fails_with_stage_prefix(self, client: Client) -> None:
+        """Test that ^ anchored patterns DON'T match when Zappa adds a stage
+        prefix, demonstrating why we removed the anchors."""
+        response = client.get("/api/campaigns/", SCRIPT_NAME="/dev")
+        # With ^ anchor, /dev/api/campaigns/ doesn't match ^/api/ — lockdown kicks in
+        assert b"Password:" in response.content
