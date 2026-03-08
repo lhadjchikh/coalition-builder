@@ -661,10 +661,12 @@ LOCKDOWN_ENABLED = os.getenv("SITE_PASSWORD_ENABLED", "false").lower() in (
 )
 LOCKDOWN_PASSWORDS = [os.getenv("SITE_PASSWORD", "changeme")]
 LOCKDOWN_URL_EXCEPTIONS = [
-    r"^/api/health",  # Django API health check
-    r"^/health",  # Next.js app health check
-    r"^/admin/",  # Django admin (has its own auth)
-    r"^/api/",  # API endpoints
+    # Patterns allow an optional API Gateway stage prefix (e.g. "/dev") at the start
+    # while remaining start-/segment-aware to avoid matching unrelated URLs.
+    r"^(/[^/]+)?/api/health$",  # Django API health check
+    r"^(/[^/]+)?/health$",  # Next.js app health check
+    r"^(/[^/]+)?/admin(/|$)",  # Django admin (has its own auth)
+    r"^(/[^/]+)?/api(/|$)",  # API endpoints
 ]
 
 # Session-based lockdown (user stays logged in)
