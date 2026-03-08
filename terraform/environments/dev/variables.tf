@@ -75,6 +75,13 @@ variable "site_password" {
   sensitive   = true
 }
 
+# Domain
+variable "domain_name" {
+  description = "The domain name for the application"
+  type        = string
+  default     = ""
+}
+
 # GitHub OIDC
 variable "github_repo" {
   description = "GitHub repository in org/repo format"
