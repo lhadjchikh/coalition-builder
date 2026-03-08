@@ -271,7 +271,7 @@ else
 fi
 
 # Verify dns-record-writer policy scopes Route53 to specific hosted zone
-DNS_POLICY_STMTS=$(yaml_query "$PEERING_TEMPLATE" '["Resources", "VPCPeeringAccepterRole", "Properties", "Policies"]' | python3 -c "
+if DNS_POLICY_STMTS=$(yaml_query "$PEERING_TEMPLATE" '["Resources", "VPCPeeringAccepterRole", "Properties", "Policies"]' | python3 -c "
 import json, sys
 policies = json.load(sys.stdin)
 for p in policies:
@@ -279,8 +279,8 @@ for p in policies:
         json.dump(p['PolicyDocument']['Statement'], sys.stdout)
         sys.exit(0)
 sys.exit(1)
-")
-if echo "$DNS_POLICY_STMTS" | python3 -c "
+"); then
+  if echo "$DNS_POLICY_STMTS" | python3 -c "
 import json, sys
 stmts = json.load(sys.stdin)
 for s in stmts:
@@ -289,9 +289,12 @@ for s in stmts:
         sys.exit(1)
 sys.exit(0)
 " 2>/dev/null; then
-  pass "dns-record-writer Route53 resources are not wildcard (*)"
+    pass "dns-record-writer Route53 resources are not wildcard (*)"
+  else
+    fail "dns-record-writer Route53 resources should be scoped to specific hosted zone"
+  fi
 else
-  fail "dns-record-writer Route53 resources should be scoped to specific hosted zone"
+  fail "dns-record-writer policy not found in peering-role.cfn.yml"
 fi
 
 # Verify peering role has required EC2 permissions
