@@ -88,5 +88,5 @@ jobs:
             echo "### VPC Endpoints Disabled" >> $GITHUB_STEP_SUMMARY
             echo "Dev VPC endpoints are now **disabled**, saving ~\$22/mo." >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "> **Note:** Lambda functions will not be able to reach Secrets Manager, CloudWatch Logs, or Geo Places via private networking while endpoints are disabled." >> $GITHUB_STEP_SUMMARY
+            echo "> **Note:** Lambda functions in the dev VPC will not be able to access Secrets Manager, CloudWatch Logs, or Geo Places at all while endpoints are disabled (no internet egress and no VPC endpoints)." >> $GITHUB_STEP_SUMMARY
           fi
