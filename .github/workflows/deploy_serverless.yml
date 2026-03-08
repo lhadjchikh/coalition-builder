@@ -261,13 +261,13 @@ jobs:
             vercel --prod --token $VERCEL_TOKEN --yes --archive=tgz
           else
             vercel --token $VERCEL_TOKEN --yes --archive=tgz \
-              --env NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
-              --build-env SITE_PASSWORD_ENABLED=$SITE_PASSWORD_ENABLED \
-              --env SITE_PASSWORD_ENABLED=$SITE_PASSWORD_ENABLED \
-              --build-env SITE_PASSWORD=$SITE_PASSWORD \
-              --env SITE_PASSWORD=$SITE_PASSWORD \
-              --build-env SITE_USERNAME=$SITE_USERNAME \
-              --env SITE_USERNAME=$SITE_USERNAME \
+              --env "NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL" \
+              --build-env "SITE_PASSWORD_ENABLED=$SITE_PASSWORD_ENABLED" \
+              --env "SITE_PASSWORD_ENABLED=$SITE_PASSWORD_ENABLED" \
+              --build-env "SITE_PASSWORD=$SITE_PASSWORD" \
+              --env "SITE_PASSWORD=$SITE_PASSWORD" \
+              --build-env "SITE_USERNAME=$SITE_USERNAME" \
+              --env "SITE_USERNAME=$SITE_USERNAME" \
               --name coalition-$ENV
           fi
 
