@@ -231,6 +231,8 @@ resource "aws_route53_record" "ses_dkim" {
   records         = ["${module.ses.ses_dkim_tokens[count.index]}.dkim.amazonses.com"]
 }
 
+# NOTE: This manages the only TXT record at the apex. If other services need
+# apex TXT records (e.g. domain verification), add them to the records list here.
 resource "aws_route53_record" "ses_spf" {
   provider = aws.shared
 
@@ -239,7 +241,7 @@ resource "aws_route53_record" "ses_spf" {
   name            = var.domain_name
   type            = "TXT"
   ttl             = 600
-  records         = ["v=spf1 include:amazonses.com ~all"]
+  records         = ["v=spf1 include:amazonses.com -all"]
 }
 
 resource "aws_route53_record" "ses_dmarc" {
