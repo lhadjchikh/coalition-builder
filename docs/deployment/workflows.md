@@ -332,7 +332,7 @@ gh workflow run dev_cost_control.yml -f vpc_endpoints=enable
 
 Or use the GitHub UI: **Actions > Dev Cost Control > Run workflow**.
 
-When VPC endpoints are disabled, Lambda functions in the dev environment cannot reach Secrets Manager, CloudWatch Logs, or Geo Places via private networking. Re-enable them before deploying or testing the dev backend.
+When VPC endpoints are disabled, Lambda functions in the dev environment (which run in private subnets with no NAT/internet route) cannot reach Secrets Manager, CloudWatch Logs, or the Geo Places API at all. Re-enable the endpoints before deploying or testing the dev backend.
 
 ## Cost Monitoring
 
