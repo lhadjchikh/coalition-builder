@@ -242,7 +242,7 @@ jobs:
           elif [ "$ENV" = "prod" ]; then
             echo "url=https://api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           else
-            echo "url=https://dev-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
+            echo "url=https://test-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           fi
 
       - name: Deploy to Vercel
@@ -301,7 +301,7 @@ jobs:
           elif [ "$ENV" = "prod" ]; then
             echo "url=https://api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           else
-            echo "url=https://dev-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
+            echo "url=https://test-api.${DOMAIN_NAME}" >> $GITHUB_OUTPUT
           fi
 
       - name: Health check API
