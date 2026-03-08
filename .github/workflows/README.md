@@ -279,6 +279,10 @@ Workflows that interact with external resources support manual triggers via `wor
 - **deploy_lambda.yml** - Alternative Lambda deployment workflow
 - **deploy_frontend.yml** - Deploys frontend to Vercel
 
+### Cost Control
+
+- **dev_cost_control.yml** - Toggle dev VPC endpoints on/off to save costs when not actively developing
+
 ### Documentation
 
 - **deploy_docs.yml** - Deploys to GitHub Pages

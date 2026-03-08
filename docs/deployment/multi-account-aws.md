@@ -402,3 +402,17 @@ Three workflows use the multi-account setup:
 | **Terraform CI/CD**   | `deploy_infra.yml`      | Plans and applies Terraform for a selected environment |
 
 All three authenticate via OIDC and select the target environment based on branch or manual input. See [GitHub Workflows](workflows.md) for details.
+
+### Dev Cost Control
+
+The **Dev Cost Control** workflow (`dev_cost_control.yml`) lets you toggle VPC endpoints in the dev environment on or off to save costs when not actively developing. VPC endpoints cost ~$7.30/month each; the dev environment has 3 interface endpoints (Secrets Manager, CloudWatch Logs, Geo Places) totaling ~$22/month.
+
+```bash
+# Disable to save costs
+gh workflow run dev_cost_control.yml -f vpc_endpoints=disable
+
+# Re-enable before developing
+gh workflow run dev_cost_control.yml -f vpc_endpoints=enable
+```
+
+When disabled, Lambda functions in the dev VPC cannot reach these AWS services at all, because the private subnets have no internet egress (no NAT). Re-enable before deploying or testing.

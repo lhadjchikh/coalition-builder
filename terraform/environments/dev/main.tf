@@ -1,6 +1,6 @@
 # Development Account
 # Contains: VPC (private app subnets only), Lambda/Zappa (512MB, no keep-warm),
-# ECR, S3 (no CloudFront), VPC peering to shared, GitHub OIDC
+# ECR, S3 (no CloudFront), VPC peering to shared, Monitoring, GitHub OIDC
 # Minimal infrastructure — no WAF, no SES, no custom domain, no Route53
 
 provider "aws" {
@@ -23,6 +23,10 @@ provider "aws" {
   default_tags {
     tags = var.tags
   }
+}
+
+provider "awscc" {
+  region = var.aws_region
 }
 
 # Read shared account outputs
@@ -55,8 +59,8 @@ module "networking" {
   # No DB subnets (DB lives in shared)
   create_db_subnets = false
 
-  # VPC endpoints for Lambda to reach AWS services
-  create_vpc_endpoints       = true
+  # VPC endpoints for Lambda to reach AWS services (toggle to save costs)
+  create_vpc_endpoints       = var.enable_vpc_endpoints
   enable_single_az_endpoints = true
 }
 
@@ -151,6 +155,16 @@ module "ssm" {
 resource "aws_iam_role_policy_attachment" "zappa_ssm_access" {
   role       = module.zappa.zappa_deployment_role_name
   policy_arn = module.ssm.ssm_read_policy_arn
+}
+
+# Monitoring Module
+module "monitoring" {
+  source = "../../modules/monitoring"
+
+  prefix              = var.prefix
+  vpc_id              = module.networking.vpc_id
+  budget_limit_amount = var.budget_limit_amount
+  alert_email         = var.alert_email
 }
 
 # Serverless Storage Module - S3 bucket (no CloudFront)

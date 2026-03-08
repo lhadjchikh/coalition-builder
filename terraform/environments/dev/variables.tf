@@ -50,6 +50,13 @@ variable "private_subnet_b_cidr" {
   default     = "10.2.4.0/24"
 }
 
+# Cost control
+variable "enable_vpc_endpoints" {
+  description = "Enable VPC endpoints (disable to save costs when not actively developing)"
+  type        = bool
+  default     = true
+}
+
 # Database (in shared account, accessed via peering)
 variable "db_name" {
   description = "Database name in the shared RDS instance (dev database)"
@@ -73,6 +80,18 @@ variable "site_password" {
   type        = string
   default     = ""
   sensitive   = true
+}
+
+# Monitoring
+variable "alert_email" {
+  description = "Email address to receive alerts"
+  type        = string
+}
+
+variable "budget_limit_amount" {
+  description = "Monthly budget limit amount in USD"
+  type        = string
+  default     = "30"
 }
 
 # GitHub OIDC
