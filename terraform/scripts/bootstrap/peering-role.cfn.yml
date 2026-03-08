@@ -1,7 +1,8 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >
-  Bootstrap cross-account shared services role.
-  Allows prod and dev accounts to assume this role for VPC peering and DNS management.
+  Bootstrap cross-account VPC peering and DNS role in the shared account.
+  Allows prod and dev accounts to assume this role to accept VPC peering
+  connections and manage Route53 DNS records.
 
 Parameters:
   ProdAccountId:
