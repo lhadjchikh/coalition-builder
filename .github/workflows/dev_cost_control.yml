@@ -69,7 +69,7 @@ jobs:
       - name: Terraform Apply
         run: |
           cd "$TF_DIRECTORY"
-          terraform apply tfplan
+          terraform apply -input=false tfplan
 
       - name: Summary
         run: |
