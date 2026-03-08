@@ -188,11 +188,17 @@ module "lambda_ecr" {
   tags        = var.tags
 }
 
+locals {
+  api_subdomain = "test-api.${var.domain_name}"
+}
+
 # ACM certificate for test-api subdomain
+# Created when domain_name is set, even before api_gateway_id is available,
+# so the cert is ready when the API Gateway is later configured.
 resource "aws_acm_certificate" "api" {
   count = var.domain_name != "" ? 1 : 0
 
-  domain_name       = "test-api.${var.domain_name}"
+  domain_name       = local.api_subdomain
   validation_method = "DNS"
 
   lifecycle {
@@ -231,7 +237,7 @@ resource "aws_acm_certificate_validation" "api" {
 resource "aws_api_gateway_domain_name" "api" {
   count = var.domain_name != "" && var.api_gateway_id != "" ? 1 : 0
 
-  domain_name              = "test-api.${var.domain_name}"
+  domain_name              = local.api_subdomain
   regional_certificate_arn = aws_acm_certificate_validation.api[0].certificate_arn
 
   endpoint_configuration {
@@ -254,7 +260,7 @@ resource "aws_route53_record" "api" {
 
   allow_overwrite = true
   zone_id         = data.terraform_remote_state.shared.outputs.route53_zone_id
-  name            = "test-api.${var.domain_name}"
+  name            = local.api_subdomain
   type            = "A"
 
   alias {
