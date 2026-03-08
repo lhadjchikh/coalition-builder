@@ -97,6 +97,7 @@ module "zappa" {
   source = "../../modules/zappa"
 
   prefix            = var.prefix
+  project_name      = "coalition"
   zappa_bucket_name = "${var.prefix}-zappa-deployments-dev"
   aws_region        = var.aws_region
   vpc_id            = module.networking.vpc_id
