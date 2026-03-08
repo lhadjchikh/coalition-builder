@@ -415,4 +415,4 @@ gh workflow run dev_cost_control.yml -f vpc_endpoints=disable
 gh workflow run dev_cost_control.yml -f vpc_endpoints=enable
 ```
 
-When disabled, Lambda functions cannot reach AWS services via private networking. Re-enable before deploying or testing.
+When disabled, Lambda functions in the dev VPC cannot reach these AWS services at all, because the private subnets have no internet egress (no NAT). Re-enable before deploying or testing.
