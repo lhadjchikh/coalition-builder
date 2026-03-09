@@ -110,6 +110,7 @@ jobs:
       TF_VAR_site_password: ${{ secrets.SITE_PASSWORD }}
       TF_VAR_shared_peering_role_arn: ${{ secrets.SHARED_PEERING_ROLE_ARN }}
       # Variables (from GitHub environment)
+      TF_VAR_prefix: ${{ vars.TF_VAR_PREFIX }}
       TF_VAR_shared_account_id: ${{ vars.SHARED_ACCOUNT_ID }}
       TF_VAR_github_repo: ${{ vars.REPO_FULL_NAME }}
       TF_VAR_domain_name: ${{ vars.TF_VAR_DOMAIN_NAME }}
