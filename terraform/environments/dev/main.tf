@@ -286,5 +286,6 @@ module "github_oidc" {
   enable_terraform_policy      = true
   enable_infrastructure_policy = true
   resource_prefix              = var.prefix
+  additional_iam_prefixes      = ["coalition"]
   peering_account_ids          = [var.shared_account_id]
 }

@@ -175,7 +175,7 @@ resource "aws_iam_role_policy" "infrastructure" {
             "s3:PutBucketPolicy",
             "s3:DeleteBucketPolicy",
             "s3:PutBucketVersioning",
-            "s3:PutBucketEncryption",
+            "s3:PutEncryptionConfiguration",
             "s3:PutBucketPublicAccessBlock",
             "s3:PutBucketLifecycleConfiguration",
             "s3:PutBucketTagging",
@@ -268,13 +268,14 @@ resource "aws_iam_role_policy" "infrastructure" {
             "iam:PassRole",
             "iam:CreatePolicy",
             "iam:DeletePolicy",
+            "iam:TagPolicy",
+            "iam:UntagPolicy",
             "iam:CreatePolicyVersion",
             "iam:DeletePolicyVersion",
             "iam:CreateInstanceProfile",
             "iam:DeleteInstanceProfile",
             "iam:AddRoleToInstanceProfile",
             "iam:RemoveRoleFromInstanceProfile",
-            "iam:CreateServiceLinkedRole",
             "iam:CreateUser",
             "iam:DeleteUser",
             "iam:TagUser",
@@ -284,13 +285,19 @@ resource "aws_iam_role_policy" "infrastructure" {
             "iam:CreateAccessKey",
             "iam:DeleteAccessKey",
           ]
-          Resource = [
-            "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.resource_prefix}-*",
-            "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/github-actions-*",
-            "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/${var.resource_prefix}-*",
-            "arn:aws:iam::${data.aws_caller_identity.current.account_id}:instance-profile/${var.resource_prefix}-*",
-            "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/ses/${var.resource_prefix}-*",
-          ]
+          Resource = concat(
+            [
+              "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.resource_prefix}-*",
+              "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/github-actions-*",
+              "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/vpc-flow-log-role",
+              "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/${var.resource_prefix}-*",
+              "arn:aws:iam::${data.aws_caller_identity.current.account_id}:instance-profile/${var.resource_prefix}-*",
+              "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/ses/${var.resource_prefix}-*",
+            ],
+            [for prefix in var.additional_iam_prefixes : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${prefix}-*"],
+            [for prefix in var.additional_iam_prefixes : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/${prefix}-*"],
+            [for prefix in var.additional_iam_prefixes : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:instance-profile/${prefix}-*"],
+          )
         },
 
         # --- OIDC provider management (scoped to single GitHub provider) ---
@@ -304,6 +311,14 @@ resource "aws_iam_role_policy" "infrastructure" {
             "iam:AddClientIDToOpenIDConnectProvider",
           ]
           Resource = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/token.actions.githubusercontent.com"
+        },
+
+        # --- Service-linked roles (AWS-managed names, not prefix-scoped) ---
+        {
+          Sid      = "ServiceLinkedRoles"
+          Effect   = "Allow"
+          Action   = ["iam:CreateServiceLinkedRole"]
+          Resource = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/*"
         },
 
         # --- CloudFormation Cloud Control API (required by awscc provider) ---
