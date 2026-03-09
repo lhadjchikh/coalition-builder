@@ -127,10 +127,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate AWS Account ID
+      - name: Validate required variables
         run: |
           if [ -z "${{ vars.AWS_ACCOUNT_ID }}" ]; then
             echo "::error::AWS_ACCOUNT_ID variable is not set in the '${{ needs.determine-environment.outputs.environment }}' GitHub environment"
+            exit 1
+          fi
+          if [ -z "${{ vars.TF_VAR_PREFIX }}" ]; then
+            echo "::error::TF_VAR_PREFIX variable is not set in the '${{ needs.determine-environment.outputs.environment }}' GitHub environment"
             exit 1
           fi
 
