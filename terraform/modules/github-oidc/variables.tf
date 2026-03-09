@@ -60,3 +60,9 @@ variable "resource_prefix" {
   type        = string
   default     = "coalition"
 }
+
+variable "additional_iam_prefixes" {
+  description = "Additional IAM resource prefixes to allow (for prefix migration transitions)"
+  type        = list(string)
+  default     = []
+}
