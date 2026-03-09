@@ -319,7 +319,16 @@ resource "aws_iam_role_policy" "infrastructure" {
           Sid      = "ServiceLinkedRoles"
           Effect   = "Allow"
           Action   = ["iam:CreateServiceLinkedRole"]
-          Resource = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/*"
+          Resource = "*"
+          Condition = {
+            StringLike = {
+              "iam:AWSServiceName" = [
+                "ops.apigateway.amazonaws.com",
+                "elasticloadbalancing.amazonaws.com",
+                "autoscaling.amazonaws.com",
+              ]
+            }
+          }
         },
 
         # --- CloudFormation Cloud Control API (required by awscc provider) ---

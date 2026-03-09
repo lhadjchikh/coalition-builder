@@ -239,7 +239,6 @@ Resources:
                   - iam:DeleteInstanceProfile
                   - iam:AddRoleToInstanceProfile
                   - iam:RemoveRoleFromInstanceProfile
-                  - iam:CreateServiceLinkedRole
                   - iam:CreateUser
                   - iam:DeleteUser
                   - iam:TagUser
@@ -254,6 +253,18 @@ Resources:
                   - !Sub "arn:aws:iam::${AWS::AccountId}:policy/${ResourcePrefix}-*"
                   - !Sub "arn:aws:iam::${AWS::AccountId}:instance-profile/${ResourcePrefix}-*"
                   - !Sub "arn:aws:iam::${AWS::AccountId}:user/ses/${ResourcePrefix}-*"
+              # --- Service-linked roles (Resource=* with condition) ---
+              - Sid: ServiceLinkedRoles
+                Effect: Allow
+                Action:
+                  - iam:CreateServiceLinkedRole
+                Resource: "*"
+                Condition:
+                  StringLike:
+                    iam:AWSServiceName:
+                      - ops.apigateway.amazonaws.com
+                      - elasticloadbalancing.amazonaws.com
+                      - autoscaling.amazonaws.com
               # --- OIDC provider management (scoped to single GitHub provider) ---
               - Sid: OIDCProviderMutate
                 Effect: Allow
