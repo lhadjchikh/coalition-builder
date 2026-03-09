@@ -177,7 +177,7 @@ resource "aws_iam_role_policy" "infrastructure" {
             "s3:PutBucketVersioning",
             "s3:PutEncryptionConfiguration",
             "s3:PutBucketPublicAccessBlock",
-            "s3:PutBucketLifecycleConfiguration",
+            "s3:PutLifecycleConfiguration",
             "s3:PutBucketTagging",
             "s3:PutBucketCORS",
             "s3:PutBucketNotification",
@@ -327,6 +327,7 @@ resource "aws_iam_role_policy" "infrastructure" {
           Effect = "Allow"
           Action = [
             "cloudformation:GetResource",
+            "cloudformation:GetResourceRequestStatus",
             "cloudformation:CreateResource",
             "cloudformation:UpdateResource",
             "cloudformation:DeleteResource",

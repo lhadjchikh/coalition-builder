@@ -154,9 +154,9 @@ Resources:
                   - s3:PutBucketPolicy
                   - s3:DeleteBucketPolicy
                   - s3:PutBucketVersioning
-                  - s3:PutBucketEncryption
+                  - s3:PutEncryptionConfiguration
                   - s3:PutBucketPublicAccessBlock
-                  - s3:PutBucketLifecycleConfiguration
+                  - s3:PutLifecycleConfiguration
                   - s3:PutBucketTagging
                   - s3:PutBucketCORS
                   - s3:PutBucketNotification
@@ -268,6 +268,7 @@ Resources:
                 Effect: Allow
                 Action:
                   - cloudformation:GetResource
+                  - cloudformation:GetResourceRequestStatus
                   - cloudformation:CreateResource
                   - cloudformation:UpdateResource
                   - cloudformation:DeleteResource
