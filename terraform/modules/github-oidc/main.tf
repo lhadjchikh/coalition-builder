@@ -297,6 +297,7 @@ resource "aws_iam_role_policy" "infrastructure" {
             [for prefix in var.additional_iam_prefixes : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${prefix}-*"],
             [for prefix in var.additional_iam_prefixes : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/${prefix}-*"],
             [for prefix in var.additional_iam_prefixes : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:instance-profile/${prefix}-*"],
+            [for prefix in var.additional_iam_prefixes : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/ses/${prefix}-*"],
           )
         },
 
