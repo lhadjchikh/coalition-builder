@@ -83,25 +83,44 @@ The GitHub Actions workflow will automatically generate `zappa_settings.json` du
 
 ## Getting Bucket Names from Terraform
 
-After running Terraform to create your S3 buckets:
+The media bucket that Django uploads to **must be the bucket whose upload policy is
+attached to the Lambda role**, otherwise uploads fail with `AccessDenied` and media
+returns 404/403. The bucket differs by environment, so read the value from the
+matching Terraform output.
+
+### Dev / staging (`module.serverless_storage`)
 
 ```bash
-# Deploy the serverless storage module
 cd terraform
 terraform apply -target=module.serverless_storage
-
-# Get the bucket names
 terraform output serverless_bucket_names
 
 # Example output:
 # {
 #   "dev" = "coalition-dev-assets-abc123"
 #   "staging" = "coalition-staging-assets-abc123"
-#   "production" = "coalition-production-assets-abc123"
 # }
 ```
 
-Use these bucket names in your environment variables.
+Set the environment's `AWS_STORAGE_BUCKET_NAME` to the matching bucket. Dev serves
+media directly from S3, so `CLOUDFRONT_DOMAIN` is left unset.
+
+### Production (`module.storage`)
+
+Production media and collected static files live in `module.storage` — the bucket
+whose `static_assets_upload_policy_arn` is attached to the Lambda role. Do **not**
+use the `module.serverless_storage` production bucket; it has no Lambda policy
+attachment and Django cannot write to it.
+
+```bash
+cd terraform/environments/prod
+terraform output static_assets_bucket_name         # -> AWS_STORAGE_BUCKET_NAME
+terraform output cloudfront_distribution_domain_name  # -> CLOUDFRONT_DOMAIN
+```
+
+Set the prod GitHub environment's `AWS_STORAGE_BUCKET_NAME` and `CLOUDFRONT_DOMAIN`
+variables to these two outputs so Lambda writes to, and Django serves from, the same
+bucket that is fronted by CloudFront.
 
 ## Configuration Options
 
