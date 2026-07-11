@@ -27,6 +27,16 @@ class MediaStorageTest(TestCase):
         """Test that media uploads do not send an object ACL."""
         assert self.storage.default_acl is None
 
+    def test_upload_parameters_omit_acl(self) -> None:
+        """The write parameters sent on upload must not include an ACL.
+
+        django-storages only attaches an ``ACL`` when ``default_acl`` is
+        truthy, so a revert to ``"public-read"`` would surface here; read
+        access is controlled by the bucket policy and CloudFront instead.
+        """
+        params = self.storage._get_write_parameters("media/example.png")
+        assert "ACL" not in params
+
     @patch.dict(os.environ, {"ECS_CONTAINER_METADATA_URI_V4": "http://test"})
     @patch("coalition.core.storage.logger")
     def test_init_logs_ecs_v4_metadata(self, mock_logger: Mock) -> None:

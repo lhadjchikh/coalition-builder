@@ -38,7 +38,8 @@ class MediaStorage(DefaultCredentialChainMixin, S3Boto3Storage):
     location = "media"
     file_overwrite = False
     default_acl = None
-    querystring_auth = False  # Don't add auth to URLs since files are public
+    # Reads go through the bucket policy / CloudFront, so URLs need no auth query.
+    querystring_auth = False
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize storage with custom domain if CloudFront is available."""
