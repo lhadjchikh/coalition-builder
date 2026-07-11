@@ -192,6 +192,21 @@ class TestDeploymentEnvironmentValidation:
                 },
             )
 
+    def test_production_alias_is_rejected_in_favor_of_prod(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """'prod' is the canonical stage name; 'production' is not accepted."""
+        with pytest.raises(RuntimeError, match="DEPLOYMENT_ENVIRONMENT"):
+            _generate_settings(
+                tmp_path,
+                {
+                    "DEPLOYMENT_ENVIRONMENT": "production",
+                    "AWS_STORAGE_BUCKET_NAME": "coalition-production-assets-example",
+                    "CLOUDFRONT_DOMAIN": "media.example.cloudfront.net",
+                },
+            )
+
     def test_unmatched_environment_without_bucket_does_not_raise(
         self,
         tmp_path: Path,

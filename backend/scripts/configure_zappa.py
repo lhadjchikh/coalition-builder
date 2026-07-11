@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 DEV_STAGE_NAMES = {"dev"}
-PROD_STAGE_NAMES = {"prod", "production"}
+PROD_STAGE_NAMES = {"prod"}
 STAGING_STAGE_NAMES = {"staging"}
 RECOGNIZED_DEPLOYMENT_ENVIRONMENTS = (
     DEV_STAGE_NAMES | PROD_STAGE_NAMES | STAGING_STAGE_NAMES
