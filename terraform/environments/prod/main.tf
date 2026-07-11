@@ -256,7 +256,6 @@ module "storage" {
   source = "../../modules/storage"
 
   prefix            = var.prefix
-  domain_name       = var.domain_name
   force_destroy     = false
   enable_cloudfront = true
 

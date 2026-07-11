@@ -161,26 +161,13 @@ resource "aws_cloudfront_origin_access_identity" "static_assets" {
 resource "aws_cloudfront_distribution" "static_assets" {
   count = var.enable_cloudfront ? 1 : 0
 
-  # S3 origin for user uploads and media files
+  # S3 origin for media uploads and collected static files
   origin {
     domain_name = aws_s3_bucket.static_assets.bucket_regional_domain_name
     origin_id   = "S3-${aws_s3_bucket.static_assets.id}"
 
     s3_origin_config {
       origin_access_identity = aws_cloudfront_origin_access_identity.static_assets[0].cloudfront_access_identity_path
-    }
-  }
-
-  # Domain origin for Django static files served by WhiteNoise via ALB
-  origin {
-    domain_name = var.domain_name
-    origin_id   = "Django-Static"
-
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "https-only"
-      origin_ssl_protocols   = ["TLSv1.2"]
     }
   }
 
@@ -209,12 +196,13 @@ resource "aws_cloudfront_distribution" "static_assets" {
     max_ttl     = var.s3_cache_max_ttl
   }
 
-  # Cache behavior for Django static files served by WhiteNoise
+  # Cache behavior for Django static files. collectstatic uploads them to the
+  # static/ prefix of the S3 bucket, so /static/* is served from the S3 origin.
   ordered_cache_behavior {
     path_pattern           = "/static/*"
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
-    target_origin_id       = "Django-Static"
+    target_origin_id       = "S3-${aws_s3_bucket.static_assets.id}"
     compress               = true
     viewer_protocol_policy = "redirect-to-https"
 
