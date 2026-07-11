@@ -703,32 +703,33 @@ AWS_S3_SESSION_TOKEN = None
 # This helps when running in ECS/Fargate
 AWS_S3_SIGNATURE_VERSION = "s3v4"
 
-# Use CloudFront domain for generating URLs when available
-# unless USE_S3_DIRECT_URLS is set (for VPC endpoint access in ECS)
+# Use CloudFront domain for generating public URLs when available. When media is
+# served directly from S3, leave custom_domain unset so django-storages can
+# generate authenticated, time-limited URLs for the private bucket.
 USE_S3_DIRECT_URLS = os.getenv("USE_S3_DIRECT_URLS", "false").lower() == "true"
+AWS_S3_DIRECT_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 
 if USE_S3_DIRECT_URLS or not CLOUDFRONT_DOMAIN:
-    # Use S3 URLs directly (works with VPC endpoints)
-    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+    AWS_S3_CUSTOM_DOMAIN = None
 elif CLOUDFRONT_DOMAIN:
     # Use CloudFront for public access
     AWS_S3_CUSTOM_DOMAIN = CLOUDFRONT_DOMAIN
 else:
-    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+    AWS_S3_CUSTOM_DOMAIN = None
 
 # S3 File Settings
 AWS_S3_OBJECT_PARAMETERS = {
     "CacheControl": "max-age=86400",  # Cache for 1 day
 }
 AWS_S3_FILE_OVERWRITE = False  # Don't overwrite files with same name
-AWS_DEFAULT_ACL = "public-read"  # Make uploaded files publicly readable
+AWS_DEFAULT_ACL = None  # Media buckets are private; access uses signed URLs/CloudFront
 AWS_S3_VERIFY_SSL = True
 
 # Media files configuration
 # Use S3 URLs directly when USE_S3_DIRECT_URLS is set (for VPC endpoint access)
 # Otherwise use CloudFront CDN when available for better performance and security
 if USE_S3_DIRECT_URLS or not CLOUDFRONT_DOMAIN:
-    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+    MEDIA_URL = f"https://{AWS_S3_DIRECT_DOMAIN}/media/"
 else:
     MEDIA_URL = f"https://{CLOUDFRONT_DOMAIN}/media/"
 MEDIA_ROOT = "/media/"

@@ -59,3 +59,25 @@ class LambdaStorageSettingsTest(TestCase):
             assert staticfiles_backend == "coalition.core.storage.StaticStorage", (
                 f"Expected StaticStorage for Lambda, got {staticfiles_backend}"
             )
+
+    def test_direct_s3_media_uses_private_signed_url_configuration(self) -> None:
+        """Direct S3 media must not be exposed through an unsigned custom domain."""
+        from coalition.core import settings as settings_module
+
+        with patch.dict(
+            os.environ,
+            {
+                "AWS_STORAGE_BUCKET_NAME": "test-assets",
+                "CLOUDFRONT_DOMAIN": "",
+                "SECRET_KEY": "test-secret-key",
+                "ENVIRONMENT": "test",
+            },
+            clear=False,
+        ):
+            reload(settings_module)
+
+            assert settings_module.AWS_S3_CUSTOM_DOMAIN is None
+            assert settings_module.AWS_DEFAULT_ACL is None
+            assert settings_module.MEDIA_URL == (
+                "https://test-assets.s3.amazonaws.com/media/"
+            )

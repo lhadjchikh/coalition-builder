@@ -95,6 +95,40 @@ class TestProvidedSecretARNs:
         assert settings["prod"]["aws_environment_variables"]["SECRET_KEY"] == arn
 
 
+class TestAssetConfiguration:
+    """Tests for media bucket and CDN environment variables."""
+
+    def test_dev_assets_bucket_uses_provided_name(self, tmp_path: Path) -> None:
+        """The deployed dev stage must use the Terraform-created bucket name."""
+        settings = _generate_settings(
+            tmp_path,
+            {"DEV_ASSETS_BUCKET": "coalition-dev-assets-example"},
+        )
+        assert (
+            settings["dev"]["environment_variables"]["AWS_STORAGE_BUCKET_NAME"]
+            == "coalition-dev-assets-example"
+        )
+
+    def test_cloudfront_domain_is_added_when_configured(self, tmp_path: Path) -> None:
+        """CloudFront must be passed to Django so it emits CDN media URLs."""
+        settings = _generate_settings(
+            tmp_path,
+            {"CLOUDFRONT_DOMAIN": "d111111abcdef8.cloudfront.net"},
+        )
+        assert (
+            settings["base"]["environment_variables"]["CLOUDFRONT_DOMAIN"]
+            == "d111111abcdef8.cloudfront.net"
+        )
+
+    def test_cloudfront_domain_is_omitted_when_unconfigured(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """An empty CDN setting selects authenticated direct-S3 URLs."""
+        settings = _generate_settings(tmp_path)
+        assert "CLOUDFRONT_DOMAIN" not in settings["base"]["environment_variables"]
+
+
 class TestCIValidation:
     """Tests for CI environment validation of required env vars."""
 

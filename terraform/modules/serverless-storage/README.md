@@ -5,8 +5,8 @@ This module creates S3 buckets for serverless/Lambda deployments with automatic 
 ## Features
 
 - **Automatic Environment Separation**: Creates separate buckets for dev, staging, and production
-- **Cost Optimization**: Lifecycle rules for non-production environments
-- **Security**: Different access policies per environment
+- **Cost Optimization**: Lifecycle transitions and incomplete-upload cleanup
+- **Security**: Private buckets with signed S3 URLs or CloudFront access
 - **CDN Support**: Optional CloudFront distributions for staging/production
 - **Zero Configuration**: Works out of the box with sensible defaults
 
@@ -71,7 +71,7 @@ module "serverless_storage" {
 
   project_name                  = "my-project"
   force_destroy_non_production  = true  # Allow destroying dev/staging buckets with content
-  enable_lifecycle_rules        = true  # Auto-cleanup old files in dev/staging
+  enable_lifecycle_rules        = true  # Tier files and clean incomplete uploads
   enable_cloudfront            = true  # Create CDN for staging/production
 
   # Production-specific settings
@@ -80,8 +80,6 @@ module "serverless_storage" {
     "https://www.myapp.com"
   ]
 
-  # Optional IP whitelist for production (leave empty for public access)
-  production_ip_whitelist = []
 }
 ````
 
@@ -90,14 +88,14 @@ module "serverless_storage" {
 ### Development (`coalition-dev-assets`)
 
 - **Versioning**: Disabled (to save costs)
-- **Lifecycle**: 90-day expiration
+- **Lifecycle**: Move current files to Infrequent Access after 30 days; never expire them
 - **CORS**: Allow all origins
 - **Force Destroy**: Yes (easy cleanup)
 
 ### Staging (`coalition-staging-assets`)
 
 - **Versioning**: Enabled
-- **Lifecycle**: 180-day expiration
+- **Lifecycle**: Move current files to Infrequent Access after 30 days; never expire them
 - **CORS**: Allow all origins
 - **CloudFront**: Optional
 - **Force Destroy**: Configurable
@@ -117,11 +115,10 @@ The module includes automatic cost optimization:
 1. **Lifecycle Rules** (non-production):
    - Incomplete uploads cleaned after 7 days
    - Files moved to Infrequent Access after 30 days
-   - Old files deleted (90 days for dev, 180 for staging)
+   - Current media is retained; only noncurrent versions are cleaned up
 
 2. **Intelligent Tiering**:
-   - Development files auto-deleted
-   - Staging files archived
+   - Development and staging files move to lower-cost storage
    - Production files preserved
 
 3. **CloudFront**:

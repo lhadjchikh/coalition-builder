@@ -55,10 +55,10 @@ resource "aws_s3_bucket_versioning" "assets" {
 resource "aws_s3_bucket_public_access_block" "assets" {
   bucket = aws_s3_bucket.assets.id
 
-  block_public_acls       = local.is_prod
-  block_public_policy     = false
-  ignore_public_acls      = local.is_prod
-  restrict_public_buckets = false
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 # CORS configuration
@@ -84,6 +84,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "assets" {
     id     = "cleanup-old-files"
     status = "Enabled"
 
+    filter {}
+
     abort_incomplete_multipart_upload {
       days_after_initiation = 7
     }
@@ -93,43 +95,37 @@ resource "aws_s3_bucket_lifecycle_configuration" "assets" {
       storage_class = "STANDARD_IA"
     }
 
-    expiration {
-      days = var.environment == "dev" ? 90 : 180
-    }
-
     noncurrent_version_expiration {
       noncurrent_days = var.environment == "dev" ? 7 : 30
     }
   }
 }
 
-# Bucket policy for public read access
-resource "aws_s3_bucket_policy" "assets" {
+# Bucket policy for private CloudFront access
+resource "aws_s3_bucket_policy" "assets_cloudfront" {
+  count = var.enable_cloudfront ? 1 : 0
+
   bucket = aws_s3_bucket.assets.id
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-      merge(
-        {
-          Sid       = "PublicReadGetObject"
-          Effect    = "Allow"
-          Principal = "*"
-          Action    = "s3:GetObject"
-          Resource  = "${aws_s3_bucket.assets.arn}/*"
-        },
-        local.is_prod && length(var.ip_whitelist) > 0 ? {
-          Condition = {
-            IpAddress = {
-              "aws:SourceIp" = var.ip_whitelist
-            }
-          }
-        } : {}
-      )
+      {
+        Sid    = "AllowCloudFrontAccess"
+        Effect = "Allow"
+        Principal = {
+          AWS = aws_cloudfront_origin_access_identity.cdn[0].iam_arn
+        }
+        Action   = "s3:GetObject"
+        Resource = "${aws_s3_bucket.assets.arn}/*"
+      }
     ]
   })
 
-  depends_on = [aws_s3_bucket_public_access_block.assets]
+  depends_on = [
+    aws_s3_bucket_public_access_block.assets,
+    aws_cloudfront_origin_access_identity.cdn,
+  ]
 }
 
 # CloudFront distribution (optional)
