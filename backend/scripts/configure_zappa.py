@@ -58,15 +58,15 @@ def get_stage_value(
     return get_env_or_default(legacy_key, default)
 
 
-def add_stage_cloudfront_domain(
+def with_stage_cloudfront_domain(
     environment_variables: dict[str, str],
     deployment_environment: str,
     stage_names: set[str],
     cloudfront_domain: str,
 ) -> dict[str, str]:
-    """Add CloudFront only to the selected stage when it is configured."""
+    """Return the env vars with CloudFront added only for the selected stage."""
     if deployment_environment in stage_names and cloudfront_domain:
-        environment_variables["CLOUDFRONT_DOMAIN"] = cloudfront_domain
+        return {**environment_variables, "CLOUDFRONT_DOMAIN": cloudfront_domain}
     return environment_variables
 
 
@@ -176,7 +176,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         dev_docker_image = "public.ecr.aws/lambda/python:3.13"
         production_docker_image = "public.ecr.aws/lambda/python:3.13"
 
-    dev_environment_variables = add_stage_cloudfront_domain(
+    dev_environment_variables = with_stage_cloudfront_domain(
         {
             "ENVIRONMENT": "dev",
             "DEBUG": "true",
@@ -187,7 +187,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         DEV_STAGE_NAMES,
         cloudfront_domain,
     )
-    production_environment_variables = add_stage_cloudfront_domain(
+    production_environment_variables = with_stage_cloudfront_domain(
         {
             "ENVIRONMENT": "production",
             "DEBUG": "false",
@@ -309,7 +309,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         else:
             staging_docker_image = "public.ecr.aws/lambda/python:3.13"
 
-        staging_environment_variables = add_stage_cloudfront_domain(
+        staging_environment_variables = with_stage_cloudfront_domain(
             {
                 "ENVIRONMENT": "staging",
                 "DEBUG": "false",
