@@ -266,6 +266,44 @@ class TestDeploymentEnvironmentValidation:
         )
         assert "CLOUDFRONT_DOMAIN" not in settings["prod"]["environment_variables"]
 
+    def test_staging_without_enable_staging_raises(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Selecting staging while it is off would silently drop the bucket.
+
+        ``staging`` is a real stage name, but the staging stage is only
+        generated when ``ENABLE_STAGING=true``. Selecting it while off routes
+        the bucket to neither dev nor prod and emits no staging stage, so the
+        provided bucket must be rejected rather than silently ignored.
+        """
+        with pytest.raises(RuntimeError, match="DEPLOYMENT_ENVIRONMENT"):
+            _generate_settings(
+                tmp_path,
+                {
+                    "DEPLOYMENT_ENVIRONMENT": "staging",
+                    "AWS_STORAGE_BUCKET_NAME": "coalition-staging-assets-example",
+                },
+            )
+
+    def test_staging_with_enable_staging_uses_bucket(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """With staging enabled, the staging stage uses the scoped bucket."""
+        settings = _generate_settings(
+            tmp_path,
+            {
+                "ENABLE_STAGING": "true",
+                "DEPLOYMENT_ENVIRONMENT": "staging",
+                "AWS_STORAGE_BUCKET_NAME": "coalition-staging-assets-example",
+            },
+        )
+        assert (
+            settings["staging"]["environment_variables"]["AWS_STORAGE_BUCKET_NAME"]
+            == "coalition-staging-assets-example"
+        )
+
 
 class TestCIValidation:
     """Tests for CI environment validation of required env vars."""

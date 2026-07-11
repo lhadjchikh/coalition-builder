@@ -12,9 +12,6 @@ from pathlib import Path
 DEV_STAGE_NAMES = {"dev"}
 PROD_STAGE_NAMES = {"prod"}
 STAGING_STAGE_NAMES = {"staging"}
-RECOGNIZED_DEPLOYMENT_ENVIRONMENTS = (
-    DEV_STAGE_NAMES | PROD_STAGE_NAMES | STAGING_STAGE_NAMES
-)
 
 
 def get_env_or_default(key: str, default: str = "") -> str:
@@ -26,17 +23,23 @@ def validate_deployment_environment(
     deployment_environment: str,
     selected_assets_bucket: str,
     cloudfront_domain: str,
+    active_stage_names: set[str],
 ) -> None:
-    """Fail fast when the selected deployment stage is misconfigured."""
+    """Fail fast when the selected deployment stage is misconfigured.
+
+    ``active_stage_names`` are the stages actually generated for this run
+    (staging is present only when enabled), so selecting a stage outside that
+    set would route ``AWS_STORAGE_BUCKET_NAME`` to no generated stage.
+    """
     if (
         deployment_environment
         and selected_assets_bucket
-        and deployment_environment not in RECOGNIZED_DEPLOYMENT_ENVIRONMENTS
+        and deployment_environment not in active_stage_names
     ):
         raise RuntimeError(
-            f"DEPLOYMENT_ENVIRONMENT={deployment_environment!r} matches no known "
-            "stage, so AWS_STORAGE_BUCKET_NAME would be silently ignored. Expected "
-            f"one of: {sorted(RECOGNIZED_DEPLOYMENT_ENVIRONMENTS)}.",
+            f"DEPLOYMENT_ENVIRONMENT={deployment_environment!r} matches no "
+            "generated stage, so AWS_STORAGE_BUCKET_NAME would be silently "
+            f"ignored. Expected one of: {sorted(active_stage_names)}.",
         )
     if deployment_environment in PROD_STAGE_NAMES and not cloudfront_domain:
         raise RuntimeError(
@@ -99,10 +102,14 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
     )
     selected_assets_bucket = get_env_or_default("AWS_STORAGE_BUCKET_NAME")
     cloudfront_domain = get_env_or_default("CLOUDFRONT_DOMAIN")
+    active_stage_names = DEV_STAGE_NAMES | PROD_STAGE_NAMES
+    if enable_staging:
+        active_stage_names = active_stage_names | STAGING_STAGE_NAMES
     validate_deployment_environment(
         deployment_environment,
         selected_assets_bucket,
         cloudfront_domain,
+        active_stage_names,
     )
     dev_assets_bucket = get_stage_value(
         deployment_environment,
