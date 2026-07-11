@@ -119,6 +119,7 @@ class TestAssetConfiguration:
             {
                 "DEPLOYMENT_ENVIRONMENT": "prod",
                 "AWS_STORAGE_BUCKET_NAME": "coalition-production-assets-example",
+                "CLOUDFRONT_DOMAIN": "media.example.cloudfront.net",
             },
         )
         assert (
@@ -172,6 +173,83 @@ class TestAssetConfiguration:
             settings["dev"]["environment_variables"]["AWS_STORAGE_BUCKET_NAME"]
             == "legacy-dev-assets"
         )
+
+
+class TestDeploymentEnvironmentValidation:
+    """Tests that misconfigured deployment stages fail fast instead of silently."""
+
+    def test_unmatched_environment_with_bucket_raises(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """An unrecognized DEPLOYMENT_ENVIRONMENT must not silently drop the bucket."""
+        with pytest.raises(RuntimeError, match="DEPLOYMENT_ENVIRONMENT"):
+            _generate_settings(
+                tmp_path,
+                {
+                    "DEPLOYMENT_ENVIRONMENT": "development",
+                    "AWS_STORAGE_BUCKET_NAME": "coalition-dev-assets-example",
+                },
+            )
+
+    def test_unmatched_environment_without_bucket_does_not_raise(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """With no environment-scoped bucket set, nothing is dropped, so no error."""
+        settings = _generate_settings(
+            tmp_path,
+            {"DEPLOYMENT_ENVIRONMENT": "development"},
+        )
+        assert (
+            settings["dev"]["environment_variables"]["AWS_STORAGE_BUCKET_NAME"]
+            == "coalition-dev-assets"
+        )
+
+    def test_environment_is_whitespace_normalized(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """A stray trailing space still selects the intended stage bucket."""
+        settings = _generate_settings(
+            tmp_path,
+            {
+                "DEPLOYMENT_ENVIRONMENT": "dev ",
+                "AWS_STORAGE_BUCKET_NAME": "coalition-dev-assets-example",
+            },
+        )
+        assert (
+            settings["dev"]["environment_variables"]["AWS_STORAGE_BUCKET_NAME"]
+            == "coalition-dev-assets-example"
+        )
+
+    def test_prod_without_cloudfront_domain_raises(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Deploying prod without a CDN domain must fail at generation time."""
+        with pytest.raises(RuntimeError, match="CLOUDFRONT_DOMAIN"):
+            _generate_settings(
+                tmp_path,
+                {
+                    "DEPLOYMENT_ENVIRONMENT": "prod",
+                    "AWS_STORAGE_BUCKET_NAME": "coalition-production-assets-example",
+                },
+            )
+
+    def test_non_prod_deployment_does_not_require_cloudfront_domain(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Deploying dev builds the prod stage without demanding a CDN domain."""
+        settings = _generate_settings(
+            tmp_path,
+            {
+                "DEPLOYMENT_ENVIRONMENT": "dev",
+                "AWS_STORAGE_BUCKET_NAME": "coalition-dev-assets-example",
+            },
+        )
+        assert "CLOUDFRONT_DOMAIN" not in settings["prod"]["environment_variables"]
 
 
 class TestCIValidation:

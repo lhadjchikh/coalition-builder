@@ -9,10 +9,40 @@ import os
 import sys
 from pathlib import Path
 
+DEV_STAGE_NAMES = {"dev"}
+PROD_STAGE_NAMES = {"prod", "production"}
+STAGING_STAGE_NAMES = {"staging"}
+RECOGNIZED_DEPLOYMENT_ENVIRONMENTS = (
+    DEV_STAGE_NAMES | PROD_STAGE_NAMES | STAGING_STAGE_NAMES
+)
+
 
 def get_env_or_default(key: str, default: str = "") -> str:
     """Get environment variable or return default value."""
     return os.environ.get(key, default)
+
+
+def validate_deployment_environment(
+    deployment_environment: str,
+    selected_assets_bucket: str,
+    cloudfront_domain: str,
+) -> None:
+    """Fail fast when the selected deployment stage is misconfigured."""
+    if (
+        deployment_environment
+        and selected_assets_bucket
+        and deployment_environment not in RECOGNIZED_DEPLOYMENT_ENVIRONMENTS
+    ):
+        raise RuntimeError(
+            f"DEPLOYMENT_ENVIRONMENT={deployment_environment!r} matches no known "
+            "stage, so AWS_STORAGE_BUCKET_NAME would be silently ignored. Expected "
+            f"one of: {sorted(RECOGNIZED_DEPLOYMENT_ENVIRONMENTS)}.",
+        )
+    if deployment_environment in PROD_STAGE_NAMES and not cloudfront_domain:
+        raise RuntimeError(
+            "CLOUDFRONT_DOMAIN is required when deploying prod so Django serves "
+            "media and static files over the CDN instead of direct S3 URLs.",
+        )
 
 
 def get_stage_value(
@@ -64,19 +94,26 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
 
     # GitHub environments use the same variable name with an environment-specific
     # value. Legacy stage-specific variables remain as local-development fallbacks.
-    deployment_environment = get_env_or_default("DEPLOYMENT_ENVIRONMENT").lower()
+    deployment_environment = (
+        get_env_or_default("DEPLOYMENT_ENVIRONMENT").strip().lower()
+    )
     selected_assets_bucket = get_env_or_default("AWS_STORAGE_BUCKET_NAME")
     cloudfront_domain = get_env_or_default("CLOUDFRONT_DOMAIN")
+    validate_deployment_environment(
+        deployment_environment,
+        selected_assets_bucket,
+        cloudfront_domain,
+    )
     dev_assets_bucket = get_stage_value(
         deployment_environment,
-        {"dev"},
+        DEV_STAGE_NAMES,
         selected_assets_bucket,
         "DEV_ASSETS_BUCKET",
         "coalition-dev-assets",
     )
     production_assets_bucket = get_stage_value(
         deployment_environment,
-        {"prod", "production"},
+        PROD_STAGE_NAMES,
         selected_assets_bucket,
         "PRODUCTION_ASSETS_BUCKET",
         "coalition-production-assets",
@@ -147,7 +184,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             "AWS_STORAGE_BUCKET_NAME": dev_assets_bucket,
         },
         deployment_environment,
-        {"dev"},
+        DEV_STAGE_NAMES,
         cloudfront_domain,
     )
     production_environment_variables = add_stage_cloudfront_domain(
@@ -158,7 +195,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             "AWS_STORAGE_BUCKET_NAME": production_assets_bucket,
         },
         deployment_environment,
-        {"prod", "production"},
+        PROD_STAGE_NAMES,
         cloudfront_domain,
     )
 
@@ -258,7 +295,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
     if enable_staging:
         staging_assets_bucket = get_stage_value(
             deployment_environment,
-            {"staging"},
+            STAGING_STAGE_NAMES,
             selected_assets_bucket,
             "STAGING_ASSETS_BUCKET",
             "coalition-staging-assets",
@@ -280,7 +317,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
                 "AWS_STORAGE_BUCKET_NAME": staging_assets_bucket,
             },
             deployment_environment,
-            {"staging"},
+            STAGING_STAGE_NAMES,
             cloudfront_domain,
         )
 
