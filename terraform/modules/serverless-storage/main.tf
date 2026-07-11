@@ -90,11 +90,6 @@ resource "aws_s3_bucket_lifecycle_configuration" "assets" {
       days_after_initiation = 7
     }
 
-    transition {
-      days          = 30
-      storage_class = "STANDARD_IA"
-    }
-
     noncurrent_version_expiration {
       noncurrent_days = var.environment == "dev" ? 7 : 30
     }

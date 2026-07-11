@@ -5,7 +5,7 @@ This module creates S3 buckets for serverless/Lambda deployments with automatic 
 ## Features
 
 - **Automatic Environment Separation**: Creates separate buckets for dev, staging, and production
-- **Cost Optimization**: Lifecycle transitions and incomplete-upload cleanup
+- **Cost Optimization**: Incomplete-upload and noncurrent-version cleanup
 - **Security**: Different access policies per environment
 - **CDN Support**: Optional CloudFront distributions for staging/production
 - **Zero Configuration**: Works out of the box with sensible defaults
@@ -71,7 +71,7 @@ module "serverless_storage" {
 
   project_name                  = "my-project"
   force_destroy_non_production  = true  # Allow destroying dev/staging buckets with content
-  enable_lifecycle_rules        = true  # Tier files and clean incomplete uploads
+  enable_lifecycle_rules        = true  # Clean incomplete uploads and old versions
   enable_cloudfront            = true  # Create CDN for staging/production
 
   # Production-specific settings
@@ -90,14 +90,14 @@ module "serverless_storage" {
 ### Development (`coalition-dev-assets`)
 
 - **Versioning**: Disabled (to save costs)
-- **Lifecycle**: Move current files to Infrequent Access after 30 days; never expire them
+- **Lifecycle**: Keep current files in S3 Standard; clean incomplete uploads and old versions
 - **CORS**: Allow all origins
 - **Force Destroy**: Yes (easy cleanup)
 
 ### Staging (`coalition-staging-assets`)
 
 - **Versioning**: Enabled
-- **Lifecycle**: Move current files to Infrequent Access after 30 days; never expire them
+- **Lifecycle**: Keep current files in S3 Standard; clean incomplete uploads and old versions
 - **CORS**: Allow all origins
 - **CloudFront**: Optional
 - **Force Destroy**: Configurable
@@ -116,14 +116,10 @@ The module includes automatic cost optimization:
 
 1. **Lifecycle Rules** (non-production):
    - Incomplete uploads cleaned after 7 days
-   - Files moved to Infrequent Access after 30 days
-   - Current media is retained; only noncurrent versions are cleaned up
+   - Current media remains in S3 Standard and is retained
+   - Noncurrent versions are cleaned up
 
-2. **Intelligent Tiering**:
-   - Development and staging files move to lower-cost storage
-   - Production files preserved
-
-3. **CloudFront**:
+2. **CloudFront**:
    - Optional CDN only for staging/production
    - Different price classes per environment
 
