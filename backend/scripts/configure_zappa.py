@@ -37,14 +37,22 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
     # Check if staging environment is enabled (off by default)
     enable_staging = get_env_or_default("ENABLE_STAGING", "false").lower() == "true"
 
-    # Get asset bucket names
-    dev_assets_bucket = get_env_or_default(
-        "DEV_ASSETS_BUCKET",
-        "coalition-dev-assets",
+    # GitHub environments use the same variable name with an environment-specific
+    # value. Legacy stage-specific variables remain as local-development fallbacks.
+    deployment_environment = get_env_or_default("DEPLOYMENT_ENVIRONMENT").lower()
+    selected_assets_bucket = get_env_or_default("AWS_STORAGE_BUCKET_NAME")
+    dev_assets_bucket = (
+        selected_assets_bucket
+        if deployment_environment == "dev" and selected_assets_bucket
+        else get_env_or_default("DEV_ASSETS_BUCKET", "coalition-dev-assets")
     )
-    production_assets_bucket = get_env_or_default(
-        "PRODUCTION_ASSETS_BUCKET",
-        "coalition-production-assets",
+    production_assets_bucket = (
+        selected_assets_bucket
+        if deployment_environment in {"prod", "production"} and selected_assets_bucket
+        else get_env_or_default(
+            "PRODUCTION_ASSETS_BUCKET",
+            "coalition-production-assets",
+        )
     )
 
     # Get database names
@@ -208,9 +216,13 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
 
     # Optionally include staging (off by default)
     if enable_staging:
-        staging_assets_bucket = get_env_or_default(
-            "STAGING_ASSETS_BUCKET",
-            "coalition-staging-assets",
+        staging_assets_bucket = (
+            selected_assets_bucket
+            if deployment_environment == "staging" and selected_assets_bucket
+            else get_env_or_default(
+                "STAGING_ASSETS_BUCKET",
+                "coalition-staging-assets",
+            )
         )
         staging_db_name = get_env_or_default(
             "STAGING_DB_NAME",

@@ -80,10 +80,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate AWS Account ID
+      - name: Validate required configuration
         run: |
           if [ -z "${{ vars.AWS_ACCOUNT_ID }}" ]; then
             echo "::error::AWS_ACCOUNT_ID variable is not set in the '${{ needs.determine-environment.outputs.environment }}' GitHub environment"
+            exit 1
+          fi
+          if [ -z "${{ vars.AWS_STORAGE_BUCKET_NAME }}" ]; then
+            echo "::error::AWS_STORAGE_BUCKET_NAME variable is not set in the '${{ needs.determine-environment.outputs.environment }}' GitHub environment"
             exit 1
           fi
 
@@ -118,8 +122,8 @@ jobs:
           AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
           AWS_REGION: us-east-1
           ZAPPA_S3_BUCKET: ${{ vars.ZAPPA_S3_BUCKET }}
-          DEV_ASSETS_BUCKET: ${{ vars.DEV_ASSETS_BUCKET }}
-          PRODUCTION_ASSETS_BUCKET: ${{ vars.PRODUCTION_ASSETS_BUCKET }}
+          DEPLOYMENT_ENVIRONMENT: ${{ needs.determine-environment.outputs.environment }}
+          AWS_STORAGE_BUCKET_NAME: ${{ vars.AWS_STORAGE_BUCKET_NAME }}
           USE_CUSTOM_DOCKER: true
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           VPC_SUBNET_IDS: ${{ vars.VPC_SUBNET_IDS }}

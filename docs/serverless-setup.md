@@ -17,11 +17,10 @@ Export these environment variables before running the configuration:
 export AWS_ACCOUNT_ID="123456789012"
 export AWS_REGION="us-east-1"
 
-# S3 Buckets (get these from Terraform output)
+# S3 bucket for the environment being deployed (get this from Terraform output)
 export ZAPPA_DEPLOYMENT_BUCKET="coalition-zappa-deployments-abc123"
-export DEV_ASSETS_BUCKET="coalition-dev-assets-abc123"
-export STAGING_ASSETS_BUCKET="coalition-staging-assets-abc123"
-export PRODUCTION_ASSETS_BUCKET="coalition-production-assets-abc123"
+export DEPLOYMENT_ENVIRONMENT="dev"
+export AWS_STORAGE_BUCKET_NAME="coalition-dev-assets-abc123"
 
 # Optional - Database names (defaults shown)
 export DEV_DB_NAME="coalition_dev"
@@ -71,9 +70,7 @@ For CI/CD, add these as GitHub Secrets:
 ### Required Variables
 
 - `ZAPPA_DEPLOYMENT_BUCKET`
-- `DEV_ASSETS_BUCKET`
-- `STAGING_ASSETS_BUCKET`
-- `PRODUCTION_ASSETS_BUCKET`
+- `AWS_STORAGE_BUCKET_NAME` (set separately in each GitHub Environment)
 
 ### Optional Variables
 
@@ -114,7 +111,8 @@ Use these bucket names in your environment variables.
 # Minimal setup - uses public Lambda Python image
 export AWS_ACCOUNT_ID="123456789012"
 export ZAPPA_DEPLOYMENT_BUCKET="my-zappa-bucket"
-export DEV_ASSETS_BUCKET="my-dev-assets"
+export DEPLOYMENT_ENVIRONMENT="dev"
+export AWS_STORAGE_BUCKET_NAME="my-dev-assets"
 ```
 
 ### Advanced Configuration (Custom Docker + VPC)
@@ -176,7 +174,8 @@ cd coalition-builder
 cd terraform
 terraform init
 terraform apply -target=module.serverless_storage
-export DEV_ASSETS_BUCKET=$(terraform output -json serverless_bucket_names | jq -r '.dev')
+export DEPLOYMENT_ENVIRONMENT=dev
+export AWS_STORAGE_BUCKET_NAME=$(terraform output -json serverless_bucket_names | jq -r '.dev')
 
 # Configure Zappa
 cd ../backend

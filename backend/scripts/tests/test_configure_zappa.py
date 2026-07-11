@@ -98,15 +98,46 @@ class TestProvidedSecretARNs:
 class TestAssetConfiguration:
     """Tests for media bucket environment variables."""
 
-    def test_dev_assets_bucket_uses_provided_name(self, tmp_path: Path) -> None:
-        """The deployed dev stage must use the Terraform-created bucket name."""
+    def test_dev_uses_environment_scoped_bucket_name(self, tmp_path: Path) -> None:
+        """The selected dev stage uses the environment-scoped bucket name."""
         settings = _generate_settings(
             tmp_path,
-            {"DEV_ASSETS_BUCKET": "coalition-dev-assets-example"},
+            {
+                "DEPLOYMENT_ENVIRONMENT": "dev",
+                "AWS_STORAGE_BUCKET_NAME": "coalition-dev-assets-example",
+            },
         )
         assert (
             settings["dev"]["environment_variables"]["AWS_STORAGE_BUCKET_NAME"]
             == "coalition-dev-assets-example"
+        )
+
+    def test_prod_uses_environment_scoped_bucket_name(self, tmp_path: Path) -> None:
+        """The selected prod stage uses the environment-scoped bucket name."""
+        settings = _generate_settings(
+            tmp_path,
+            {
+                "DEPLOYMENT_ENVIRONMENT": "prod",
+                "AWS_STORAGE_BUCKET_NAME": "coalition-production-assets-example",
+            },
+        )
+        assert (
+            settings["prod"]["environment_variables"]["AWS_STORAGE_BUCKET_NAME"]
+            == "coalition-production-assets-example"
+        )
+
+    def test_legacy_stage_specific_bucket_remains_supported(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Local configuration can still use the legacy stage-specific input."""
+        settings = _generate_settings(
+            tmp_path,
+            {"DEV_ASSETS_BUCKET": "legacy-dev-assets"},
+        )
+        assert (
+            settings["dev"]["environment_variables"]["AWS_STORAGE_BUCKET_NAME"]
+            == "legacy-dev-assets"
         )
 
 
