@@ -346,8 +346,7 @@ The backend (Django) generates image URLs based on its configuration:
 
 2. **When using S3 directly**:
    - Backend has `USE_S3_DIRECT_URLS=true` OR no `CLOUDFRONT_DOMAIN` set
-   - The bucket remains private and Django generates time-limited, signed S3 URLs
-   - Image URLs use the bucket hostname and include `X-Amz-*` authentication parameters
+   - Image URLs look like: `https://coalition-static-assets-a4853294.s3.amazonaws.com/media/images/logo.jpg`
    - Next.js needs `AWS_STORAGE_BUCKET_NAME` in build environment to allow these URLs
 
 **Important Build-Time Requirements:**

@@ -87,7 +87,6 @@ jobs:
           ZAPPA_S3_BUCKET: ${{ vars.ZAPPA_S3_BUCKET }}
           DEV_ASSETS_BUCKET: ${{ vars.AWS_STORAGE_BUCKET_NAME }}
           PRODUCTION_ASSETS_BUCKET: ${{ vars.PRODUCTION_ASSETS_BUCKET }}
-          CLOUDFRONT_DOMAIN: ${{ vars.CLOUDFRONT_DOMAIN }}
           USE_CUSTOM_DOCKER: true
           ECR_REGISTRY: ${{ steps.env.outputs.ecr_registry }}
           VPC_SUBNET_IDS: ${{ vars.VPC_SUBNET_IDS }}

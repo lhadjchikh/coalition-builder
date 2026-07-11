@@ -24,20 +24,8 @@ class MediaStorageTest(TestCase):
         assert not self.storage.file_overwrite
 
     def test_storage_default_acl(self) -> None:
-        """Test that media objects do not receive public ACLs."""
-        assert self.storage.default_acl is None
-
-    def test_direct_s3_urls_are_signed(self) -> None:
-        """Private S3 media URLs must include request authentication."""
-        assert self.storage.querystring_auth is True
-
-    @override_settings(AWS_S3_CUSTOM_DOMAIN="media.example.cloudfront.net")
-    def test_cloudfront_urls_do_not_include_s3_authentication(self) -> None:
-        """A configured CDN remains a clean public media URL."""
-        storage = MediaStorage()
-        assert storage.url("images/example.jpg") == (
-            "https://media.example.cloudfront.net/media/images/example.jpg"
-        )
+        """Test that default ACL is public-read."""
+        assert self.storage.default_acl == "public-read"
 
     @patch.dict(os.environ, {"ECS_CONTAINER_METADATA_URI_V4": "http://test"})
     @patch("coalition.core.storage.logger")

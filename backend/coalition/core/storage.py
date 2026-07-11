@@ -31,15 +31,14 @@ class MediaStorage(DefaultCredentialChainMixin, S3Boto3Storage):
     """
     Custom S3 storage for media files.
 
-    CloudFront URLs are public when a CDN is configured. Direct S3 URLs are
-    signed so private test/development buckets remain readable without making
-    their contents public.
+    This ensures that all generated URLs use CloudFront domain when available,
+    even in the Django admin immediately after upload.
     """
 
     location = "media"
     file_overwrite = False
-    default_acl = None
-    querystring_auth = True
+    default_acl = "public-read"
+    querystring_auth = False  # Don't add auth to URLs since files are public
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize storage with custom domain if CloudFront is available."""

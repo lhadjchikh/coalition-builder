@@ -55,10 +55,10 @@ resource "aws_s3_bucket_versioning" "assets" {
 resource "aws_s3_bucket_public_access_block" "assets" {
   bucket = aws_s3_bucket.assets.id
 
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  block_public_acls       = local.is_prod
+  block_public_policy     = false
+  ignore_public_acls      = local.is_prod
+  restrict_public_buckets = false
 }
 
 # CORS configuration
@@ -101,31 +101,33 @@ resource "aws_s3_bucket_lifecycle_configuration" "assets" {
   }
 }
 
-# Bucket policy for private CloudFront access
-resource "aws_s3_bucket_policy" "assets_cloudfront" {
-  count = var.enable_cloudfront ? 1 : 0
-
+# Bucket policy for public read access
+resource "aws_s3_bucket_policy" "assets" {
   bucket = aws_s3_bucket.assets.id
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-      {
-        Sid    = "AllowCloudFrontAccess"
-        Effect = "Allow"
-        Principal = {
-          AWS = aws_cloudfront_origin_access_identity.cdn[0].iam_arn
-        }
-        Action   = "s3:GetObject"
-        Resource = "${aws_s3_bucket.assets.arn}/*"
-      }
+      merge(
+        {
+          Sid       = "PublicReadGetObject"
+          Effect    = "Allow"
+          Principal = "*"
+          Action    = "s3:GetObject"
+          Resource  = "${aws_s3_bucket.assets.arn}/*"
+        },
+        local.is_prod && length(var.ip_whitelist) > 0 ? {
+          Condition = {
+            IpAddress = {
+              "aws:SourceIp" = var.ip_whitelist
+            }
+          }
+        } : {}
+      )
     ]
   })
 
-  depends_on = [
-    aws_s3_bucket_public_access_block.assets,
-    aws_cloudfront_origin_access_identity.cdn,
-  ]
+  depends_on = [aws_s3_bucket_public_access_block.assets]
 }
 
 # CloudFront distribution (optional)

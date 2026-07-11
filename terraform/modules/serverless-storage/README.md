@@ -6,7 +6,7 @@ This module creates S3 buckets for serverless/Lambda deployments with automatic 
 
 - **Automatic Environment Separation**: Creates separate buckets for dev, staging, and production
 - **Cost Optimization**: Lifecycle transitions and incomplete-upload cleanup
-- **Security**: Private buckets with signed S3 URLs or CloudFront access
+- **Security**: Different access policies per environment
 - **CDN Support**: Optional CloudFront distributions for staging/production
 - **Zero Configuration**: Works out of the box with sensible defaults
 
@@ -80,6 +80,8 @@ module "serverless_storage" {
     "https://www.myapp.com"
   ]
 
+  # Optional IP whitelist for production (leave empty for public access)
+  production_ip_whitelist = []
 }
 ````
 

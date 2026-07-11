@@ -46,7 +46,6 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         "PRODUCTION_ASSETS_BUCKET",
         "coalition-production-assets",
     )
-    cloudfront_domain = get_env_or_default("CLOUDFRONT_DOMAIN")
 
     # Get database names
     dev_db_name = get_env_or_default("DEV_DB_NAME", "coalition_dev")
@@ -106,17 +105,6 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         production_docker_image = "public.ecr.aws/lambda/python:3.13"
 
     # Build the configuration
-    base_environment_variables = {
-        "USE_S3": "true",
-        "IS_LAMBDA": "true",
-        "USE_GEODJANGO": "true",
-        "GDAL_DATA": "/opt/share/gdal",
-        "PROJ_LIB": "/opt/share/proj",
-        "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
-    }
-    if cloudfront_domain:
-        base_environment_variables["CLOUDFRONT_DOMAIN"] = cloudfront_domain
-
     settings: dict[str, dict] = {
         "base": {
             "aws_region": aws_region,
@@ -133,7 +121,14 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             "timeout_seconds": 30,
             "slim_handler": False,
             "use_precompiled_packages": False,
-            "environment_variables": base_environment_variables,
+            "environment_variables": {
+                "USE_S3": "true",
+                "IS_LAMBDA": "true",
+                "USE_GEODJANGO": "true",
+                "GDAL_DATA": "/opt/share/gdal",
+                "PROJ_LIB": "/opt/share/proj",
+                "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
+            },
             "exclude": [
                 "*.gz",
                 "*.rar",

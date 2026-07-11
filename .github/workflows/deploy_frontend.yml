@@ -111,7 +111,6 @@ jobs:
           NEXT_PUBLIC_SITE_URL: ${{ steps.api.outputs.site_url }}
           NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: ${{ vars.GOOGLE_ANALYTICS_ID }}
           AWS_STORAGE_BUCKET_NAME: ${{ vars.AWS_STORAGE_BUCKET_NAME }}
-          CLOUDFRONT_DOMAIN: ${{ vars.CLOUDFRONT_DOMAIN }}
 
       - name: Deploy to Vercel
         id: deploy
