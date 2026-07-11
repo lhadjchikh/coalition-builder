@@ -37,7 +37,7 @@ class MediaStorage(DefaultCredentialChainMixin, S3Boto3Storage):
 
     location = "media"
     file_overwrite = False
-    default_acl = "public-read"
+    default_acl = None
     querystring_auth = False  # Don't add auth to URLs since files are public
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:

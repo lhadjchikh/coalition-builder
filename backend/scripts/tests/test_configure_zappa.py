@@ -126,6 +126,39 @@ class TestAssetConfiguration:
             == "coalition-production-assets-example"
         )
 
+    def test_prod_uses_environment_scoped_cloudfront_domain(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """The selected prod stage receives its CloudFront media domain."""
+        settings = _generate_settings(
+            tmp_path,
+            {
+                "DEPLOYMENT_ENVIRONMENT": "prod",
+                "AWS_STORAGE_BUCKET_NAME": "production-assets",
+                "CLOUDFRONT_DOMAIN": "media.example.cloudfront.net",
+            },
+        )
+        assert (
+            settings["prod"]["environment_variables"]["CLOUDFRONT_DOMAIN"]
+            == "media.example.cloudfront.net"
+        )
+        assert "CLOUDFRONT_DOMAIN" not in settings["dev"]["environment_variables"]
+
+    def test_dev_omits_cloudfront_domain_when_unconfigured(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Direct-S3 dev deployments do not receive an empty CDN setting."""
+        settings = _generate_settings(
+            tmp_path,
+            {
+                "DEPLOYMENT_ENVIRONMENT": "dev",
+                "AWS_STORAGE_BUCKET_NAME": "dev-assets",
+            },
+        )
+        assert "CLOUDFRONT_DOMAIN" not in settings["dev"]["environment_variables"]
+
     def test_legacy_stage_specific_bucket_remains_supported(
         self,
         tmp_path: Path,

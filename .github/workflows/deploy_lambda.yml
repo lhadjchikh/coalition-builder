@@ -42,6 +42,11 @@ jobs:
             echo "::error::AWS_STORAGE_BUCKET_NAME variable is not set in the GitHub environment"
             exit 1
           fi
+          DEPLOYMENT_ENVIRONMENT="${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || 'dev' }}"
+          if [ "$DEPLOYMENT_ENVIRONMENT" = "prod" ] && [ -z "${{ vars.CLOUDFRONT_DOMAIN }}" ]; then
+            echo "::error::CLOUDFRONT_DOMAIN variable is not set in the prod GitHub environment"
+            exit 1
+          fi
 
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
@@ -91,6 +96,7 @@ jobs:
           ZAPPA_S3_BUCKET: ${{ vars.ZAPPA_S3_BUCKET }}
           DEPLOYMENT_ENVIRONMENT: ${{ steps.env.outputs.environment }}
           AWS_STORAGE_BUCKET_NAME: ${{ vars.AWS_STORAGE_BUCKET_NAME }}
+          CLOUDFRONT_DOMAIN: ${{ vars.CLOUDFRONT_DOMAIN }}
           USE_CUSTOM_DOCKER: true
           ECR_REGISTRY: ${{ steps.env.outputs.ecr_registry }}
           VPC_SUBNET_IDS: ${{ vars.VPC_SUBNET_IDS }}
