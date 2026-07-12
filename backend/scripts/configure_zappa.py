@@ -9,10 +9,68 @@ import os
 import sys
 from pathlib import Path
 
+DEV_STAGE_NAMES = {"dev"}
+PROD_STAGE_NAMES = {"prod"}
+STAGING_STAGE_NAMES = {"staging"}
+
 
 def get_env_or_default(key: str, default: str = "") -> str:
     """Get environment variable or return default value."""
     return os.environ.get(key, default)
+
+
+def validate_deployment_environment(
+    deployment_environment: str,
+    selected_assets_bucket: str,
+    cloudfront_domain: str,
+    active_stage_names: set[str],
+) -> None:
+    """Fail fast when the selected deployment stage is misconfigured.
+
+    ``active_stage_names`` are the stages actually generated for this run
+    (staging is present only when enabled), so selecting a stage outside that
+    set would route ``AWS_STORAGE_BUCKET_NAME`` to no generated stage.
+    """
+    if (
+        deployment_environment
+        and selected_assets_bucket
+        and deployment_environment not in active_stage_names
+    ):
+        raise RuntimeError(
+            f"DEPLOYMENT_ENVIRONMENT={deployment_environment!r} matches no "
+            "generated stage, so AWS_STORAGE_BUCKET_NAME would be silently "
+            f"ignored. Expected one of: {sorted(active_stage_names)}.",
+        )
+    if deployment_environment in PROD_STAGE_NAMES and not cloudfront_domain:
+        raise RuntimeError(
+            "CLOUDFRONT_DOMAIN is required when deploying prod so Django serves "
+            "media and static files over the CDN instead of direct S3 URLs.",
+        )
+
+
+def get_stage_value(
+    deployment_environment: str,
+    stage_names: set[str],
+    selected_value: str,
+    legacy_key: str,
+    default: str,
+) -> str:
+    """Use the environment-scoped value for the selected deployment stage."""
+    if deployment_environment in stage_names and selected_value:
+        return selected_value
+    return get_env_or_default(legacy_key, default)
+
+
+def with_stage_cloudfront_domain(
+    environment_variables: dict[str, str],
+    deployment_environment: str,
+    stage_names: set[str],
+    cloudfront_domain: str,
+) -> dict[str, str]:
+    """Return the env vars with CloudFront added only for the selected stage."""
+    if deployment_environment in stage_names and cloudfront_domain:
+        return {**environment_variables, "CLOUDFRONT_DOMAIN": cloudfront_domain}
+    return environment_variables
 
 
 def configure_zappa_settings(output_path: Path | None = None) -> None:
@@ -37,12 +95,33 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
     # Check if staging environment is enabled (off by default)
     enable_staging = get_env_or_default("ENABLE_STAGING", "false").lower() == "true"
 
-    # Get asset bucket names
-    dev_assets_bucket = get_env_or_default(
+    # GitHub environments use the same variable name with an environment-specific
+    # value. Legacy stage-specific variables remain as local-development fallbacks.
+    deployment_environment = (
+        get_env_or_default("DEPLOYMENT_ENVIRONMENT").strip().lower()
+    )
+    selected_assets_bucket = get_env_or_default("AWS_STORAGE_BUCKET_NAME")
+    cloudfront_domain = get_env_or_default("CLOUDFRONT_DOMAIN")
+    active_stage_names = DEV_STAGE_NAMES | PROD_STAGE_NAMES
+    if enable_staging:
+        active_stage_names = active_stage_names | STAGING_STAGE_NAMES
+    validate_deployment_environment(
+        deployment_environment,
+        selected_assets_bucket,
+        cloudfront_domain,
+        active_stage_names,
+    )
+    dev_assets_bucket = get_stage_value(
+        deployment_environment,
+        DEV_STAGE_NAMES,
+        selected_assets_bucket,
         "DEV_ASSETS_BUCKET",
         "coalition-dev-assets",
     )
-    production_assets_bucket = get_env_or_default(
+    production_assets_bucket = get_stage_value(
+        deployment_environment,
+        PROD_STAGE_NAMES,
+        selected_assets_bucket,
         "PRODUCTION_ASSETS_BUCKET",
         "coalition-production-assets",
     )
@@ -103,6 +182,29 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         docker_image_key = "docker_image"
         dev_docker_image = "public.ecr.aws/lambda/python:3.13"
         production_docker_image = "public.ecr.aws/lambda/python:3.13"
+
+    dev_environment_variables = with_stage_cloudfront_domain(
+        {
+            "ENVIRONMENT": "dev",
+            "DEBUG": "true",
+            "DATABASE_NAME": dev_db_name,
+            "AWS_STORAGE_BUCKET_NAME": dev_assets_bucket,
+        },
+        deployment_environment,
+        DEV_STAGE_NAMES,
+        cloudfront_domain,
+    )
+    production_environment_variables = with_stage_cloudfront_domain(
+        {
+            "ENVIRONMENT": "production",
+            "DEBUG": "false",
+            "DATABASE_NAME": production_db_name,
+            "AWS_STORAGE_BUCKET_NAME": production_assets_bucket,
+        },
+        deployment_environment,
+        PROD_STAGE_NAMES,
+        cloudfront_domain,
+    )
 
     # Build the configuration
     settings: dict[str, dict] = {
@@ -166,12 +268,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             docker_image_key: dev_docker_image,
             "memory_size": 512,
             "keep_warm": False,
-            "environment_variables": {
-                "ENVIRONMENT": "dev",
-                "DEBUG": "true",
-                "DATABASE_NAME": dev_db_name,
-                "AWS_STORAGE_BUCKET_NAME": dev_assets_bucket,
-            },
+            "environment_variables": dev_environment_variables,
             "aws_environment_variables": {
                 "DATABASE_URL": db_secret_arn,
                 "SECRET_KEY": django_secret_arn,
@@ -188,12 +285,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             "memory_size": 1024,
             "keep_warm": True,
             "keep_warm_expression": "rate(4 minutes)",
-            "environment_variables": {
-                "ENVIRONMENT": "production",
-                "DEBUG": "false",
-                "DATABASE_NAME": production_db_name,
-                "AWS_STORAGE_BUCKET_NAME": production_assets_bucket,
-            },
+            "environment_variables": production_environment_variables,
             "aws_environment_variables": {
                 "DATABASE_URL": db_secret_arn,
                 "SECRET_KEY": django_secret_arn,
@@ -208,7 +300,10 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
 
     # Optionally include staging (off by default)
     if enable_staging:
-        staging_assets_bucket = get_env_or_default(
+        staging_assets_bucket = get_stage_value(
+            deployment_environment,
+            STAGING_STAGE_NAMES,
+            selected_assets_bucket,
             "STAGING_ASSETS_BUCKET",
             "coalition-staging-assets",
         )
@@ -221,6 +316,18 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         else:
             staging_docker_image = "public.ecr.aws/lambda/python:3.13"
 
+        staging_environment_variables = with_stage_cloudfront_domain(
+            {
+                "ENVIRONMENT": "staging",
+                "DEBUG": "false",
+                "DATABASE_NAME": staging_db_name,
+                "AWS_STORAGE_BUCKET_NAME": staging_assets_bucket,
+            },
+            deployment_environment,
+            STAGING_STAGE_NAMES,
+            cloudfront_domain,
+        )
+
         settings["staging"] = {
             "extends": "base",
             "stage": "staging",
@@ -228,12 +335,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             "memory_size": 512,
             "keep_warm": True,
             "keep_warm_expression": "rate(10 minutes)",
-            "environment_variables": {
-                "ENVIRONMENT": "staging",
-                "DEBUG": "false",
-                "DATABASE_NAME": staging_db_name,
-                "AWS_STORAGE_BUCKET_NAME": staging_assets_bucket,
-            },
+            "environment_variables": staging_environment_variables,
             "aws_environment_variables": {
                 "DATABASE_URL": db_secret_arn,
                 "SECRET_KEY": django_secret_arn,

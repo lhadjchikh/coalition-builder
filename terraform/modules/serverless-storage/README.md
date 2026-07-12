@@ -5,7 +5,7 @@ This module creates S3 buckets for serverless/Lambda deployments with automatic 
 ## Features
 
 - **Automatic Environment Separation**: Creates separate buckets for dev, staging, and production
-- **Cost Optimization**: Lifecycle rules for non-production environments
+- **Cost Optimization**: Incomplete-upload and noncurrent-version cleanup
 - **Security**: Different access policies per environment
 - **CDN Support**: Optional CloudFront distributions for staging/production
 - **Zero Configuration**: Works out of the box with sensible defaults
@@ -71,7 +71,7 @@ module "serverless_storage" {
 
   project_name                  = "my-project"
   force_destroy_non_production  = true  # Allow destroying dev/staging buckets with content
-  enable_lifecycle_rules        = true  # Auto-cleanup old files in dev/staging
+  enable_lifecycle_rules        = true  # Clean incomplete uploads and old versions
   enable_cloudfront            = true  # Create CDN for staging/production
 
   # Production-specific settings
@@ -90,14 +90,14 @@ module "serverless_storage" {
 ### Development (`coalition-dev-assets`)
 
 - **Versioning**: Disabled (to save costs)
-- **Lifecycle**: 90-day expiration
+- **Lifecycle**: Keep current files in S3 Standard; clean incomplete uploads and old versions
 - **CORS**: Allow all origins
 - **Force Destroy**: Yes (easy cleanup)
 
 ### Staging (`coalition-staging-assets`)
 
 - **Versioning**: Enabled
-- **Lifecycle**: 180-day expiration
+- **Lifecycle**: Keep current files in S3 Standard; clean incomplete uploads and old versions
 - **CORS**: Allow all origins
 - **CloudFront**: Optional
 - **Force Destroy**: Configurable
@@ -116,15 +116,10 @@ The module includes automatic cost optimization:
 
 1. **Lifecycle Rules** (non-production):
    - Incomplete uploads cleaned after 7 days
-   - Files moved to Infrequent Access after 30 days
-   - Old files deleted (90 days for dev, 180 for staging)
+   - Current media remains in S3 Standard and is retained
+   - Noncurrent versions are cleaned up
 
-2. **Intelligent Tiering**:
-   - Development files auto-deleted
-   - Staging files archived
-   - Production files preserved
-
-3. **CloudFront**:
+2. **CloudFront**:
    - Optional CDN only for staging/production
    - Different price classes per environment
 
@@ -164,17 +159,15 @@ If you're migrating from a single-bucket setup:
 
 ### Step 1: Deploy the Buckets
 
+This bucket is created as part of the application's Terraform stack, not on its
+own. Provision it by following the deployment guide in the repository's
+`terraform/README.md` (a multi-account deployment that configures the remote-state
+backend and applies the environment stacks), then read the bucket name from the
+applied environment:
+
 ```bash
-# Clone the repo
-git clone https://github.com/yourorg/coalition-builder
-
-# Deploy the infrastructure
-cd terraform
-terraform init
-terraform apply -target=module.serverless_storage
-
-# Note the bucket names from the output
-terraform output serverless_bucket_names
+cd terraform/environments/dev
+terraform output -raw serverless_bucket_name
 ```
 
 ### Step 2: Update Configuration
@@ -213,6 +206,6 @@ AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
 Then set the environment variable during deployment:
 
 ```bash
-export AWS_STORAGE_BUCKET_NAME=$(terraform output -raw serverless_bucket_names | jq -r '.dev')
+export AWS_STORAGE_BUCKET_NAME=$(terraform output -raw serverless_bucket_name)
 zappa deploy dev
 ```

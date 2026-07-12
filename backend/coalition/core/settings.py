@@ -721,7 +721,7 @@ AWS_S3_OBJECT_PARAMETERS = {
     "CacheControl": "max-age=86400",  # Cache for 1 day
 }
 AWS_S3_FILE_OVERWRITE = False  # Don't overwrite files with same name
-AWS_DEFAULT_ACL = "public-read"  # Make uploaded files publicly readable
+AWS_DEFAULT_ACL = None  # Bucket policies and CloudFront control read access
 AWS_S3_VERIFY_SSL = True
 
 # Media files configuration

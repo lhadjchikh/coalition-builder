@@ -50,12 +50,12 @@ output "lambda_repository_url" {
 
 # Storage
 output "static_assets_bucket_name" {
-  description = "Name of the static assets S3 bucket"
+  description = "Name of the static assets S3 bucket. Set the prod GitHub environment's AWS_STORAGE_BUCKET_NAME variable to this value: it is the bucket whose upload policy is granted to Lambda (module.storage), which Django reads/writes media and static files from."
   value       = module.storage.static_assets_bucket_name
 }
 
 output "cloudfront_distribution_domain_name" {
-  description = "CloudFront distribution domain"
+  description = "CloudFront distribution domain. Set the prod GitHub environment's CLOUDFRONT_DOMAIN variable to this value so Django serves media and static files over the CDN in front of module.storage."
   value       = module.storage.cloudfront_distribution_domain_name
 }
 

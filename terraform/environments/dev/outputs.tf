@@ -32,6 +32,12 @@ output "zappa_s3_bucket" {
   value       = module.zappa.s3_bucket_name
 }
 
+# Media / static assets
+output "serverless_bucket_name" {
+  description = "Name of the S3 assets bucket Lambda uploads media to. Set the dev GitHub environment's AWS_STORAGE_BUCKET_NAME variable to this value."
+  value       = module.serverless_storage.bucket_name
+}
+
 output "lambda_security_group_id" {
   description = "Security group ID for Lambda functions"
   value       = module.zappa.lambda_security_group_id

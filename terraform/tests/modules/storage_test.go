@@ -16,7 +16,6 @@ func TestStorageModule(t *testing.T) {
 
 	testVars := common.GetDefaultStorageTestVars()
 	testVars["prefix"] = testConfig.Prefix
-	testVars["domain_name"] = "test.example.com"
 
 	terraformOptions := testConfig.GetModuleTerraformOptions("../../modules/storage", testVars)
 
@@ -66,8 +65,6 @@ func TestStorageModuleWithDefaultCORS(t *testing.T) {
 
 	testVars := map[string]interface{}{
 		"prefix":                 testConfig.Prefix,
-		"domain_name":            "test-cors.example.com",
-		"alb_dns_name":           "test-alb-cors-123456789.us-east-1.elb.amazonaws.com",
 		"force_destroy":          true,
 		"cors_allowed_origins":   []string{"*"}, // Test with wildcard
 		"enable_versioning":      false,
@@ -96,8 +93,6 @@ func TestStorageModuleMinimalConfig(t *testing.T) {
 	// Test with minimal configuration
 	testVars := map[string]interface{}{
 		"prefix":        testConfig.Prefix,
-		"domain_name":   "test-minimal.example.com",
-		"alb_dns_name":  "test-alb-minimal-123456789.us-east-1.elb.amazonaws.com",
 		"force_destroy": true, // Required for test cleanup
 	}
 

@@ -181,6 +181,12 @@ module "serverless_storage" {
   cors_origins           = ["*"]
 }
 
+# Allow the Lambda application to manage media in the assets bucket.
+resource "aws_iam_role_policy_attachment" "zappa_assets_access" {
+  role       = module.zappa.zappa_deployment_role_name
+  policy_arn = module.serverless_storage.lambda_s3_policy_arn
+}
+
 # Lambda ECR Module
 module "lambda_ecr" {
   source      = "../../modules/lambda-ecr"

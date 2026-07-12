@@ -84,17 +84,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "assets" {
     id     = "cleanup-old-files"
     status = "Enabled"
 
+    filter {}
+
     abort_incomplete_multipart_upload {
       days_after_initiation = 7
-    }
-
-    transition {
-      days          = 30
-      storage_class = "STANDARD_IA"
-    }
-
-    expiration {
-      days = var.environment == "dev" ? 90 : 180
     }
 
     noncurrent_version_expiration {

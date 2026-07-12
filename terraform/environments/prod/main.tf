@@ -256,7 +256,6 @@ module "storage" {
   source = "../../modules/storage"
 
   prefix            = var.prefix
-  domain_name       = var.domain_name
   force_destroy     = false
   enable_cloudfront = true
 
@@ -291,6 +290,12 @@ module "serverless_storage" {
     "https://${var.domain_name}",
     "https://www.${var.domain_name}"
   ]
+}
+
+# Allow the Lambda application to manage media in the production static-assets bucket.
+resource "aws_iam_role_policy_attachment" "zappa_assets_access" {
+  role       = module.zappa.zappa_deployment_role_name
+  policy_arn = module.storage.static_assets_upload_policy_arn
 }
 
 # Lambda ECR Module

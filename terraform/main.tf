@@ -163,7 +163,6 @@ module "storage" {
   source = "./modules/storage"
 
   prefix                 = var.prefix
-  domain_name            = var.domain_name
   force_destroy          = var.static_assets_force_destroy
   cors_allowed_origins   = var.static_assets_cors_origins != null ? var.static_assets_cors_origins : ["https://${var.domain_name}"]
   enable_versioning      = var.static_assets_enable_versioning
@@ -192,6 +191,12 @@ module "serverless_storage" {
     "https://${var.domain_name}",
     "https://www.${var.domain_name}"
   ] : ["*"]
+}
+
+# Allow the Lambda application to manage media in the assets bucket.
+resource "aws_iam_role_policy_attachment" "zappa_assets_access" {
+  role       = module.zappa.zappa_deployment_role_name
+  policy_arn = module.serverless_storage.lambda_s3_policy_arn
 }
 
 # Lambda ECR Module - Creates ECR repositories for Lambda deployment

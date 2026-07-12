@@ -3,11 +3,6 @@ variable "prefix" {
   type        = string
 }
 
-variable "domain_name" {
-  description = "The domain name for the application"
-  type        = string
-}
-
 variable "force_destroy" {
   description = "Whether to force destroy the bucket even if it contains objects"
   type        = bool
