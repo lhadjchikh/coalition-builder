@@ -163,12 +163,16 @@ If you're migrating from a single-bucket setup:
 # Clone the repo
 git clone https://github.com/yourorg/coalition-builder
 
-# Deploy the infrastructure (the root config defaults to prod, so select dev).
-# Run a full apply, not -target=module.serverless_storage: the Lambda upload-policy
-# attachment lives outside the module and a module-scoped target skips it.
+# Deploy the infrastructure. The root config applies the full application stack
+# (VPC, RDS, CloudFront, SES, bastion, the Lambda role + its media-bucket policy,
+# and the S3 assets bucket) - not just this module - so it needs an S3 state
+# backend and a filled-in variables file, and it incurs ongoing cost. A
+# module-scoped `-target` is not enough: the Lambda upload-policy attachment
+# lives outside the module and would be skipped. See terraform/README.md.
 cd terraform
-terraform init
-terraform apply -var environment=dev
+cp terraform.tfvars.example terraform.tfvars   # set environment = "dev", fill in the rest
+terraform init -backend-config=backend.hcl
+terraform apply
 
 # Note the bucket name from the output
 terraform output -raw serverless_bucket_name
