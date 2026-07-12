@@ -159,22 +159,14 @@ If you're migrating from a single-bucket setup:
 
 ### Step 1: Deploy the Buckets
 
+This bucket is created as part of the application's Terraform stack, not on its
+own. Provision it by following the deployment guide in the repository's
+`terraform/README.md` (a multi-account deployment that configures the remote-state
+backend and applies the environment stacks), then read the bucket name from the
+applied environment:
+
 ```bash
-# Clone the repo
-git clone https://github.com/yourorg/coalition-builder
-
-# Deploy the infrastructure. The root config applies the full application stack
-# (VPC, RDS, CloudFront, SES, bastion, the Lambda role + its media-bucket policy,
-# and the S3 assets bucket) - not just this module - so it needs an S3 state
-# backend and a filled-in variables file, and it incurs ongoing cost. A
-# module-scoped `-target` is not enough: the Lambda upload-policy attachment
-# lives outside the module and would be skipped. See terraform/README.md.
-cd terraform
-cp terraform.tfvars.example terraform.tfvars   # set environment = "dev", fill in the rest
-terraform init -backend-config=backend.hcl
-terraform apply
-
-# Note the bucket name from the output
+cd terraform/environments/dev
 terraform output -raw serverless_bucket_name
 ```
 

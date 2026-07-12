@@ -90,16 +90,14 @@ matching Terraform output.
 
 ### Dev (`module.serverless_storage`)
 
+Once the dev environment is applied (see
+[terraform/README.md](../terraform/README.md) for provisioning), read the bucket
+name from its outputs:
+
 ```bash
 cd terraform/environments/dev
-terraform apply
 terraform output -raw serverless_bucket_name   # -> AWS_STORAGE_BUCKET_NAME
 ```
-
-Run a full `terraform apply`, not `-target=module.serverless_storage`: the Lambda
-upload-policy attachment (`aws_iam_role_policy_attachment.zappa_assets_access`) lives
-outside that module and a module-scoped target skips it, which leaves Lambda unable
-to write to the bucket (`AccessDenied`).
 
 Set the dev environment's `AWS_STORAGE_BUCKET_NAME` to that bucket. Dev serves media
 directly from S3, so `CLOUDFRONT_DOMAIN` is left unset. (Staging is generated as an
@@ -189,27 +187,23 @@ cd backend
 git clone https://github.com/yourfork/coalition-builder
 cd coalition-builder
 
-# Provision AWS resources. This root config applies the FULL application stack
-# (VPC, RDS, CloudFront, SES, bastion, WAF, the Lambda role + its media-bucket
-# policy, and the S3 assets bucket) - not just storage - so it needs an S3
-# state backend and a filled-in variables file, and it incurs ongoing cost
-# (RDS, NAT, CloudFront). See terraform/README.md for backend setup.
-cd terraform
-cp terraform.tfvars.example terraform.tfvars   # then set environment = "dev" and
-                                               # fill in db_password, domain_name,
-                                               # route53_zone_id, api_gateway_id, ...
-terraform init -backend-config=backend.hcl
-terraform apply
+# 1. Provision the AWS infrastructure (VPC, RDS, CloudFront, SES, the Lambda role
+#    and its media-bucket policy, the S3 assets bucket, ...). This is a
+#    multi-account Terraform deployment with a remote-state backend and ongoing
+#    cost - follow terraform/README.md; it is not a single `terraform apply`.
+
+# 2. Read the dev assets bucket name from the applied dev environment
+cd terraform/environments/dev
 export DEPLOYMENT_ENVIRONMENT=dev
 export AWS_STORAGE_BUCKET_NAME=$(terraform output -raw serverless_bucket_name)
 
-# Configure Zappa
-cd ../backend
+# 3. Configure Zappa
+cd ../../../backend
 export AWS_ACCOUNT_ID="123456789012"
 export ZAPPA_DEPLOYMENT_BUCKET="my-zappa-deployments"
 python scripts/configure-zappa.py
 
-# Deploy
+# 4. Deploy
 zappa deploy dev
 ```
 
