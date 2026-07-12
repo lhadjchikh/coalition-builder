@@ -90,9 +90,9 @@ matching Terraform output.
 
 ### Dev (`module.serverless_storage`)
 
-Once the dev environment is applied (see
-[terraform/README.md](../terraform/README.md) for provisioning), read the bucket
-name from its outputs:
+Once the dev environment is applied (see the
+[Multi-Account AWS guide](deployment/multi-account-aws.md) for provisioning), read
+the bucket name from its outputs:
 
 ```bash
 cd terraform/environments/dev
@@ -190,7 +190,8 @@ cd coalition-builder
 # 1. Provision the AWS infrastructure (VPC, RDS, CloudFront, SES, the Lambda role
 #    and its media-bucket policy, the S3 assets bucket, ...). This is a
 #    multi-account Terraform deployment with a remote-state backend and ongoing
-#    cost - follow terraform/README.md; it is not a single `terraform apply`.
+#    cost - follow the Multi-Account AWS guide (docs/deployment/multi-account-aws.md);
+#    it is not a single `terraform apply`.
 
 # 2. Read the dev assets bucket name from the applied dev environment
 cd terraform/environments/dev
