@@ -88,22 +88,17 @@ attached to the Lambda role**, otherwise uploads fail with `AccessDenied` and me
 returns 404/403. The bucket differs by environment, so read the value from the
 matching Terraform output.
 
-### Dev / staging (`module.serverless_storage`)
+### Dev (`module.serverless_storage`)
 
 ```bash
-cd terraform
+cd terraform/environments/dev
 terraform apply -target=module.serverless_storage
-terraform output serverless_bucket_names
-
-# Example output:
-# {
-#   "dev" = "coalition-dev-assets-abc123"
-#   "staging" = "coalition-staging-assets-abc123"
-# }
+terraform output -raw serverless_bucket_name   # -> AWS_STORAGE_BUCKET_NAME
 ```
 
-Set the environment's `AWS_STORAGE_BUCKET_NAME` to the matching bucket. Dev serves
-media directly from S3, so `CLOUDFRONT_DOMAIN` is left unset.
+Set the dev environment's `AWS_STORAGE_BUCKET_NAME` to that bucket. Dev serves media
+directly from S3, so `CLOUDFRONT_DOMAIN` is left unset. (Staging is generated as an
+optional Zappa stage via `ENABLE_STAGING`, not a separate environment directory.)
 
 ### Production (`module.storage`)
 
@@ -194,7 +189,7 @@ cd terraform
 terraform init
 terraform apply -target=module.serverless_storage
 export DEPLOYMENT_ENVIRONMENT=dev
-export AWS_STORAGE_BUCKET_NAME=$(terraform output -json serverless_bucket_names | jq -r '.dev')
+export AWS_STORAGE_BUCKET_NAME=$(terraform output -raw serverless_bucket_name)
 
 # Configure Zappa
 cd ../backend

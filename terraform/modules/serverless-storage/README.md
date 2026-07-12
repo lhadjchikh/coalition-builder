@@ -168,8 +168,8 @@ cd terraform
 terraform init
 terraform apply -target=module.serverless_storage
 
-# Note the bucket names from the output
-terraform output serverless_bucket_names
+# Note the bucket name from the output
+terraform output -raw serverless_bucket_name
 ```
 
 ### Step 2: Update Configuration
@@ -208,6 +208,6 @@ AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
 Then set the environment variable during deployment:
 
 ```bash
-export AWS_STORAGE_BUCKET_NAME=$(terraform output -raw serverless_bucket_names | jq -r '.dev')
+export AWS_STORAGE_BUCKET_NAME=$(terraform output -raw serverless_bucket_name)
 zappa deploy dev
 ```
