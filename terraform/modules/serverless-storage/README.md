@@ -163,10 +163,12 @@ If you're migrating from a single-bucket setup:
 # Clone the repo
 git clone https://github.com/yourorg/coalition-builder
 
-# Deploy the infrastructure
+# Deploy the infrastructure (the root config defaults to prod, so select dev).
+# Run a full apply, not -target=module.serverless_storage: the Lambda upload-policy
+# attachment lives outside the module and a module-scoped target skips it.
 cd terraform
 terraform init
-terraform apply -target=module.serverless_storage
+terraform apply -var environment=dev
 
 # Note the bucket name from the output
 terraform output -raw serverless_bucket_name

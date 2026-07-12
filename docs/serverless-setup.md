@@ -92,9 +92,14 @@ matching Terraform output.
 
 ```bash
 cd terraform/environments/dev
-terraform apply -target=module.serverless_storage
+terraform apply
 terraform output -raw serverless_bucket_name   # -> AWS_STORAGE_BUCKET_NAME
 ```
+
+Run a full `terraform apply`, not `-target=module.serverless_storage`: the Lambda
+upload-policy attachment (`aws_iam_role_policy_attachment.zappa_assets_access`) lives
+outside that module and a module-scoped target skips it, which leaves Lambda unable
+to write to the bucket (`AccessDenied`).
 
 Set the dev environment's `AWS_STORAGE_BUCKET_NAME` to that bucket. Dev serves media
 directly from S3, so `CLOUDFRONT_DOMAIN` is left unset. (Staging is generated as an
@@ -184,10 +189,10 @@ cd backend
 git clone https://github.com/yourfork/coalition-builder
 cd coalition-builder
 
-# Create AWS resources
+# Create AWS resources (the root config defaults to prod, so select dev)
 cd terraform
 terraform init
-terraform apply -target=module.serverless_storage
+terraform apply -var environment=dev
 export DEPLOYMENT_ENVIRONMENT=dev
 export AWS_STORAGE_BUCKET_NAME=$(terraform output -raw serverless_bucket_name)
 
