@@ -121,6 +121,15 @@ resource "aws_route53_record" "apex" {
   records = [var.vercel_ip]
 }
 
+# Apex domain -> Google Workspace (inbound email)
+resource "aws_route53_record" "google_workspace_mx" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = var.domain_name
+  type    = "MX"
+  ttl     = 300
+  records = ["1 smtp.google.com"]
+}
+
 resource "aws_route53_record" "www" {
   zone_id = aws_route53_zone.main.zone_id
   name    = "www.${var.domain_name}"
