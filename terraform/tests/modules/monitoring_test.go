@@ -25,8 +25,10 @@ func TestBudgetCalendarDatesDoNotCreatePerpetualDrift(t *testing.T) {
 	moduleSource, err := os.ReadFile("../../modules/monitoring/main.tf")
 	assert.NoError(t, err)
 
+	budgetResource := `(?s)resource "aws_budgets_budget" "monthly"`
+	ignoredCalendarDates := `.*?lifecycle \{.*?ignore_changes\s*=\s*\[time_period_start, time_period_end\]`
 	dateLifecycleGuard := regexp.MustCompile(
-		`(?s)resource "aws_budgets_budget" "monthly".*?lifecycle \{.*?ignore_changes\s*=\s*\[time_period_start, time_period_end\]`,
+		budgetResource + ignoredCalendarDates,
 	)
 	assert.Regexp(t, dateLifecycleGuard, string(moduleSource))
 }
