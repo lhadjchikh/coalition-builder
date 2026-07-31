@@ -57,6 +57,7 @@ require_text "${lambda_workflow}" "\${DEPLOYMENT_API_URL%/}/api/health/"
 
 require_text "${frontend_workflow}" 'group: deploy-frontend-'
 require_text "${frontend_workflow}" "cancel-in-progress: false"
+require_text "${frontend_workflow}" "SITE_URL=\"\${{ vars.DEVELOPMENT_SITE_URL || vars.PRODUCTION_SITE_URL }}\""
 require_text "${frontend_workflow}" "CLOUDFRONT_DOMAIN: \${{ vars.CLOUDFRONT_DOMAIN }}"
 
 require_text "${management_workflow}" "role-to-assume:"

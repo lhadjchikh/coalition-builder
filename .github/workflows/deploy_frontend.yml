@@ -79,7 +79,7 @@ jobs:
             SITE_URL="${{ vars.PRODUCTION_SITE_URL }}"
           else
             API_URL="${{ vars.DEVELOPMENT_API_URL }}"
-            SITE_URL="${{ vars.DEVELOPMENT_SITE_URL }}"
+            SITE_URL="${{ vars.DEVELOPMENT_SITE_URL || vars.PRODUCTION_SITE_URL }}"
           fi
 
           if [[ -z "${API_URL}" || -z "${SITE_URL}" || -z "${CLOUDFRONT_DOMAIN}" ]]; then
