@@ -300,9 +300,10 @@ resource "aws_iam_role_policy_attachment" "zappa_assets_access" {
 
 # Lambda ECR Module
 module "lambda_ecr" {
-  source      = "../../modules/lambda-ecr"
-  environment = "prod"
-  tags        = var.tags
+  source                = "../../modules/lambda-ecr"
+  environment           = "prod"
+  image_retention_count = 50
+  tags                  = var.tags
 }
 
 # ACM certificate for domain and all subdomains
