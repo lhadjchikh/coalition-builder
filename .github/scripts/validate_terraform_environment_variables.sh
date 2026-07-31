@@ -48,13 +48,21 @@ require_nonempty_string_array() {
   fi
 }
 
+validate_bastion_key_pair_configuration() {
+  local create_key_pair_variable=TF_VAR_create_new_key_pair
+
+  require_boolean_variable "${create_key_pair_variable}"
+  if [[ "${!create_key_pair_variable}" == true ]]; then
+    require_nonempty_variable TF_VAR_bastion_public_key
+  fi
+}
+
 validate_shared_environment() {
   local required_variable
   local required_variables=(
     TF_VAR_db_username
     TF_VAR_db_password
     TF_VAR_app_db_username
-    TF_VAR_bastion_public_key
     TF_VAR_bastion_key_name
     TF_VAR_alert_email
     TF_VAR_domain_name
@@ -65,7 +73,7 @@ validate_shared_environment() {
     require_nonempty_variable "${required_variable}"
   done
 
-  require_boolean_variable TF_VAR_create_new_key_pair
+  validate_bastion_key_pair_configuration
   require_nonempty_string_array TF_VAR_allowed_bastion_cidrs
   require_nonempty_string_array TF_VAR_allowed_lambda_cidrs
 }

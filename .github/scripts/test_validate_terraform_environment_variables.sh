@@ -28,6 +28,14 @@ assert_shared_configuration_is_accepted() {
     "${VALIDATOR}" shared >/dev/null
 }
 
+assert_existing_key_configuration_is_accepted() {
+  env -i PATH="${PATH}" GITHUB_RUN_ID=test \
+    "${shared_environment[@]}" \
+    TF_VAR_create_new_key_pair=false \
+    TF_VAR_bastion_public_key= \
+    "${VALIDATOR}" shared >/dev/null
+}
+
 assert_missing_variable_is_rejected() {
   local rejected_variable="$1"
   local variables=()
@@ -76,6 +84,7 @@ assert_unknown_environment_is_rejected() {
 }
 
 assert_shared_configuration_is_accepted
+assert_existing_key_configuration_is_accepted
 assert_missing_variable_is_rejected TF_VAR_db_password
 assert_missing_variable_is_rejected TF_VAR_bastion_public_key
 assert_missing_variable_is_rejected TF_VAR_create_new_key_pair
