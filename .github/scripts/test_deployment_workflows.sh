@@ -53,6 +53,7 @@ require_text "${lambda_workflow}" "migrate --noinput"
 require_text "${lambda_workflow}" "collectstatic --noinput"
 require_text "${lambda_workflow}" "--connect-timeout 5"
 require_text "${lambda_workflow}" "--max-time 15"
+require_text "${lambda_workflow}" "\${DEPLOYMENT_API_URL%/}/api/health/"
 
 require_text "${frontend_workflow}" 'group: deploy-frontend-'
 require_text "${frontend_workflow}" "cancel-in-progress: false"
