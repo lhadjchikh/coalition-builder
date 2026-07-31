@@ -56,6 +56,12 @@ Deploys the Next.js frontend to Vercel.
 - `VERCEL_PROJECT_ID` (secret)
 - `PRODUCTION_API_URL` (variable)
 - `DEVELOPMENT_API_URL` (variable)
+- `PRODUCTION_SITE_URL` (variable; fallback for non-production builds)
+- `CLOUDFRONT_DOMAIN` (variable)
+
+These must be repository-scoped because the frontend job does not select a
+GitHub environment. `DEVELOPMENT_SITE_URL` is optional; when absent, preview and
+development builds use `PRODUCTION_SITE_URL` for site metadata.
 
 **Process:**
 
