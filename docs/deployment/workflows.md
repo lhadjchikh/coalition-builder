@@ -16,7 +16,7 @@ Deploys the Django backend to AWS Lambda using Zappa.
 
 **Triggers:**
 
-- Push to `main` or `development` branches
+- Backend changes pushed to `main` or `development`
 - Manual workflow dispatch with environment selection (`dev`, `prod`)
 
 **Authentication:**
@@ -29,11 +29,15 @@ Uses GitHub OIDC to assume the `github-actions-{environment}` IAM role — no lo
 **Process:**
 
 1. Authenticates to AWS via OIDC (`aws-actions/configure-aws-credentials`)
-2. Builds Docker image with GeoDjango support
-3. Pushes to Amazon ECR
-4. Updates Zappa configuration
-5. Deploys or updates Lambda function
-6. Runs health checks
+2. Verifies the Lambda execution role can read the configured runtime secrets
+3. Verifies the Lambda function and Zappa CloudFormation stack are consistent
+4. Builds and pushes the GeoDjango image to Amazon ECR
+5. Deploys or updates the Lambda function through Zappa
+6. Creates the cache table, runs migrations, and collects static files
+7. Requires the deployed API health check to succeed
+
+Deployments use a per-environment concurrency lock. Lambda management actions use
+the same lock so an update cannot overlap a rollback or other operational action.
 
 #### `deploy_frontend.yml`
 
@@ -84,34 +88,14 @@ Uses GitHub OIDC to assume the `github-actions-{environment}` IAM role. Each env
 5. Runs `terraform plan`
 6. Applies changes on `main` branch pushes (skips on PRs)
 
-#### `deploy_serverless.yml`
-
-Full-stack deployment of backend (Lambda) and frontend (Vercel).
-
-**Triggers:**
-
-- Push to `main` or `dev` branches
-- Manual workflow dispatch with environment selection (`dev`, `prod`)
-
-**Authentication:**
-
-Uses GitHub OIDC — same pattern as `deploy_lambda.yml`.
-
-**Process:**
-
-1. Runs backend tests (non-prod or manual dispatch)
-2. Authenticates to AWS via OIDC
-3. Builds and pushes Docker image to ECR
-4. Deploys backend via Zappa
-5. Creates cache table, runs migrations, collects static files
-6. Deploys frontend to Vercel
-7. Runs smoke tests (health check, Lambda log check)
-
 ### Management Workflows
 
 #### `lambda_management.yml`
 
 Manages Lambda functions post-deployment.
+
+The workflow authenticates with the selected environment's GitHub OIDC role; it
+does not use long-lived AWS access keys.
 
 **Actions Available:**
 
@@ -229,7 +213,7 @@ PRODUCTION_API_URL=https://api.yourdomain.com
 
 ```bash
 # Using GitHub Actions
-gh workflow run deploy_lambda.yml --ref main
+gh workflow run deploy_lambda.yml --ref main -f environment=prod
 
 # Using Zappa directly
 cd backend
@@ -240,7 +224,7 @@ poetry run zappa deploy prod
 
 ```bash
 # Using GitHub Actions
-gh workflow run deploy_frontend.yml --ref main
+gh workflow run deploy_frontend.yml --ref main -f environment=prod
 
 # Using Vercel CLI
 cd frontend

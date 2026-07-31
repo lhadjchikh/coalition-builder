@@ -26,6 +26,10 @@ permissions:
   contents: read
   pull-requests: write
 
+concurrency:
+  group: deploy-frontend-${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'prod') || (github.event_name == 'pull_request' && github.event.pull_request.number) || 'development' }}
+  cancel-in-progress: false
+
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -59,8 +63,8 @@ jobs:
             ENV="development"
           fi
 
-          echo "environment=$ENV" >> $GITHUB_OUTPUT
-          echo "Deploying to: $ENV"
+          echo "environment=${ENV}" >> "${GITHUB_OUTPUT}"
+          echo "Deploying to: ${ENV}"
 
       - name: Set API URL
         id: api
@@ -68,7 +72,7 @@ jobs:
           ENV="${{ steps.env.outputs.environment }}"
 
           # Get API URL based on environment
-          if [[ "$ENV" == "prod" ]]; then
+          if [[ "${ENV}" == "prod" ]]; then
             API_URL="${{ vars.PRODUCTION_API_URL }}"
             SITE_URL="${{ vars.PRODUCTION_SITE_URL }}"
           else
@@ -76,8 +80,10 @@ jobs:
             SITE_URL="${{ vars.DEVELOPMENT_SITE_URL }}"
           fi
 
-          echo "api_url=$API_URL" >> $GITHUB_OUTPUT
-          echo "site_url=$SITE_URL" >> $GITHUB_OUTPUT
+          {
+            echo "api_url=${API_URL}"
+            echo "site_url=${SITE_URL}"
+          } >> "${GITHUB_OUTPUT}"
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
@@ -86,22 +92,25 @@ jobs:
         id: vercel_env
         run: |
           ENV="${{ steps.env.outputs.environment }}"
-          if [[ "$ENV" == "prod" ]]; then
-            echo "vercel_env=production" >> $GITHUB_OUTPUT
+          if [[ "${ENV}" == "prod" ]]; then
+            echo "vercel_env=production" >> "${GITHUB_OUTPUT}"
           else
-            echo "vercel_env=preview" >> $GITHUB_OUTPUT
+            echo "vercel_env=preview" >> "${GITHUB_OUTPUT}"
           fi
 
       - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=${{ steps.vercel_env.outputs.vercel_env }} --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ENVIRONMENT: ${{ steps.vercel_env.outputs.vercel_env }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --environment="${VERCEL_ENVIRONMENT}" --token="${VERCEL_TOKEN}"
         working-directory: ./frontend
 
       - name: Build Project Artifacts
         run: |
           if [[ "${{ steps.env.outputs.environment }}" == "prod" ]]; then
-            vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+            vercel build --prod --token="${VERCEL_TOKEN}"
           else
-            vercel build --token=${{ secrets.VERCEL_TOKEN }}
+            vercel build --token="${VERCEL_TOKEN}"
           fi
         working-directory: ./frontend
         env:
@@ -111,35 +120,39 @@ jobs:
           NEXT_PUBLIC_SITE_URL: ${{ steps.api.outputs.site_url }}
           NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: ${{ vars.GOOGLE_ANALYTICS_ID }}
           AWS_STORAGE_BUCKET_NAME: ${{ vars.AWS_STORAGE_BUCKET_NAME }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy to Vercel
         id: deploy
         run: |
           if [[ "${{ steps.env.outputs.environment }}" == "prod" ]]; then
-            DEPLOY_URL=$(vercel deploy --prebuilt --prod --archive=tgz --token=${{ secrets.VERCEL_TOKEN }})
+            DEPLOY_URL=$(vercel deploy --prebuilt --prod --archive=tgz --token="${VERCEL_TOKEN}")
           else
-            DEPLOY_URL=$(vercel deploy --prebuilt --archive=tgz --token=${{ secrets.VERCEL_TOKEN }})
+            DEPLOY_URL=$(vercel deploy --prebuilt --archive=tgz --token="${VERCEL_TOKEN}")
           fi
 
-          echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
-          echo "Deployed to: $DEPLOY_URL"
+          echo "url=${DEPLOY_URL}" >> "${GITHUB_OUTPUT}"
+          echo "Deployed to: ${DEPLOY_URL}"
         working-directory: ./frontend
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
       - name: Create deployment summary
         run: |
-          echo "### 🚀 Frontend Deployment Complete!" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Environment:** ${{ steps.env.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
-          echo "**URL:** ${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
-          echo "**API URL:** ${{ steps.api.outputs.api_url }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📊 Deployment Details" >> $GITHUB_STEP_SUMMARY
-          echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "### 🚀 Frontend Deployment Complete!"
+            echo ""
+            echo "**Environment:** ${{ steps.env.outputs.environment }}"
+            echo "**URL:** ${{ steps.deploy.outputs.url }}"
+            echo "**API URL:** ${{ steps.api.outputs.api_url }}"
+            echo ""
+            echo "### 📊 Deployment Details"
+            echo "- **Branch:** ${{ github.ref_name }}"
+            echo "- **Commit:** ${{ github.sha }}"
+            echo "- **Triggered by:** ${{ github.actor }}"
+          } >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Comment on PR
         if: github.event_name == 'pull_request'
@@ -190,6 +203,9 @@ jobs:
 
       - name: Alias production deployment
         if: steps.env.outputs.environment == 'prod' && github.ref == 'refs/heads/main'
-        run: |
-          vercel alias set ${{ steps.deploy.outputs.url }} ${{ vars.PRODUCTION_DOMAIN }} --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+          PRODUCTION_DOMAIN: ${{ vars.PRODUCTION_DOMAIN }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel alias set "${DEPLOY_URL}" "${PRODUCTION_DOMAIN}" --token="${VERCEL_TOKEN}"
         working-directory: ./frontend

@@ -216,6 +216,7 @@ Resources:
                   - iam:ListUserPolicies
                   - iam:ListUserTags
                   - iam:ListAccessKeys
+                  - iam:SimulatePrincipalPolicy
                 Resource: "*"
               # --- IAM mutate (scoped to prefix and OIDC provider) ---
               - Sid: IAMMutate
@@ -285,6 +286,20 @@ Resources:
                   - cloudformation:DeleteResource
                   - cloudformation:ListResources
                 Resource: "*"
+              # --- CloudFormation stacks managed by Zappa ---
+              - Sid: CloudFormationStacks
+                Effect: Allow
+                Action:
+                  - cloudformation:CreateStack
+                  - cloudformation:DeleteStack
+                  - cloudformation:DescribeStackResource
+                  - cloudformation:DescribeStackResources
+                  - cloudformation:DescribeStacks
+                  - cloudformation:ListStackResources
+                  - cloudformation:UpdateStack
+                Resource:
+                  - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ResourcePrefix}-*/*"
+                  - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/coalition-*/*"
               # --- Account-scoped services (regional) ---
               - Sid: EC2ReadOnly
                 Effect: Allow

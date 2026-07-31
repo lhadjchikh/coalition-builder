@@ -126,7 +126,7 @@ terraform apply -target=module.zappa
 terraform apply -target=module.geodata_import
 
 # Deploy applications via GitHub Actions
-gh workflow run deploy-lambda.yml --ref main
+gh workflow run deploy_lambda.yml --ref main -f environment=prod
 ```
 
 ## Cost Analysis

@@ -49,10 +49,10 @@ Set these in your GitHub repository settings:
 
 ```bash
 # Backend to Lambda
-gh workflow run deploy-lambda.yml --ref main
+gh workflow run deploy_lambda.yml --ref main -f environment=prod
 
 # Frontend to Vercel
-gh workflow run deploy-frontend.yml --ref main
+gh workflow run deploy_frontend.yml --ref main -f environment=prod
 ```
 
 ## Architecture
