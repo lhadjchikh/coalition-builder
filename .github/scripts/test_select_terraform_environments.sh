@@ -58,6 +58,11 @@ assert_selection '[]' push '' terraform/README.md
 assert_selection '[]' push '' terraform/modules/database/README.md
 assert_selection '[]' push '' terraform/scripts/bootstrap/test_bootstrap.sh
 assert_selection '[]' push '' terraform/terraform.tfvars.example
+assert_selection '[]' push '' terraform/backend.tf
+assert_selection '[]' push '' terraform/main.tf
+assert_selection '[]' push '' terraform/outputs.tf
+assert_selection '[]' push '' terraform/variables.tf
+assert_selection '[]' push '' terraform/versions.tf
 assert_rejected "${SELECTOR}" schedule
 
 RENAME_FIXTURE_REPOSITORY="$(mktemp -d "${TMPDIR:-/tmp}/terraform-environment-selection.XXXXXX")"

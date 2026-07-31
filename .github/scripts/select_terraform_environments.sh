@@ -48,9 +48,7 @@ classify_terraform_change() {
     terraform/environments/shared/*) printf 'shared\n' ;;
     terraform/environments/prod/*) printf 'prod\n' ;;
     terraform/environments/dev/*) printf 'dev\n' ;;
-    terraform/modules/* | terraform/scripts/setup_remote_state.sh | \
-      terraform/backend.tf | terraform/main.tf | terraform/outputs.tf | \
-      terraform/variables.tf | terraform/versions.tf)
+    terraform/modules/* | terraform/scripts/setup_remote_state.sh)
       printf 'all\n'
       ;;
     *) printf 'none\n' ;;
