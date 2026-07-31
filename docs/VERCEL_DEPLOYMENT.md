@@ -67,25 +67,22 @@ to it.
 
 - `GOOGLE_ANALYTICS_ID`: Your GA tracking ID
 
-## Environment Variables in Vercel
+## Build-Time Environment
 
-### Build-Time Variables (set by CI workflow)
+The GitHub Actions workflow passes the selected repository variables to
+`vercel build` as:
 
-The GitHub Actions deployment workflow sets these `NEXT_PUBLIC_*` variables at build time. They are baked into the JavaScript bundle and cannot be changed without rebuilding:
-
-- `NEXT_PUBLIC_API_URL`: Backend API URL (Lambda/API Gateway)
-- `NEXT_PUBLIC_ENVIRONMENT`: Current environment (dev/staging/production)
+- `API_URL` and `NEXT_PUBLIC_API_URL`: Backend API URL (Lambda/API Gateway)
+- `NEXT_PUBLIC_ENVIRONMENT`: Current deployment environment
 - `NEXT_PUBLIC_SITE_URL`: Frontend URL
 - `NEXT_PUBLIC_GOOGLE_ANALYTICS_ID`: Google Analytics ID
+- `CLOUDFRONT_DOMAIN`: CloudFront hostname allowed by Next.js image optimization
+- `AWS_STORAGE_BUCKET_NAME`: S3 hostname allowed by Next.js image optimization
 
-### Runtime Variables (set in Vercel dashboard)
-
-These variables must be set directly in the Vercel project settings (Settings > Environment Variables) because they are read at runtime by the Next.js server, not baked in at build time:
-
-- `API_URL`: The API Gateway invoke URL including the stage path (e.g., `https://abc123.execute-api.us-east-1.amazonaws.com/prod`). Used by `next.config.js` server-side rewrites to proxy `/api/*` requests to the Lambda backend.
-- `AWS_STORAGE_BUCKET_NAME`: The S3 bucket name for production assets (e.g., `coalition-static-assets-a4853294`). Used by `next.config.js` `remotePatterns` to allow Next.js image optimization for S3-hosted media files.
-
-**Important:** These runtime variables are not set by the CI workflow — they must be configured manually in the Vercel dashboard for each environment (Production, Preview, Development).
+Next.js evaluates these values while creating the prebuilt artifact. The deploy
+step cannot change them. For a manual `vercel build` outside GitHub Actions,
+mirror the same values in the corresponding Vercel project environment and keep
+them synchronized with the repository variables.
 
 ## Deployment Workflow
 
@@ -153,7 +150,10 @@ async rewrites() {
 },
 ```
 
-Set `API_URL` in the Vercel dashboard (see [Runtime Variables](#runtime-variables-set-in-vercel-dashboard) above) to your API Gateway invoke URL including the stage path, e.g., `https://abc123.execute-api.us-east-1.amazonaws.com/prod`.
+Set `PRODUCTION_API_URL` and `DEVELOPMENT_API_URL` as described in
+[Set GitHub Variables](#4-set-github-variables). The workflow passes the selected
+value to `next.config.js` as `API_URL` during the build. For manual builds, mirror
+that value in the corresponding Vercel project environment.
 
 > **Note:** Do **not** add API rewrites to `vercel.json`. Vercel edge rewrites do not properly set the `Host` header for API Gateway URLs, which causes CloudFront to return `403 Forbidden`. The `next.config.js` server-side rewrites handle this correctly.
 
@@ -165,7 +165,7 @@ If you are setting up a fresh deployment or migrating to a new environment, ensu
 
 1. The S3 assets bucket exists and is accessible
 2. Any required media files are uploaded to the `media/` prefix in the bucket
-3. `AWS_STORAGE_BUCKET_NAME` is set in both the Lambda environment and the Vercel dashboard (for image optimization)
+3. `AWS_STORAGE_BUCKET_NAME` is set in the Lambda GitHub environment and as a repository variable for the frontend build
 
 ## Preview Deployments
 
