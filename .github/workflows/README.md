@@ -203,7 +203,11 @@ _Figure 1: Workflow dependency tree showing how push/PR events trigger orchestra
 #### Infrastructure Deployment (`deploy_infra.yml`)
 
 - **Triggered by**: changes to `terraform/` directory on main branch or manual dispatch
-- Manages AWS infrastructure changes using Terraform
+- Routes environment-specific changes to the matching `shared`, `prod`, or `dev` Terraform state
+- Deploys shared infrastructure before dependent prod/dev infrastructure when common configuration changes
+- Keeps pull-request plans on the isolated dev environment; applies run only from `main` or manual dispatch
+- Avoids infrastructure applies for workflow, documentation, and test-only changes
+- Manages AWS infrastructure changes using a reusable per-environment workflow
 - Runs independently of application code changes
 - Includes Terraform planning and apply steps
 - Manages AWS resources like VPC, ECS clusters, RDS, and load balancers

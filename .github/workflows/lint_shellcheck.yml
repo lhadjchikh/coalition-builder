@@ -29,3 +29,6 @@ jobs:
       - name: Run ShellCheck
         run: |
           find . -type f -name "*.sh" -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/.terraform/*" -exec shellcheck -x {} \;
+
+      - name: Test Terraform deployment environment selection
+        run: .github/scripts/test_select_terraform_environments.sh
