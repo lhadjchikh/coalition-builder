@@ -33,5 +33,8 @@ jobs:
       - name: Test Terraform deployment environment selection
         run: .github/scripts/test_select_terraform_environments.sh
 
+      - name: Test Terraform deployment variable validation
+        run: .github/scripts/test_validate_terraform_environment_variables.sh
+
       - name: Test deployment workflow topology
         run: .github/scripts/test_deployment_workflows.sh

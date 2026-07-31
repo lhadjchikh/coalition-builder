@@ -6,6 +6,7 @@ repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 lambda_workflow="${repository_root}/.github/workflows/deploy_lambda.yml"
 frontend_workflow="${repository_root}/.github/workflows/deploy_frontend.yml"
 management_workflow="${repository_root}/.github/workflows/lambda_management.yml"
+terraform_workflow="${repository_root}/.github/workflows/deploy_terraform_environment.yml"
 
 fail() {
   echo "FAIL: $1" >&2
@@ -39,6 +40,7 @@ reject_text() {
 require_file "${lambda_workflow}"
 require_file "${frontend_workflow}"
 require_file "${management_workflow}"
+require_file "${terraform_workflow}"
 require_absent_file "${repository_root}/.github/workflows/deploy_app.yml"
 require_absent_file "${repository_root}/.github/workflows/deploy_serverless.yml"
 
@@ -61,5 +63,8 @@ require_text "${management_workflow}" "role-to-assume:"
 reject_text "${management_workflow}" "aws-access-key-id:"
 reject_text "${management_workflow}" "aws-secret-access-key:"
 require_text "${management_workflow}" "scripts/configure_zappa.py"
+
+require_text "${terraform_workflow}" 'TF_VAR_create_new_key_pair: ${{ vars.CREATE_NEW_KEY_PAIR }}'
+require_text "${terraform_workflow}" "validate_terraform_environment_variables.sh"
 
 echo "Deployment workflow regression tests passed."
