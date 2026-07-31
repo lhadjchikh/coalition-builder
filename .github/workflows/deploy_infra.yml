@@ -11,6 +11,7 @@ on:
       - "terraform/**"
       - ".github/workflows/deploy_infra.yml"
       - ".github/workflows/deploy_terraform_environment.yml"
+      - ".github/scripts/list_terraform_changed_paths.sh"
       - ".github/scripts/select_terraform_environments.sh"
   pull_request:
     branches: [main]
@@ -18,6 +19,7 @@ on:
       - "terraform/**"
       - ".github/workflows/deploy_infra.yml"
       - ".github/workflows/deploy_terraform_environment.yml"
+      - ".github/scripts/list_terraform_changed_paths.sh"
       - ".github/scripts/select_terraform_environments.sh"
   workflow_dispatch:
     inputs:
@@ -56,7 +58,12 @@ jobs:
         run: |
           changed_paths=()
           if [[ "${EVENT_NAME}" == "push" ]]; then
-            mapfile -t changed_paths < <(git diff --name-only "${BEFORE_SHA}" "${AFTER_SHA}")
+            changed_paths_file="${RUNNER_TEMP}/terraform_changed_paths.txt"
+            if ! .github/scripts/list_terraform_changed_paths.sh \
+              "${BEFORE_SHA}" "${AFTER_SHA}" >"${changed_paths_file}"; then
+              exit 1
+            fi
+            mapfile -t changed_paths <"${changed_paths_file}"
           fi
 
           environments="$(.github/scripts/select_terraform_environments.sh \
