@@ -57,14 +57,37 @@ assert_missing_variable_is_rejected() {
   fi
 }
 
+assert_all_shared_variables_are_required() {
+  local assignment
+
+  for assignment in "${shared_environment[@]}"; do
+    assert_missing_variable_is_rejected "${assignment%%=*}"
+  done
+}
+
 assert_empty_network_boundary_is_rejected() {
+  local network_variable="$1"
+
   if env -i PATH="${PATH}" GITHUB_RUN_ID=test \
     "${shared_environment[@]}" \
-    TF_VAR_allowed_lambda_cidrs='[]' \
+    "${network_variable}=[]" \
     "${VALIDATOR}" shared >/dev/null 2>&1; then
-    printf 'Expected shared validation to reject empty Lambda CIDRs\n' >&2
+    printf 'Expected shared validation to reject empty %s\n' \
+      "${network_variable}" >&2
     return 1
   fi
+}
+
+assert_empty_network_boundaries_are_rejected() {
+  local assignment
+  local variable_name
+
+  for assignment in "${shared_environment[@]}"; do
+    variable_name="${assignment%%=*}"
+    if [[ "${variable_name}" == TF_VAR_allowed_*_cidrs ]]; then
+      assert_empty_network_boundary_is_rejected "${variable_name}"
+    fi
+  done
 }
 
 assert_repository_identity_mismatch_is_rejected() {
@@ -96,11 +119,8 @@ assert_unknown_environment_is_rejected() {
 
 assert_shared_configuration_is_accepted
 assert_existing_key_configuration_is_accepted
-assert_missing_variable_is_rejected TF_VAR_db_password
-assert_missing_variable_is_rejected TF_VAR_bastion_public_key
-assert_missing_variable_is_rejected TF_VAR_create_new_key_pair
-assert_missing_variable_is_rejected TF_VAR_github_repo
-assert_empty_network_boundary_is_rejected
+assert_all_shared_variables_are_required
+assert_empty_network_boundaries_are_rejected
 assert_repository_identity_mismatch_is_rejected
 assert_prod_configuration_is_accepted
 assert_unknown_environment_is_rejected
