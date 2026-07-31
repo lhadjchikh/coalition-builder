@@ -225,6 +225,10 @@ resource "aws_budgets_budget" "monthly" {
   tags = {
     Name = "${var.prefix}-monthly-budget"
   }
+
+  lifecycle {
+    ignore_changes = [time_period_start, time_period_end]
+  }
 }
 
 # Cost Anomaly Detection
@@ -291,4 +295,3 @@ resource "awscc_ce_anomaly_subscription" "project_anomaly_subscription" {
   # Alert on anomalies with impact >= $5
   threshold = 5
 }
-

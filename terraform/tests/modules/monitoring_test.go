@@ -2,6 +2,8 @@ package modules
 
 import (
 	"context"
+	"os"
+	"regexp"
 	"testing"
 
 	"terraform-tests/common"
@@ -17,6 +19,16 @@ import (
 // TestMonitoringModuleValidation runs validation-only tests that don't require AWS credentials
 func TestMonitoringModuleValidation(t *testing.T) {
 	common.ValidateModuleStructure(t, "monitoring")
+}
+
+func TestBudgetCalendarDatesDoNotCreatePerpetualDrift(t *testing.T) {
+	moduleSource, err := os.ReadFile("../../modules/monitoring/main.tf")
+	assert.NoError(t, err)
+
+	dateLifecycleGuard := regexp.MustCompile(
+		`(?s)resource "aws_budgets_budget" "monthly".*?lifecycle \{.*?ignore_changes\s*=\s*\[time_period_start, time_period_end\]`,
+	)
+	assert.Regexp(t, dateLifecycleGuard, string(moduleSource))
 }
 
 func TestMonitoringModuleCreatesSNSTopics(t *testing.T) {
