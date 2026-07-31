@@ -68,6 +68,8 @@ jobs:
 
       - name: Set API URL
         id: api
+        env:
+          CLOUDFRONT_DOMAIN: ${{ vars.CLOUDFRONT_DOMAIN }}
         run: |
           ENV="${{ steps.env.outputs.environment }}"
 
@@ -78,6 +80,11 @@ jobs:
           else
             API_URL="${{ vars.DEVELOPMENT_API_URL }}"
             SITE_URL="${{ vars.DEVELOPMENT_SITE_URL }}"
+          fi
+
+          if [[ -z "${API_URL}" || -z "${SITE_URL}" || -z "${CLOUDFRONT_DOMAIN}" ]]; then
+            echo "::error::API URL, site URL, and CLOUDFRONT_DOMAIN are required for frontend builds"
+            exit 1
           fi
 
           {
@@ -119,6 +126,7 @@ jobs:
           NEXT_PUBLIC_ENVIRONMENT: ${{ steps.env.outputs.environment }}
           NEXT_PUBLIC_SITE_URL: ${{ steps.api.outputs.site_url }}
           NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: ${{ vars.GOOGLE_ANALYTICS_ID }}
+          CLOUDFRONT_DOMAIN: ${{ vars.CLOUDFRONT_DOMAIN }}
           AWS_STORAGE_BUCKET_NAME: ${{ vars.AWS_STORAGE_BUCKET_NAME }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
