@@ -577,6 +577,32 @@ else
   fail "Infrastructure policy missing CloudControlAPI statement (required by awscc provider)"
 fi
 
+# Verify Zappa can manage only project-scoped CloudFormation stacks.
+if echo "$INFRA_POLICY_STMTS" | python3 -c "
+import json, sys
+required_actions = {
+    'cloudformation:CreateStack',
+    'cloudformation:DeleteStack',
+    'cloudformation:DescribeStackResource',
+    'cloudformation:DescribeStacks',
+    'cloudformation:ListStackResources',
+    'cloudformation:UpdateStack',
+}
+stmts = json.load(sys.stdin)
+for statement in stmts:
+    if statement.get('Sid') == 'CloudFormationStacks':
+        actions = set(statement.get('Action', []))
+        resources = statement.get('Resource', [])
+        if required_actions <= actions and resources != '*' and '*' not in resources:
+            sys.exit(0)
+        sys.exit(1)
+sys.exit(1)
+" 2>/dev/null; then
+  pass "CloudFormationStacks grants Zappa operations on scoped stack ARNs"
+else
+  fail "CloudFormationStacks must grant Zappa operations without wildcard resources"
+fi
+
 # Verify IAMReadOnly includes iam:GetUser (needed for SES IAM user management)
 if echo "$INFRA_POLICY_STMTS" | python3 -c "
 import json, sys
@@ -592,6 +618,21 @@ sys.exit(1)
   pass "IAMReadOnly includes iam:GetUser"
 else
   fail "IAMReadOnly missing iam:GetUser (needed for SES IAM user management)"
+fi
+
+# Verify deployments can fail fast when the Lambda role cannot read a secret.
+if echo "$INFRA_POLICY_STMTS" | python3 -c "
+import json, sys
+stmts = json.load(sys.stdin)
+for statement in stmts:
+    if statement.get('Sid') == 'IAMReadOnly':
+        actions = statement.get('Action', [])
+        sys.exit(0 if 'iam:SimulatePrincipalPolicy' in actions else 1)
+sys.exit(1)
+" 2>/dev/null; then
+  pass "IAMReadOnly includes iam:SimulatePrincipalPolicy"
+else
+  fail "IAMReadOnly missing iam:SimulatePrincipalPolicy"
 fi
 
 # Verify IAMMutate includes IAM user actions (needed for SES SMTP user)

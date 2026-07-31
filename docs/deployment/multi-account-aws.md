@@ -393,15 +393,14 @@ The `peering_account_ids` variable controls which accounts appear in the STS sta
 
 ## CI/CD Workflows
 
-Three workflows use the multi-account setup:
+Two deployment workflows use the multi-account setup:
 
-| Workflow              | File                    | Purpose                                                |
-| --------------------- | ----------------------- | ------------------------------------------------------ |
-| **Deploy to Lambda**  | `deploy_lambda.yml`     | Builds Docker image, pushes to ECR, deploys via Zappa  |
-| **Deploy Serverless** | `deploy_serverless.yml` | Full-stack deploy (backend + frontend)                 |
-| **Terraform CI/CD**   | `deploy_infra.yml`      | Plans and applies Terraform for a selected environment |
+| Workflow             | File                | Purpose                                                |
+| -------------------- | ------------------- | ------------------------------------------------------ |
+| **Deploy to Lambda** | `deploy_lambda.yml` | Builds Docker image, pushes to ECR, deploys via Zappa  |
+| **Terraform CI/CD**  | `deploy_infra.yml`  | Plans and applies Terraform for a selected environment |
 
-All three authenticate via OIDC and select the target environment based on branch or manual input. See [GitHub Workflows](workflows.md) for details.
+Both authenticate via OIDC and select the target environment based on branch or manual input. See [GitHub Workflows](workflows.md) for details.
 
 ### Dev Cost Control
 

@@ -191,15 +191,6 @@ _Figure 1: Workflow dependency tree showing how push/PR events trigger orchestra
 
 ### Deployment Workflows
 
-#### Application Deployment (`deploy_app.yml`)
-
-- **Triggered by**: "Check App" workflow completion, "Terraform Infrastructure CI/CD" workflow completion, or manual dispatch
-- Deploys the application to Amazon ECS when tests pass
-- Can be manually triggered with an option to skip tests
-- Builds and pushes Docker images to ECR with unique tags (SHA + run number)
-- Updates ECS services with new task definitions
-- Skips deployment when only documentation files are changed
-
 #### Infrastructure Deployment (`deploy_infra.yml`)
 
 - **Triggered by**: changes to `terraform/` directory on main branch or manual dispatch
@@ -210,27 +201,19 @@ _Figure 1: Workflow dependency tree showing how push/PR events trigger orchestra
 - Manages AWS infrastructure changes using a reusable per-environment workflow
 - Runs independently of application code changes
 - Includes Terraform planning and apply steps
-- Manages AWS resources like VPC, ECS clusters, RDS, and load balancers
-- **Triggers application deployment**: After successful infrastructure changes, automatically triggers app deployment to ensure compatibility with infrastructure
-
-#### Serverless Backend Deployment (`deploy_serverless.yml`)
-
-- **Triggered by**: push to main/dev branches or manual dispatch
-- Deploys Django backend to AWS Lambda using Zappa
-- Builds custom Docker images with GeoDjango support (GDAL/GEOS/PROJ)
-- Manages Lambda functions with environment-specific configurations
-- Creates cache table for database-backed rate limiting
-- Runs database migrations automatically
-- Collects and uploads static files to S3
+- Manages AWS resources like VPC, Lambda, RDS, and API Gateway
 
 #### Lambda Deployment (`deploy_lambda.yml`)
 
-- **Triggered by**: push to main/development branches or manual dispatch
-- Alternative Lambda deployment workflow with simplified configuration
+- **Triggered by**: backend changes pushed to main/development or manual dispatch
+- Sole backend deployment path for Lambda
 - Builds and pushes Docker images to ECR
 - Updates Zappa settings with ECR image URIs
-- Configures custom domains with API Gateway
-- Provides deployment URLs for integration
+- Verifies the Lambda role can read its runtime secrets before changing code
+- Requires the Lambda function and Zappa CloudFormation stack to be consistent
+- Creates the cache table, runs database migrations, and collects static files
+- Fails when the deployed API health check does not pass
+- Serializes deployments per environment
 
 #### Frontend Deployment (`deploy_frontend.yml`)
 
@@ -253,34 +236,33 @@ _Figure 1: Workflow dependency tree showing how push/PR events trigger orchestra
 
 ## Deployment Coordination
 
-The deployment workflows coordinate to ensure smooth production updates:
+The deployment workflows isolate backend, frontend, and infrastructure changes:
 
 ### Scenarios Handled:
 
-1. **Check App Completion**: When tests pass on main branch, application deployment proceeds automatically
-2. **Infrastructure Deployment**: After infrastructure changes, application deployment is automatically triggered to ensure compatibility
-3. **Documentation-Only Changes**: Deployments are skipped when only documentation files are modified
+1. **Backend changes**: Deploy only the Lambda application
+2. **Frontend changes**: Deploy only the Vercel application
+3. **Infrastructure changes**: Apply only the selected Terraform environments
+4. **Concurrent requests**: Queue behind the active deployment for the same environment
 
 ### Benefits:
 
-- **Automated deployment**: Application deploys immediately when tests pass
-- **Infrastructure compatibility**: App deployment follows infrastructure updates
-- **Efficient resource usage**: Skips unnecessary deployments for documentation changes
-- **Reliable process**: Consistent deployment trigger based on test success
+- **Automated deployment**: Relevant backend and frontend changes deploy automatically
+- **Efficient resource usage**: Unrelated changes do not rebuild application images
+- **Reliable process**: Each production target has one automatic deployment path
+- **Explicit operations**: Manual Lambda management shares the deployment concurrency lock
 
 ## Manual Triggers
 
 Workflows that interact with external resources support manual triggers via `workflow_dispatch`:
 
-### Container-based Deployment
+### Infrastructure Deployment
 
-- **deploy_app.yml** - Deploys to AWS ECS
 - **deploy_infra.yml** - Manages AWS infrastructure with Terraform
 
 ### Serverless Deployment
 
-- **deploy_serverless.yml** - Deploys backend to AWS Lambda with Zappa
-- **deploy_lambda.yml** - Alternative Lambda deployment workflow
+- **deploy_lambda.yml** - Deploys backend to AWS Lambda with Zappa
 - **deploy_frontend.yml** - Deploys frontend to Vercel
 
 ### Cost Control
@@ -295,7 +277,7 @@ Workflows that interact with external resources support manual triggers via `wor
 
 The deployment workflows authenticate via OIDC (OpenID Connect) using GitHub's identity provider. Each GitHub environment (dev, prod) has an `AWS_ACCOUNT_ID` variable and an IAM role (`github-actions-<env>`) that GitHub Actions assumes.
 
-Legacy workflows (lambda_management, geodata_import) still use static credentials:
+The legacy geodata import workflow still uses static credentials:
 
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`

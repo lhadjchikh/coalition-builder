@@ -39,6 +39,11 @@ jobs:
           terraform init -backend=false
           terraform validate
 
+      - name: Terraform module tests
+        run: |
+          terraform -chdir=terraform/modules/github-oidc init -backend=false -input=false
+          terraform -chdir=terraform/modules/github-oidc test
+
   # Run all tests (unit tests don't need AWS, integration tests do)
   tests:
     name: Run Terratests
@@ -50,7 +55,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: terraform/tests/go.sum
@@ -71,7 +76,7 @@ jobs:
         run: |
           aws sts get-caller-identity
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          echo "AWS_ACCOUNT_ID=${ACCOUNT_ID}" >> $GITHUB_ENV
+          echo "AWS_ACCOUNT_ID=${ACCOUNT_ID}" >> "${GITHUB_ENV}"
 
       - name: Install dependencies
         run: |

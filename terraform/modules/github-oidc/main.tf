@@ -247,6 +247,7 @@ resource "aws_iam_role_policy" "infrastructure" {
             "iam:ListUserPolicies",
             "iam:ListUserTags",
             "iam:ListAccessKeys",
+            "iam:SimulatePrincipalPolicy",
           ]
           Resource = "*"
         },
@@ -344,6 +345,25 @@ resource "aws_iam_role_policy" "infrastructure" {
             "cloudformation:ListResources",
           ]
           Resource = "*"
+        },
+
+        # --- CloudFormation stacks managed by Zappa ---
+        {
+          Sid    = "CloudFormationStacks"
+          Effect = "Allow"
+          Action = [
+            "cloudformation:CreateStack",
+            "cloudformation:DeleteStack",
+            "cloudformation:DescribeStackResource",
+            "cloudformation:DescribeStackResources",
+            "cloudformation:DescribeStacks",
+            "cloudformation:ListStackResources",
+            "cloudformation:UpdateStack",
+          ]
+          Resource = concat(
+            ["arn:aws:cloudformation:${var.aws_region}:${data.aws_caller_identity.current.account_id}:stack/${var.resource_prefix}-*/*"],
+            [for prefix in var.additional_iam_prefixes : "arn:aws:cloudformation:${var.aws_region}:${data.aws_caller_identity.current.account_id}:stack/${prefix}-*/*"],
+          )
         },
 
         # --- Account-scoped services (regional) ---

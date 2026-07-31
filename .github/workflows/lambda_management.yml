@@ -23,13 +23,9 @@ on:
           - dev
           - prod
       rollback_steps:
-        description: "Number of versions to rollback (for rollback action)"
+        description: "Number of versions to rollback"
         required: false
         default: "1"
-      schedule_expression:
-        description: "Schedule expression (for schedule action, e.g., rate(5 minutes))"
-        required: false
-        default: "rate(10 minutes)"
       function_payload:
         description: "JSON payload for invoke action"
         required: false
@@ -38,6 +34,10 @@ on:
 permissions:
   contents: read
   id-token: write
+
+concurrency:
+  group: deploy-lambda-${{ github.event.inputs.environment }}
+  cancel-in-progress: false
 
 jobs:
   manage:
@@ -49,11 +49,35 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
+      - name: Validate required configuration
+        env:
+          AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+          AWS_STORAGE_BUCKET_NAME: ${{ vars.AWS_STORAGE_BUCKET_NAME }}
+          DATABASE_SECRET_ARN: ${{ secrets.DATABASE_SECRET_ARN }}
+          DJANGO_SECRET_ARN: ${{ secrets.DJANGO_SECRET_ARN }}
+          ZAPPA_ROLE_NAME: ${{ vars.ZAPPA_ROLE_NAME }}
+          ZAPPA_S3_BUCKET: ${{ vars.ZAPPA_S3_BUCKET }}
+        run: |
+          required_names=(
+            AWS_ACCOUNT_ID
+            AWS_STORAGE_BUCKET_NAME
+            DATABASE_SECRET_ARN
+            DJANGO_SECRET_ARN
+            ZAPPA_ROLE_NAME
+            ZAPPA_S3_BUCKET
+          )
+
+          for required_name in "${required_names[@]}"; do
+            if [[ -z "${!required_name}" ]]; then
+              echo "::error::${required_name} is not set in the selected GitHub environment"
+              exit 1
+            fi
+          done
+
+      - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/github-actions-${{ github.event.inputs.environment }}
           aws-region: us-east-1
 
       - name: Set up Python
@@ -70,82 +94,104 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./backend
-        run: |
-          poetry install --no-interaction --no-ansi
-          poetry add zappa
+        run: poetry install --no-interaction --no-ansi --only main
 
-      - name: Tail Logs
-        if: github.event.inputs.action == 'tail-logs'
+      - name: Configure Zappa settings
         working-directory: ./backend
-        run: |
-          echo "### 📋 Lambda Logs for ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          poetry run zappa tail ${{ github.event.inputs.environment }} --since 1h --disable-progress | head -100 >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+        env:
+          AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+          AWS_REGION: us-east-1
+          AWS_STORAGE_BUCKET_NAME: ${{ vars.AWS_STORAGE_BUCKET_NAME }}
+          CLOUDFRONT_DOMAIN: ${{ vars.CLOUDFRONT_DOMAIN }}
+          DATABASE_SECRET_ARN: ${{ secrets.DATABASE_SECRET_ARN }}
+          DEPLOYMENT_ENVIRONMENT: ${{ github.event.inputs.environment }}
+          DJANGO_SECRET_ARN: ${{ secrets.DJANGO_SECRET_ARN }}
+          USE_CUSTOM_DOCKER: true
+          VPC_SECURITY_GROUP_IDS: ${{ vars.VPC_SECURITY_GROUP_IDS }}
+          VPC_SUBNET_IDS: ${{ vars.VPC_SUBNET_IDS }}
+          ZAPPA_ROLE_NAME: ${{ vars.ZAPPA_ROLE_NAME }}
+          ZAPPA_S3_BUCKET: ${{ vars.ZAPPA_S3_BUCKET }}
+        run: poetry run python scripts/configure_zappa.py
 
-      - name: Rollback Deployment
+      - name: Tail logs
+        if: github.event.inputs.action == 'tail-logs'
+        env:
+          DEPLOYMENT_ENVIRONMENT: ${{ github.event.inputs.environment }}
+        run: |
+          {
+            echo "### Lambda logs for ${DEPLOYMENT_ENVIRONMENT}"
+            echo '```'
+            aws logs tail "/aws/lambda/coalition-${DEPLOYMENT_ENVIRONMENT}" \
+              --since 1h \
+              --format short
+            echo '```'
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Roll back deployment
         if: github.event.inputs.action == 'rollback'
         working-directory: ./backend
+        env:
+          DEPLOYMENT_ENVIRONMENT: ${{ github.event.inputs.environment }}
+          ROLLBACK_STEPS: ${{ github.event.inputs.rollback_steps }}
         run: |
-          echo "Rolling back ${{ github.event.inputs.rollback_steps }} version(s)..."
-          poetry run zappa rollback ${{ github.event.inputs.environment }} -n ${{ github.event.inputs.rollback_steps }}
-          echo "### ⏪ Rollback Complete" >> $GITHUB_STEP_SUMMARY
-          echo "Rolled back ${{ github.event.inputs.rollback_steps }} version(s) in ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          if [[ ! "${ROLLBACK_STEPS}" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::rollback_steps must be a positive integer"
+            exit 1
+          fi
+          poetry run zappa rollback "${DEPLOYMENT_ENVIRONMENT}" -n "${ROLLBACK_STEPS}"
+          echo "Rolled back ${ROLLBACK_STEPS} version(s) in ${DEPLOYMENT_ENVIRONMENT}." >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Undeploy Lambda
         if: github.event.inputs.action == 'undeploy'
         working-directory: ./backend
-        run: |
-          echo "⚠️ Undeploying Lambda function for ${{ github.event.inputs.environment }}..."
-          poetry run zappa undeploy ${{ github.event.inputs.environment }} --yes
-          echo "### 🗑️ Lambda Undeployed" >> $GITHUB_STEP_SUMMARY
-          echo "Successfully removed Lambda function for ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+        env:
+          DEPLOYMENT_ENVIRONMENT: ${{ github.event.inputs.environment }}
+        run: poetry run zappa undeploy "${DEPLOYMENT_ENVIRONMENT}" --yes
 
       - name: Schedule Lambda
         if: github.event.inputs.action == 'schedule'
         working-directory: ./backend
-        run: |
-          echo "Setting schedule for ${{ github.event.inputs.environment }}..."
-          poetry run zappa schedule ${{ github.event.inputs.environment }}
-          echo "### ⏰ Schedule Set" >> $GITHUB_STEP_SUMMARY
-          echo "Lambda function scheduled with expression: ${{ github.event.inputs.schedule_expression }}" >> $GITHUB_STEP_SUMMARY
+        env:
+          DEPLOYMENT_ENVIRONMENT: ${{ github.event.inputs.environment }}
+        run: poetry run zappa schedule "${DEPLOYMENT_ENVIRONMENT}"
 
       - name: Unschedule Lambda
         if: github.event.inputs.action == 'unschedule'
         working-directory: ./backend
-        run: |
-          echo "Removing schedule for ${{ github.event.inputs.environment }}..."
-          poetry run zappa unschedule ${{ github.event.inputs.environment }}
-          echo "### ⏸️ Schedule Removed" >> $GITHUB_STEP_SUMMARY
-          echo "Lambda function unscheduled for ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+        env:
+          DEPLOYMENT_ENVIRONMENT: ${{ github.event.inputs.environment }}
+        run: poetry run zappa unschedule "${DEPLOYMENT_ENVIRONMENT}"
 
-      - name: Invoke Lambda Function
+      - name: Invoke Lambda function
         if: github.event.inputs.action == 'invoke'
         working-directory: ./backend
+        env:
+          DEPLOYMENT_ENVIRONMENT: ${{ github.event.inputs.environment }}
+          FUNCTION_PAYLOAD: ${{ github.event.inputs.function_payload }}
         run: |
-          echo "Invoking Lambda function..."
-          RESULT=$(poetry run zappa invoke ${{ github.event.inputs.environment }} --raw-response '${{ github.event.inputs.function_payload }}')
-          echo "### 🎯 Lambda Invocation Result" >> $GITHUB_STEP_SUMMARY
-          echo '```json' >> $GITHUB_STEP_SUMMARY
-          echo "$RESULT" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          INVOCATION_OUTPUT=$(poetry run zappa invoke "${DEPLOYMENT_ENVIRONMENT}" --raw-response "${FUNCTION_PAYLOAD}")
+          {
+            echo "### Lambda invocation result"
+            echo '```json'
+            echo "${INVOCATION_OUTPUT}"
+            echo '```'
+          } >> "${GITHUB_STEP_SUMMARY}"
 
-      - name: Certify Deployment
+      - name: Certify deployment
         if: github.event.inputs.action == 'certify'
         working-directory: ./backend
-        run: |
-          echo "Certifying deployment for ${{ github.event.inputs.environment }}..."
-          poetry run zappa certify ${{ github.event.inputs.environment }} --yes
-          echo "### ✅ Deployment Certified" >> $GITHUB_STEP_SUMMARY
-          echo "Lambda deployment certified for ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+        env:
+          DEPLOYMENT_ENVIRONMENT: ${{ github.event.inputs.environment }}
+        run: poetry run zappa certify "${DEPLOYMENT_ENVIRONMENT}" --yes
 
-      - name: Get Lambda Status
+      - name: Get Lambda status
         if: always()
         continue-on-error: true
         working-directory: ./backend
+        env:
+          DEPLOYMENT_ENVIRONMENT: ${{ github.event.inputs.environment }}
         run: |
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📊 Current Status" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          poetry run zappa status ${{ github.event.inputs.environment }} >> $GITHUB_STEP_SUMMARY 2>&1 || echo "Status not available" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "### Current status" >> "${GITHUB_STEP_SUMMARY}"
+          echo '```' >> "${GITHUB_STEP_SUMMARY}"
+          poetry run zappa status "${DEPLOYMENT_ENVIRONMENT}" >> "${GITHUB_STEP_SUMMARY}" 2>&1 || echo "Status not available" >> "${GITHUB_STEP_SUMMARY}"
+          echo '```' >> "${GITHUB_STEP_SUMMARY}"
