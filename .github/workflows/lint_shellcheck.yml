@@ -8,11 +8,13 @@ on:
     branches: [main]
     paths:
       - "**/*.sh"
+      - ".github/workflows/deploy_terraform_environment.yml"
       - ".github/workflows/lint_shellcheck.yml"
   pull_request:
     branches: [main]
     paths:
       - "**/*.sh"
+      - ".github/workflows/deploy_terraform_environment.yml"
       - ".github/workflows/lint_shellcheck.yml"
 
 jobs:
