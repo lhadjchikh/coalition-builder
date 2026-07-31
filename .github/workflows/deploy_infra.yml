@@ -33,6 +33,10 @@ on:
           - prod
           - dev
 
+concurrency:
+  group: terraform-infrastructure-${{ github.ref }}
+  queue: max
+
 env:
   TF_LOG: error
 
