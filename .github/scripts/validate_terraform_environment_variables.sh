@@ -58,11 +58,14 @@ validate_bastion_key_pair_configuration() {
 }
 
 validate_repository_identity() {
-  require_nonempty_variable TF_VAR_github_repo
-  require_nonempty_variable GITHUB_REPOSITORY
+  local configured_repository_variable=TF_VAR_github_repo
+  local actions_repository_variable=GITHUB_REPOSITORY
 
-  if [[ "${TF_VAR_github_repo}" != "${GITHUB_REPOSITORY}" ]]; then
-    fail_validation 'RepositoryIdentityMismatch' TF_VAR_github_repo \
+  require_nonempty_variable "${configured_repository_variable}"
+  require_nonempty_variable "${actions_repository_variable}"
+
+  if [[ "${!configured_repository_variable}" != "${!actions_repository_variable}" ]]; then
+    fail_validation 'RepositoryIdentityMismatch' "${configured_repository_variable}" \
       "configured repository must match the GitHub Actions repository"
   fi
 }
