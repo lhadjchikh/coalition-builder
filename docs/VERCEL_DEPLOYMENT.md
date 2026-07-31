@@ -38,12 +38,14 @@ Add these as **repository secrets** in GitHub:
 
 ### 4. Set GitHub Variables
 
-Add these as **repository variables** (or environment-specific):
+Add these as **repository variables**. The frontend deployment job does not
+select a GitHub environment, so environment-scoped variables are not available
+to it.
 
 #### Development
 
 - `DEVELOPMENT_API_URL`: `https://api-dev.yourdomain.com` or Lambda API Gateway URL
-- `DEVELOPMENT_SITE_URL`: `https://dev.yourdomain.com`
+- `DEVELOPMENT_SITE_URL`: `https://dev.yourdomain.com` (optional; falls back to `PRODUCTION_SITE_URL`)
 
 #### Staging
 
@@ -55,6 +57,11 @@ Add these as **repository variables** (or environment-specific):
 - `PRODUCTION_API_URL`: `https://api.yourdomain.com` or Lambda API Gateway URL
 - `PRODUCTION_SITE_URL`: `https://yourdomain.com`
 - `PRODUCTION_DOMAIN`: `yourdomain.com` (for aliasing)
+
+#### Shared build configuration
+
+- `CLOUDFRONT_DOMAIN`: `d123456789.cloudfront.net` (required for image optimization)
+- `AWS_STORAGE_BUCKET_NAME`: `your-assets-bucket` (required when images are served directly from S3)
 
 #### Optional
 
