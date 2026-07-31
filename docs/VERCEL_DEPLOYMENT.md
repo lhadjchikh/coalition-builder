@@ -82,7 +82,9 @@ The GitHub Actions workflow passes the selected repository variables to
 Next.js evaluates these values while creating the prebuilt artifact. The deploy
 step cannot change them. For a manual `vercel build` outside GitHub Actions,
 mirror the same values in the corresponding Vercel project environment and keep
-them synchronized with the repository variables.
+them synchronized with the repository variables. Immediately before building,
+refresh Vercel's local cache with `vercel pull --yes --environment=preview` or
+`vercel pull --yes --environment=production`, as appropriate.
 
 ## Deployment Workflow
 
