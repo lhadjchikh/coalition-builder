@@ -7,20 +7,20 @@ readonly SCRIPT_DIRECTORY
 readonly VALIDATOR="${SCRIPT_DIRECTORY}/validate_terraform_environment_variables.sh"
 
 shared_environment=(
-  AWS_ACCOUNT_ID=200363996622
-  TF_VAR_prefix=landandbay
-  TF_VAR_db_username=lab_admin
-  TF_VAR_db_password=secret
-  TF_VAR_app_db_username=coalition_app
+  AWS_ACCOUNT_ID=123456789012
+  TF_VAR_prefix=example-app
+  TF_VAR_db_username=platform_admin
+  TF_VAR_db_password=test-password
+  TF_VAR_app_db_username=application_user
   TF_VAR_bastion_public_key=ssh-rsa-placeholder
-  TF_VAR_bastion_key_name=landandbay-bastion
+  TF_VAR_bastion_key_name=example-bastion
   TF_VAR_create_new_key_pair=true
-  TF_VAR_allowed_bastion_cidrs='["0.0.0.0/0"]'
-  TF_VAR_allowed_lambda_cidrs='["10.1.3.0/24"]'
-  TF_VAR_alert_email=admin@landandbay.org
-  TF_VAR_domain_name=landandbay.org
-  TF_VAR_github_repo=lhadjchikh/coalition-builder
-  GITHUB_REPOSITORY=lhadjchikh/coalition-builder
+  TF_VAR_allowed_bastion_cidrs='["192.0.2.0/24"]'
+  TF_VAR_allowed_lambda_cidrs='["198.51.100.0/24"]'
+  TF_VAR_alert_email=alerts@example.invalid
+  TF_VAR_domain_name=example.invalid
+  TF_VAR_github_repo=example-org/example-repository
+  GITHUB_REPOSITORY=example-org/example-repository
 )
 
 assert_shared_configuration_is_accepted() {
@@ -102,15 +102,15 @@ assert_repository_identity_mismatch_is_rejected() {
 
 assert_prod_configuration_is_accepted() {
   env -i PATH="${PATH}" GITHUB_RUN_ID=test \
-    AWS_ACCOUNT_ID=956322717133 \
-    TF_VAR_prefix=landandbay \
+    AWS_ACCOUNT_ID=123456789012 \
+    TF_VAR_prefix=example-app \
     "${VALIDATOR}" prod >/dev/null
 }
 
 assert_unknown_environment_is_rejected() {
   if env -i PATH="${PATH}" GITHUB_RUN_ID=test \
-    AWS_ACCOUNT_ID=956322717133 \
-    TF_VAR_prefix=landandbay \
+    AWS_ACCOUNT_ID=123456789012 \
+    TF_VAR_prefix=example-app \
     "${VALIDATOR}" unknown >/dev/null 2>&1; then
     printf 'Expected validation to reject an unknown environment\n' >&2
     return 1
