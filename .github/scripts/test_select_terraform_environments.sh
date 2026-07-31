@@ -55,6 +55,9 @@ assert_selection '[]' push '' .github/workflows/deploy_terraform_environment.yml
 assert_selection '[]' push '' .github/scripts/select_terraform_environments.sh
 assert_selection '[]' push '' terraform/tests/modules/networking_test.go
 assert_selection '[]' push '' terraform/README.md
+assert_selection '[]' push '' terraform/modules/database/README.md
+assert_selection '[]' push '' terraform/scripts/bootstrap/test_bootstrap.sh
+assert_selection '[]' push '' terraform/terraform.tfvars.example
 assert_rejected "${SELECTOR}" schedule
 
 RENAME_FIXTURE_REPOSITORY="$(mktemp -d "${TMPDIR:-/tmp}/terraform-environment-selection.XXXXXX")"

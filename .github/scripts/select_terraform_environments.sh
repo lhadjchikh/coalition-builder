@@ -44,13 +44,13 @@ classify_terraform_change() {
   local changed_path="$1"
 
   case "${changed_path}" in
+    terraform/*.md) printf 'none\n' ;;
     terraform/environments/shared/*) printf 'shared\n' ;;
     terraform/environments/prod/*) printf 'prod\n' ;;
     terraform/environments/dev/*) printf 'dev\n' ;;
-    terraform/modules/* | terraform/scripts/* | \
+    terraform/modules/* | terraform/scripts/setup_remote_state.sh | \
       terraform/backend.tf | terraform/main.tf | terraform/outputs.tf | \
-      terraform/variables.tf | terraform/versions.tf | \
-      terraform/terraform.tfvars.example)
+      terraform/variables.tf | terraform/versions.tf)
       printf 'all\n'
       ;;
     *) printf 'none\n' ;;
