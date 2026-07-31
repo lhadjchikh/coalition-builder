@@ -57,6 +57,16 @@ validate_bastion_key_pair_configuration() {
   fi
 }
 
+validate_repository_identity() {
+  require_nonempty_variable TF_VAR_github_repo
+  require_nonempty_variable GITHUB_REPOSITORY
+
+  if [[ "${TF_VAR_github_repo}" != "${GITHUB_REPOSITORY}" ]]; then
+    fail_validation 'RepositoryIdentityMismatch' TF_VAR_github_repo \
+      "configured repository must match the GitHub Actions repository"
+  fi
+}
+
 validate_shared_environment() {
   local required_variable
   local required_variables=(
@@ -66,7 +76,6 @@ validate_shared_environment() {
     TF_VAR_bastion_key_name
     TF_VAR_alert_email
     TF_VAR_domain_name
-    TF_VAR_github_repo
   )
 
   for required_variable in "${required_variables[@]}"; do
@@ -74,6 +83,7 @@ validate_shared_environment() {
   done
 
   validate_bastion_key_pair_configuration
+  validate_repository_identity
   require_nonempty_string_array TF_VAR_allowed_bastion_cidrs
   require_nonempty_string_array TF_VAR_allowed_lambda_cidrs
 }

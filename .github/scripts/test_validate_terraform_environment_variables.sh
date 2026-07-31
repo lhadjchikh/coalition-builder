@@ -20,6 +20,7 @@ shared_environment=(
   TF_VAR_alert_email=admin@landandbay.org
   TF_VAR_domain_name=landandbay.org
   TF_VAR_github_repo=lhadjchikh/coalition-builder
+  GITHUB_REPOSITORY=lhadjchikh/coalition-builder
 )
 
 assert_shared_configuration_is_accepted() {
@@ -66,6 +67,16 @@ assert_empty_network_boundary_is_rejected() {
   fi
 }
 
+assert_repository_identity_mismatch_is_rejected() {
+  if env -i PATH="${PATH}" GITHUB_RUN_ID=test \
+    "${shared_environment[@]}" \
+    TF_VAR_github_repo=another-owner/another-repository \
+    "${VALIDATOR}" shared >/dev/null 2>&1; then
+    printf 'Expected shared validation to reject a repository identity mismatch\n' >&2
+    return 1
+  fi
+}
+
 assert_prod_configuration_is_accepted() {
   env -i PATH="${PATH}" GITHUB_RUN_ID=test \
     AWS_ACCOUNT_ID=956322717133 \
@@ -90,6 +101,7 @@ assert_missing_variable_is_rejected TF_VAR_bastion_public_key
 assert_missing_variable_is_rejected TF_VAR_create_new_key_pair
 assert_missing_variable_is_rejected TF_VAR_github_repo
 assert_empty_network_boundary_is_rejected
+assert_repository_identity_mismatch_is_rejected
 assert_prod_configuration_is_accepted
 assert_unknown_environment_is_rejected
 
