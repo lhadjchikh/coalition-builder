@@ -10,11 +10,17 @@ on:
     paths:
       - "terraform/**"
       - ".github/workflows/deploy_infra.yml"
+      - ".github/workflows/deploy_terraform_environment.yml"
+      - ".github/scripts/list_terraform_changed_paths.sh"
+      - ".github/scripts/select_terraform_environments.sh"
   pull_request:
     branches: [main]
     paths:
       - "terraform/**"
       - ".github/workflows/deploy_infra.yml"
+      - ".github/workflows/deploy_terraform_environment.yml"
+      - ".github/scripts/list_terraform_changed_paths.sh"
+      - ".github/scripts/select_terraform_environments.sh"
   workflow_dispatch:
     inputs:
       environment:
@@ -27,28 +33,49 @@ on:
           - prod
           - dev
 
+concurrency:
+  group: terraform-infrastructure-${{ github.ref }}
+  queue: max
+
 env:
   TF_LOG: error
 
 jobs:
-  # Determine which environment to deploy
-  determine-environment:
+  determine_environments:
+    name: Determine Terraform environments
     runs-on: ubuntu-latest
     outputs:
-      environment: ${{ steps.env.outputs.environment }}
-      tf_directory: ${{ steps.env.outputs.tf_directory }}
+      environments: ${{ steps.selection.outputs.environments }}
     steps:
-      - id: env
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Select environments
+        id: selection
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REQUESTED_ENVIRONMENT: ${{ github.event.inputs.environment || '' }}
+          BEFORE_SHA: ${{ github.event.before || '' }}
+          AFTER_SHA: ${{ github.sha }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            ENV="${{ github.event.inputs.environment }}"
-          elif [ "${{ github.event_name }}" = "pull_request" ]; then
-            ENV="dev"
-          else
-            ENV="prod"
+          changed_paths=()
+          if [[ "${EVENT_NAME}" == "push" ]]; then
+            changed_paths_file="${RUNNER_TEMP}/terraform_changed_paths.txt"
+            if ! .github/scripts/list_terraform_changed_paths.sh \
+              "${BEFORE_SHA}" "${AFTER_SHA}" >"${changed_paths_file}"; then
+              exit 1
+            fi
+            mapfile -t changed_paths <"${changed_paths_file}"
           fi
-          echo "environment=$ENV" >> $GITHUB_OUTPUT
-          echo "tf_directory=terraform/environments/$ENV" >> $GITHUB_OUTPUT
+
+          environments="$(.github/scripts/select_terraform_environments.sh \
+            "${EVENT_NAME}" \
+            "${REQUESTED_ENVIRONMENT}" \
+            "${changed_paths[@]}")"
+          echo "environments=${environments}" >>"${GITHUB_OUTPUT}"
+          echo "stage=environment-selection correlation=github-run-${GITHUB_RUN_ID} outcome=success environments=${environments}"
 
   # Wait for terraform tests to complete successfully before deploying
   wait_for_tests:
@@ -63,15 +90,17 @@ jobs:
 
       - name: Check if terraform tests should be running
         id: check_terraform_changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "terraform_changed=false" >> $GITHUB_OUTPUT
+          if [[ "${EVENT_NAME}" == "workflow_dispatch" ]]; then
+            echo "terraform_changed=false" >>"${GITHUB_OUTPUT}"
             echo "Manual trigger - skipping test wait"
           elif git diff --name-only HEAD~1 HEAD | grep -E '^terraform/'; then
-            echo "terraform_changed=true" >> $GITHUB_OUTPUT
+            echo "terraform_changed=true" >>"${GITHUB_OUTPUT}"
             echo "Terraform files changed - will wait for tests"
           else
-            echo "terraform_changed=false" >> $GITHUB_OUTPUT
+            echo "terraform_changed=false" >>"${GITHUB_OUTPUT}"
             echo "No terraform changes - skipping test wait"
           fi
 
@@ -92,121 +121,52 @@ jobs:
           echo "Terraform tests did not complete successfully: ${{ steps.wait_for_tests.outputs.conclusion }}"
           exit 1
 
-  terraform_deploy:
-    name: Terraform Plan & Apply (${{ needs.determine-environment.outputs.environment }})
-    runs-on: ubuntu-latest
-    environment: ${{ needs.determine-environment.outputs.environment }}
-    needs: [determine-environment, wait_for_tests]
-    if: always() && needs.determine-environment.result == 'success' && (needs.wait_for_tests.result == 'success' || needs.wait_for_tests.result == 'skipped')
+  deploy_shared:
+    name: Deploy shared Terraform
+    needs: [determine_environments, wait_for_tests]
+    if: >-
+      always() &&
+      needs.determine_environments.result == 'success' &&
+      (needs.wait_for_tests.result == 'success' || needs.wait_for_tests.result == 'skipped') &&
+      contains(fromJSON(needs.determine_environments.outputs.environments), 'shared')
+    uses: ./.github/workflows/deploy_terraform_environment.yml
+    with:
+      environment: shared
+    secrets: inherit
+    permissions:
+      contents: read
+      id-token: write
 
-    env:
-      TF_DIRECTORY: ${{ needs.determine-environment.outputs.tf_directory }}
-      # Secrets (from GitHub environment)
-      TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
-      TF_VAR_db_username: ${{ secrets.DB_USERNAME }}
-      TF_VAR_app_db_username: ${{ secrets.APP_DB_USERNAME }}
-      TF_VAR_app_db_password: ${{ secrets.APP_DB_PASSWORD }}
-      TF_VAR_bastion_public_key: ${{ secrets.TF_VAR_BASTION_PUBLIC_KEY }}
-      TF_VAR_site_password: ${{ secrets.SITE_PASSWORD }}
-      TF_VAR_shared_peering_role_arn: ${{ secrets.SHARED_PEERING_ROLE_ARN }}
-      # Variables (from GitHub environment)
-      TF_VAR_prefix: ${{ vars.TF_VAR_PREFIX }}
-      TF_VAR_shared_account_id: ${{ vars.SHARED_ACCOUNT_ID }}
-      TF_VAR_github_repo: ${{ vars.REPO_FULL_NAME }}
-      TF_VAR_domain_name: ${{ vars.TF_VAR_DOMAIN_NAME }}
-      TF_VAR_api_gateway_id: ${{ vars.TF_VAR_API_GATEWAY_ID }}
-      TF_VAR_alert_email: ${{ vars.TF_VAR_ALERT_EMAIL }}
-      TF_VAR_ses_from_email: ${{ vars.SES_FROM_EMAIL }}
-      TF_VAR_ses_notification_email: ${{ vars.SES_NOTIFICATION_EMAIL }}
-      # Shared-only variables (unused by dev/prod but harmless as empty env vars)
-      TF_VAR_bastion_key_name: ${{ vars.BASTION_KEY_NAME }}
-      TF_VAR_allowed_bastion_cidrs: ${{ vars.ALLOWED_BASTION_CIDRS }}
-      TF_VAR_allowed_lambda_cidrs: ${{ vars.ALLOWED_LAMBDA_CIDRS }}
+  deploy_prod:
+    name: Deploy prod Terraform
+    needs: [determine_environments, wait_for_tests, deploy_shared]
+    if: >-
+      always() &&
+      needs.determine_environments.result == 'success' &&
+      (needs.wait_for_tests.result == 'success' || needs.wait_for_tests.result == 'skipped') &&
+      (needs.deploy_shared.result == 'success' || needs.deploy_shared.result == 'skipped') &&
+      contains(fromJSON(needs.determine_environments.outputs.environments), 'prod')
+    uses: ./.github/workflows/deploy_terraform_environment.yml
+    with:
+      environment: prod
+    secrets: inherit
+    permissions:
+      contents: read
+      id-token: write
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Validate required variables
-        run: |
-          if [ -z "${{ vars.AWS_ACCOUNT_ID }}" ]; then
-            echo "::error::AWS_ACCOUNT_ID variable is not set in the '${{ needs.determine-environment.outputs.environment }}' GitHub environment"
-            exit 1
-          fi
-          if [ -z "${{ vars.TF_VAR_PREFIX }}" ]; then
-            echo "::error::TF_VAR_PREFIX variable is not set in the '${{ needs.determine-environment.outputs.environment }}' GitHub environment"
-            exit 1
-          fi
-
-      - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/github-actions-${{ needs.determine-environment.outputs.environment }}
-          aws-region: us-east-1
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.12.1
-
-      - name: Setup Remote State and Backend
-        run: |
-          cd "$TF_DIRECTORY"
-          # Make the setup script executable and run it
-          chmod +x ../../scripts/setup_remote_state.sh
-          ../../scripts/setup_remote_state.sh "${{ needs.determine-environment.outputs.environment }}"
-
-      - name: Terraform Init
-        run: |
-          cd "$TF_DIRECTORY"
-          timeout 5m terraform init -backend-config=backend.hcl -input=false
-
-      - name: Terraform Validate
-        run: |
-          cd "$TF_DIRECTORY"
-          terraform validate
-
-      - name: Terraform Plan
-        id: plan
-        run: |
-          cd "$TF_DIRECTORY"
-
-          echo "Running terraform plan..."
-          set +e
-          terraform plan -no-color -input=false -out=tfplan > plan_output.txt 2>&1
-          PLAN_EXIT_CODE=$?
-          set -e
-
-          echo "Plan completed with exit code: $PLAN_EXIT_CODE"
-
-          echo "::group::Terraform Plan Output"
-          cat plan_output.txt
-          echo "::endgroup::"
-
-          if [ $PLAN_EXIT_CODE -ne 0 ]; then
-            echo "::error::Terraform plan failed with exit code $PLAN_EXIT_CODE"
-            exit 1
-          fi
-
-          if grep -q "No changes. Your infrastructure matches the configuration." plan_output.txt; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-            echo "::notice::No infrastructure changes detected"
-          else
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "::notice::Infrastructure changes detected"
-          fi
-
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && steps.plan.outputs.has_changes == 'true'
-        run: |
-          cd "$TF_DIRECTORY"
-
-          echo "Applying infrastructure changes..."
-
-          if terraform apply tfplan; then
-            echo "Terraform apply completed successfully"
-            echo "::notice::Infrastructure changes have been successfully applied"
-          else
-            echo "Terraform apply failed"
-            exit 1
-          fi
+  deploy_dev:
+    name: Deploy dev Terraform
+    needs: [determine_environments, wait_for_tests, deploy_shared]
+    if: >-
+      always() &&
+      needs.determine_environments.result == 'success' &&
+      (needs.wait_for_tests.result == 'success' || needs.wait_for_tests.result == 'skipped') &&
+      (needs.deploy_shared.result == 'success' || needs.deploy_shared.result == 'skipped') &&
+      contains(fromJSON(needs.determine_environments.outputs.environments), 'dev')
+    uses: ./.github/workflows/deploy_terraform_environment.yml
+    with:
+      environment: dev
+    secrets: inherit
+    permissions:
+      contents: read
+      id-token: write
