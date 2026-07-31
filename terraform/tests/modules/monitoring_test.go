@@ -3,7 +3,6 @@ package modules
 import (
 	"context"
 	"os"
-	"regexp"
 	"testing"
 
 	"terraform-tests/common"
@@ -25,12 +24,8 @@ func TestBudgetCalendarDatesDoNotCreatePerpetualDrift(t *testing.T) {
 	moduleSource, err := os.ReadFile("../../modules/monitoring/main.tf")
 	assert.NoError(t, err)
 
-	budgetResource := `(?s)resource "aws_budgets_budget" "monthly"`
-	ignoredCalendarDates := `.*?lifecycle \{.*?ignore_changes\s*=\s*\[time_period_start, time_period_end\]`
-	dateLifecycleGuard := regexp.MustCompile(
-		budgetResource + ignoredCalendarDates,
-	)
-	assert.Regexp(t, dateLifecycleGuard, string(moduleSource))
+	assert.NotContains(t, string(moduleSource), "time_period_end =")
+	assert.Contains(t, string(moduleSource), "ignore_changes = [time_period_start]")
 }
 
 func TestMonitoringModuleCreatesSNSTopics(t *testing.T) {
