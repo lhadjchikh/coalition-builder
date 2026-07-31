@@ -58,6 +58,7 @@ validate_shared_environment() {
     TF_VAR_bastion_key_name
     TF_VAR_alert_email
     TF_VAR_domain_name
+    TF_VAR_github_repo
   )
 
   for required_variable in "${required_variables[@]}"; do

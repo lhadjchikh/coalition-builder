@@ -19,6 +19,7 @@ shared_environment=(
   TF_VAR_allowed_lambda_cidrs='["10.1.3.0/24"]'
   TF_VAR_alert_email=admin@landandbay.org
   TF_VAR_domain_name=landandbay.org
+  TF_VAR_github_repo=lhadjchikh/coalition-builder
 )
 
 assert_shared_configuration_is_accepted() {
@@ -78,6 +79,7 @@ assert_shared_configuration_is_accepted
 assert_missing_variable_is_rejected TF_VAR_db_password
 assert_missing_variable_is_rejected TF_VAR_bastion_public_key
 assert_missing_variable_is_rejected TF_VAR_create_new_key_pair
+assert_missing_variable_is_rejected TF_VAR_github_repo
 assert_empty_network_boundary_is_rejected
 assert_prod_configuration_is_accepted
 assert_unknown_environment_is_rejected
