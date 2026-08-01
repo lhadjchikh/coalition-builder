@@ -88,9 +88,9 @@ variable "db_allocated_storage" {
 }
 
 variable "db_engine_version" {
-  description = "Version of PostgreSQL to use"
+  description = "Major version of PostgreSQL to use; AWS manages patch upgrades"
   type        = string
-  default     = "16.9"
+  default     = "16"
 }
 
 variable "db_instance_class" {

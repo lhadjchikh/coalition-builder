@@ -6,6 +6,8 @@ repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 lambda_workflow="${repository_root}/.github/workflows/deploy_lambda.yml"
 frontend_workflow="${repository_root}/.github/workflows/deploy_frontend.yml"
 management_workflow="${repository_root}/.github/workflows/lambda_management.yml"
+terraform_workflow="${repository_root}/.github/workflows/deploy_terraform_environment.yml"
+shellcheck_workflow="${repository_root}/.github/workflows/lint_shellcheck.yml"
 
 fail() {
   echo "FAIL: $1" >&2
@@ -26,6 +28,19 @@ require_text() {
   local path="$1"
   local expected="$2"
   grep -Fq -- "${expected}" "${path}" || fail "expected ${path} to contain: ${expected}"
+}
+
+require_text_occurrences() {
+  local path="$1"
+  local expected="$2"
+  local expected_count="$3"
+  local actual_count
+
+  if ! actual_count="$(grep -Fc -- "${expected}" "${path}")"; then
+    actual_count=0
+  fi
+  [[ "${actual_count}" -eq "${expected_count}" ]] ||
+    fail "expected ${path} to contain ${expected_count} occurrences of: ${expected}"
 }
 
 require_step_text() {
@@ -53,6 +68,8 @@ reject_text() {
 require_file "${lambda_workflow}"
 require_file "${frontend_workflow}"
 require_file "${management_workflow}"
+require_file "${terraform_workflow}"
+require_file "${shellcheck_workflow}"
 require_absent_file "${repository_root}/.github/workflows/deploy_app.yml"
 require_absent_file "${repository_root}/.github/workflows/deploy_serverless.yml"
 
@@ -78,5 +95,12 @@ require_text "${management_workflow}" "role-to-assume:"
 reject_text "${management_workflow}" "aws-access-key-id:"
 reject_text "${management_workflow}" "aws-secret-access-key:"
 require_text "${management_workflow}" "scripts/configure_zappa.py"
+
+require_text "${terraform_workflow}" "TF_VAR_create_new_key_pair: \${{ vars.CREATE_NEW_KEY_PAIR }}"
+require_text "${terraform_workflow}" "validate_terraform_environment_variables.sh"
+require_text_occurrences \
+  "${shellcheck_workflow}" \
+  '".github/workflows/deploy_terraform_environment.yml"' \
+  2
 
 echo "Deployment workflow regression tests passed."

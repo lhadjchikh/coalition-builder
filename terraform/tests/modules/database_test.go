@@ -2,6 +2,9 @@ package modules
 
 import (
 	"fmt"
+	"os"
+	"regexp"
+	"strconv"
 	"testing"
 
 	"terraform-tests/common"
@@ -13,6 +16,21 @@ import (
 // TestDatabaseModuleValidation runs validation-only tests that don't require AWS credentials
 func TestDatabaseModuleValidation(t *testing.T) {
 	common.ValidateModuleStructure(t, "database")
+}
+
+func TestSharedDatabaseVersionAllowsAWSManagedPatches(t *testing.T) {
+	sharedVariablesSource, err := os.ReadFile("../../environments/shared/variables.tf")
+	assert.NoError(t, err)
+
+	versionDefault := regexp.MustCompile(
+		`(?s)variable "db_engine_version"\s*\{.*?default\s*=\s*"([^"]+)"`,
+	).FindStringSubmatch(string(sharedVariablesSource))
+	if assert.Len(t, versionDefault, 2) {
+		majorVersion, conversionError := strconv.Atoi(versionDefault[1])
+		if assert.NoError(t, conversionError, "shared database version must contain only a major version") {
+			assert.Positive(t, majorVersion)
+		}
+	}
 }
 
 func TestDatabaseModuleCreatesRDSInstance(t *testing.T) {

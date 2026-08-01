@@ -8,11 +8,13 @@ on:
     branches: [main]
     paths:
       - "**/*.sh"
+      - ".github/workflows/deploy_terraform_environment.yml"
       - ".github/workflows/lint_shellcheck.yml"
   pull_request:
     branches: [main]
     paths:
       - "**/*.sh"
+      - ".github/workflows/deploy_terraform_environment.yml"
       - ".github/workflows/lint_shellcheck.yml"
 
 jobs:
@@ -32,6 +34,9 @@ jobs:
 
       - name: Test Terraform deployment environment selection
         run: .github/scripts/test_select_terraform_environments.sh
+
+      - name: Test Terraform deployment variable validation
+        run: .github/scripts/test_validate_terraform_environment_variables.sh
 
       - name: Test deployment workflow topology
         run: .github/scripts/test_deployment_workflows.sh

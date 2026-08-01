@@ -172,8 +172,6 @@ resource "aws_budgets_budget" "monthly" {
   limit_unit        = "USD"
   time_unit         = "MONTHLY"
   time_period_start = formatdate("YYYY-MM-01_00:00", timestamp())
-  # Add a reasonable end date (5 years in the future)
-  time_period_end = formatdate("YYYY-MM-01_00:00", timeadd(timestamp(), "43800h")) # ~5 years
 
   # Define cost types explicitly to avoid warnings
   cost_types {
@@ -224,6 +222,10 @@ resource "aws_budgets_budget" "monthly" {
 
   tags = {
     Name = "${var.prefix}-monthly-budget"
+  }
+
+  lifecycle {
+    ignore_changes = [time_period_start]
   }
 }
 
@@ -291,4 +293,3 @@ resource "awscc_ce_anomaly_subscription" "project_anomaly_subscription" {
   # Alert on anomalies with impact >= $5
   threshold = 5
 }
-

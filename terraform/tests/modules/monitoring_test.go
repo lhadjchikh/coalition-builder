@@ -2,6 +2,7 @@ package modules
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"terraform-tests/common"
@@ -17,6 +18,14 @@ import (
 // TestMonitoringModuleValidation runs validation-only tests that don't require AWS credentials
 func TestMonitoringModuleValidation(t *testing.T) {
 	common.ValidateModuleStructure(t, "monitoring")
+}
+
+func TestBudgetCalendarDatesDoNotCreatePerpetualDrift(t *testing.T) {
+	moduleSource, err := os.ReadFile("../../modules/monitoring/main.tf")
+	assert.NoError(t, err)
+
+	assert.NotContains(t, string(moduleSource), "time_period_end =")
+	assert.Contains(t, string(moduleSource), "ignore_changes = [time_period_start]")
 }
 
 func TestMonitoringModuleCreatesSNSTopics(t *testing.T) {

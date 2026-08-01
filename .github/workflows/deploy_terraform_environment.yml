@@ -39,6 +39,7 @@ jobs:
       TF_VAR_ses_from_email: ${{ vars.SES_FROM_EMAIL }}
       TF_VAR_ses_notification_email: ${{ vars.SES_NOTIFICATION_EMAIL }}
       TF_VAR_bastion_key_name: ${{ vars.BASTION_KEY_NAME }}
+      TF_VAR_create_new_key_pair: ${{ vars.CREATE_NEW_KEY_PAIR }}
       TF_VAR_allowed_bastion_cidrs: ${{ vars.ALLOWED_BASTION_CIDRS }}
       TF_VAR_allowed_lambda_cidrs: ${{ vars.ALLOWED_LAMBDA_CIDRS }}
 
@@ -49,16 +50,7 @@ jobs:
       - name: Validate required variables
         env:
           AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
-          TF_PREFIX: ${{ vars.TF_VAR_PREFIX }}
-        run: |
-          if [[ -z "${AWS_ACCOUNT_ID}" ]]; then
-            echo "::error::AWS_ACCOUNT_ID is not set in the '${{ inputs.environment }}' GitHub environment"
-            exit 1
-          fi
-          if [[ -z "${TF_PREFIX}" ]]; then
-            echo "::error::TF_VAR_PREFIX is not set in the '${{ inputs.environment }}' GitHub environment"
-            exit 1
-          fi
+        run: .github/scripts/validate_terraform_environment_variables.sh "${{ inputs.environment }}"
 
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
