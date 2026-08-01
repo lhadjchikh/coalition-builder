@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-const path = require("path");
-
 // Resolve API URL once at config time — this value gets inlined into
 // both client and server bundles via DefinePlugin, so server components
 // don't need runtime env vars on Vercel.
@@ -16,29 +13,6 @@ const nextConfig = {
 
   // Preserve trailing slashes to match Django URL patterns
   trailingSlash: true,
-
-  // Webpack configuration
-  webpack: (config) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      "@": path.resolve(__dirname),
-      "@components": path.resolve(__dirname, "components"),
-      "@contexts": path.resolve(__dirname, "contexts"),
-      "@hooks": path.resolve(__dirname, "hooks"),
-      "@services": path.resolve(__dirname, "services"),
-      "@styles": path.resolve(__dirname, "styles"),
-      "@tests": path.resolve(__dirname, "tests"),
-      "@types": path.resolve(__dirname, "types"),
-      "@utils": path.resolve(__dirname, "utils"),
-    };
-
-    config.module.rules.push({
-      test: /\.svg$/,
-      type: "asset/resource",
-    });
-
-    return config;
-  },
 
   // TypeScript configuration
   typescript: {

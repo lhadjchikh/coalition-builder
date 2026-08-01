@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Skip auth for health check endpoints and API routes that should remain public
   if (
     request.nextUrl.pathname.startsWith("/health") ||
@@ -20,20 +20,8 @@ export function middleware(request: NextRequest) {
 
   const basicAuth = request.headers.get("authorization");
 
-  if (basicAuth) {
-    const authValue = basicAuth.split(" ")[1];
-    try {
-      const [user, pwd] = atob(authValue).split(":");
-
-      const expectedUser = process.env.SITE_USERNAME || "admin";
-      const expectedPassword = process.env.SITE_PASSWORD || "";
-
-      if (user === expectedUser && pwd === expectedPassword) {
-        return NextResponse.next();
-      }
-    } catch (error) {
-      // Invalid base64 encoding
-    }
+  if (basicAuth && credentialsMatch(basicAuth)) {
+    return NextResponse.next();
   }
 
   return new NextResponse("Authentication required", {
@@ -56,3 +44,20 @@ export const config = {
     "/((?!api/public|_next/static|_next/image|favicon.ico|health|metrics).*)",
   ],
 };
+
+function credentialsMatch(authorizationHeader: string): boolean {
+  const encodedCredentials = authorizationHeader.split(" ")[1];
+  if (!encodedCredentials) {
+    return false;
+  }
+
+  try {
+    const [user, password] = atob(encodedCredentials).split(":");
+    const expectedUser = process.env.SITE_USERNAME || "admin";
+    const expectedPassword = process.env.SITE_PASSWORD || "";
+
+    return user === expectedUser && password === expectedPassword;
+  } catch {
+    return false;
+  }
+}
