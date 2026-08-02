@@ -1,9 +1,9 @@
+/* Import global styles before Tailwind emits CSS rules. */
+@import "../styles/global.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import global styles */
-@import "../styles/global.css";
 
 :root {
   --foreground-rgb: 0, 0, 0;

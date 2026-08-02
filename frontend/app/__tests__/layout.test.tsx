@@ -115,6 +115,8 @@ describe("RootLayout", () => {
       children: <div data-testid="page-content">Test Page Content</div>,
     });
 
+    expect(layoutResult.props["data-scroll-behavior"]).toBe("smooth");
+
     // Extract the actual content from the body element
     const bodyElement = layoutResult.props.children[1]; // [0] is head, [1] is body
     const bodyChildren = bodyElement.props.children; // This is the StyledComponentsRegistry

@@ -7,10 +7,9 @@
     "skipLibCheck": true,
     "strict": false,
     "noImplicitAny": true,
-
     // Module resolution
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
@@ -27,15 +26,12 @@
     "types": ["node", "react", "react-dom"],
     "resolveJsonModule": true,
     "esModuleInterop": true,
-
     // JSX and React
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "isolatedModules": true,
-
     // Output and build
     "noEmit": true,
     "incremental": true,
-
     // Plugins
     "plugins": [
       {
@@ -43,7 +39,13 @@
       }
     ]
   },
-  "include": ["next-env.d.ts", ".next/types/**/*.ts", "**/*.ts", "**/*.tsx"],
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/dev/types/**/*.ts"
+  ],
   "exclude": [
     "node_modules",
     "tests/**/*",

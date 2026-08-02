@@ -1,21 +1,19 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
-import js from "@eslint/js";
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTypescript from "eslint-config-next/typescript";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-});
-
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTypescript,
   {
     rules: {
       "@next/next/no-html-link-for-pages": "off",
+      // Next 16 enables React Compiler diagnostics by default. Keep this
+      // dependency migration behavior-neutral until existing violations are
+      // addressed in a focused change.
+      "react-hooks/error-boundaries": "off",
+      "react-hooks/refs": "off",
+      "react-hooks/set-state-in-effect": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",
         {
@@ -25,6 +23,7 @@ const eslintConfig = [
       ],
     },
   },
-];
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
+]);
 
 export default eslintConfig;
