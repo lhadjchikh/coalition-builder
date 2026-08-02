@@ -97,7 +97,7 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
         {/* The head tag is optional in Next.js App Router,
             but we include it explicitly to ensure it's present for SSR tests */}
