@@ -53,7 +53,7 @@ jobs:
       - name: Run lint
         run: |
           docker run --rm coalition_frontend_test:latest \
-            sh -c "npm run lint || echo 'Linting not available, skipping'"
+            npm run lint
 
       - name: Run unit tests
         run: |
