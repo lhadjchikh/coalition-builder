@@ -46,11 +46,22 @@ export const config = {
 };
 
 function credentialsMatch(authorizationHeader: string): boolean {
-  const encodedCredentials = authorizationHeader.split(" ")[1];
+  const encodedCredentials = extractBasicCredentials(authorizationHeader);
   if (!encodedCredentials) {
     return false;
   }
 
+  return decodedCredentialsMatch(encodedCredentials);
+}
+
+function extractBasicCredentials(authorizationHeader: string): string | null {
+  const basicAuthorization = /^Basic\s+(\S+)$/i.exec(
+    authorizationHeader.trim()
+  );
+  return basicAuthorization?.[1] ?? null;
+}
+
+function decodedCredentialsMatch(encodedCredentials: string): boolean {
   try {
     const [user, password] = atob(encodedCredentials).split(":");
     const expectedUser = process.env.SITE_USERNAME || "admin";

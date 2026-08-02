@@ -62,8 +62,8 @@ describe("proxy authentication", () => {
     );
   });
 
-  it("allows valid basic credentials", () => {
-    const authorization = `Basic ${Buffer.from(
+  it.each(["Basic", "basic"])("allows valid %s credentials", (scheme) => {
+    const authorization = `${scheme} ${Buffer.from(
       "reviewer:correct-password"
     ).toString("base64")}`;
 
@@ -76,7 +76,7 @@ describe("proxy authentication", () => {
   it.each([
     `Basic ${Buffer.from("reviewer:wrong-password").toString("base64")}`,
     "Basic not-valid-base64!",
-    "Bearer opaque-token",
+    `Bearer ${Buffer.from("reviewer:correct-password").toString("base64")}`,
   ])("rejects invalid authorization header %s", (authorization: string) => {
     const response = proxy(createProtectedRequest(authorization));
 
