@@ -124,6 +124,12 @@ variable "enable_single_az_endpoints" {
   default     = false
 }
 
+variable "enable_logs_endpoint" {
+  description = "Create an interface VPC endpoint for the CloudWatch Logs API. Not required for Lambda function logs, which the Lambda service delivers outside the VPC; enable only for code that calls the Logs API directly"
+  type        = bool
+  default     = true
+}
+
 variable "enable_ses_endpoint" {
   description = "Create an interface VPC endpoint for the SES API so Lambda in private subnets can send email without internet egress"
   type        = bool

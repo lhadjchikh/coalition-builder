@@ -67,6 +67,10 @@ module "networking" {
   # Prod is the only environment that sends transactional email, and these
   # subnets have no NAT or default route, so SES is only reachable this way.
   enable_ses_endpoint = true
+
+  # Nothing here calls the CloudWatch Logs API; Lambda's own logs arrive
+  # without it. Dropping it pays for the SES endpoint above.
+  enable_logs_endpoint = false
 }
 
 # VPC Peering - prod to shared
