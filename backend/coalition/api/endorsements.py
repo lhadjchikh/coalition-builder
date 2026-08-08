@@ -470,8 +470,8 @@ def verify_endorsement(request: HttpRequest, token: str) -> dict:
     # Verify the endorsement
     endorsement.verify_email()
 
-    # Send confirmation email
-    EndorsementEmailService.send_confirmation_email(endorsement)
+    if endorsement.status == "approved":
+        EndorsementEmailService.send_confirmation_email(endorsement)
 
     return {
         "success": True,

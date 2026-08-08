@@ -8,9 +8,10 @@ from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.test import Client
+from django.test import Client, override_settings
 
 from coalition.campaigns.models import PolicyCampaign
+from coalition.endorsements.email_service import EndorsementEmailService
 from coalition.endorsements.models import Endorsement
 from coalition.legal.models import LegalDocument, TermsAcceptance
 from coalition.stakeholders.models import Stakeholder
@@ -574,15 +575,35 @@ class EndorsementAPIEnhancedTest(BaseTestCase):
     def test_verify_endorsement_success(self) -> None:
         """Test successful endorsement verification"""
         token = str(self.endorsement.verification_token)
-        response = self.client.post(f"/api/endorsements/verify/{token}/")
+        with patch.object(
+            EndorsementEmailService,
+            "send_confirmation_email",
+        ) as send_approval_email:
+            response = self.client.post(f"/api/endorsements/verify/{token}/")
 
         assert response.status_code == 200
         data = response.json()
         assert "Email verified successfully" in data["message"]
+        send_approval_email.assert_not_called()
 
         self.endorsement.refresh_from_db()
         assert self.endorsement.email_verified is True
         assert self.endorsement.verified_at is not None
+
+    @override_settings(AUTO_APPROVE_VERIFIED_ENDORSEMENTS=True)
+    def test_verify_endorsement_sends_approval_email_when_auto_approved(self) -> None:
+        token = str(self.endorsement.verification_token)
+
+        with patch.object(
+            EndorsementEmailService,
+            "send_confirmation_email",
+        ) as send_approval_email:
+            response = self.client.post(f"/api/endorsements/verify/{token}/")
+
+        assert response.status_code == 200
+        self.endorsement.refresh_from_db()
+        assert self.endorsement.status == "approved"
+        send_approval_email.assert_called_once_with(self.endorsement)
 
     def test_verify_endorsement_invalid_token_format(self) -> None:
         """Test endorsement verification with invalid token format"""
