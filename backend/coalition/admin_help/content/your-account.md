@@ -18,11 +18,12 @@ role needs. Ask {{ supervisor_contact }} before assuming something is broken.
 ## The data you are handling
 
 This system holds real people's email addresses and home mailing addresses. The
-addresses are there for one reason: they let us map an endorser to their
-congressional and state legislative districts, so we can tell a legislator "these
-are your constituents."
+full address lets us map an endorser to their congressional and state legislative
+districts, so we can tell a legislator "these are your constituents."
 
-Those details are **never** shown publicly, and they should never leave the admin.
+A publicly displayed endorsement includes the endorser's city and state. Their
+email, street address, ZIP code, coordinates, and district assignments are
+**never** shown publicly, and those private details should never leave the admin.
 
 - Don't copy contact information into a spreadsheet, an email, a shared document,
   or a social post without asking {{ supervisor_contact }} first.
