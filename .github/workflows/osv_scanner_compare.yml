@@ -1,0 +1,84 @@
+name: OSV-Scanner Dependency Comparison
+
+on:
+  workflow_call:
+    inputs:
+      base_sha:
+        description: Commit containing the existing dependency state
+        required: true
+        type: string
+      head_sha:
+        description: Commit containing the proposed dependency state
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  osv_scan:
+    name: osv-scan
+    runs-on: ubuntu-latest
+    env:
+      SCAN_TARGETS: |-
+        --lockfile=./backend/poetry.lock
+        --lockfile=./frontend/package-lock.json
+        --lockfile=./terraform/tests/go.mod
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Preserve result validator
+        run: install -m 0755 .github/scripts/validate_osv_results.sh "${RUNNER_TEMP}/validate_osv_results.sh"
+
+      - name: Checkout comparison base
+        env:
+          BASE_SHA: ${{ inputs.base_sha }}
+        run: git checkout --force --detach "${BASE_SHA}"
+
+      - name: Scan existing dependencies
+        uses: google/osv-scanner-action/osv-scanner-action@06b2ab4348248b456ee06c9e953637f55e03504f # v2.5.0
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --format=json
+            --output=old-results.json
+            ${{ env.SCAN_TARGETS }}
+
+      - name: Validate existing scan results
+        env:
+          OSV_RESULTS_FILE: old-results.json
+        run: |
+          "${RUNNER_TEMP}/validate_osv_results.sh" "${OSV_RESULTS_FILE}"
+
+      - name: Checkout proposed revision
+        env:
+          HEAD_SHA: ${{ inputs.head_sha }}
+        run: git checkout --force --detach "${HEAD_SHA}"
+
+      - name: Scan proposed dependencies
+        uses: google/osv-scanner-action/osv-scanner-action@06b2ab4348248b456ee06c9e953637f55e03504f # v2.5.0
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --format=json
+            --output=new-results.json
+            ${{ env.SCAN_TARGETS }}
+
+      - name: Validate proposed scan results
+        env:
+          OSV_RESULTS_FILE: new-results.json
+        run: |
+          "${RUNNER_TEMP}/validate_osv_results.sh" "${OSV_RESULTS_FILE}"
+
+      - name: Reject newly introduced vulnerabilities
+        uses: google/osv-scanner-action/osv-reporter-action@06b2ab4348248b456ee06c9e953637f55e03504f # v2.5.0
+        with:
+          scan-args: |-
+            --output=results.sarif
+            --old=old-results.json
+            --new=new-results.json
+            --gh-annotations=true
+            --fail-on-vuln=true

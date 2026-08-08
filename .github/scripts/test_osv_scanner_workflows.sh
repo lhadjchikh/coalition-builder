@@ -5,8 +5,9 @@ set -euo pipefail
 repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 pr_workflow="${repository_root}/.github/workflows/osv_scanner_pr.yml"
 merge_group_workflow="${repository_root}/.github/workflows/osv_scanner_merge_group.yml"
+comparison_workflow="${repository_root}/.github/workflows/osv_scanner_compare.yml"
 scheduled_workflow="${repository_root}/.github/workflows/osv_scanner_scheduled.yml"
-osv_action_revision="8deb546fdb875b9996d27d4950be7312dac076a1"
+results_validator="${repository_root}/.github/scripts/validate_osv_results.sh"
 osv_scanner_revision="06b2ab4348248b456ee06c9e953637f55e03504f"
 
 fail() {
@@ -25,6 +26,17 @@ require_text() {
   grep -Fq -- "${expected}" "${path}" || fail "expected ${path} to contain: ${expected}"
 }
 
+require_text_occurrences() {
+  local path="$1"
+  local expected="$2"
+  local expected_count="$3"
+  local actual_count
+
+  actual_count="$(grep -Fc -- "${expected}" "${path}" || true)"
+  [[ "${actual_count}" -eq "${expected_count}" ]] ||
+    fail "expected ${path} to contain ${expected_count} occurrences of: ${expected}"
+}
+
 require_job_text() {
   local path="$1"
   local job_name="$2"
@@ -40,16 +52,16 @@ require_job_text() {
     fail "expected ${job_name} job in ${path} to contain: ${expected}"
 }
 
-require_merge_group_scan_order() {
+require_comparison_scan_order() {
   local path="$1"
 
   awk '
-    $0 == "      - name: Checkout merge group base" && next_stage == 0 { next_stage = 1; next }
+    $0 == "      - name: Checkout comparison base" && next_stage == 0 { next_stage = 1; next }
     $0 == "      - name: Scan existing dependencies" && next_stage == 1 { next_stage = 2; next }
-    $0 == "      - name: Checkout merge group head" && next_stage == 2 { next_stage = 3; next }
+    $0 == "      - name: Checkout proposed revision" && next_stage == 2 { next_stage = 3; next }
     $0 == "      - name: Scan proposed dependencies" && next_stage == 3 { next_stage = 4; next }
     END { exit next_stage == 4 ? 0 : 1 }
-  ' "${path}" || fail "expected ${path} to scan base before merge group head"
+  ' "${path}" || fail "expected ${path} to scan base before proposed revision"
 }
 
 reject_text() {
@@ -70,32 +82,42 @@ require_scan_targets() {
 
 require_file "${pr_workflow}"
 require_file "${merge_group_workflow}"
+require_file "${comparison_workflow}"
 require_file "${scheduled_workflow}"
+require_file "${results_validator}"
 
 require_text "${pr_workflow}" "pull_request:"
-require_text "${pr_workflow}" "osv-scanner-reusable-pr.yml@${osv_action_revision}"
-require_text "${pr_workflow}" "security-events: write"
+require_job_text "${pr_workflow}" "scan_pr" "uses: ./.github/workflows/osv_scanner_compare.yml"
+require_job_text "${pr_workflow}" "scan_pr" "base_sha: \${{ github.event.pull_request.base.sha }}"
+require_job_text "${pr_workflow}" "scan_pr" "head_sha: \${{ github.sha }}"
 reject_text "${pr_workflow}" "merge_group:"
-require_scan_targets "${pr_workflow}"
 
 require_text "${merge_group_workflow}" "merge_group:"
-require_job_text "${merge_group_workflow}" "scan_merge_group" "name: Reject newly introduced dependency vulnerabilities / osv-scan"
-require_job_text "${merge_group_workflow}" "scan_merge_group" "BASE_SHA: \${{ github.event.merge_group.base_sha }}"
-require_job_text "${merge_group_workflow}" "scan_merge_group" "git checkout --force --detach \"\${BASE_SHA}\""
-require_job_text "${merge_group_workflow}" "scan_merge_group" "HEAD_SHA: \${{ github.sha }}"
-require_job_text "${merge_group_workflow}" "scan_merge_group" "git checkout --force --detach \"\${HEAD_SHA}\""
-require_job_text "${merge_group_workflow}" "scan_merge_group" "osv-scanner-action@${osv_scanner_revision}"
-require_job_text "${merge_group_workflow}" "scan_merge_group" "osv-reporter-action@${osv_scanner_revision}"
-require_job_text "${merge_group_workflow}" "scan_merge_group" "--old=old-results.json"
-require_job_text "${merge_group_workflow}" "scan_merge_group" "--new=new-results.json"
-require_scan_targets "${merge_group_workflow}"
-require_merge_group_scan_order "${merge_group_workflow}"
+require_job_text "${merge_group_workflow}" "scan_merge_group" "uses: ./.github/workflows/osv_scanner_compare.yml"
+require_job_text "${merge_group_workflow}" "scan_merge_group" "base_sha: \${{ github.event.merge_group.base_sha }}"
+require_job_text "${merge_group_workflow}" "scan_merge_group" "head_sha: \${{ github.sha }}"
+
+require_text "${comparison_workflow}" "workflow_call:"
+require_job_text "${comparison_workflow}" "osv_scan" "name: osv-scan"
+require_job_text "${comparison_workflow}" "osv_scan" "BASE_SHA: \${{ inputs.base_sha }}"
+require_job_text "${comparison_workflow}" "osv_scan" "HEAD_SHA: \${{ inputs.head_sha }}"
+require_job_text "${comparison_workflow}" "osv_scan" "osv-scanner-action@${osv_scanner_revision}"
+require_job_text "${comparison_workflow}" "osv_scan" "osv-reporter-action@${osv_scanner_revision}"
+require_job_text "${comparison_workflow}" "osv_scan" "--output=old-results.json"
+require_job_text "${comparison_workflow}" "osv_scan" "--output=new-results.json"
+require_job_text "${comparison_workflow}" "osv_scan" "--old=old-results.json"
+require_job_text "${comparison_workflow}" "osv_scan" "--new=new-results.json"
+require_text_occurrences "${comparison_workflow}" 'validate_osv_results.sh' 3
+require_scan_targets "${comparison_workflow}"
+require_comparison_scan_order "${comparison_workflow}"
 
 require_text "${scheduled_workflow}" "schedule:"
 require_text "${scheduled_workflow}" "workflow_dispatch:"
-require_text "${scheduled_workflow}" "osv-scanner-reusable.yml@${osv_action_revision}"
+require_job_text "${scheduled_workflow}" "scan_scheduled" "osv-scanner-action@${osv_scanner_revision}"
+require_job_text "${scheduled_workflow}" "scan_scheduled" "osv-reporter-action@${osv_scanner_revision}"
+require_job_text "${scheduled_workflow}" "scan_scheduled" ".github/scripts/validate_osv_results.sh"
 require_text "${scheduled_workflow}" "security-events: write"
-require_text "${scheduled_workflow}" "fail-on-vuln: false"
+require_text "${scheduled_workflow}" "--fail-on-vuln=false"
 require_scan_targets "${scheduled_workflow}"
 
 printf 'stage=osv-workflow-test outcome=success\n'

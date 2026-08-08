@@ -10,6 +10,7 @@ on:
       - "**/*.sh"
       - ".github/workflows/deploy_terraform_environment.yml"
       - ".github/workflows/lint_shellcheck.yml"
+      - ".github/workflows/osv_scanner_compare.yml"
       - ".github/workflows/osv_scanner_merge_group.yml"
       - ".github/workflows/osv_scanner_pr.yml"
       - ".github/workflows/osv_scanner_scheduled.yml"
@@ -19,6 +20,7 @@ on:
       - "**/*.sh"
       - ".github/workflows/deploy_terraform_environment.yml"
       - ".github/workflows/lint_shellcheck.yml"
+      - ".github/workflows/osv_scanner_compare.yml"
       - ".github/workflows/osv_scanner_merge_group.yml"
       - ".github/workflows/osv_scanner_pr.yml"
       - ".github/workflows/osv_scanner_scheduled.yml"
@@ -49,3 +51,6 @@ jobs:
 
       - name: Test OSV-Scanner workflows
         run: .github/scripts/test_osv_scanner_workflows.sh
+
+      - name: Test OSV-Scanner result validation
+        run: .github/scripts/test_validate_osv_results.sh
