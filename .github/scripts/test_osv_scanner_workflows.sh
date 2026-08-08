@@ -52,6 +52,21 @@ require_job_text() {
     fail "expected ${job_name} job in ${path} to contain: ${expected}"
 }
 
+require_step_text() {
+  local path="$1"
+  local step_name="$2"
+  local expected="$3"
+  local step_text
+
+  step_text="$(awk -v heading="      - name: ${step_name}" '
+    $0 == heading { in_step = 1 }
+    in_step && $0 != heading && /^      - name:/ { exit }
+    in_step { print }
+  ' "${path}")"
+  grep -Fq -- "${expected}" <<<"${step_text}" ||
+    fail "expected ${step_name} step in ${path} to contain: ${expected}"
+}
+
 require_comparison_scan_order() {
   local path="$1"
 
@@ -107,6 +122,12 @@ require_job_text "${comparison_workflow}" "osv_scan" "--output=old-results.json"
 require_job_text "${comparison_workflow}" "osv_scan" "--output=new-results.json"
 require_job_text "${comparison_workflow}" "osv_scan" "--old=old-results.json"
 require_job_text "${comparison_workflow}" "osv_scan" "--new=new-results.json"
+require_step_text "${comparison_workflow}" "Scan existing dependencies" "--output=old-results.json"
+require_step_text "${comparison_workflow}" "Validate existing scan results" "OSV_RESULTS_FILE: old-results.json"
+require_step_text "${comparison_workflow}" "Scan proposed dependencies" "--output=new-results.json"
+require_step_text "${comparison_workflow}" "Validate proposed scan results" "OSV_RESULTS_FILE: new-results.json"
+require_step_text "${comparison_workflow}" "Reject newly introduced vulnerabilities" "--old=old-results.json"
+require_step_text "${comparison_workflow}" "Reject newly introduced vulnerabilities" "--new=new-results.json"
 require_text_occurrences "${comparison_workflow}" 'validate_osv_results.sh' 3
 require_scan_targets "${comparison_workflow}"
 require_comparison_scan_order "${comparison_workflow}"
