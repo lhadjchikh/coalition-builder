@@ -10,12 +10,16 @@ on:
       - "**/*.sh"
       - ".github/workflows/deploy_terraform_environment.yml"
       - ".github/workflows/lint_shellcheck.yml"
+      - ".github/workflows/osv_scanner_pr.yml"
+      - ".github/workflows/osv_scanner_scheduled.yml"
   pull_request:
     branches: [main]
     paths:
       - "**/*.sh"
       - ".github/workflows/deploy_terraform_environment.yml"
       - ".github/workflows/lint_shellcheck.yml"
+      - ".github/workflows/osv_scanner_pr.yml"
+      - ".github/workflows/osv_scanner_scheduled.yml"
 
 jobs:
   shellcheck:
@@ -40,3 +44,6 @@ jobs:
 
       - name: Test deployment workflow topology
         run: .github/scripts/test_deployment_workflows.sh
+
+      - name: Test OSV-Scanner workflows
+        run: .github/scripts/test_osv_scanner_workflows.sh

@@ -1,0 +1,22 @@
+name: OSV-Scanner Scheduled Scan
+
+on:
+  schedule:
+    - cron: "30 12 * * 1"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  scan_scheduled:
+    name: Report all dependency vulnerabilities
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@8deb546fdb875b9996d27d4950be7312dac076a1 # v2.5.0
+    with:
+      scan-args: |-
+        --lockfile=./backend/poetry.lock
+        --lockfile=./frontend/package-lock.json
+        --lockfile=./terraform/tests/go.mod
+      fail-on-vuln: false
