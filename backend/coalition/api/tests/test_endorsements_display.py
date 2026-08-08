@@ -66,13 +66,33 @@ class EndorsementDisplayAPITest(BaseTestCase):
         assert len(data) == 3
 
         # Check that only display_publicly=True endorsements are returned
-        returned_emails = {e["stakeholder"]["email"] for e in data}
-        expected_emails = {
-            "user0@example.com",
-            "user2@example.com",
-            "user4@example.com",
+        returned_names = {e["stakeholder"]["first_name"] for e in data}
+        assert returned_names == {"User0", "User2", "User4"}
+
+    def test_public_response_excludes_private_stakeholder_fields(self) -> None:
+        Endorsement.objects.create(
+            stakeholder=self.stakeholders[0],
+            campaign=self.campaign,
+            statement="Public statement",
+            public_display=True,
+            status="approved",
+            email_verified=True,
+            display_publicly=True,
+        )
+
+        response = self.client.get("/api/endorsements/")
+
+        assert response.status_code == 200
+        stakeholder = response.json()[0]["stakeholder"]
+        private_fields = {
+            "email",
+            "street_address",
+            "zip_code",
+            "latitude",
+            "longitude",
+            "email_updates",
         }
-        assert returned_emails == expected_emails
+        assert private_fields.isdisjoint(stakeholder)
 
     def test_display_order_newest_first(self) -> None:
         """Test that displayed endorsements are ordered by created_at descending"""
@@ -95,10 +115,10 @@ class EndorsementDisplayAPITest(BaseTestCase):
         data = response.json()
         assert len(data) == 3
 
-        # Check order - newest should be first (user2, user1, user0)
-        assert data[0]["stakeholder"]["email"] == "user2@example.com"
-        assert data[1]["stakeholder"]["email"] == "user1@example.com"
-        assert data[2]["stakeholder"]["email"] == "user0@example.com"
+        # Check order - newest should be first (User2, User1, User0)
+        assert data[0]["stakeholder"]["first_name"] == "User2"
+        assert data[1]["stakeholder"]["first_name"] == "User1"
+        assert data[2]["stakeholder"]["first_name"] == "User0"
 
     def test_all_conditions_required_for_display(self) -> None:
         """Test that all conditions must be met for an endorsement to be displayed"""
@@ -151,7 +171,7 @@ class EndorsementDisplayAPITest(BaseTestCase):
         data = response.json()
         # Should only see the last endorsement where all conditions are met
         assert len(data) == 1
-        assert data[0]["stakeholder"]["email"] == "user4@example.com"
+        assert data[0]["stakeholder"]["first_name"] == "User4"
 
     def test_campaign_filter_with_display_publicly(self) -> None:
         """Test campaign filtering works with display_publicly"""

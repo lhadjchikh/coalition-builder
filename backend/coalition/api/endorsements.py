@@ -26,6 +26,7 @@ from .schemas import (
     EndorsementCreateSchema,
     EndorsementOut,
     EndorsementVerifySchema,
+    PublicEndorsementOut,
 )
 
 router = Router()
@@ -354,7 +355,7 @@ def _create_endorsement_with_emails(
     return endorsement
 
 
-@router.get("/", response=list[EndorsementOut], auth=None)
+@router.get("/", response=list[PublicEndorsementOut], auth=None)
 def list_endorsements(
     request: HttpRequest,
     campaign_id: int | None = None,

@@ -504,7 +504,7 @@ class ApprovalWorkflowDisplayConditionsTest(BaseTestCase):
         assert response.status_code == 200
         data = response.json()
         assert len(data) == 1
-        assert data[0]["stakeholder"]["email"] == "visible@example.com"
+        assert data[0]["stakeholder"]["id"] == stakeholder.id
 
     def test_user_withdraws_public_consent_hides_endorsement(self) -> None:
         """Test that user setting public_display=False hides their endorsement."""
