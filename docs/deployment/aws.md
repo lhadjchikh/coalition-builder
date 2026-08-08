@@ -71,7 +71,7 @@ The SES edge is not operational in the current Lambda deployment. [PR #312](http
 - **Purpose**: Let the Lambda in private subnets reach AWS services without a NAT gateway
 - **Cost**: $0.01/hour each — see [Cost Analysis](#cost-analysis), where these are the largest line item
 
-There is no DynamoDB table. Rate limiting uses the PostgreSQL-backed Django cache; see [Rate Limiting](../rate-limiting.md).
+There is no application rate-limiting DynamoDB table. The bootstrap still creates DynamoDB tables for Terraform state locking. Application rate limiting uses the PostgreSQL-backed Django cache; see [Rate Limiting](../rate-limiting.md).
 
 ### Supporting Resources
 
@@ -194,7 +194,7 @@ To find out what is behind a surprising service total, re-run with `--group-by T
 - **VPC interface endpoints are the single largest cost — $44.64/month across prod and dev**, more than RDS. Each account runs three interface endpoints (Secrets Manager, CloudWatch Logs, and AWS Location `geo.places`) at $0.01/hour each. They are pinned to a single AZ (`enable_single_az_endpoints`), which already halves what multi-AZ would cost.
 - **Compute is effectively free.** Lambda does not appear as a line item at all, and API Gateway costs $0.03/month at current traffic. The serverless migration did deliver on compute cost.
 - **The dev account costs nearly as much as prod ($24.68 vs $31.92)** despite serving no traffic, because VPC endpoint hours accrue whether or not the Lambda is invoked.
-- **No DynamoDB line exists**, which confirms rate limiting runs on the PostgreSQL-backed Django cache rather than DynamoDB.
+- **No DynamoDB cost line appears above the reporting threshold.** The application code and settings — not the billing data — establish that rate limiting uses the PostgreSQL-backed Django cache. Terraform state-lock tables still exist.
 
 ### Cost reduction opportunities
 
