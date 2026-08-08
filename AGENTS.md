@@ -52,6 +52,7 @@ Backend (needs PostGIS + GDAL — use Docker unless you have GeoDjango deps loca
 
 ```bash
 docker compose up -d db                         # PostGIS 16 on :5432
+export DATABASE_URL=postgis://coalition_admin:admin_password@localhost:5432/coalition
 cd backend && poetry install
 poetry run pytest                               # full suite (coverage gate: 80%)
 poetry run pytest path/to/test_x.py --no-cov    # scoped run; --no-cov avoids the gate
