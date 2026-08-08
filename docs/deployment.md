@@ -72,7 +72,7 @@ Internet
                                                      ├── SES (transactional email)
                                                      └── AWS Location Service (geocoding)
 
-ECS Fargate (TIGER geodata imports only)
+TIGER geodata import scaffolding (not currently provisioned)
 ```
 
 **Components:**
@@ -81,7 +81,7 @@ ECS Fargate (TIGER geodata imports only)
 - **Backend**: Django on AWS Lambda (via Zappa, as a container image)
 - **Database**: RDS PostgreSQL with PostGIS
 - **Rate Limiting**: PostgreSQL-backed Django cache — see [Rate Limiting](rate-limiting.md)
-- **Geographic Data**: Imported via ECS Fargate tasks
+- **Geographic Data**: The repository includes an ECS import module and workflow, but no current environment provisions them
 
 The ALB, ECS application service, and NAT gateway from the pre-2025 deployment have been removed. The Lambda reaches AWS services through VPC endpoints rather than a NAT gateway. See [AWS Serverless Deployment](deployment/aws.md) for the full resource inventory.
 
@@ -295,4 +295,4 @@ The per-service cost breakdown lives in [AWS Serverless Deployment](deployment/a
 
 ## Migration from ECS
 
-The migration from ECS Fargate to this serverless architecture is complete — see [PR #222](https://github.com/lhadjchikh/coalition-builder/pull/222). The ALB, ECS application service, and NAT gateway have been decommissioned, and no ECS deployment path remains for the application. ECS Fargate is still used for TIGER geodata imports; see [Geodata Import](deployment/geodata-import.md).
+The migration from ECS Fargate to this serverless architecture is complete — see [PR #222](https://github.com/lhadjchikh/coalition-builder/pull/222). The ALB, ECS application service, and NAT gateway have been decommissioned, and no ECS deployment path remains for the application. ECS-based TIGER import scaffolding remains in the repository but is not provisioned in any current environment; see [Geodata Import](deployment/geodata-import.md).

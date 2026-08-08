@@ -23,7 +23,7 @@ Quick links:
 
 - **Terraform**: Infrastructure as Code (>= 1.12.0)
 - **AWS Provider**: ~> 5.99.0
-- **AWS Services**: Lambda, API Gateway, RDS PostgreSQL, S3, CloudFront, Secrets Manager, SES, AWS Location Service, ECS (TIGER imports only)
+- **AWS Services**: Lambda, API Gateway, RDS PostgreSQL, S3, CloudFront, Secrets Manager, SES, AWS Location Service
 - **Testing**: Terratest with AWS SDK Go v2
 - **Security**: WAF, Security Groups, KMS encryption
 
@@ -87,12 +87,6 @@ flowchart TB
         lambda --> rds[(RDS PostgreSQL<br/>with PostGIS<br/>+ rate-limit cache)]
         lambda --> s3[S3 Static Assets]
 
-        subgraph ecs_occasional["ECS (Occasional Use)"]
-            ecs_task[Fargate Task<br/>TIGER Data Import<br/>2 vCPU, 4GB RAM]
-        end
-
-        ecs_task --> rds
-
         subgraph security["Security & Monitoring"]
             secrets[Secrets Manager]
             cloudwatch[CloudWatch Logs]
@@ -123,7 +117,7 @@ Note that the bill is dominated by always-on resources (VPC interface endpoints,
 - **RDS PostgreSQL**: Database with PostGIS extension
 - **VPC endpoints**: Secrets Manager, CloudWatch Logs, and AWS Location, so the Lambda needs no NAT gateway
 - **Rate limiting**: PostgreSQL-backed Django cache (no DynamoDB or Redis)
-- **ECS Fargate**: TIGER shapefile imports (occasional use)
+- **TIGER imports**: An ECS Fargate module and workflow remain in the repository but are not instantiated by a current environment
 - **Vercel**: Next.js frontend with global CDN
 
 ### Security Features

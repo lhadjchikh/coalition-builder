@@ -105,7 +105,7 @@ flowchart TD
 
 ## 🧭 Architecture
 
-Production is fully serverless: API Gateway fronts a containerized Lambda running Django, and Vercel serves the Next.js frontend, proxying `/api/*` to the API. ECS Fargate remains only for one-off TIGER geodata import tasks.
+Production is fully serverless: API Gateway fronts a containerized Lambda running Django, and Vercel serves the Next.js frontend, proxying `/api/*` to the API. The repository contains ECS-based TIGER import scaffolding, but no current Terraform environment provisions it.
 
 ```mermaid
 %%{init: {'theme':'basic'}}%%
@@ -123,7 +123,6 @@ flowchart LR
         S3[S3 + CloudFront<br/>static & media]
         SES[SES<br/>transactional email]
         Location[AWS Location Service<br/>geocoding]
-        ECS[ECS Fargate<br/>TIGER geodata imports]
     end
 
     User --> Next
@@ -133,7 +132,6 @@ flowchart LR
     Lambda --> S3
     Lambda --> SES
     Lambda --> Location
-    ECS --> RDS
 ```
 
 There are no always-on servers: no ALB, no ECS service, and no NAT gateway — the Lambda reaches AWS services through VPC endpoints. Terraform is split into `shared` (VPC, RDS, bastion), `prod`, and `dev` environments, with GitHub Actions authenticating via OIDC.

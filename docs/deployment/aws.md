@@ -21,12 +21,6 @@ flowchart TB
         lambda --> ses[SES]
         lambda --> geo[AWS Location Service]
 
-        subgraph ecs_occasional["ECS (Occasional Use)"]
-            ecs_task[Fargate Task<br/>TIGER Data Import]
-        end
-
-        ecs_task --> rds
-
         subgraph security["Security & Monitoring"]
             secrets[Secrets Manager]
             cloudwatch[CloudWatch Logs]
@@ -85,12 +79,9 @@ There is no DynamoDB table. Rate limiting uses the PostgreSQL-backed Django cach
 - **Media Uploads**: `coalition-builder-media`
 - **Zappa Deployments**: `coalition-builder-zappa-deployments`
 
-#### ECS Fargate (TIGER Imports)
+#### TIGER Geodata Imports
 
-- **Cluster**: `coalition-builder-geodata-import`
-- **Task Definition**: 2 vCPU, 4GB RAM
-- **Usage**: Triggered manually for shapefile imports
-- **Frequency**: Monthly or as needed
+The repository contains an ECS Fargate module and manual workflow for TIGER imports, but no current Terraform environment instantiates the module and no import cluster is provisioned. Treat the workflow as unavailable until an environment explicitly wires it in.
 
 #### CloudWatch
 
@@ -213,7 +204,7 @@ To find out what is behind a surprising service total, re-run with `--group-by T
 
 - **Lambda**: Pay-per-invocation (no idle costs)
 - **API Gateway**: Pay-per-request
-- **ECS**: Only runs for TIGER imports
+- **ECS**: No current environment provisions the retained TIGER import scaffolding
 - **Single-AZ VPC endpoints**: Half the cost of endpoints in every private subnet
 
 ## Security

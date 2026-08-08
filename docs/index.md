@@ -79,7 +79,7 @@ flowchart TD
 - **Static & Media**: S3 behind CloudFront
 - **Infrastructure**: Terraform-managed AWS resources
 
-ECS Fargate is retained only for occasional TIGER geodata import tasks. The ALB, ECS service, and NAT gateway used by the pre-2025 deployment have been removed; see the [AWS Serverless Deployment guide](deployment/aws.md) for the resource inventory and cost breakdown.
+The repository retains ECS-based TIGER import scaffolding, but no current Terraform environment provisions it. The ALB, ECS application service, and NAT gateway used by the pre-2025 deployment have been removed; see the [AWS Serverless Deployment guide](deployment/aws.md) for the resource inventory and cost breakdown.
 
 ### Frontend Architecture
 
@@ -146,7 +146,7 @@ Comprehensive guides for managing your coalition platform:
 - **[Lambda Deployment](LAMBDA_DEPLOYMENT.md)** - Deploy Django to AWS Lambda with Zappa
 - **[Vercel Deployment](VERCEL_DEPLOYMENT.md)** - Deploy Next.js to Vercel Edge Network
 - **[GitHub Workflows](deployment/workflows.md)** - CI/CD pipelines for automated deployment
-- **[Geographic Data Import](deployment/geodata-import.md)** - Import TIGER shapefiles via ECS
+- **[Geographic Data Import](deployment/geodata-import.md)** - Retained ECS import design (not currently provisioned)
 
 ## Documentation
 
