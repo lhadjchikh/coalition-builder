@@ -115,8 +115,8 @@ Matching CI exactly matters more than matching `scripts/lint.py`:
   in `.github/workflows/lint_prettier.yml`; `./scripts/lint.py` formats a narrower file set.
 - `npm run lint` only covers `app components lib proxy.ts`. `services/`, `utils/`,
   `hooks/`, `contexts/` are unlinted by that script — still keep them clean.
-- `npm run typecheck` uses `tsconfig.build.json`, which **excludes** test files. Type errors
-  in tests won't fail CI but will fail an editor using `tsconfig.json`.
+- `npm run typecheck` uses `tsconfig.build.json`, which **excludes** test files.
+  `tsconfig.json` also excludes tests, and no dedicated test typecheck currently covers them.
 
 ## Conventions
 
