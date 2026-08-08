@@ -15,10 +15,11 @@ conversion runs second, on the result.
 from dataclasses import dataclass
 from pathlib import Path
 
+import bleach
 import markdown
 from django.conf import settings
 from django.template import Context, Template
-from django.utils.safestring import SafeString, mark_safe
+from django.utils.safestring import SafeString
 
 from .pages import HelpPage
 
@@ -37,6 +38,40 @@ MARKDOWN_EXTENSIONS = (
     "toc",
 )
 MARKDOWN_EXTENSION_CONFIGS = {"toc": {"permalink": "#", "toc_depth": "2-3"}}
+
+SAFE_HTML_TAGS = {
+    "a",
+    "blockquote",
+    "br",
+    "code",
+    "dd",
+    "div",
+    "dl",
+    "dt",
+    "em",
+    "h2",
+    "h3",
+    "hr",
+    "li",
+    "ol",
+    "p",
+    "pre",
+    "strong",
+    "table",
+    "tbody",
+    "td",
+    "th",
+    "thead",
+    "tr",
+    "ul",
+}
+SAFE_HTML_ATTRIBUTES = {
+    "*": ["class"],
+    "a": ["href", "title"],
+    "h2": ["id"],
+    "h3": ["id"],
+}
+SAFE_URL_PROTOCOLS = {"http", "https", "mailto", "tel"}
 
 
 @dataclass(frozen=True)
@@ -77,8 +112,8 @@ def render_source(source: str, context: dict[str, str] | None = None) -> Rendere
     # to the type stubs. An empty table of contents fails the rendering tests.
     toc = getattr(converter, "toc", "")
     return RenderedPage(
-        html=mark_safe(html),  # noqa: S308 - trusted repository content
-        toc=mark_safe(toc),  # noqa: S308 - generated from trusted content
+        html=_sanitize_generated_html(html),
+        toc=_sanitize_generated_html(toc),
     )
 
 
@@ -106,6 +141,18 @@ def clear_cache() -> None:
 
 def _read_source(page: HelpPage) -> str:
     return (CONTENT_DIR / f"{page.slug}.md").read_text(encoding="utf-8")
+
+
+def _sanitize_generated_html(html: str) -> SafeString:
+    sanitized = bleach.clean(
+        html,
+        tags=SAFE_HTML_TAGS,
+        attributes=SAFE_HTML_ATTRIBUTES,
+        protocols=SAFE_URL_PROTOCOLS,
+        strip=True,
+        strip_comments=True,
+    )
+    return SafeString(sanitized)
 
 
 _RENDER_CACHE: dict[tuple[str, tuple[tuple[str, str], ...]], RenderedPage] = {}

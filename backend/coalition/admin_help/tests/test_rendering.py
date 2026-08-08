@@ -65,6 +65,23 @@ class SourceRenderingTest(TestCase):
         assert 'id="reviewing-endorsements"' in rendered.html
         assert "#reviewing-endorsements" in rendered.toc
 
+    def test_template_values_cannot_create_javascript_links(self) -> None:
+        rendered = render_source(
+            "Ask {{ supervisor_contact }}.",
+            {"supervisor_contact": "[Support](javascript:alert(1))"},
+        )
+
+        assert "Support" in rendered.html
+        assert "javascript:" not in rendered.html
+
+    def test_template_values_cannot_add_event_handlers(self) -> None:
+        rendered = render_source(
+            "{{ supervisor_contact }}",
+            {"supervisor_contact": "![Support](missing){onerror=alert(1)}"},
+        )
+
+        assert "onerror" not in rendered.html
+
 
 class RenderCacheTest(TestCase):
     """Rendered HTML is cached per deployment context, and bypassed while debugging."""
