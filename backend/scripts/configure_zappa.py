@@ -86,6 +86,64 @@ def with_location_place_index(
     return environment_variables
 
 
+# Django reads these at startup; each falls back to a local-development
+# default that is wrong (and silently so) in a deployed environment.
+EMAIL_SETTING_NAMES = (
+    "SITE_URL",
+    "API_URL",
+    "DEFAULT_FROM_EMAIL",
+    "ADMIN_NOTIFICATION_EMAILS",
+    "SES_CONFIGURATION_SET",
+)
+
+
+def collect_email_settings() -> dict[str, str]:
+    """Read the configured email env vars, dropping the unset ones."""
+    configured = {
+        name: get_env_or_default(name).strip() for name in EMAIL_SETTING_NAMES
+    }
+    return {name: value for name, value in configured.items() if value}
+
+
+def with_email_settings(
+    environment_variables: dict[str, str],
+    deployment_environment: str,
+    stage_names: set[str],
+    email_settings: dict[str, str],
+) -> dict[str, str]:
+    """Return the env vars with email settings added for the selected stage."""
+    if deployment_environment in stage_names:
+        return {**environment_variables, **email_settings}
+    return environment_variables
+
+
+def validate_email_settings(
+    deployment_environment: str,
+    email_settings: dict[str, str],
+) -> None:
+    """Refuse to deploy prod with mail that would be sent but unusable.
+
+    Without ``SITE_URL`` Django builds verification links against
+    ``http://localhost:3000``, and without ``DEFAULT_FROM_EMAIL`` it sends
+    from an address SES will reject. Both fail as quietly as a missing
+    network path, so they are caught here instead.
+    """
+    if deployment_environment not in PROD_STAGE_NAMES:
+        return
+
+    missing = [
+        name
+        for name in ("SITE_URL", "DEFAULT_FROM_EMAIL")
+        if name not in email_settings
+    ]
+    if missing:
+        raise RuntimeError(
+            f"{' and '.join(missing)} must be set when deploying prod so "
+            "endorsement verification emails carry a reachable link from an "
+            "address SES accepts.",
+        )
+
+
 def configure_zappa_settings(output_path: Path | None = None) -> None:
     """Generate zappa_settings.json from environment variables."""
 
@@ -127,6 +185,8 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         cloudfront_domain,
         active_stage_names,
     )
+    email_settings = collect_email_settings()
+    validate_email_settings(deployment_environment, email_settings)
     dev_assets_bucket = get_stage_value(
         deployment_environment,
         DEV_STAGE_NAMES,
@@ -200,27 +260,37 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         dev_docker_image = "public.ecr.aws/lambda/python:3.13"
         production_docker_image = "public.ecr.aws/lambda/python:3.13"
 
-    dev_environment_variables = with_stage_cloudfront_domain(
-        {
-            "ENVIRONMENT": "dev",
-            "DEBUG": "true",
-            "DATABASE_NAME": dev_db_name,
-            "AWS_STORAGE_BUCKET_NAME": dev_assets_bucket,
-        },
+    dev_environment_variables = with_email_settings(
+        with_stage_cloudfront_domain(
+            {
+                "ENVIRONMENT": "dev",
+                "DEBUG": "true",
+                "DATABASE_NAME": dev_db_name,
+                "AWS_STORAGE_BUCKET_NAME": dev_assets_bucket,
+            },
+            deployment_environment,
+            DEV_STAGE_NAMES,
+            cloudfront_domain,
+        ),
         deployment_environment,
         DEV_STAGE_NAMES,
-        cloudfront_domain,
+        email_settings,
     )
-    production_environment_variables = with_stage_cloudfront_domain(
-        {
-            "ENVIRONMENT": "production",
-            "DEBUG": "false",
-            "DATABASE_NAME": production_db_name,
-            "AWS_STORAGE_BUCKET_NAME": production_assets_bucket,
-        },
+    production_environment_variables = with_email_settings(
+        with_stage_cloudfront_domain(
+            {
+                "ENVIRONMENT": "production",
+                "DEBUG": "false",
+                "DATABASE_NAME": production_db_name,
+                "AWS_STORAGE_BUCKET_NAME": production_assets_bucket,
+            },
+            deployment_environment,
+            PROD_STAGE_NAMES,
+            cloudfront_domain,
+        ),
         deployment_environment,
         PROD_STAGE_NAMES,
-        cloudfront_domain,
+        email_settings,
     )
 
     # Build the configuration
