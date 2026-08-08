@@ -74,7 +74,8 @@ npm run format:check           # prettier
 Terraform:
 
 ```bash
-cd terraform && terraform fmt -recursive && tflint
+cd terraform && terraform fmt -recursive
+tflint --init && tflint --recursive
 cd terraform/tests
 go test -short -v -timeout 10m ./modules/       # validation only; no AWS resources
 ```
@@ -143,8 +144,9 @@ commas. Styling is a mix of Tailwind and styled-components with a theme from
 `contexts/ThemeContext.tsx`; follow whichever the neighboring file uses. Unit tests are
 colocated in `__tests__/`; anything requiring a live backend belongs in `tests/e2e/`.
 
-**Terraform** — `terraform fmt -recursive` + `tflint` (`.tflint.hcl`). Module changes should
-come with a Terratest case under `terraform/tests/modules/`.
+**Terraform** — `terraform fmt -recursive` + `tflint --init` + `tflint --recursive`
+(`.tflint.hcl`). Module changes should come with a Terratest case under
+`terraform/tests/modules/`.
 
 ## Gotchas
 
