@@ -87,7 +87,7 @@ go test -short -v -timeout 10m ./modules/       # validation only; no AWS resour
 Whole repo, auto-fixing (Python + Prettier + TS + Terraform):
 
 ```bash
-./scripts/lint.py
+python3 scripts/lint.py
 ```
 
 Full stack locally:
