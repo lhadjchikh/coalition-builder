@@ -163,6 +163,7 @@ class Endorsement(models.Model):
             self.public_display  # User consent
             and self.email_verified  # Email verified
             and self.status == "approved"  # Admin approved
+            and self.reviewed_at is not None  # Human review completed
             and self.display_publicly  # Admin selected for display
         )
 

@@ -14,6 +14,7 @@ import uuid
 from django.contrib.auth.models import Permission, User
 from django.core.cache import cache
 from django.test import Client, override_settings
+from django.utils import timezone
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.models import Endorsement
@@ -162,8 +163,16 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
         assert response.status_code == 200
         assert len(response.json()) == 0
 
-        # Admin selects for display
+        # Selecting for display does not bypass the required human review.
         endorsement.display_publicly = True
+        endorsement.save()
+
+        response = self.client.get("/api/endorsements/")
+        assert response.status_code == 200
+        assert len(response.json()) == 0
+
+        endorsement.reviewed_by = self.admin_user
+        endorsement.reviewed_at = timezone.now()
         endorsement.save()
 
         response = self.client.get("/api/endorsements/")
@@ -500,7 +509,7 @@ class ApprovalWorkflowDisplayConditionsTest(BaseTestCase):
         assert len(response.json()) == 0
 
     def test_all_conditions_met_shows_in_public_list(self) -> None:
-        """Test that meeting all four conditions makes endorsement visible."""
+        """Test that meeting all five conditions makes endorsement visible."""
         stakeholder = self.create_stakeholder(
             email="visible@example.com",
             type="individual",
@@ -511,6 +520,7 @@ class ApprovalWorkflowDisplayConditionsTest(BaseTestCase):
             public_display=True,
             email_verified=True,
             status="approved",
+            reviewed_at=timezone.now(),
             display_publicly=True,
         )
 
@@ -532,6 +542,7 @@ class ApprovalWorkflowDisplayConditionsTest(BaseTestCase):
             public_display=True,
             email_verified=True,
             status="approved",
+            reviewed_at=timezone.now(),
             display_publicly=True,
         )
 
@@ -560,6 +571,7 @@ class ApprovalWorkflowDisplayConditionsTest(BaseTestCase):
             public_display=True,
             email_verified=True,
             status="approved",
+            reviewed_at=timezone.now(),
             display_publicly=True,
         )
 

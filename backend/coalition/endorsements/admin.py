@@ -309,6 +309,7 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
             status="approved",
             email_verified=True,
             public_display=True,
+            reviewed_at__isnull=False,
         ).update(display_publicly=True)
 
         self.message_user(

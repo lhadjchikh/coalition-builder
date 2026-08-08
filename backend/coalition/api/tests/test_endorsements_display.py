@@ -3,6 +3,7 @@ Tests for endorsement display API functionality.
 """
 
 from django.test import Client
+from django.utils import timezone
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.models import Endorsement
@@ -51,6 +52,7 @@ class EndorsementDisplayAPITest(BaseTestCase):
                 public_display=True,
                 status="approved",
                 email_verified=True,
+                reviewed_at=timezone.now(),
                 display_publicly=(
                     i % 2 == 0
                 ),  # Only even indices have display_publicly=True
@@ -77,6 +79,7 @@ class EndorsementDisplayAPITest(BaseTestCase):
             public_display=True,
             status="approved",
             email_verified=True,
+            reviewed_at=timezone.now(),
             display_publicly=True,
         )
 
@@ -102,6 +105,7 @@ class EndorsementDisplayAPITest(BaseTestCase):
             public_display=True,
             status="approved",
             email_verified=True,
+            reviewed_at=timezone.now(),
             display_publicly=True,
         )
         self.campaign.active = False
@@ -123,6 +127,7 @@ class EndorsementDisplayAPITest(BaseTestCase):
                 public_display=True,
                 status="approved",
                 email_verified=True,
+                reviewed_at=timezone.now(),
                 display_publicly=True,
             )
 
@@ -179,6 +184,7 @@ class EndorsementDisplayAPITest(BaseTestCase):
                 stakeholder=self.stakeholders[i],
                 campaign=self.campaign,
                 statement=f"Statement {i}",
+                reviewed_at=timezone.now(),
                 **conditions,
             )
 
@@ -210,6 +216,7 @@ class EndorsementDisplayAPITest(BaseTestCase):
                 public_display=True,
                 status="approved",
                 email_verified=True,
+                reviewed_at=timezone.now(),
                 display_publicly=True,
             )
 
@@ -238,6 +245,7 @@ class EndorsementDisplayAPITest(BaseTestCase):
             public_display=True,
             status="approved",
             email_verified=True,
+            reviewed_at=timezone.now(),
             display_publicly=True,
         )
 
@@ -254,3 +262,19 @@ class EndorsementDisplayAPITest(BaseTestCase):
         assert "statement" in endorsement
         assert "public_display" in endorsement
         assert "status" in endorsement
+
+    def test_unreviewed_endorsement_is_not_public(self) -> None:
+        Endorsement.objects.create(
+            stakeholder=self.stakeholders[0],
+            campaign=self.campaign,
+            statement="Auto-approved but not reviewed",
+            public_display=True,
+            status="approved",
+            email_verified=True,
+            display_publicly=True,
+        )
+
+        response = self.client.get("/api/endorsements/")
+
+        assert response.status_code == 200
+        assert response.json() == []

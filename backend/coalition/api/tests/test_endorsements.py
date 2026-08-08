@@ -9,6 +9,7 @@ from unittest.mock import patch
 from django.contrib.auth.models import Permission, User
 from django.core.cache import cache
 from django.test import Client, override_settings
+from django.utils import timezone
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.email_service import EndorsementEmailService
@@ -82,6 +83,7 @@ class EndorsementAPITest(BaseTestCase):
         # Approve and verify the endorsement
         self.endorsement.email_verified = True
         self.endorsement.status = "approved"
+        self.endorsement.reviewed_at = timezone.now()
         self.endorsement.display_publicly = True
         self.endorsement.save()
 
@@ -112,6 +114,7 @@ class EndorsementAPITest(BaseTestCase):
         # Approve and verify the endorsement
         self.endorsement.email_verified = True
         self.endorsement.status = "approved"
+        self.endorsement.reviewed_at = timezone.now()
         self.endorsement.display_publicly = True
         self.endorsement.save()
 
@@ -365,6 +368,7 @@ class EndorsementAPITest(BaseTestCase):
         # Make original endorsement approved and verified for comparison
         self.endorsement.email_verified = True
         self.endorsement.status = "approved"
+        self.endorsement.reviewed_at = timezone.now()
         self.endorsement.display_publicly = True
         self.endorsement.save()
 

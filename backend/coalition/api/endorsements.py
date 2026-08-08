@@ -401,6 +401,7 @@ def list_endorsements(
         status="approved",
         public_display=True,
         email_verified=True,
+        reviewed_at__isnull=False,
         display_publicly=True,  # Admin approved for display
     )
 

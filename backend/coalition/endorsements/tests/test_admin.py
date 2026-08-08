@@ -8,6 +8,7 @@ from django.contrib.admin import EmptyFieldListFilter
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
 from django.http import HttpRequest
+from django.utils import timezone
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.test_base import BaseTestCase
@@ -333,6 +334,7 @@ class EndorsementAdminTest(BaseTestCase):
         # Set up endorsement to meet all requirements
         self.endorsement.status = "approved"
         self.endorsement.email_verified = True
+        self.endorsement.reviewed_at = timezone.now()
         self.endorsement.public_display = True
         self.endorsement.display_publicly = False
         self.endorsement.save()

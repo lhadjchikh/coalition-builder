@@ -39,9 +39,9 @@ Approved for Display.
 The verification link **expires 24 hours after it is sent**. Once it expires the
 endorsement sits in Pending until someone resends the email.
 
-## The four gates for appearing publicly
+## The five gates for appearing publicly
 
-An endorsement shows up on the public campaign page **only when all four of these
+An endorsement shows up on the public campaign page **only when all five of these
 are true at once**:
 
 1. **Public display** — the endorser's own consent. This box is checked by default
@@ -51,7 +51,9 @@ are true at once**:
    someone's behalf.** If they opted out, they stay out.
 2. **Email verified** — they clicked the link in their email.
 3. **Status is Approved** — you approved it.
-4. **Display publicly** — you separately selected it to appear on the page.
+4. **Human review recorded** — a reviewer completed the review, including for an
+   automatically approved endorsement.
+5. **Display publicly** — you separately selected it to appear on the page.
 
 !!! warning "The two column names that trip everyone up"
     **Public display** is what the *endorser* consented to.

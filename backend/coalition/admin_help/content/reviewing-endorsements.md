@@ -110,9 +110,10 @@ After approving, decide which endorsements to feature on the campaign page.
 3. Click **Go**
 
 The system checks each one and **turns on only the ones that pass every gate** —
-approved, email verified, and endorser-consented. If you select ten and it reports
-"Successfully approved 7," three failed a gate. Almost always those three unchecked
-the public display consent box on the form. That is correct behaviour, not an error.
+approved, email verified, reviewed by a human, and endorser-consented. If you select
+ten and it reports "Successfully approved 7," three failed a gate. Almost always
+those three unchecked the public display consent box on the form or still need a
+reviewer recorded. That is correct behaviour, not an error.
 
 To pull something back down, use **Remove from display**. It takes effect
 immediately.
