@@ -98,20 +98,26 @@ class TestProvidedSecretARNs:
 class TestLocationConfiguration:
     """Tests for the AWS Location place index in generated settings."""
 
-    def test_place_index_name_is_added_to_lambda_environment(
+    def test_place_index_name_is_added_to_each_stage_environment(
         self,
         tmp_path: Path,
     ) -> None:
-        """The configured place index must be available to the geocoding service."""
+        """Every generated Lambda stage must receive the configured place index."""
         settings = _generate_settings(
             tmp_path,
-            {"AWS_LOCATION_PLACE_INDEX_NAME": "landandbay-geocoding-index"},
+            {
+                "AWS_LOCATION_PLACE_INDEX_NAME": "landandbay-geocoding-index",
+                "ENABLE_STAGING": "true",
+            },
         )
 
-        assert (
-            settings["base"]["environment_variables"]["AWS_LOCATION_PLACE_INDEX_NAME"]
-            == "landandbay-geocoding-index"
-        )
+        for stage in ("dev", "staging", "prod"):
+            assert (
+                settings[stage]["environment_variables"][
+                    "AWS_LOCATION_PLACE_INDEX_NAME"
+                ]
+                == "landandbay-geocoding-index"
+            )
 
     def test_unconfigured_place_index_is_omitted_outside_ci(
         self,
@@ -120,10 +126,25 @@ class TestLocationConfiguration:
         """Local settings should not contain a misleading empty index name."""
         settings = _generate_settings(tmp_path)
 
-        assert (
-            "AWS_LOCATION_PLACE_INDEX_NAME"
-            not in settings["base"]["environment_variables"]
-        )
+        for stage in ("dev", "prod"):
+            assert (
+                "AWS_LOCATION_PLACE_INDEX_NAME"
+                not in settings[stage]["environment_variables"]
+            )
+
+    def test_runtime_variables_are_materialized_in_each_stage(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Stage maps must retain runtime variables when overriding base settings."""
+        settings = _generate_settings(tmp_path, {"ENABLE_STAGING": "true"})
+
+        for stage in ("dev", "staging", "prod"):
+            stage_environment = settings[stage]["environment_variables"]
+            assert stage_environment["IS_LAMBDA"] == "true"
+            assert stage_environment["USE_GEODJANGO"] == "true"
+            assert stage_environment["GDAL_DATA"] == "/opt/share/gdal"
+            assert stage_environment["PROJ_LIB"] == "/opt/share/proj"
 
 
 class TestAssetConfiguration:
