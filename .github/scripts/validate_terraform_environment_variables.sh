@@ -91,6 +91,14 @@ validate_shared_environment() {
   require_nonempty_string_array TF_VAR_allowed_lambda_cidrs
 }
 
+# Terraform discovers the Zappa-created API Gateway by name, so this flag alone
+# decides whether the live custom domain and its DNS record exist. An unset value
+# would otherwise reach Terraform as an empty string, so reject it here where the
+# message can name the variable.
+validate_application_environment() {
+  require_boolean_variable TF_VAR_enable_api_custom_domain
+}
+
 validate_environment() {
   local environment="$1"
 
@@ -99,7 +107,7 @@ validate_environment() {
 
   case "${environment}" in
     shared) validate_shared_environment ;;
-    prod | dev) ;;
+    prod | dev) validate_application_environment ;;
     *)
       fail_validation 'InvalidEnvironment' environment \
         "deployment environment must be shared, prod, or dev"
