@@ -182,7 +182,7 @@ for p in landandbay-prod landandbay-shared landandbay-dev; do
     --time-period Start=2026-07-01,End=2026-08-01 \
     --granularity MONTHLY --metrics UnblendedCost \
     --group-by Type=DIMENSION,Key=SERVICE \
-    --query 'ResultsByTime[].Groups[?Metrics.UnblendedCost.Amount>`0.01`].[Keys[0],Metrics.UnblendedCost.Amount]' \
+    --query 'ResultsByTime[].Groups[?to_number(Metrics.UnblendedCost.Amount) > `0.01`].[Keys[0],Metrics.UnblendedCost.Amount]' \
     --output text
 done
 ```
