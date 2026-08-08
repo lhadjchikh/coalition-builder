@@ -237,7 +237,9 @@ To find out what is behind a surprising service total, re-run with `--group-by T
       "Effect": "Allow",
       "Action": [
         "geo:SearchPlaceIndexForText",
-        "geo:SearchPlaceIndexForSuggestions"
+        "geo:SearchPlaceIndexForPosition",
+        "geo:SearchPlaceIndexForSuggestions",
+        "geo:GetPlace"
       ],
       "Resource": "arn:aws:geo:*:*:place-index/coalition-*"
     }
