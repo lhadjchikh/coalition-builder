@@ -33,23 +33,36 @@ module "zappa" {
 
 ## Inputs
 
-| Name                  | Description                      | Type         | Default | Required |
-| --------------------- | -------------------------------- | ------------ | ------- | :------: |
-| prefix                | Resource name prefix             | string       | n/a     |   yes    |
-| aws_region            | AWS region                       | string       | n/a     |   yes    |
-| vpc_id                | VPC ID for Lambda security group | string       | n/a     |   yes    |
-| database_subnet_cidrs | CIDR blocks for database access  | list(string) | n/a     |   yes    |
-| tags                  | Tags to apply to all resources   | map(string)  | {}      |    no    |
+| Name                  | Description                        | Type         | Default | Required |
+| --------------------- | ---------------------------------- | ------------ | ------- | :------: |
+| prefix                | Resource name prefix               | string       | n/a     |   yes    |
+| aws_region            | AWS region                         | string       | n/a     |   yes    |
+| vpc_id                | VPC ID for Lambda security group   | string       | n/a     |   yes    |
+| database_subnet_cidrs | CIDR blocks for database access    | list(string) | n/a     |   yes    |
+| project_name          | Zappa project name                 | string       | ""      |    no    |
+| stage_name            | Zappa stage name                   | string       | ""      |    no    |
+| discover_api_gateway  | Look up the REST API Zappa created | bool         | false   |    no    |
+| tags                  | Tags to apply to all resources     | map(string)  | {}      |    no    |
 
 ## Outputs
 
-| Name                       | Description                                 |
-| -------------------------- | ------------------------------------------- |
-| s3_bucket_name             | Name of the S3 bucket for Zappa deployments |
-| s3_bucket_arn              | ARN of the S3 bucket                        |
-| lambda_security_group_id   | ID of the Lambda security group             |
-| zappa_deployment_role_arn  | ARN of the IAM role for Zappa deployments   |
-| zappa_deployment_role_name | Name of the IAM role                        |
+| Name                       | Description                                     |
+| -------------------------- | ----------------------------------------------- |
+| s3_bucket_name             | Name of the S3 bucket for Zappa deployments     |
+| s3_bucket_arn              | ARN of the S3 bucket                            |
+| lambda_security_group_id   | ID of the Lambda security group                 |
+| api_gateway_id             | ID of the REST API Zappa created for this stage |
+| zappa_deployment_role_arn  | ARN of the IAM role for Zappa deployments       |
+| zappa_deployment_role_name | Name of the IAM role                            |
+
+## API Gateway discovery
+
+Zappa — not Terraform — creates the API Gateway REST API. Rather than passing its
+id in as a variable (a copy that silently goes stale when the API is recreated),
+set `project_name`, `stage_name`, and `discover_api_gateway = true`, and the
+module looks the API up as `{project_name}-{stage_name}` and publishes its id as
+`api_gateway_id`. Leave `discover_api_gateway` at `false` until Zappa has
+deployed the stage, since the lookup fails when no such API exists.
 
 ## Features
 

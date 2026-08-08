@@ -1,3 +1,19 @@
+locals {
+  # Zappa derives every per-stage resource name it creates from these two parts,
+  # e.g. project "coalition" at stage "prod" becomes "coalition-prod".
+  zappa_stage_resource_name = "${var.project_name}-${var.stage_name}"
+}
+
+# Zappa, not Terraform, creates the API Gateway REST API. Terraform discovers it
+# by name so no environment has to carry a hand-copied id that can drift out of
+# date. Discovery is opt-in because the first Terraform apply of an environment
+# necessarily precedes the first Zappa deployment.
+data "aws_api_gateway_rest_api" "zappa" {
+  count = var.discover_api_gateway ? 1 : 0
+
+  name = local.zappa_stage_resource_name
+}
+
 # S3 bucket for Zappa deployments
 resource "aws_s3_bucket" "zappa_deployments" {
   bucket = coalesce(var.zappa_bucket_name, "${var.prefix}-zappa-deployments")

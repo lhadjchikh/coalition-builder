@@ -1,7 +1,7 @@
 # Development Account
 # Contains: VPC (private app subnets only), Lambda/Zappa (512MB, no keep-warm),
 # ECR, S3 (no CloudFront), VPC peering to shared, Monitoring, GitHub OIDC,
-# API custom domain (test-api.domain, conditional on api_gateway_id)
+# API custom domain (test-api.domain, conditional on enable_api_custom_domain)
 # Minimal infrastructure — no WAF, no SES
 
 provider "aws" {
@@ -103,9 +103,12 @@ module "zappa" {
 
   prefix            = var.prefix
   project_name      = "coalition"
+  stage_name        = var.api_gateway_stage
   zappa_bucket_name = "${var.prefix}-zappa-deployments-dev"
   aws_region        = var.aws_region
   vpc_id            = module.networking.vpc_id
+
+  discover_api_gateway = local.create_api_custom_domain
 
   create_lambda_sg = true
   # Lambda needs to reach shared account's DB subnets via VPC peering
@@ -195,12 +198,13 @@ module "lambda_ecr" {
 }
 
 locals {
-  api_subdomain = "test-api.${var.domain_name}"
+  api_subdomain            = "test-api.${var.domain_name}"
+  create_api_custom_domain = var.domain_name != "" && var.enable_api_custom_domain
 }
 
 # ACM certificate for test-api subdomain
-# Created when domain_name is set, even before api_gateway_id is available,
-# so the cert is ready when the API Gateway is later configured.
+# Created when domain_name is set, even before Zappa has deployed the API,
+# so the cert is ready when the custom domain is later enabled.
 resource "aws_acm_certificate" "api" {
   count = var.domain_name != "" ? 1 : 0
 
@@ -239,9 +243,9 @@ resource "aws_acm_certificate_validation" "api" {
   validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
 }
 
-# API custom domain (conditional — requires api_gateway_id from Zappa deployment)
+# API custom domain (conditional — requires the API Gateway Zappa deploys)
 resource "aws_api_gateway_domain_name" "api" {
-  count = var.domain_name != "" && var.api_gateway_id != "" ? 1 : 0
+  count = local.create_api_custom_domain ? 1 : 0
 
   domain_name              = local.api_subdomain
   regional_certificate_arn = aws_acm_certificate_validation.api[0].certificate_arn
@@ -252,9 +256,9 @@ resource "aws_api_gateway_domain_name" "api" {
 }
 
 resource "aws_api_gateway_base_path_mapping" "api" {
-  count = var.domain_name != "" && var.api_gateway_id != "" ? 1 : 0
+  count = local.create_api_custom_domain ? 1 : 0
 
-  api_id      = var.api_gateway_id
+  api_id      = module.zappa.api_gateway_id
   stage_name  = var.api_gateway_stage
   domain_name = aws_api_gateway_domain_name.api[0].domain_name
 }
@@ -262,7 +266,7 @@ resource "aws_api_gateway_base_path_mapping" "api" {
 # API DNS record in shared account's Route53 zone
 resource "aws_route53_record" "api" {
   provider = aws.shared
-  count    = var.domain_name != "" && var.api_gateway_id != "" ? 1 : 0
+  count    = local.create_api_custom_domain ? 1 : 0
 
   allow_overwrite = true
   zone_id         = data.terraform_remote_state.shared.outputs.route53_zone_id

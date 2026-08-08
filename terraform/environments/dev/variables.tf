@@ -101,11 +101,11 @@ variable "domain_name" {
   default     = ""
 }
 
-# API Gateway (set after initial Zappa deployment)
-variable "api_gateway_id" {
-  description = "The ID of the Zappa-managed API Gateway REST API"
-  type        = string
-  default     = ""
+# API Gateway (enable after initial Zappa deployment)
+variable "enable_api_custom_domain" {
+  description = "Point test-api.<domain_name> at the API Gateway Zappa deployed. Leave false until Zappa has deployed the stage, since Terraform looks the API up by name."
+  type        = bool
+  default     = false
 }
 
 variable "api_gateway_stage" {
