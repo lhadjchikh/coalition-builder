@@ -127,16 +127,16 @@ def run_python_linters(project_root: Path) -> tuple[bool, bool]:
         print("⚠️  Poetry is not installed. Skipping Python linting.")
         return True, False
 
-    print_step("Running Ruff code formatter")
-    success &= run_command(
-        ["poetry", "run", "ruff", "format", "."],
-        cwd=backend_dir,
-    )
-
     print_step("Running Ruff linter with auto-fix")
     # Run ruff with --fix to auto-fix issues
     success &= run_command(
         ["poetry", "run", "ruff", "check", "--fix", "."],
+        cwd=backend_dir,
+    )
+
+    print_step("Running Ruff code formatter")
+    success &= run_command(
+        ["poetry", "run", "ruff", "format", "."],
         cwd=backend_dir,
     )
 
