@@ -2,7 +2,11 @@
 
 ## Overview
 
-The Coalition Builder uses AWS Simple Email Service (SES) for sending transactional emails like endorsement verifications and admin notifications. Since the ECS tasks run in public subnets with internet access, we can use SES via SMTP.
+The Coalition Builder uses AWS Simple Email Service (SES) for sending transactional emails like endorsement verifications and admin notifications. Django is configured to reach SES over SMTP (`email-smtp.us-east-1.amazonaws.com:587`).
+
+> **⚠️ Known gap on Lambda.** This SMTP path does not currently work in the serverless deployment. The Lambda runs in private subnets whose route table has no default route, and there is no SES VPC endpoint — so outbound SMTP cannot leave the VPC. `SafeSMTPBackend` treats the failed connection as "SMTP unavailable" and falls back to writing messages to the console, which on Lambda means they land in CloudWatch logs and are never delivered. `configure_zappa.py` also sets no `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD`. As of August 2026, `aws ses get-send-statistics` reports no sends.
+>
+> Fixing this requires one of: adding an SES VPC endpoint (interface endpoints for `email-smtp` are available), switching to the SES API over an existing egress path, or giving the Lambda subnets a NAT route. Note that each added interface endpoint costs about $7.44/month per account — see [Cost Analysis](deployment/aws.md#cost-analysis).
 
 ## Automated Setup with Terraform
 
@@ -130,9 +134,9 @@ aws secretsmanager create-secret \
   }'
 ```
 
-### 6. Update ECS Task Definition
+### 6. Expose the credentials to the Lambda
 
-The ECS task definition needs to pull these secrets. Add to your task definition:
+The Lambda reads its configuration from the environment variables baked into `zappa_settings.json`. Export the SES SMTP credentials before running `configure_zappa.py`, or fetch them from Secrets Manager at startup — the Lambda already has a Secrets Manager VPC endpoint and read permission.
 
 ```json
 "secrets": [
@@ -180,7 +184,7 @@ python manage.py shell
 ### 2. Test in Production
 
 ```bash
-# SSH into bastion or ECS task
+# SSH into the bastion, or use `zappa invoke prod` for the Lambda
 # Check environment variables are set
 env | grep EMAIL
 
@@ -204,9 +208,10 @@ python manage.py shell
    - You're in sandbox mode and trying to send to unverified address
    - Solution: Verify the recipient or request production access
 
-2. **"Connection timeout"**
-   - ECS task cannot reach SES endpoint
-   - Solution: Ensure ECS is in public subnet with internet access
+2. **"Connection timeout"** / emails appearing in CloudWatch instead of arriving
+   - The Lambda cannot reach the SES SMTP endpoint from its private subnets
+   - This is the known gap described at the top of this page
+   - Solution: Add an SES interface VPC endpoint, switch to the SES API, or provide a NAT route
 
 3. **"Invalid credentials"**
    - SMTP credentials are incorrect
@@ -236,8 +241,7 @@ LOGGING = {
 
 ## Cost Optimization
 
-- **First 62,000 emails/month from EC2/ECS**: Free
-- **Additional emails**: $0.10 per 1,000 emails
+- **Outbound email**: $0.10 per 1,000 emails (the 62,000/month free tier applies to sends from EC2/ECS, not Lambda)
 - **Data transfer**: $0.12 per GB of attachments
 
 For low-traffic sites, you'll likely stay within the free tier.
@@ -245,7 +249,7 @@ For low-traffic sites, you'll likely stay within the free tier.
 ## Security Best Practices
 
 1. **Never commit SMTP credentials** to version control
-2. **Use IAM roles** for ECS tasks instead of access keys when possible
+2. **Use IAM roles** for the Lambda execution role instead of access keys when possible
 3. **Enable DKIM signing** for better deliverability
 4. **Set up SPF records** in your DNS
 5. **Monitor for bounces and complaints** to maintain sender reputation

@@ -2,9 +2,7 @@
 
 ## Overview
 
-Coalition Builder uses a **serverless architecture** for cost-effective, scalable deployment. The application is split between AWS Lambda (Django backend) and Vercel (Next.js frontend).
-
-**Cost Savings**: ~46% reduction from legacy ECS deployment ($39/month vs $73/month)
+Coalition Builder uses a **serverless architecture** for cost-effective, scalable deployment. The application is split between AWS Lambda (Django backend) and Vercel (Next.js frontend). For the resource-by-resource cost breakdown, see [AWS Serverless Deployment](deployment/aws.md#cost-analysis).
 
 ## Quick Start
 
@@ -13,37 +11,43 @@ Coalition Builder uses a **serverless architecture** for cost-effective, scalabl
 - AWS CLI configured with deployment permissions
 - GitHub repository with Actions enabled
 - Domain name with DNS access (optional)
-- Terraform 1.0+ for infrastructure
+- Terraform 1.12+ for infrastructure
 
 ### 2. Deploy Infrastructure
 
+Terraform is organized into per-account environments. Deploy `shared` first — it creates the VPC and RDS instance that `prod` and `dev` read via remote state.
+
 ```bash
-cd terraform
-terraform init
-terraform apply -target=module.dynamodb
-terraform apply -target=module.zappa
-terraform apply -target=module.geodata_import
+cd terraform/environments/shared
+terraform init -backend-config=backend.hcl
+terraform apply
+
+cd ../prod
+terraform init -backend-config=backend.hcl
+terraform apply
 ```
 
-### 3. Configure GitHub Secrets
+See [Multi-Account AWS Setup](deployment/multi-account-aws.md) for the bootstrap that must run before the first `terraform init`.
 
-Set these in your GitHub repository settings:
+### 3. Configure GitHub Secrets and Variables
+
+Deployment workflows authenticate to AWS with OIDC role assumption, so no long-lived AWS access keys are needed.
 
 **Secrets:**
 
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-- `VERCEL_TOKEN`
-- `VERCEL_ORG_ID`
-- `VERCEL_PROJECT_ID`
+- `DATABASE_SECRET_ARN`, `DJANGO_SECRET_ARN` - Secrets Manager ARNs the Lambda role must be able to read
+- `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
 
-**Environment Variables** (per environment):
+**Variables** (per GitHub Environment):
 
-- `DOMAIN_NAME` (optional)
-- `CERTIFICATE_ARN` (optional)
-- `PRODUCTION_API_URL`
-- `STAGING_API_URL`
-- `DEVELOPMENT_API_URL`
+- `AWS_ACCOUNT_ID` - determines the `github-actions-<env>` role to assume
+- `ZAPPA_S3_BUCKET`, `ZAPPA_ROLE_NAME` - from Terraform outputs
+- `AWS_STORAGE_BUCKET_NAME`, `CLOUDFRONT_DOMAIN`
+- `AWS_LOCATION_PLACE_INDEX_NAME`
+- `VPC_SUBNET_IDS`, `VPC_SECURITY_GROUP_IDS`
+- `PRODUCTION_API_URL` / `DEVELOPMENT_API_URL`, `PRODUCTION_SITE_URL` / `DEVELOPMENT_SITE_URL`
+
+See [GitHub Environment Setup](deployment/github-environment-setup.md) for the full list.
 
 ### 4. Deploy Applications
 
@@ -57,33 +61,29 @@ gh workflow run deploy_frontend.yml --ref main -f environment=prod
 
 ## Architecture
 
-### Current: Serverless Architecture
+```text
+Internet
+    ├── Vercel (Next.js Frontend) ──/api/*──┐
+    └── CloudFront CDN (static & media)     │
+                                            ▼
+                                    API Gateway → Lambda (Django via Zappa)
+                                                     ├── RDS PostgreSQL + PostGIS
+                                                     ├── S3 (static & media)
+                                                     ├── SES (transactional email)
+                                                     └── AWS Location Service (geocoding)
 
-```
-Internet → CloudFront CDN
-    ├── Vercel (Next.js Frontend)
-    └── API Gateway → Lambda (Django)
-         ├── RDS PostgreSQL
-         └── DynamoDB (Rate Limiting)
-
-ECS Fargate (TIGER Imports Only)
+ECS Fargate (TIGER geodata imports only)
 ```
 
 **Components:**
 
 - **Frontend**: Next.js on Vercel Edge Network
-- **Backend**: Django on AWS Lambda (via Zappa)
+- **Backend**: Django on AWS Lambda (via Zappa, as a container image)
 - **Database**: RDS PostgreSQL with PostGIS
-- **Rate Limiting**: DynamoDB (replaces Redis)
+- **Rate Limiting**: PostgreSQL-backed Django cache — see [Rate Limiting](rate-limiting.md)
 - **Geographic Data**: Imported via ECS Fargate tasks
 
-### Legacy: ECS Architecture (Deprecated)
-
-The previous ECS-based deployment is still documented for reference but deprecated:
-
-- Higher costs ($73/month vs $39/month)
-- More complex infrastructure management
-- Less scalable
+The ALB, ECS application service, and NAT gateway from the pre-2025 deployment have been removed. The Lambda reaches AWS services through VPC endpoints rather than a NAT gateway. See [AWS Serverless Deployment](deployment/aws.md) for the full resource inventory.
 
 ## Deployment Options
 
@@ -107,19 +107,14 @@ cd frontend
 vercel --prod
 ```
 
-### Staging Deployment
-
-**Automatic:**
-
-- Push to `staging` branch
-- Deploys to staging environment with keep-warm enabled
-
 ### Development Deployment
 
 **Automatic:**
 
-- Push to feature branches creates preview deployments
-- Pull requests get preview URLs
+- Push to `development` triggers a `dev` Lambda deployment and a Vercel deployment
+- Pull requests touching `frontend/` get Vercel preview URLs
+
+> **No staging environment.** `zappa_settings.json.template` defines a `staging` stage, but no Terraform environment or deployment workflow targets it. Only `dev` and `prod` are provisioned and wired to CI.
 
 **Local Development:**
 
@@ -198,7 +193,7 @@ Environment variables are set via GitHub Actions:
 
 2. **Configure DNS:**
 
-   ```
+   ```text
    Type: CNAME
    Name: @
    Value: cname.vercel-dns.com
@@ -263,21 +258,11 @@ Environment variables are set via GitHub Actions:
 
 ## Cost Management
 
-### Monthly Costs (Approximate)
-
-**Serverless Architecture:**
-
-- Lambda: ~$5
-- API Gateway: ~$4
-- Vercel: $0-20 (depending on traffic)
-- RDS: ~$15
-- DynamoDB: ~$1
-- Other (S3, CloudWatch): ~$5
-- **Total: ~$39/month**
+The per-service cost breakdown lives in [AWS Serverless Deployment](deployment/aws.md#cost-analysis) so there is a single set of figures to keep current.
 
 **Cost Optimization:**
 
-- DynamoDB pay-per-request billing
+- Lambda and API Gateway bill per request, with no idle cost
 - Lambda keep-warm only for production
 - Vercel free tier for development
 - ECS only for occasional TIGER imports
@@ -308,14 +293,6 @@ Environment variables are set via GitHub Actions:
 - See [Vercel deployment guide](VERCEL_DEPLOYMENT.md)
 - Review CloudWatch logs for errors
 
-## Migration from Legacy
+## Migration from ECS
 
-If migrating from the ECS deployment:
-
-1. **Backup Data:** Export database and user uploads
-2. **Test Serverless:** Deploy to staging first
-3. **Update DNS:** Point to new endpoints
-4. **Monitor:** Check performance and error rates
-5. **Cleanup:** Remove ECS resources after verification
-
-See the migration plan in `backend/local/SERVERLESS_MIGRATION_PLAN.md` for detailed steps.
+The migration from ECS Fargate to this serverless architecture is complete — see [PR #222](https://github.com/lhadjchikh/coalition-builder/pull/222). The ALB, ECS application service, and NAT gateway have been decommissioned, and no ECS deployment path remains for the application. ECS Fargate is still used for TIGER geodata imports; see [Geodata Import](deployment/geodata-import.md).

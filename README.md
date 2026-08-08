@@ -4,7 +4,9 @@
 [![Full Stack Tests](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_fullstack.yml/badge.svg)](https://github.com/lhadjchikh/coalition-builder/actions/workflows/test_fullstack.yml)
 [![Code Coverage](https://codecov.io/gh/lhadjchikh/coalition-builder/branch/main/graph/badge.svg?token=VGUU4R6NR3)](https://codecov.io/gh/lhadjchikh/coalition-builder)
 
-> **⚠️ Pre-Alpha Software:** This project is in pre-alpha and undergoing rapid development with a major serverless migration in progress ([PR #222](https://github.com/lhadjchikh/coalition-builder/pull/222)). No official releases yet. Expect frequent updates and architectural changes.
+> **⚠️ Pre-Alpha Software:** This project is in pre-alpha and undergoing rapid development. No official releases yet. Expect frequent updates and architectural changes.
+>
+> The migration from ECS Fargate to a serverless architecture ([PR #222](https://github.com/lhadjchikh/coalition-builder/pull/222)) is **complete**. Production runs Django on AWS Lambda and Next.js on Vercel; the ECS-based deployment is deprecated.
 
 A comprehensive platform for organizing and managing policy advocacy campaigns, bringing together stakeholders, legislators, and advocates to drive meaningful policy change.
 
@@ -24,8 +26,10 @@ A comprehensive platform for organizing and managing policy advocacy campaigns, 
   - [Core Functionality](#core-functionality)
   - [Endorsement System](#endorsement-system)
 - [Technology Stack](#️-technology-stack)
+- [Architecture](#-architecture)
 - [Documentation](#-documentation)
 - [Quick Start](#-quick-start)
+- [Deployment](#-deployment)
 - [Contributing](#-contributing)
 - [License](#-license)
 - [Support](#-support)
@@ -80,7 +84,7 @@ flowchart TD
 - **Content Management** - Easy-to-use Django admin interface
 - **API Integration** - RESTful API for custom integrations
 - **SEO Optimized** - Server-side rendering with Next.js
-- **Production Ready** - Secure AWS deployment with Terraform
+- **Serverless Deployment** - Django on AWS Lambda and Next.js on Vercel, provisioned with Terraform
 
 ### Endorsement System
 
@@ -93,9 +97,48 @@ flowchart TD
 
 ## 🏗️ Technology Stack
 
-- **Backend**: Django 5.2 + PostgreSQL + PostGIS
-- **Frontend**: Next.js 15 + React 19 + TypeScript (Server-Side Rendered)
-- **Infrastructure**: AWS + Terraform
+- **Backend**: Django 5.2 + Django Ninja on Python 3.13, running on AWS Lambda (packaged with Zappa as a container image)
+- **Frontend**: Next.js 16 + React 19 + TypeScript (server-side rendered), deployed to Vercel
+- **Database**: RDS PostgreSQL 16 with PostGIS, reached through private VPC subnets
+- **Infrastructure**: Terraform-managed AWS (API Gateway, Lambda, RDS, S3, CloudFront, Secrets Manager, SES, AWS Location Service)
+- **Local development**: Docker Compose (Django + Next.js + PostGIS)
+
+## 🧭 Architecture
+
+Production is fully serverless: API Gateway fronts a containerized Lambda running Django, and Vercel serves the Next.js frontend, proxying `/api/*` to the API. ECS Fargate remains only for one-off TIGER geodata import tasks.
+
+```mermaid
+%%{init: {'theme':'basic'}}%%
+flowchart LR
+    User[🌐 Visitors]
+
+    subgraph Vercel["▲ Vercel"]
+        Next[Next.js SSR Frontend]
+    end
+
+    subgraph AWS["☁️ AWS"]
+        APIGW[API Gateway]
+        Lambda[λ Django on Lambda<br/>Zappa container image]
+        RDS[(RDS PostgreSQL + PostGIS)]
+        S3[S3 + CloudFront<br/>static & media]
+        SES[SES<br/>transactional email]
+        Location[AWS Location Service<br/>geocoding]
+        ECS[ECS Fargate<br/>TIGER geodata imports]
+    end
+
+    User --> Next
+    Next -->|/api/*| APIGW
+    APIGW --> Lambda
+    Lambda --> RDS
+    Lambda --> S3
+    Lambda --> SES
+    Lambda --> Location
+    ECS --> RDS
+```
+
+There are no always-on servers: no ALB, no ECS service, and no NAT gateway — the Lambda reaches AWS services through VPC endpoints. Terraform is split into `shared` (VPC, RDS, bastion), `prod`, and `dev` environments, with GitHub Actions authenticating via OIDC.
+
+For the resource inventory, IAM policies, and cost breakdown, see the [AWS Serverless Deployment guide](https://lhadjchikh.github.io/coalition-builder/deployment/aws/).
 
 ## 📚 Documentation
 
@@ -107,9 +150,15 @@ flowchart TD
 - [🔧 Configuration](https://lhadjchikh.github.io/coalition-builder/configuration/) - Environment variables and settings
 - [💻 Development Guide](https://lhadjchikh.github.io/coalition-builder/development/) - Development workflow
 - [📡 API Reference](https://lhadjchikh.github.io/coalition-builder/api/) - Auto-generated API documentation
-- [🚀 Deployment Guide](https://lhadjchikh.github.io/coalition-builder/deployment/) - Production deployment options
+- [🚀 Deployment Guide](https://lhadjchikh.github.io/coalition-builder/deployment/) - Serverless deployment overview
+- [☁️ AWS Deployment](https://lhadjchikh.github.io/coalition-builder/deployment/aws/) - Full infrastructure walkthrough
+- [λ Lambda Deployment](https://lhadjchikh.github.io/coalition-builder/LAMBDA_DEPLOYMENT/) - Django on Lambda
+- [▲ Vercel Deployment](https://lhadjchikh.github.io/coalition-builder/VERCEL_DEPLOYMENT/) - Next.js on Vercel
+- [🧰 Serverless Setup](https://lhadjchikh.github.io/coalition-builder/serverless-setup/) - Configure your own AWS resources
 
 ## 🚀 Quick Start
+
+Local development runs the full stack in Docker — the serverless architecture applies to deployed environments only.
 
 ```bash
 # Clone the repository
@@ -117,7 +166,7 @@ git clone https://github.com/lhadjchikh/coalition-builder.git
 cd coalition-builder
 
 # Start with Docker (recommended)
-# For production/CI
+# For production-style builds / CI
 docker compose up -d
 
 # For local development with live code reload
@@ -127,11 +176,18 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 docker compose exec api python scripts/create_test_data.py
 
 # Access the application
-# Frontend: http://localhost:3000 (SSR)
-# Frontend SPA: http://localhost:8000 (Django serves React)
+# Frontend: http://localhost:3000 (Next.js SSR)
 # API: http://localhost:8000/api/
 # Admin: http://localhost:8000/admin/
 ```
+
+## 🚢 Deployment
+
+Infrastructure is provisioned with Terraform; both applications deploy through GitHub Actions. Pushes to `main` deploy production, and pushes to `development` deploy the dev environment.
+
+- [Deployment overview](https://lhadjchikh.github.io/coalition-builder/deployment/) - which pieces go where
+- [AWS Serverless Deployment](https://lhadjchikh.github.io/coalition-builder/deployment/aws/) - resources, IAM, and costs
+- [terraform/README.md](terraform/README.md) - multi-account bootstrap, OIDC, and module reference
 
 ## 🤝 Contributing
 

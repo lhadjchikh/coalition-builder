@@ -27,7 +27,7 @@ The `deploy_infra.yml` workflow automatically:
 
 1. Reads secrets from GitHub repository
 2. Passes variables to Terraform configuration
-3. Updates ECS containers with new environment variables
+3. Updates Lambda environment variables
 4. Stores passwords securely in AWS Secrets Manager
 
 ## Development Environment

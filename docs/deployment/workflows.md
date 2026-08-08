@@ -326,15 +326,10 @@ When VPC endpoints are disabled, Lambda functions in the dev environment (which 
 
 ## Cost Monitoring
 
-The serverless architecture significantly reduces costs:
-
-- **Lambda**: Pay per invocation (~$5/month)
-- **Vercel**: Free tier or $20/month Pro
-- **DynamoDB**: Pay per request (~$1/month)
-- **Total**: ~$39/month vs $73/month for ECS
+Compute is essentially free at current traffic — Lambda does not even appear as a Cost Explorer line item. The bill is dominated by always-on resources: VPC interface endpoints, RDS, and WAF. See [Cost Analysis](aws.md#cost-analysis) for the measured per-service breakdown.
 
 Monitor usage:
 
-- AWS Cost Explorer for Lambda/DynamoDB
+- AWS Cost Explorer, grouped by service and then by usage type
 - Vercel Analytics for bandwidth
 - CloudWatch for detailed metrics

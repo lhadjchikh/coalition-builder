@@ -114,8 +114,9 @@ flowchart TD
     %% Decision to deployment
     tests_complete --> app_deploy[Application Deployment]
 
-    %% Deployment to AWS
-    app_deploy --> ecs[Amazon ECS]
+    %% Deployment
+    app_deploy --> lambda[AWS Lambda<br/>Django backend]
+    app_deploy --> vercel[Vercel<br/>Next.js frontend]
 ```
 
 The CI/CD pipeline includes:
@@ -123,7 +124,7 @@ The CI/CD pipeline includes:
 - **Parallel Testing**: Frontend, backend, and infrastructure tests run simultaneously
 - **Code Quality**: Automated linting and formatting checks
 - **Full Stack Integration**: End-to-end testing across all components
-- **Automated Deployment**: Successful builds deploy to AWS ECS
+- **Automated Deployment**: Successful builds deploy the backend to AWS Lambda and the frontend to Vercel
 
 ### Running Tests
 
@@ -223,15 +224,18 @@ For detailed production setup, see the [Site Password Protection Guide](developm
 
 ## Project Structure
 
-```
+```text
 coalition-builder/
-├── backend/           # Django API
+├── backend/           # Django API (deployed to AWS Lambda via Zappa)
 │   ├── coalition/     # Main app
 │   ├── docs/          # Sphinx API docs
-│   └── scripts/       # Backend scripts
-├── frontend/          # React frontend
-├── ssr/               # Next.js SSR
+│   ├── scripts/       # Backend scripts
+│   └── handler.py     # Lambda entry point
+├── frontend/          # Next.js frontend (deployed to Vercel)
 ├── terraform/         # Infrastructure
+│   ├── environments/  # shared, prod, dev
+│   └── modules/       # Reusable modules
+├── scripts/           # Repo-level tooling
 └── docs/              # Main documentation
 ```
 

@@ -41,7 +41,6 @@ docker compose exec api python manage.py createsuperuser
 - Python 3.13+
 - Node.js 22+
 - PostgreSQL 16+ with PostGIS extension
-- Redis (for caching)
 
 1. **Clone and setup backend:**
 

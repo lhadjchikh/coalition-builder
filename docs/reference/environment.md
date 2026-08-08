@@ -198,10 +198,9 @@ These settings can be customized to adjust spam detection sensitivity:
 ENDORSEMENT_RATE_LIMIT_WINDOW=300
 ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS=3
 
-# Cache backend (required for rate limiting)
-# Redis recommended for production and development
-CACHE_URL=redis://localhost:6379/1
 ```
+
+Rate limiting uses Django's database cache backend, which needs no configuration — there is no `CACHE_URL` setting. See [Rate Limiting](../rate-limiting.md).
 
 **Note:** The spam prevention system includes built-in configurations for:
 
@@ -486,9 +485,6 @@ SITE_URL="http://localhost:3000"
 ENDORSEMENT_RATE_LIMIT_WINDOW=300
 ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS=3
 
-# Cache (for rate limiting) - Redis container in docker compose
-CACHE_URL=redis://redis:6379/1
-
 # Frontend
 NEXT_PUBLIC_API_URL=http://localhost:8000/api
 REACT_APP_DEBUG=true
@@ -535,9 +531,6 @@ SITE_URL="https://yourdomain.com"
 # Endorsement System
 ENDORSEMENT_RATE_LIMIT_WINDOW=300
 ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS=3
-
-# Cache (Redis recommended for production)
-CACHE_URL=redis://redis:6379/1
 
 # Storage
 USE_S3=True
