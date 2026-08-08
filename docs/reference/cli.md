@@ -493,25 +493,6 @@ npm run analyze
 
 ## Git Hooks and CI Commands
 
-### Pre-commit Hooks
-
-```bash
-# Install pre-commit hooks
-pre-commit install
-
-# Run pre-commit on all files
-pre-commit run --all-files
-
-# Run the Ruff formatter hook
-pre-commit run ruff-format
-
-# Update hook versions
-pre-commit autoupdate
-
-# Skip pre-commit hooks
-git commit --no-verify
-```
-
 ### GitHub Actions Simulation
 
 ```bash
