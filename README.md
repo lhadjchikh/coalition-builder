@@ -136,7 +136,7 @@ flowchart LR
 
 Transactional email is currently blocked in Lambda. [PR #312](https://github.com/lhadjchikh/coalition-builder/pull/312) replaces the unreachable SMTP path with the SES API over a VPC endpoint.
 
-There are no always-on servers: no ALB, no ECS service, and no NAT gateway — the Lambda reaches AWS services through VPC endpoints. Terraform is split into `shared` (VPC, RDS, bastion), `prod`, and `dev` environments, with GitHub Actions authenticating via OIDC.
+There are no always-on application servers: no ALB, no ECS application service, and no NAT gateway. RDS and the EC2 bastion remain always-on resources, while Lambda reaches AWS services through VPC endpoints. Terraform is split into `shared` (VPC, RDS, bastion), `prod`, and `dev` environments, with GitHub Actions authenticating via OIDC.
 
 For the resource inventory, IAM policies, and cost breakdown, see the [AWS Serverless Deployment guide](https://lhadjchikh.github.io/coalition-builder/deployment/aws/).
 
