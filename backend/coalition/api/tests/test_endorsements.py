@@ -6,7 +6,7 @@ import json
 import uuid
 from unittest.mock import patch
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Permission, User
 from django.core.cache import cache
 from django.test import Client, override_settings
 
@@ -550,6 +550,20 @@ class EndorsementAPIEnhancedTest(BaseTestCase):
             password="testpass",
             is_staff=True,
         )
+        self.user.user_permissions.add(
+            Permission.objects.get(
+                codename="change_endorsement",
+                content_type__app_label="endorsements",
+            ),
+            Permission.objects.get(
+                codename="view_endorsement",
+                content_type__app_label="endorsements",
+            ),
+            Permission.objects.get(
+                codename="view_stakeholder",
+                content_type__app_label="stakeholders",
+            ),
+        )
 
         self.stakeholder = self.create_stakeholder(
             first_name="Test",
@@ -944,6 +958,77 @@ class EndorsementAPIEnhancedTest(BaseTestCase):
 
         response = self.client.get("/api/endorsements/export/json/")
         assert response.status_code == 403
+
+    def test_staff_without_model_permissions_cannot_access_admin_endpoints(
+        self,
+    ) -> None:
+        permissionless_staff = User.objects.create_user(
+            username="permissionless-staff",
+            is_staff=True,
+        )
+        self.client.force_login(permissionless_staff)
+
+        responses = [
+            self.client.post(
+                f"/api/endorsements/admin/approve/{self.endorsement.id}/",
+            ),
+            self.client.post(
+                f"/api/endorsements/admin/reject/{self.endorsement.id}/",
+            ),
+            self.client.get("/api/endorsements/admin/pending/"),
+            self.client.get("/api/endorsements/export/csv/"),
+            self.client.get("/api/endorsements/export/json/"),
+        ]
+
+        assert [response.status_code for response in responses] == [403] * 5
+
+    def test_staff_with_view_permissions_cannot_change_endorsements(self) -> None:
+        viewer = User.objects.create_user(username="endorsement-viewer", is_staff=True)
+        viewer.user_permissions.add(
+            Permission.objects.get(
+                codename="view_endorsement",
+                content_type__app_label="endorsements",
+            ),
+            Permission.objects.get(
+                codename="view_stakeholder",
+                content_type__app_label="stakeholders",
+            ),
+        )
+        self.client.force_login(viewer)
+
+        responses = [
+            self.client.post(
+                f"/api/endorsements/admin/approve/{self.endorsement.id}/",
+            ),
+            self.client.post(
+                f"/api/endorsements/admin/reject/{self.endorsement.id}/",
+            ),
+        ]
+
+        assert [response.status_code for response in responses] == [403, 403]
+
+    def test_staff_needs_both_view_permissions_for_private_endorsement_data(
+        self,
+    ) -> None:
+        partial_viewer = User.objects.create_user(
+            username="partial-endorsement-viewer",
+            is_staff=True,
+        )
+        partial_viewer.user_permissions.add(
+            Permission.objects.get(
+                codename="view_endorsement",
+                content_type__app_label="endorsements",
+            ),
+        )
+        self.client.force_login(partial_viewer)
+
+        responses = [
+            self.client.get("/api/endorsements/admin/pending/"),
+            self.client.get("/api/endorsements/export/csv/"),
+            self.client.get("/api/endorsements/export/json/"),
+        ]
+
+        assert [response.status_code for response in responses] == [403, 403, 403]
 
 
 class TermsAcceptanceIntegrationTest(BaseTestCase):

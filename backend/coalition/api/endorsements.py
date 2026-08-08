@@ -4,6 +4,7 @@ import logging
 import uuid
 from typing import Any
 
+from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
@@ -31,6 +32,27 @@ from .schemas import (
 
 router = Router()
 logger = logging.getLogger(__name__)
+
+ENDORSEMENT_CHANGE_PERMISSIONS = ("endorsements.change_endorsement",)
+ENDORSEMENT_PRIVATE_READ_PERMISSIONS = (
+    "endorsements.view_endorsement",
+    "stakeholders.view_stakeholder",
+)
+
+
+def _require_staff_permissions(
+    request: HttpRequest,
+    required_permissions: tuple[str, ...],
+) -> User:
+    user = request.user
+    if (
+        isinstance(user, User)
+        and user.is_active
+        and user.is_staff
+        and user.has_perms(required_permissions)
+    ):
+        return user
+    raise HttpError(403, "Admin access required with appropriate permissions")
 
 
 def sanitize_csv_field(value: str) -> str:
@@ -531,9 +553,7 @@ def admin_approve_endorsement(request: HttpRequest, endorsement_id: int) -> dict
     CSRF protected: This endpoint requires CSRF token validation to prevent
     cross-site request forgery attacks against logged-in administrators.
     """
-    # Require staff/admin access for endorsement approval
-    if not request.user.is_authenticated or not request.user.is_staff:
-        raise HttpError(403, "Admin access required for endorsement approval")
+    staff_user = _require_staff_permissions(request, ENDORSEMENT_CHANGE_PERMISSIONS)
 
     endorsement = get_object_or_404(Endorsement, id=endorsement_id)
 
@@ -543,7 +563,7 @@ def admin_approve_endorsement(request: HttpRequest, endorsement_id: int) -> dict
             "message": "Endorsement was already approved",
         }
 
-    endorsement.approve(user=request.user)
+    endorsement.approve(user=staff_user)
 
     # Send confirmation email
     EndorsementEmailService.send_confirmation_email(endorsement)
@@ -562,9 +582,7 @@ def admin_reject_endorsement(request: HttpRequest, endorsement_id: int) -> dict:
     CSRF protected: This endpoint requires CSRF token validation to prevent
     cross-site request forgery attacks against logged-in administrators.
     """
-    # Require staff/admin access for endorsement rejection
-    if not request.user.is_authenticated or not request.user.is_staff:
-        raise HttpError(403, "Admin access required for endorsement rejection")
+    staff_user = _require_staff_permissions(request, ENDORSEMENT_CHANGE_PERMISSIONS)
 
     endorsement = get_object_or_404(Endorsement, id=endorsement_id)
 
@@ -574,7 +592,7 @@ def admin_reject_endorsement(request: HttpRequest, endorsement_id: int) -> dict:
             "message": "Endorsement was already rejected",
         }
 
-    endorsement.reject(user=request.user)
+    endorsement.reject(user=staff_user)
 
     return {
         "success": True,
@@ -586,9 +604,7 @@ def admin_reject_endorsement(request: HttpRequest, endorsement_id: int) -> dict:
 @router.get("/admin/pending/", response=list[EndorsementOut])
 def admin_list_pending_endorsements(request: HttpRequest) -> list[Endorsement]:
     """Admin endpoint to list endorsements requiring review"""
-    # Require staff/admin access for pending endorsements list
-    if not request.user.is_authenticated or not request.user.is_staff:
-        raise HttpError(403, "Admin access required for pending endorsements list")
+    _require_staff_permissions(request, ENDORSEMENT_PRIVATE_READ_PERMISSIONS)
 
     queryset = (
         Endorsement.objects.select_related("stakeholder", "campaign")
@@ -605,9 +621,7 @@ def export_endorsements_csv(
     campaign_id: int | None = None,
 ) -> HttpResponse:
     """Export endorsements to CSV format (admin only)"""
-    # Require staff/admin access for data export
-    if not request.user.is_authenticated or not request.user.is_staff:
-        raise HttpError(403, "Admin access required for data export")
+    _require_staff_permissions(request, ENDORSEMENT_PRIVATE_READ_PERMISSIONS)
 
     # Get approved endorsements
     queryset = Endorsement.objects.select_related("stakeholder", "campaign").filter(
@@ -740,9 +754,7 @@ def export_endorsements_json(
     campaign_id: int | None = None,
 ) -> HttpResponse:
     """Export endorsements to JSON format (admin only)"""
-    # Require staff/admin access for data export
-    if not request.user.is_authenticated or not request.user.is_staff:
-        raise HttpError(403, "Admin access required for data export")
+    _require_staff_permissions(request, ENDORSEMENT_PRIVATE_READ_PERMISSIONS)
 
     # Get approved endorsements
     queryset = Endorsement.objects.select_related("stakeholder", "campaign").filter(

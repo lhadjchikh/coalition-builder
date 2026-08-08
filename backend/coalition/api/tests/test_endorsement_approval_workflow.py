@@ -11,7 +11,7 @@ as an integrated flow, covering gaps not addressed by individual unit tests.
 import json
 import uuid
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Permission, User
 from django.core.cache import cache
 from django.test import Client, override_settings
 
@@ -34,6 +34,20 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
             email="admin@example.com",
             password="testpass",
             is_staff=True,
+        )
+        self.admin_user.user_permissions.add(
+            Permission.objects.get(
+                codename="change_endorsement",
+                content_type__app_label="endorsements",
+            ),
+            Permission.objects.get(
+                codename="view_endorsement",
+                content_type__app_label="endorsements",
+            ),
+            Permission.objects.get(
+                codename="view_stakeholder",
+                content_type__app_label="stakeholders",
+            ),
         )
 
         self.campaign = PolicyCampaign.objects.create(
