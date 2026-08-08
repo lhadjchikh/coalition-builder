@@ -38,6 +38,9 @@ jobs:
           BASE_SHA: ${{ inputs.base_sha }}
         run: git checkout --force --detach "${BASE_SHA}"
 
+      - name: Remove existing result file
+        run: rm -f -- old-results.json
+
       - name: Scan existing dependencies
         uses: google/osv-scanner-action/osv-scanner-action@06b2ab4348248b456ee06c9e953637f55e03504f # v2.5.0
         continue-on-error: true
@@ -57,6 +60,9 @@ jobs:
         env:
           HEAD_SHA: ${{ inputs.head_sha }}
         run: git checkout --force --detach "${HEAD_SHA}"
+
+      - name: Remove proposed result file
+        run: rm -f -- new-results.json
 
       - name: Scan proposed dependencies
         uses: google/osv-scanner-action/osv-scanner-action@06b2ab4348248b456ee06c9e953637f55e03504f # v2.5.0

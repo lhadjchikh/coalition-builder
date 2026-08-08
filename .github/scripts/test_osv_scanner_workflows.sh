@@ -72,10 +72,12 @@ require_comparison_scan_order() {
 
   awk '
     $0 == "      - name: Checkout comparison base" && next_stage == 0 { next_stage = 1; next }
-    $0 == "      - name: Scan existing dependencies" && next_stage == 1 { next_stage = 2; next }
-    $0 == "      - name: Checkout proposed revision" && next_stage == 2 { next_stage = 3; next }
-    $0 == "      - name: Scan proposed dependencies" && next_stage == 3 { next_stage = 4; next }
-    END { exit next_stage == 4 ? 0 : 1 }
+    $0 == "      - name: Remove existing result file" && next_stage == 1 { next_stage = 2; next }
+    $0 == "      - name: Scan existing dependencies" && next_stage == 2 { next_stage = 3; next }
+    $0 == "      - name: Checkout proposed revision" && next_stage == 3 { next_stage = 4; next }
+    $0 == "      - name: Remove proposed result file" && next_stage == 4 { next_stage = 5; next }
+    $0 == "      - name: Scan proposed dependencies" && next_stage == 5 { next_stage = 6; next }
+    END { exit next_stage == 6 ? 0 : 1 }
   ' "${path}" || fail "expected ${path} to scan base before proposed revision"
 }
 
@@ -122,8 +124,10 @@ require_job_text "${comparison_workflow}" "osv_scan" "--output=old-results.json"
 require_job_text "${comparison_workflow}" "osv_scan" "--output=new-results.json"
 require_job_text "${comparison_workflow}" "osv_scan" "--old=old-results.json"
 require_job_text "${comparison_workflow}" "osv_scan" "--new=new-results.json"
+require_step_text "${comparison_workflow}" "Remove existing result file" "rm -f -- old-results.json"
 require_step_text "${comparison_workflow}" "Scan existing dependencies" "--output=old-results.json"
 require_step_text "${comparison_workflow}" "Validate existing scan results" "OSV_RESULTS_FILE: old-results.json"
+require_step_text "${comparison_workflow}" "Remove proposed result file" "rm -f -- new-results.json"
 require_step_text "${comparison_workflow}" "Scan proposed dependencies" "--output=new-results.json"
 require_step_text "${comparison_workflow}" "Validate proposed scan results" "OSV_RESULTS_FILE: new-results.json"
 require_step_text "${comparison_workflow}" "Reject newly introduced vulnerabilities" "--old=old-results.json"
@@ -137,6 +141,7 @@ require_text "${scheduled_workflow}" "workflow_dispatch:"
 require_job_text "${scheduled_workflow}" "scan_scheduled" "osv-scanner-action@${osv_scanner_revision}"
 require_job_text "${scheduled_workflow}" "scan_scheduled" "osv-reporter-action@${osv_scanner_revision}"
 require_job_text "${scheduled_workflow}" "scan_scheduled" ".github/scripts/validate_osv_results.sh"
+require_step_text "${scheduled_workflow}" "Remove existing result file" "rm -f -- results.json"
 require_text "${scheduled_workflow}" "security-events: write"
 require_text "${scheduled_workflow}" "--fail-on-vuln=false"
 require_scan_targets "${scheduled_workflow}"
