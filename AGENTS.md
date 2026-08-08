@@ -157,8 +157,8 @@ end-to-end-style tests live in `tests/e2e/`.
   and fix docs you touch.
 - Lambda specifics that bite: GDAL libs are at `/opt/lib64/`, `GDAL_LIBRARY_PATH` is set
   only inside the `if IS_LAMBDA:` branch of `settings.py` (so `collectstatic` at image build
-  time can't rely on it), and the Lambda has **no internet egress** — anything reaching a
-  public endpoint needs a VPC endpoint.
+  time can't rely on it), and the Lambda has **no internet egress**. Supported AWS services
+  require configured VPC endpoints; other public services need an explicit egress design.
 - `settings.py` branches heavily on `IS_LAMBDA` and `ENVIRONMENT`; changes to config need
   coverage in `coalition/core/tests/test_lambda_settings.py` and friends.
 - Local `node` may be v20 while `package.json` requires >= 22 — check before debugging odd
