@@ -242,7 +242,7 @@ The infrastructure is designed with security best practices:
 
 Measured monthly costs are maintained in one place: [Cost Analysis](../docs/deployment/aws.md#cost-analysis).
 
-The short version, from Cost Explorer for July 2026: **~~$82/month across all three accounts**. VPC interface endpoints are the largest single item (~$22/month each in prod and dev), ahead of RDS (~~$16/month). Lambda does not appear as a line item at current traffic.
+At current traffic, always-on networking and database resources dominate the bill while Lambda compute is negligible. Use the linked cost analysis for the dated measurements and exact figures.
 
 ## Support
 
