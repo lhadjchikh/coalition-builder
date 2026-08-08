@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from coalition.admin_help.admin_links import HelpLinkAdminMixin
+from coalition.admin_help.pages import get_page
 from coalition.campaigns.admin import BillAdmin, PolicyCampaignAdmin
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.admin import EndorsementAdmin
@@ -72,6 +73,7 @@ class ContextualHelpLinkTest(BaseTestCase):
             with self.subTest(admin=admin_class.__name__):
                 assert issubclass(admin_class, HelpLinkAdminMixin)
                 assert admin_class.help_page_slug
+                assert get_page(admin_class.help_page_slug) is not None
 
     def test_the_endorsement_queue_links_to_the_reviewing_page(self) -> None:
         url = reverse("admin:endorsements_endorsement_changelist")
