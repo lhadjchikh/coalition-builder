@@ -33,21 +33,28 @@ See [Multi-Account AWS Setup](deployment/multi-account-aws.md) for the bootstrap
 
 Deployment workflows authenticate to AWS with OIDC role assumption, so no long-lived AWS access keys are needed.
 
-**Secrets:**
+**GitHub Environment secrets** (`prod` and `dev`, used by the Lambda and Terraform jobs):
 
 - `DATABASE_SECRET_ARN`, `DJANGO_SECRET_ARN` - Secrets Manager ARNs the Lambda role must be able to read
-- `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
 
-**Variables** (per GitHub Environment):
+**GitHub Environment variables** (`prod` and `dev`):
 
 - `AWS_ACCOUNT_ID` - determines the `github-actions-<env>` role to assume
 - `ZAPPA_S3_BUCKET`, `ZAPPA_ROLE_NAME` - from Terraform outputs
 - `AWS_STORAGE_BUCKET_NAME`, `CLOUDFRONT_DOMAIN`
 - `AWS_LOCATION_PLACE_INDEX_NAME`
 - `VPC_SUBNET_IDS`, `VPC_SECURITY_GROUP_IDS`
-- `PRODUCTION_API_URL` / `DEVELOPMENT_API_URL`, `PRODUCTION_SITE_URL` / `DEVELOPMENT_SITE_URL`
 
-See [GitHub Environment Setup](deployment/github-environment-setup.md) for the full list.
+**Repository secrets** (used by the frontend job, which does not select a GitHub Environment):
+
+- `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
+
+**Repository variables** (used by the frontend job):
+
+- `PRODUCTION_API_URL` / `DEVELOPMENT_API_URL`, `PRODUCTION_SITE_URL` / `DEVELOPMENT_SITE_URL`
+- `AWS_STORAGE_BUCKET_NAME`, `CLOUDFRONT_DOMAIN`
+
+Some names intentionally exist at both repository and environment scope because the frontend and Lambda workflows read different scopes. See [Deployment Workflows](deployment/workflows.md) for workflow behavior.
 
 ### 4. Deploy Applications
 
