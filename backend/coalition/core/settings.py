@@ -215,6 +215,11 @@ ORGANIZATION_NAME = os.getenv("ORGANIZATION_NAME", "Coalition Builder")
 TAGLINE = os.getenv("ORG_TAGLINE", "Building strong advocacy partnerships")
 CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "info@example.org")
 
+# Who a site administrator should turn to, as shown in the in-admin help guide.
+# Left blank, the guide falls back to neutral wording rather than naming anyone.
+ADMIN_HELP_SUPERVISOR_CONTACT = os.getenv("ADMIN_HELP_SUPERVISOR_CONTACT", "")
+ADMIN_HELP_TECHNICAL_CONTACT = os.getenv("ADMIN_HELP_TECHNICAL_CONTACT", "")
+
 
 # Application definition
 
@@ -230,6 +235,7 @@ INSTALLED_APPS = [
     "lockdown",
     "storages",
     "tinymce",
+    "coalition.admin_help.apps.AdminHelpConfig",
     "coalition.content.apps.ContentConfig",
     "coalition.campaigns.apps.CampaignsConfig",
     "coalition.legislators.apps.LegislatorsConfig",
