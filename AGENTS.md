@@ -75,9 +75,12 @@ npm run format:check           # prettier
 Terraform:
 
 ```bash
-cd terraform && terraform fmt -recursive
-tflint --init && tflint --recursive
-cd terraform/tests
+review_repo_root=$(git rev-parse --show-toplevel)
+terraform -chdir="$review_repo_root/terraform" fmt -recursive
+tflint --init --config="$review_repo_root/.tflint.hcl"
+tflint --chdir="$review_repo_root/terraform" --recursive \
+  --config="$review_repo_root/.tflint.hcl"
+cd "$review_repo_root/terraform/tests"
 go test -short -v -timeout 10m ./modules/       # validation only; no AWS resources
 ```
 
@@ -146,9 +149,9 @@ commas. Styling is a mix of Tailwind and styled-components with a theme from
 colocated in `__tests__/`. Live-stack tests belong in `__tests__/integration/`; mocked
 end-to-end-style tests live in `tests/e2e/`.
 
-**Terraform** — `terraform fmt -recursive` + `tflint --init` + `tflint --recursive`
-(`.tflint.hcl`). Module changes should come with a Terratest case under
-`terraform/tests/modules/`.
+**Terraform** — `terraform fmt -recursive` + recursive `tflint`. Pass the repository-root
+`.tflint.hcl` explicitly as shown above. Module changes should come with a Terratest case
+under `terraform/tests/modules/`.
 
 ## Gotchas
 
