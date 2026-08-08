@@ -165,15 +165,19 @@ python manage.py shell
 ### 2. Test in Production
 
 ```bash
-# SSH into the bastion, or use `zappa invoke prod` for the Lambda
-# Check environment variables are set
-env | grep EMAIL
+# Inspect selected non-secret settings inside Lambda
+cd backend
+poetry run zappa invoke prod \
+  'import os; print({name: os.environ.get(name) for name in ("EMAIL_BACKEND", "DEFAULT_FROM_EMAIL", "SITE_URL")})' \
+  --raw
 
-# Test sending
-python manage.py shell
->>> from django.core.mail import send_mail
->>> send_mail('Test Subject', 'Test message', None, ['verified@example.com'])
+# After PR #312 is merged and deployed, invoke an explicit send test
+poetry run zappa invoke prod \
+  'from django.core.mail import send_mail; print(send_mail("Test Subject", "Test message", None, ["verified@example.com"]))' \
+  --raw
 ```
+
+`zappa invoke` is not an interactive shell; it requires a function path or, as above, an explicit Python expression with `--raw`.
 
 ### 3. Monitor SES
 
