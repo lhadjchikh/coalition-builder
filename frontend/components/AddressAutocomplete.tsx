@@ -67,7 +67,7 @@ export default function AddressAutocomplete({
         setLoading(true);
         try {
           const response = await fetch(
-            `/api/address/suggestions?q=${encodeURIComponent(searchQuery)}&limit=5`
+            `/api/address/suggestions/?q=${encodeURIComponent(searchQuery)}&limit=5`
           );
 
           if (response.ok) {
@@ -105,7 +105,7 @@ export default function AddressAutocomplete({
     // Fetch detailed address components
     try {
       const response = await fetch(
-        `/api/address/place/${encodeURIComponent(suggestion.place_id)}`
+        `/api/address/place/${encodeURIComponent(suggestion.place_id)}/`
       );
 
       if (response.ok) {
