@@ -12,23 +12,21 @@ The system protects your site using multiple authentication layers:
 
 ## Production Management
 
-### GitHub Secrets Setup
+### Current Automation Boundary
 
-1. Go to **Settings** → **Secrets and variables** → **Actions**
-2. Add these repository secrets:
-   - `SITE_PASSWORD_ENABLED`: `true` or `false`
-   - `SITE_USERNAME`: Username for HTTP Basic Auth
-   - `SITE_PASSWORD`: Secure password for site access
-3. Push changes to the `terraform/` directory to trigger deployment
+The infrastructure workflow does not enable or update application-level password protection. It reads the selected GitHub Environment's `SITE_PASSWORD` secret as a Terraform variable and stores it in SSM Parameter Store and Secrets Manager, but it does not add `SITE_PASSWORD_ENABLED`, `SITE_USERNAME`, or `SITE_PASSWORD` to Lambda or Vercel.
+
+Both applications default password protection to disabled when those runtime variables are absent. Configure all three variables directly in each application runtime and redeploy before relying on this control; a Terraform deployment alone is insufficient.
 
 ### Infrastructure Integration
 
 The `deploy_infra.yml` workflow automatically:
 
-1. Reads secrets from GitHub repository
-2. Passes variables to Terraform configuration
-3. Updates Lambda environment variables
-4. Stores passwords securely in AWS Secrets Manager
+1. Reads `SITE_PASSWORD` from the selected GitHub Environment
+2. Passes it to Terraform as `TF_VAR_site_password`
+3. Stores it in SSM Parameter Store and AWS Secrets Manager
+
+It does not update Lambda or Vercel environment variables.
 
 ## Development Environment
 
