@@ -491,17 +491,24 @@ if DEBUG:
     # Development: Log emails to console
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
-    # Production: Use AWS SES via SMTP or custom backend
-    # For AWS SES SMTP, use: email-smtp.us-east-1.amazonaws.com
-    EMAIL_BACKEND = os.getenv(
-        "EMAIL_BACKEND",
-        "coalition.core.email_backend.SafeSMTPBackend",
+    # Lambda runs in private subnets with no internet egress, so SES SMTP is
+    # unreachable there; the SES API is reachable over a VPC interface
+    # endpoint and authenticates with the execution role. Other production
+    # deployments (containers with egress) keep using SES over SMTP.
+    _default_email_backend = (
+        "coalition.core.ses_backend.SESEmailBackend"
+        if IS_LAMBDA
+        else "coalition.core.email_backend.SafeSMTPBackend"
     )
+    EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", _default_email_backend)
     EMAIL_HOST = os.getenv("EMAIL_HOST", "email-smtp.us-east-1.amazonaws.com")
     EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
     EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() in ("true", "1", "t")
     EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")  # SES SMTP username
     EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")  # SES SMTP password
+
+# SES configuration set that records bounces, complaints and deliveries.
+SES_CONFIGURATION_SET = os.getenv("SES_CONFIGURATION_SET", "")
 
 # Default sender for system emails
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", CONTACT_EMAIL)
