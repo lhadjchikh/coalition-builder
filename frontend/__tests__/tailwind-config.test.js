@@ -17,6 +17,8 @@ describe("Tailwind content boundaries", () => {
       (contentEntry) => typeof contentEntry === "string"
     );
 
+    expect(contentPatterns).not.toHaveLength(0);
+
     for (const contentPattern of contentPatterns) {
       const scanRoot = path.resolve(frontendRoot, contentRoot(contentPattern));
       const relativeScanRoot = path.relative(frontendRoot, scanRoot);
