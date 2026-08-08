@@ -6,7 +6,7 @@ The Coalition Builder uses AWS Simple Email Service (SES) for sending transactio
 
 > **⚠️ Known gap on Lambda.** This SMTP path does not currently work in the serverless deployment. The Lambda runs in private subnets whose route table has no default route, and there is no SES VPC endpoint — so outbound SMTP cannot leave the VPC. `SafeSMTPBackend` treats the failed connection as "SMTP unavailable" and falls back to writing messages to the console, which on Lambda means they land in CloudWatch logs and are never delivered. `configure_zappa.py` also sets no `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD`. As of August 2026, `aws ses get-send-statistics` reports no sends.
 >
-> Fixing this requires one of: adding an SES VPC endpoint (interface endpoints for `email-smtp` are available), switching to the SES API over an existing egress path, or giving the Lambda subnets a NAT route. Note that each added interface endpoint costs about $7.44/month per account — see [Cost Analysis](deployment/aws.md#cost-analysis).
+> [PR #312](https://github.com/lhadjchikh/coalition-builder/pull/312) is the concrete fix: it switches Lambda to the SES API, adds the required VPC endpoint and execution-role permissions, and makes delivery failures observable. Until that PR is merged and deployed, transactional email from Lambda remains unavailable.
 
 ## Automated Setup with Terraform
 
@@ -41,7 +41,7 @@ The module will:
 - Generate SMTP credentials with IAM user
 - **Automatically calculate the SMTP password** from the IAM secret
 - Store complete credentials in AWS Secrets Manager
-- Configure the ECS task to use them automatically
+- Preserve SMTP credentials for deployment targets that still use `SafeSMTPBackend`; the current Lambda deployment does not consume them
 
 ## AWS SES Setup
 
@@ -134,30 +134,11 @@ aws secretsmanager create-secret \
   }'
 ```
 
-### 6. Expose the credentials to the Lambda
+### 6. Lambda delivery
 
-The Lambda reads its configuration from the environment variables baked into `zappa_settings.json`. Export the SES SMTP credentials before running `configure_zappa.py`, or fetch them from Secrets Manager at startup — the Lambda already has a Secrets Manager VPC endpoint and read permission.
+There is no supported SMTP-credential injection path for the current Lambda deployment: `configure_zappa.py` does not copy the `EMAIL_*` variables, the runtime does not fetch the SMTP secret, and the Lambda role is not allowed to read it. The ECS-style `secrets` block previously shown here is not valid Zappa or Lambda configuration.
 
-```json
-"secrets": [
-  {
-    "name": "EMAIL_HOST",
-    "valueFrom": "arn:aws:secretsmanager:region:account:secret:coalition/email-config:EMAIL_HOST::"
-  },
-  {
-    "name": "EMAIL_HOST_USER",
-    "valueFrom": "arn:aws:secretsmanager:region:account:secret:coalition/email-config:EMAIL_HOST_USER::"
-  },
-  {
-    "name": "EMAIL_HOST_PASSWORD",
-    "valueFrom": "arn:aws:secretsmanager:region:account:secret:coalition/email-config:EMAIL_HOST_PASSWORD::"
-  },
-  {
-    "name": "DEFAULT_FROM_EMAIL",
-    "valueFrom": "arn:aws:secretsmanager:region:account:secret:coalition/email-config:DEFAULT_FROM_EMAIL::"
-  }
-]
-```
+Do not attempt to expose the static SMTP credentials to Lambda. [PR #312](https://github.com/lhadjchikh/coalition-builder/pull/312) replaces this design with SES API authentication through the Lambda execution role.
 
 ## Email Backend
 
