@@ -52,6 +52,7 @@ jobs:
       - name: Validate required configuration
         env:
           AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+          AWS_LOCATION_PLACE_INDEX_NAME: ${{ vars.AWS_LOCATION_PLACE_INDEX_NAME }}
           AWS_STORAGE_BUCKET_NAME: ${{ vars.AWS_STORAGE_BUCKET_NAME }}
           DATABASE_SECRET_ARN: ${{ secrets.DATABASE_SECRET_ARN }}
           DJANGO_SECRET_ARN: ${{ secrets.DJANGO_SECRET_ARN }}
@@ -60,6 +61,7 @@ jobs:
         run: |
           required_names=(
             AWS_ACCOUNT_ID
+            AWS_LOCATION_PLACE_INDEX_NAME
             AWS_STORAGE_BUCKET_NAME
             DATABASE_SECRET_ARN
             DJANGO_SECRET_ARN
@@ -100,6 +102,7 @@ jobs:
         working-directory: ./backend
         env:
           AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+          AWS_LOCATION_PLACE_INDEX_NAME: ${{ vars.AWS_LOCATION_PLACE_INDEX_NAME }}
           AWS_REGION: us-east-1
           AWS_STORAGE_BUCKET_NAME: ${{ vars.AWS_STORAGE_BUCKET_NAME }}
           CLOUDFRONT_DOMAIN: ${{ vars.CLOUDFRONT_DOMAIN }}

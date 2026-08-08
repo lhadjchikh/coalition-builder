@@ -37,6 +37,11 @@ output "lambda_security_group_id" {
   value       = module.zappa.lambda_security_group_id
 }
 
+output "location_place_index_name" {
+  description = "AWS Location place index name. Set the prod GitHub environment's AWS_LOCATION_PLACE_INDEX_NAME variable to this value."
+  value       = module.aws_location.place_index_name
+}
+
 # ECR
 output "geolambda_repository_url" {
   description = "URL of the geolambda ECR repository"

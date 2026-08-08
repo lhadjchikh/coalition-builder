@@ -85,6 +85,14 @@ require_text "${lambda_workflow}" "collectstatic --noinput"
 require_text "${lambda_workflow}" "--connect-timeout 5"
 require_text "${lambda_workflow}" "--max-time 15"
 require_text "${lambda_workflow}" "\${DEPLOYMENT_API_URL%/}/api/health/"
+require_step_text \
+  "${lambda_workflow}" \
+  "Validate required configuration" \
+  'AWS_LOCATION_PLACE_INDEX_NAME: ${{ vars.AWS_LOCATION_PLACE_INDEX_NAME }}'
+require_step_text \
+  "${lambda_workflow}" \
+  "Configure Zappa settings" \
+  'AWS_LOCATION_PLACE_INDEX_NAME: ${{ vars.AWS_LOCATION_PLACE_INDEX_NAME }}'
 
 require_text "${frontend_workflow}" 'group: deploy-frontend-'
 require_text "${frontend_workflow}" "cancel-in-progress: false"
@@ -95,6 +103,14 @@ require_text "${management_workflow}" "role-to-assume:"
 reject_text "${management_workflow}" "aws-access-key-id:"
 reject_text "${management_workflow}" "aws-secret-access-key:"
 require_text "${management_workflow}" "scripts/configure_zappa.py"
+require_step_text \
+  "${management_workflow}" \
+  "Validate required configuration" \
+  'AWS_LOCATION_PLACE_INDEX_NAME: ${{ vars.AWS_LOCATION_PLACE_INDEX_NAME }}'
+require_step_text \
+  "${management_workflow}" \
+  "Configure Zappa settings" \
+  'AWS_LOCATION_PLACE_INDEX_NAME: ${{ vars.AWS_LOCATION_PLACE_INDEX_NAME }}'
 
 require_text "${terraform_workflow}" "TF_VAR_create_new_key_pair: \${{ vars.CREATE_NEW_KEY_PAIR }}"
 require_text "${terraform_workflow}" "validate_terraform_environment_variables.sh"

@@ -73,6 +73,19 @@ def with_stage_cloudfront_domain(
     return environment_variables
 
 
+def with_location_place_index(
+    environment_variables: dict[str, str],
+    place_index_name: str,
+) -> dict[str, str]:
+    """Return Lambda env vars with the configured AWS Location place index."""
+    if place_index_name:
+        return {
+            **environment_variables,
+            "AWS_LOCATION_PLACE_INDEX_NAME": place_index_name,
+        }
+    return environment_variables
+
+
 def configure_zappa_settings(output_path: Path | None = None) -> None:
     """Generate zappa_settings.json from environment variables."""
 
@@ -102,6 +115,9 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
     )
     selected_assets_bucket = get_env_or_default("AWS_STORAGE_BUCKET_NAME")
     cloudfront_domain = get_env_or_default("CLOUDFRONT_DOMAIN")
+    location_place_index_name = get_env_or_default(
+        "AWS_LOCATION_PLACE_INDEX_NAME",
+    ).strip()
     active_stage_names = DEV_STAGE_NAMES | PROD_STAGE_NAMES
     if enable_staging:
         active_stage_names = active_stage_names | STAGING_STAGE_NAMES
@@ -159,6 +175,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
                 ("DATABASE_SECRET_ARN", db_secret_arn),
                 ("DJANGO_SECRET_ARN", django_secret_arn),
                 ("ZAPPA_ROLE_NAME", zappa_role_name),
+                ("AWS_LOCATION_PLACE_INDEX_NAME", location_place_index_name),
             )
             if not value
         ]
@@ -223,14 +240,17 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             "timeout_seconds": 30,
             "slim_handler": False,
             "use_precompiled_packages": False,
-            "environment_variables": {
-                "USE_S3": "true",
-                "IS_LAMBDA": "true",
-                "USE_GEODJANGO": "true",
-                "GDAL_DATA": "/opt/share/gdal",
-                "PROJ_LIB": "/opt/share/proj",
-                "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
-            },
+            "environment_variables": with_location_place_index(
+                {
+                    "USE_S3": "true",
+                    "IS_LAMBDA": "true",
+                    "USE_GEODJANGO": "true",
+                    "GDAL_DATA": "/opt/share/gdal",
+                    "PROJ_LIB": "/opt/share/proj",
+                    "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
+                },
+                location_place_index_name,
+            ),
             "exclude": [
                 "*.gz",
                 "*.rar",
