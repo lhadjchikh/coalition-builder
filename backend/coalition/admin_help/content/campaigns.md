@@ -64,10 +64,11 @@ The on/off switch for the whole campaign.
   and it appears in no listing.
 - **Checked** — live on the public site.
 
-Leave it **unchecked** while you're building the campaign. Check it only when the
-content is finished and someone has reviewed it. Remember that this checkbox is
-also editable straight from the campaign list, so it is possible to flip it without
-meaning to.
+New campaigns start with this box **checked**. Uncheck it before you save the first
+draft, and leave it unchecked while you're building the campaign. Check it only
+when the content is finished and someone has reviewed it. Remember that this
+checkbox is also editable straight from the campaign list, so it is possible to
+flip it without meaning to.
 
 ### Allow endorsements
 
