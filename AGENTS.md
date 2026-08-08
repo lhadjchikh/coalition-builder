@@ -35,8 +35,8 @@ frontend/
   app/                   Next.js App Router pages (+ colocated __tests__/)
   components/            React components (+ components/__tests__/)
   lib/ services/ utils/ hooks/ contexts/ types/
-  __tests__/             Config/infra tests (proxy, next config, tailwind, build env)
-  tests/                 integration/ and e2e/ suites (separate jest configs)
+  __tests__/             Config/infra tests + integration/ live-stack suite
+  tests/                 integration/ (excluded by Jest) + mocked e2e/ suite
 terraform/
   environments/{shared,prod,dev}/   root modules
   modules/                          ~16 modules (zappa, database, networking, ses, ...)
@@ -64,8 +64,8 @@ Frontend (Node >= 22 required by `package.json` engines; CI uses 22.x):
 ```bash
 cd frontend && npm ci
 npm test                       # jest (jsdom)
-npm run test:integration       # jest.integration.config.js, node env, --runInBand
-npm run test:e2e               # needs a running backend
+npm run test:integration       # live API, frontend, and nginx stack required
+npm run test:e2e               # mocked API suite; no backend required
 npm run typecheck              # tsc -p tsconfig.build.json (excludes test files)
 npm run lint                   # eslint app components lib proxy.ts
 npm run format:check           # prettier
@@ -142,7 +142,8 @@ asserts), not bare pytest functions.
 `jest.config.js` — update both). Prettier: 80 cols, double quotes, semicolons, es5 trailing
 commas. Styling is a mix of Tailwind and styled-components with a theme from
 `contexts/ThemeContext.tsx`; follow whichever the neighboring file uses. Unit tests are
-colocated in `__tests__/`; anything requiring a live backend belongs in `tests/e2e/`.
+colocated in `__tests__/`. Live-stack tests belong in `__tests__/integration/`; mocked
+end-to-end-style tests live in `tests/e2e/`.
 
 **Terraform** — `terraform fmt -recursive` + `tflint --init` + `tflint --recursive`
 (`.tflint.hcl`). Module changes should come with a Terratest case under
