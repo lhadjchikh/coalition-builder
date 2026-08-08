@@ -183,7 +183,7 @@ docker compose exec api python scripts/create_test_data.py
 
 ## 🚢 Deployment
 
-Infrastructure is provisioned with Terraform; both applications deploy through GitHub Actions. Pushes to `main` deploy production, and pushes to `development` deploy the dev environment.
+Infrastructure is provisioned with Terraform, and both applications deploy through GitHub Actions. Backend changes pushed to `main` or `development` trigger the corresponding Lambda deployment; frontend changes on those branches independently trigger the corresponding Vercel deployment.
 
 - [Deployment overview](https://lhadjchikh.github.io/coalition-builder/deployment/) - which pieces go where
 - [AWS Serverless Deployment](https://lhadjchikh.github.io/coalition-builder/deployment/aws/) - resources, IAM, and costs

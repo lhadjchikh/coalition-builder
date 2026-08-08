@@ -100,9 +100,8 @@ The ALB, ECS application service, and NAT gateway from the pre-2025 deployment h
 
 **Automatic via GitHub Actions:**
 
-- Push to `main` branch triggers production deployment
-- Backend deploys to Lambda with production settings
-- Frontend deploys to Vercel with custom domain
+- Backend changes pushed to `main` deploy Lambda with production settings
+- Frontend changes pushed to `main` independently deploy Vercel with the production custom domain
 
 **Manual Deployment:**
 
@@ -120,7 +119,8 @@ vercel --prod
 
 **Automatic:**
 
-- Push to `development` triggers a `dev` Lambda deployment and a Vercel deployment
+- Backend changes pushed to `development` trigger the `dev` Lambda deployment
+- Frontend changes pushed to `development` independently trigger the development Vercel deployment
 - Pull requests touching `frontend/` get Vercel preview URLs
 
 > **No staging environment.** `zappa_settings.json.template` defines a `staging` stage, but no Terraform environment or deployment workflow targets it. Only `dev` and `prod` are provisioned and wired to CI.
