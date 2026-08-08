@@ -168,7 +168,7 @@ Compares a merge group's dependency lockfiles against its base commit. The check
 
 #### `osv_scanner_scheduled.yml`
 
-Scans the complete Python, JavaScript, and Go dependency inventories every Monday and on manual request. Results are uploaded to GitHub code scanning without failing the workflow while the existing vulnerability backlog is triaged.
+Scans the backend Poetry lockfile, frontend npm lockfile, and Terraform test Go module every Monday and on manual request. Results are uploaded to GitHub code scanning without failing the workflow while the existing vulnerability backlog is triaged.
 
 ## Environment Configuration
 
