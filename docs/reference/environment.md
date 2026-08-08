@@ -96,7 +96,7 @@ AWS_REGION="us-west-2"
 | `EMAIL_HOST_PASSWORD`                | SMTP password                                              | Auto from Secrets Manager            | No       |
 | `DEFAULT_FROM_EMAIL`                 | Default sender email                                       | -                                    | Yes      |
 | `ADMIN_NOTIFICATION_EMAILS`          | Comma-separated admin emails for endorsement notifications | -                                    | Yes      |
-| `AUTO_APPROVE_VERIFIED_ENDORSEMENTS` | Auto-approve after email verification                      | `true`                               | No       |
+| `AUTO_APPROVE_VERIFIED_ENDORSEMENTS` | Auto-approve after email verification                      | `false`                              | No       |
 | `AKISMET_SECRET_API_KEY`             | Akismet API key for spam detection                         | -                                    | No       |
 | `SITE_URL`                           | Base URL for email links                                   | -                                    | Yes      |
 | `API_URL`                            | Backend API URL (for admin links)                          | `http://localhost:8000`              | No       |

@@ -4,6 +4,7 @@ Tests for endorsement Django admin interface.
 
 from unittest.mock import Mock, patch
 
+from django.contrib.admin import EmptyFieldListFilter
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
 from django.http import HttpRequest
@@ -77,6 +78,9 @@ class EndorsementAdminTest(BaseTestCase):
         self.endorsement.save()
         result = self.admin.email_verified_badge(self.endorsement)
         assert "✓ verified" in result.lower()
+
+    def test_reviewed_by_empty_filter_is_available(self) -> None:
+        assert ("reviewed_by", EmptyFieldListFilter) in self.admin.list_filter
 
     def test_verification_link_method(self) -> None:
         """Test verification_link admin method"""
@@ -233,6 +237,28 @@ class EndorsementAdminTest(BaseTestCase):
         mock_message.assert_called_once_with(
             request,
             "Successfully approved 0 endorsement(s) and sent notifications.",
+        )
+
+    def test_mark_auto_approved_endorsements_as_reviewed(self) -> None:
+        request = HttpRequest()
+        request.user = self.user
+        request._messages = Mock()
+        self.endorsement.status = "approved"
+        self.endorsement.email_verified = True
+        self.endorsement.save()
+
+        with patch.object(self.admin, "message_user") as mock_message:
+            self.admin.mark_auto_approved_reviewed(
+                request,
+                Endorsement.objects.filter(id=self.endorsement.id),
+            )
+
+        self.endorsement.refresh_from_db()
+        assert self.endorsement.reviewed_by == self.user
+        assert self.endorsement.reviewed_at is not None
+        mock_message.assert_called_once_with(
+            request,
+            "Successfully marked 1 auto-approved endorsement(s) as reviewed.",
         )
 
     def test_reject_endorsements_already_rejected(self) -> None:

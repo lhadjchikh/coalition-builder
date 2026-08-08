@@ -27,9 +27,14 @@ them a verification link.
 | Status | Meaning | What you do |
 |---|---|---|
 | **Pending Email Verification** | Submitted, but they haven't clicked the link in their email yet. | Nothing. Wait. |
-| **Email Verified** | They clicked the link. A real, reachable person. | **Review it.** This is your queue. |
-| **Approved for Display** | You reviewed it and approved it. | Optionally select it for public display. |
+| **Email Verified** | They clicked the link. A real, reachable person. | **Review it.** |
+| **Approved for Display** | It was approved manually or by the optional automatic-approval setting. | Confirm a reviewer is recorded, then optionally select it for public display. |
 | **Rejected** | You reviewed it and turned it down. | Nothing further. |
+
+Your review queue is every endorsement where **Email verified** is **Yes** and
+**Reviewed by** is **Empty**. This works whether verification leaves records at
+Email Verified or the optional automatic-approval setting moves them directly to
+Approved for Display.
 
 The verification link **expires 24 hours after it is sent**. Once it expires the
 endorsement sits in Pending until someone resends the email.

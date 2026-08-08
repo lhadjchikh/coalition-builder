@@ -56,8 +56,10 @@ everything else click.
 
 **Status**
 : Where an endorsement sits in the pipeline. Four values: Pending Email
-  Verification → Email Verified → Approved for Display, or Rejected. Explained in
-  full on [How an endorsement travels]({% url 'admin_help:page' 'endorsement-pipeline' %}).
+  Verification → Email Verified → Approved for Display, or Rejected. An optional
+  automatic-approval setting can move a verified endorsement directly to Approved
+  for Display; it still needs a human reviewer. Explained in full on [How an
+  endorsement travels]({% url 'admin_help:page' 'endorsement-pipeline' %}).
 
 ## Your first week
 

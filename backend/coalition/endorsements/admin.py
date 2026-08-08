@@ -2,6 +2,7 @@ from typing import Any
 
 from django.contrib import admin
 from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied
 from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.utils import timezone
@@ -36,6 +37,7 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
         "display_publicly",
         "created_at",
         "campaign",
+        ("reviewed_by", admin.EmptyFieldListFilter),
         "stakeholder__type",
         "stakeholder__state",
     )
@@ -122,6 +124,7 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
 
     actions = [
         "approve_endorsements",
+        "mark_auto_approved_reviewed",
         "reject_endorsements",
         "mark_verified",
         "send_verification_emails",
@@ -201,6 +204,30 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
         self.message_user(
             request,
             f"Successfully approved {count} endorsement(s) and sent notifications.",
+        )
+
+    @admin.action(description="Mark auto-approved endorsements as reviewed")
+    def mark_auto_approved_reviewed(
+        self,
+        request: HttpRequest,
+        queryset: QuerySet[Endorsement],
+    ) -> None:
+        if not isinstance(request.user, User):
+            raise PermissionDenied
+
+        reviewed_at = timezone.now()
+        count = queryset.filter(
+            status="approved",
+            email_verified=True,
+            reviewed_by__isnull=True,
+        ).update(
+            reviewed_by=request.user,
+            reviewed_at=reviewed_at,
+            updated_at=reviewed_at,
+        )
+        self.message_user(
+            request,
+            f"Successfully marked {count} auto-approved endorsement(s) as reviewed.",
         )
 
     @admin.action(description="Reject selected endorsements")

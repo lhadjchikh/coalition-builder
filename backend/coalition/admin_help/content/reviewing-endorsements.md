@@ -4,9 +4,12 @@ This is the daily job. It assumes you have read
 ## Finding your queue
 
 Go to [Endorsements → Endorsements]({% url 'admin:endorsements_endorsement_changelist' %}).
-In the filter sidebar on the right, under **Status**, click **Email Verified**.
+In the filter sidebar on the right, under **Email verified**, click **Yes**. Then,
+under **Reviewed by**, click **Empty**.
 
-That is your work queue: verified people waiting on a human decision.
+That is your work queue: verified people waiting on a human decision. Most rows have
+the status **Email Verified**. If automatic approval is enabled, some arrive with
+the status **Approved for Display** but no reviewer; they still require your review.
 
 The other filters are there when you need them — by campaign, by whether the email
 is verified, by the endorser's consent, by your display decision, by date, and by
@@ -76,6 +79,11 @@ Use the bulk action, even when you are approving a single record:
 This sets the status to Approved, records you as the reviewer with a timestamp, and
 **sends the endorser a confirmation email** telling them their endorsement was
 approved.
+
+If a row in your queue is already **Approved for Display**, it was approved
+automatically after email verification. Review it normally, then choose **Mark
+auto-approved endorsements as reviewed**. This records you as the reviewer and
+clears it from the queue without changing its status or sending a second email.
 
 !!! warning "Changing Status on the detail page skips the email"
     If you instead set the Status dropdown to "Approved" inside an individual
