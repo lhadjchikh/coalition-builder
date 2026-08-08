@@ -7,7 +7,10 @@ from unittest.mock import patch
 
 import pytest
 
-from scripts.configure_zappa import configure_zappa_settings
+from scripts.configure_zappa import (
+    RUNTIME_ENVIRONMENT_VARIABLES,
+    configure_zappa_settings,
+)
 
 
 def _generate_settings(
@@ -149,10 +152,7 @@ class TestLocationConfiguration:
 
         for stage in ("dev", "staging", "prod"):
             stage_environment = settings[stage]["environment_variables"]
-            assert stage_environment["IS_LAMBDA"] == "true"
-            assert stage_environment["USE_GEODJANGO"] == "true"
-            assert stage_environment["GDAL_DATA"] == "/opt/share/gdal"
-            assert stage_environment["PROJ_LIB"] == "/opt/share/proj"
+            assert RUNTIME_ENVIRONMENT_VARIABLES.items() <= stage_environment.items()
 
 
 class TestAssetConfiguration:

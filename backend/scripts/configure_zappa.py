@@ -12,6 +12,14 @@ from pathlib import Path
 DEV_STAGE_NAMES = {"dev"}
 PROD_STAGE_NAMES = {"prod"}
 STAGING_STAGE_NAMES = {"staging"}
+RUNTIME_ENVIRONMENT_VARIABLES = {
+    "USE_S3": "true",
+    "IS_LAMBDA": "true",
+    "USE_GEODJANGO": "true",
+    "GDAL_DATA": "/opt/share/gdal",
+    "PROJ_LIB": "/opt/share/proj",
+    "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
+}
 
 
 def get_env_or_default(key: str, default: str = "") -> str:
@@ -200,14 +208,6 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         dev_docker_image = "public.ecr.aws/lambda/python:3.13"
         production_docker_image = "public.ecr.aws/lambda/python:3.13"
 
-    runtime_environment_variables = {
-        "USE_S3": "true",
-        "IS_LAMBDA": "true",
-        "USE_GEODJANGO": "true",
-        "GDAL_DATA": "/opt/share/gdal",
-        "PROJ_LIB": "/opt/share/proj",
-        "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
-    }
     aws_environment_variables = with_location_place_index(
         {
             "DATABASE_URL": db_secret_arn,
@@ -217,7 +217,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
     )
     dev_environment_variables = with_stage_cloudfront_domain(
         {
-            **runtime_environment_variables,
+            **RUNTIME_ENVIRONMENT_VARIABLES,
             "ENVIRONMENT": "dev",
             "DEBUG": "true",
             "DATABASE_NAME": dev_db_name,
@@ -229,7 +229,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
     )
     production_environment_variables = with_stage_cloudfront_domain(
         {
-            **runtime_environment_variables,
+            **RUNTIME_ENVIRONMENT_VARIABLES,
             "ENVIRONMENT": "production",
             "DEBUG": "false",
             "DATABASE_NAME": production_db_name,
@@ -338,7 +338,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
 
         staging_environment_variables = with_stage_cloudfront_domain(
             {
-                **runtime_environment_variables,
+                **RUNTIME_ENVIRONMENT_VARIABLES,
                 "ENVIRONMENT": "staging",
                 "DEBUG": "false",
                 "DATABASE_NAME": staging_db_name,
