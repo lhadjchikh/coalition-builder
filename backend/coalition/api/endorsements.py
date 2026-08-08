@@ -489,10 +489,10 @@ def verify_endorsement(request: HttpRequest, token: str) -> dict:
     if endorsement.is_verification_expired:
         raise HttpError(400, "Verification link has expired. Please request a new one.")
 
-    # Verify the endorsement
+    was_approved = endorsement.status == "approved"
     endorsement.verify_email()
 
-    if endorsement.status == "approved":
+    if not was_approved and endorsement.status == "approved":
         EndorsementEmailService.send_confirmation_email(endorsement)
 
     return {

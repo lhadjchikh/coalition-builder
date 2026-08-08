@@ -619,6 +619,23 @@ class EndorsementAPIEnhancedTest(BaseTestCase):
         assert self.endorsement.status == "approved"
         send_approval_email.assert_called_once_with(self.endorsement)
 
+    def test_verify_endorsement_does_not_resend_existing_approval(self) -> None:
+        self.endorsement.status = "approved"
+        self.endorsement.save()
+        token = str(self.endorsement.verification_token)
+
+        with patch.object(
+            EndorsementEmailService,
+            "send_confirmation_email",
+        ) as send_approval_email:
+            response = self.client.post(f"/api/endorsements/verify/{token}/")
+
+        assert response.status_code == 200
+        self.endorsement.refresh_from_db()
+        assert self.endorsement.email_verified
+        assert self.endorsement.status == "approved"
+        send_approval_email.assert_not_called()
+
     def test_verify_endorsement_invalid_token_format(self) -> None:
         """Test endorsement verification with invalid token format"""
         response = self.client.post("/api/endorsements/verify/invalid-token/")
