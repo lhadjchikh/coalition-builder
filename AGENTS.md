@@ -142,9 +142,10 @@ generated from these. CSRF is on for the whole `NinjaAPI`.
 / `california` plus a `create_stakeholder()` helper. Django `TestCase` style (unittest
 asserts), not bare pytest functions.
 
-**TypeScript/React** — Path aliases `@/`, `@components/`, `@services/`, etc. (mirrored in
-`jest.config.js` — update both). Prettier: 80 cols, double quotes, semicolons, es5 trailing
-commas. Styling is a mix of Tailwind and styled-components with a theme from
+**TypeScript/React** — Path aliases `@/`, `@components/`, `@services/`, etc. are mirrored in
+`tsconfig.json`, `tsconfig.build.json`, and `jest.config.js` — update all three. Prettier: 80
+cols, double quotes, semicolons, es5 trailing commas. Styling is a mix of Tailwind and
+styled-components with a theme from
 `contexts/ThemeContext.tsx`; follow whichever the neighboring file uses. Unit tests are
 colocated in `__tests__/`. Live-stack tests belong in `__tests__/integration/`; mocked
 end-to-end-style tests live in `tests/e2e/`.
