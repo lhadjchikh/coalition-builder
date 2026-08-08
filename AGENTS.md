@@ -72,7 +72,7 @@ npm run lint                   # eslint app components lib proxy.ts
 npm run format:check           # prettier
 ```
 
-Terraform:
+Terraform (the plan-only Terratests require valid AWS credentials):
 
 ```bash
 review_repo_root=$(git rev-parse --show-toplevel)
@@ -81,7 +81,7 @@ tflint --init --config="$review_repo_root/.tflint.hcl"
 tflint --chdir="$review_repo_root/terraform" --recursive \
   --config="$review_repo_root/.tflint.hcl"
 cd "$review_repo_root/terraform/tests"
-go test -short -v -timeout 10m ./modules/       # validation only; no AWS resources
+go test -short -v -timeout 10m ./modules/       # plan-only; creates no AWS resources
 ```
 
 Whole repo, auto-fixing (Python + Prettier + TS + Terraform):
