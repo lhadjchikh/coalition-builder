@@ -255,7 +255,7 @@ poetry run ruff format .
 poetry run ruff format --check .
 
 # Format specific files
-poetry run ruff format coalition/ tests/
+poetry run ruff format coalition/
 
 # Lint with Ruff
 poetry run ruff check .
