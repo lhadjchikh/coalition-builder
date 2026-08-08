@@ -10,7 +10,7 @@
 
     // Module resolution
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
@@ -30,7 +30,7 @@
     "allowSyntheticDefaultImports": true,
 
     // JSX and React
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "isolatedModules": true,
 
     // Output and build
@@ -49,7 +49,8 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx",
-    "types/**/*.d.ts"
+    "types/**/*.d.ts",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

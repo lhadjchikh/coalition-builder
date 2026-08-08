@@ -17,6 +17,7 @@ const nextConfig = {
   // TypeScript configuration
   typescript: {
     ignoreBuildErrors: false,
+    tsconfigPath: "tsconfig.build.json",
   },
 
   // Inline API_URL into both client and server bundles via DefinePlugin.
