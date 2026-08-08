@@ -157,14 +157,44 @@ The ECS task definition needs to pull these secrets. Add to your task definition
 
 ## Email Backend
 
-The application uses a custom `SafeSMTPBackend` that:
+Which backend Django uses is decided in `backend/coalition/core/settings.py` and depends on where the app runs:
 
-- Attempts to send via SMTP (SES)
-- Falls back to console output if SMTP fails
-- Has shorter timeouts to prevent hanging
-- Logs all email activity for debugging
+| Environment                  | Backend                                        | Transport                       |
+| ---------------------------- | ---------------------------------------------- | ------------------------------- |
+| `DEBUG=True` (local)         | Django's console backend                       | Printed to stdout               |
+| Lambda (`IS_LAMBDA`)         | `coalition.core.ses_backend.SESEmailBackend`   | SES API over a VPC endpoint     |
+| Other deployments            | `coalition.core.email_backend.SafeSMTPBackend` | SES SMTP on port 587            |
 
-Location: `backend/coalition/core/email_backend.py`
+Set `EMAIL_BACKEND` explicitly to override the choice.
+
+**Neither production backend falls back to the console.** A failure that is logged instead of raised looks exactly like a delivered email to every caller, so an outage stays invisible while users wait for verification links that were never sent. Both backends raise instead, and `SafeSMTPBackend` also raises `ImproperlyConfigured` when `EMAIL_HOST` or `EMAIL_PORT` is missing rather than quietly discarding mail. The console fallback exists only under `DEBUG`.
+
+### Sending from Lambda
+
+Lambda runs in private subnets with no NAT gateway and no `0.0.0.0/0` route, so `email-smtp.<region>.amazonaws.com:587` is unreachable — connections simply hang. Two things make delivery work:
+
+- An interface VPC endpoint for `com.amazonaws.<region>.email` (enabled with `enable_ses_endpoint` in the networking module). Its private DNS maps `email.<region>.amazonaws.com` onto the endpoint, so the AWS SDK needs no `endpoint_url` override.
+- `ses:SendEmail` / `ses:SendRawEmail` granted to the Lambda execution role via the SES module's `sender_role_names`, scoped to the verified domain. This replaces static SMTP credentials entirely — there are no access keys to rotate or leak.
+
+Location: `backend/coalition/core/ses_backend.py`
+
+### Required deployment settings
+
+Django's defaults for these are local-development values, and a deploy that misses them sends mail that is technically delivered but useless — verification links pointing at `http://localhost:3000`. Prod deploys refuse to proceed without the first two (`backend/scripts/configure_zappa.py`):
+
+| GitHub environment variable | Purpose                                                     |
+| --------------------------- | ----------------------------------------------------------- |
+| `SITE_URL`                  | Base URL for verification links (**required for prod**)       |
+| `DEFAULT_FROM_EMAIL`        | Sender address; must pass the SES policy (**required for prod**) |
+| `API_URL`                   | Base URL for admin links in notification emails               |
+| `ADMIN_NOTIFICATION_EMAILS` | Comma-separated recipients for new-endorsement notices        |
+| `SES_CONFIGURATION_SET`     | SES configuration set recording bounces and deliveries        |
+
+### Failure handling and alerting
+
+`EndorsementEmailService` sends inside `transaction.atomic()`, so it deliberately converts transport failures into `False` plus a logged error rather than letting them propagate — an exception there would roll back the endorsement the user just submitted and turn a mail outage into silent data loss.
+
+Because the failure is contained, an alarm is what makes it visible. The service logs the marker `EMAIL_DELIVERY_FAILED`, which a CloudWatch metric filter turns into the `EmailDeliveryFailures` metric behind the `<prefix>-email-delivery-failure` alarm (see `terraform/modules/monitoring/main.tf`). The alarm fires on the first failure and notifies the `<prefix>-email-delivery-alerts` SNS topic. Changing the marker string means updating the metric filter too.
 
 ## Testing Email Configuration
 
@@ -204,15 +234,20 @@ python manage.py shell
    - You're in sandbox mode and trying to send to unverified address
    - Solution: Verify the recipient or request production access
 
-2. **"Connection timeout"**
-   - ECS task cannot reach SES endpoint
-   - Solution: Ensure ECS is in public subnet with internet access
+2. **"Connection timeout" or a request that hangs until the Lambda times out**
+   - The task cannot reach the SES endpoint. On Lambda this means the SES interface VPC endpoint is missing: the private subnets have no NAT and no default route, so the connection never completes rather than failing fast.
+   - Solution: set `enable_ses_endpoint = true` for the environment. Confirm with `socket.gethostbyname("email.<region>.amazonaws.com")` from inside the function — it must return a private VPC address, not a public one.
+   - For non-Lambda deployments, ensure the task has internet egress.
 
 3. **"Invalid credentials"**
    - SMTP credentials are incorrect
-   - Solution: Regenerate SMTP credentials in SES console
+   - Solution: Regenerate SMTP credentials in SES console. On Lambda this error should not occur at all — it authenticates with the execution role, so check `sender_role_names` and the `ses:FromAddress` condition instead.
 
-4. **"Rate exceeded"**
+4. **"Email address is not verified" for ordinary users**
+   - The account is still in the SES sandbox, which only permits verified recipients. Sending to your own verified domain succeeds while every real endorser is rejected, so this can look like a partial outage.
+   - Solution: request production access (see "Move Out of Sandbox" above), then confirm with `aws sesv2 get-account --query ProductionAccessEnabled`.
+
+5. **"Rate exceeded"**
    - Sending too many emails too quickly
    - Solution: Implement rate limiting or request higher SES limits
 
