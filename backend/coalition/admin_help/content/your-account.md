@@ -2,8 +2,8 @@ Your account is a **staff account**: it gets you into this admin and nothing els
 
 ## Your password
 
-Change the password you were given the first time you sign in. Click your username
-in the top-right corner, then **Change password**.
+Change the password you were given the first time you sign in. Click **Change
+password** in the top-right corner.
 
 - Never share your login. If someone else needs access, they get their own account
   — asking {{ supervisor_contact }} takes a minute.
