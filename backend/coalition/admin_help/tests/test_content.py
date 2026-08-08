@@ -120,9 +120,10 @@ class HelpContentTest(TestCase):
 
         body = self.client.get(reverse("admin_help:all")).content.decode()
 
+        assert body.count('<section class="admin-help__section">') == len(HELP_PAGES)
         for page in HELP_PAGES:
             with self.subTest(slug=page.slug):
-                assert page.title in body
+                assert f'<h2 id="{page.slug}">{page.title}</h2>' in body
 
     def test_each_page_offers_navigation_to_the_rest_of_the_guide(self) -> None:
         self.client.force_login(self.staff)
