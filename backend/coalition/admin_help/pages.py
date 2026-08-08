@@ -51,7 +51,7 @@ HELP_PAGES: tuple[HelpPage, ...] = (
     HelpPage(
         slug="endorsement-pipeline",
         title="How an endorsement travels",
-        blurb="The four statuses and the four gates. Read this one twice.",
+        blurb="The four statuses and the five gates. Read this one twice.",
     ),
     HelpPage(
         slug="reviewing-endorsements",

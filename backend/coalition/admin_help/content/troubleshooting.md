@@ -9,11 +9,13 @@ resending is the whole fix.
 
 ## "I approved it but it's not showing on the public page"
 
-Walk the [four gates]({% url 'admin_help:page' 'endorsement-pipeline' %}) in order.
+Walk the [five gates]({% url 'admin_help:page' 'endorsement-pipeline' %}) in order.
 
-Nine times out of ten it is gate 4: you approved it but never ran **Approve for
-public display**. Gate 1 is the other common one — the endorser unchecked the
-public display consent box, and we do not override that.
+Nine times out of ten it is gate 5: you approved it but never ran **Approve for
+public display**. For an automatically approved endorsement, also check gate 4:
+someone must complete the human review and record themselves as the reviewer. Gate
+1 is the other common one — the endorser unchecked the public display consent box,
+and we do not override that.
 
 Also confirm the campaign itself is **Active**. An inactive campaign has no public
 page at all, so nothing on it can appear.
