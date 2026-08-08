@@ -98,11 +98,11 @@ class TestProvidedSecretARNs:
 class TestLocationConfiguration:
     """Tests for the AWS Location place index in generated settings."""
 
-    def test_place_index_name_is_added_to_each_stage_environment(
+    def test_place_index_name_is_added_to_each_stage_aws_environment(
         self,
         tmp_path: Path,
     ) -> None:
-        """Every generated Lambda stage must receive the configured place index."""
+        """Every stage must expose the place index through Lambda configuration."""
         settings = _generate_settings(
             tmp_path,
             {
@@ -113,10 +113,14 @@ class TestLocationConfiguration:
 
         for stage in ("dev", "staging", "prod"):
             assert (
-                settings[stage]["environment_variables"][
+                settings[stage]["aws_environment_variables"][
                     "AWS_LOCATION_PLACE_INDEX_NAME"
                 ]
                 == "landandbay-geocoding-index"
+            )
+            assert (
+                "AWS_LOCATION_PLACE_INDEX_NAME"
+                not in settings[stage]["environment_variables"]
             )
 
     def test_unconfigured_place_index_is_omitted_outside_ci(
@@ -127,10 +131,14 @@ class TestLocationConfiguration:
         settings = _generate_settings(tmp_path)
 
         for stage in ("dev", "prod"):
-            assert (
-                "AWS_LOCATION_PLACE_INDEX_NAME"
-                not in settings[stage]["environment_variables"]
-            )
+            for environment_key in (
+                "environment_variables",
+                "aws_environment_variables",
+            ):
+                assert (
+                    "AWS_LOCATION_PLACE_INDEX_NAME"
+                    not in settings[stage][environment_key]
+                )
 
     def test_runtime_variables_are_materialized_in_each_stage(
         self,
