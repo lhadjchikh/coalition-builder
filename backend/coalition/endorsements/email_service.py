@@ -96,8 +96,7 @@ class EndorsementEmailService:
         Returns True if the message was accepted for delivery.
         """
         verification_url = (
-            f"{settings.SITE_URL}/verify-endorsement/"
-            f"{endorsement.verification_token}/"
+            f"{settings.SITE_URL}/verify-endorsement/{endorsement.verification_token}/"
         )
         delivered = _deliver(
             _OutboundEmail(
