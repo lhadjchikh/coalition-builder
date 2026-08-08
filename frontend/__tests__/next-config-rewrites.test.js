@@ -31,3 +31,9 @@ describe("next.config.js rewrites", () => {
     expect(apiSlash.destination).not.toMatch(/\/\/$/);
   });
 });
+
+describe("next.config.js build type checking", () => {
+  it("uses the test-excluding TypeScript build configuration", () => {
+    expect(nextConfig.typescript.tsconfigPath).toBe("tsconfig.build.json");
+  });
+});
