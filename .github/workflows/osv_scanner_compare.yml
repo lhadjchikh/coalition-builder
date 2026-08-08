@@ -56,6 +56,9 @@ jobs:
         run: |
           "${RUNNER_TEMP}/validate_osv_results.sh" "${OSV_RESULTS_FILE}"
 
+      - name: Preserve validated baseline
+        run: install -m 0600 old-results.json "${RUNNER_TEMP}/old-results.json"
+
       - name: Checkout proposed revision
         env:
           HEAD_SHA: ${{ inputs.head_sha }}
@@ -78,6 +81,11 @@ jobs:
           OSV_RESULTS_FILE: new-results.json
         run: |
           "${RUNNER_TEMP}/validate_osv_results.sh" "${OSV_RESULTS_FILE}"
+
+      - name: Restore validated baseline
+        run: |
+          rm -f -- old-results.json
+          install -m 0600 "${RUNNER_TEMP}/old-results.json" old-results.json
 
       - name: Reject newly introduced vulnerabilities
         uses: google/osv-scanner-action/osv-reporter-action@06b2ab4348248b456ee06c9e953637f55e03504f # v2.5.0

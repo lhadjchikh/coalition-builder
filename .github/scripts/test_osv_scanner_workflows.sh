@@ -76,10 +76,15 @@ require_comparison_scan_order() {
     $0 == "      - name: Checkout comparison base" && next_stage == 0 { next_stage = 1; next }
     $0 == "      - name: Remove existing result file" && next_stage == 1 { next_stage = 2; next }
     $0 == "      - name: Scan existing dependencies" && next_stage == 2 { next_stage = 3; next }
-    $0 == "      - name: Checkout proposed revision" && next_stage == 3 { next_stage = 4; next }
-    $0 == "      - name: Remove proposed result file" && next_stage == 4 { next_stage = 5; next }
-    $0 == "      - name: Scan proposed dependencies" && next_stage == 5 { next_stage = 6; next }
-    END { exit next_stage == 6 ? 0 : 1 }
+    $0 == "      - name: Validate existing scan results" && next_stage == 3 { next_stage = 4; next }
+    $0 == "      - name: Preserve validated baseline" && next_stage == 4 { next_stage = 5; next }
+    $0 == "      - name: Checkout proposed revision" && next_stage == 5 { next_stage = 6; next }
+    $0 == "      - name: Remove proposed result file" && next_stage == 6 { next_stage = 7; next }
+    $0 == "      - name: Scan proposed dependencies" && next_stage == 7 { next_stage = 8; next }
+    $0 == "      - name: Validate proposed scan results" && next_stage == 8 { next_stage = 9; next }
+    $0 == "      - name: Restore validated baseline" && next_stage == 9 { next_stage = 10; next }
+    $0 == "      - name: Reject newly introduced vulnerabilities" && next_stage == 10 { next_stage = 11; next }
+    END { exit next_stage == 11 ? 0 : 1 }
   ' "${path}" || fail "expected ${path} to scan base before proposed revision"
 }
 
@@ -129,11 +134,14 @@ require_step_text "${comparison_workflow}" "Checkout comparison base" "git check
 require_step_text "${comparison_workflow}" "Remove existing result file" "rm -f -- old-results.json"
 require_step_text "${comparison_workflow}" "Scan existing dependencies" "--output=old-results.json"
 require_step_text "${comparison_workflow}" "Validate existing scan results" "OSV_RESULTS_FILE: old-results.json"
+require_step_text "${comparison_workflow}" "Preserve validated baseline" "install -m 0600 old-results.json \"\${RUNNER_TEMP}/old-results.json\""
 require_step_text "${comparison_workflow}" "Checkout proposed revision" "HEAD_SHA: \${{ inputs.head_sha }}"
 require_step_text "${comparison_workflow}" "Checkout proposed revision" "git checkout --force --detach \"\${HEAD_SHA}\""
 require_step_text "${comparison_workflow}" "Remove proposed result file" "rm -f -- new-results.json"
 require_step_text "${comparison_workflow}" "Scan proposed dependencies" "--output=new-results.json"
 require_step_text "${comparison_workflow}" "Validate proposed scan results" "OSV_RESULTS_FILE: new-results.json"
+require_step_text "${comparison_workflow}" "Restore validated baseline" "rm -f -- old-results.json"
+require_step_text "${comparison_workflow}" "Restore validated baseline" "install -m 0600 \"\${RUNNER_TEMP}/old-results.json\" old-results.json"
 require_step_text "${comparison_workflow}" "Reject newly introduced vulnerabilities" "--old=old-results.json"
 require_step_text "${comparison_workflow}" "Reject newly introduced vulnerabilities" "--new=new-results.json"
 require_text_occurrences "${comparison_workflow}" 'validate_osv_results.sh' 3
