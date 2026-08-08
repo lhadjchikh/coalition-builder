@@ -200,8 +200,20 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         dev_docker_image = "public.ecr.aws/lambda/python:3.13"
         production_docker_image = "public.ecr.aws/lambda/python:3.13"
 
+    runtime_environment_variables = with_location_place_index(
+        {
+            "USE_S3": "true",
+            "IS_LAMBDA": "true",
+            "USE_GEODJANGO": "true",
+            "GDAL_DATA": "/opt/share/gdal",
+            "PROJ_LIB": "/opt/share/proj",
+            "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
+        },
+        location_place_index_name,
+    )
     dev_environment_variables = with_stage_cloudfront_domain(
         {
+            **runtime_environment_variables,
             "ENVIRONMENT": "dev",
             "DEBUG": "true",
             "DATABASE_NAME": dev_db_name,
@@ -213,6 +225,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
     )
     production_environment_variables = with_stage_cloudfront_domain(
         {
+            **runtime_environment_variables,
             "ENVIRONMENT": "production",
             "DEBUG": "false",
             "DATABASE_NAME": production_db_name,
@@ -240,17 +253,6 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             "timeout_seconds": 30,
             "slim_handler": False,
             "use_precompiled_packages": False,
-            "environment_variables": with_location_place_index(
-                {
-                    "USE_S3": "true",
-                    "IS_LAMBDA": "true",
-                    "USE_GEODJANGO": "true",
-                    "GDAL_DATA": "/opt/share/gdal",
-                    "PROJ_LIB": "/opt/share/proj",
-                    "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
-                },
-                location_place_index_name,
-            ),
             "exclude": [
                 "*.gz",
                 "*.rar",
@@ -338,6 +340,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
 
         staging_environment_variables = with_stage_cloudfront_domain(
             {
+                **runtime_environment_variables,
                 "ENVIRONMENT": "staging",
                 "DEBUG": "false",
                 "DATABASE_NAME": staging_db_name,
