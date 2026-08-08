@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 router = Router(tags=["Address"])
 
 
-@router.get("/suggestions", auth=None)
+@router.get("/suggestions/", auth=None)
 def get_address_suggestions(
     request: HttpRequest,
     q: str,
@@ -47,7 +47,7 @@ def get_address_suggestions(
         raise HttpError(500, "Failed to get address suggestions") from e
 
 
-@router.get("/place/{place_id}", auth=None)
+@router.get("/place/{place_id}/", auth=None)
 def get_place_details(
     request: HttpRequest,
     place_id: str,

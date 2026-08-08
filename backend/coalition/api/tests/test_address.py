@@ -15,8 +15,11 @@ class TestAddressAPI(TestCase):
         self.client = TestClient(router)
 
     @patch("coalition.api.address.GeocodingService")
-    def test_get_address_suggestions_success(self, mock_geocoding_class: Any) -> None:
-        """Test successful address suggestions retrieval"""
+    def test_get_address_suggestions_success_with_proxied_path(
+        self,
+        mock_geocoding_class: Any,
+    ) -> None:
+        """Serve the trailing-slash path produced by the frontend API rewrite."""
         mock_service = MagicMock()
         mock_geocoding_class.return_value = mock_service
 
@@ -25,7 +28,7 @@ class TestAddressAPI(TestCase):
             {"text": "100 Congress St, Austin, TX 78701", "place_id": "place456"},
         ]
 
-        response = self.client.get("/suggestions?q=100 Congress")
+        response = self.client.get("/suggestions/?q=100 Congress")
 
         assert response.status_code == 200
         data = response.json()
@@ -49,7 +52,7 @@ class TestAddressAPI(TestCase):
             {"text": "Address 3", "place_id": "p3"},
         ]
 
-        response = self.client.get("/suggestions?q=test address&limit=3")
+        response = self.client.get("/suggestions/?q=test address&limit=3")
 
         assert response.status_code == 200
         data = response.json()
@@ -67,7 +70,7 @@ class TestAddressAPI(TestCase):
 
         mock_service.get_address_suggestions.return_value = []
 
-        response = self.client.get("/suggestions?q=test address&limit=20")
+        response = self.client.get("/suggestions/?q=test address&limit=20")
 
         assert response.status_code == 200
         # Verify limit was capped at 10
@@ -75,21 +78,21 @@ class TestAddressAPI(TestCase):
 
     def test_get_address_suggestions_short_query(self) -> None:
         """Test validation for short query string"""
-        response = self.client.get("/suggestions?q=ab")
+        response = self.client.get("/suggestions/?q=ab")
 
         assert response.status_code == 400
         assert "Query must be at least 3 characters" in response.json()["detail"]
 
     def test_get_address_suggestions_empty_query(self) -> None:
         """Test validation for empty query string"""
-        response = self.client.get("/suggestions?q=")
+        response = self.client.get("/suggestions/?q=")
 
         assert response.status_code == 400
         assert "Query must be at least 3 characters" in response.json()["detail"]
 
     def test_get_address_suggestions_whitespace_query(self) -> None:
         """Test validation for whitespace-only query"""
-        response = self.client.get("/suggestions?q=   ")
+        response = self.client.get("/suggestions/?q=   ")
 
         assert response.status_code == 400
         assert "Query must be at least 3 characters" in response.json()["detail"]
@@ -105,7 +108,7 @@ class TestAddressAPI(TestCase):
 
         mock_service.get_address_suggestions.return_value = []
 
-        response = self.client.get("/suggestions?q=  test query  ")
+        response = self.client.get("/suggestions/?q=  test query  ")
 
         assert response.status_code == 200
         # Verify query was stripped
@@ -122,7 +125,7 @@ class TestAddressAPI(TestCase):
 
         mock_service.get_address_suggestions.side_effect = Exception("Service error")
 
-        response = self.client.get("/suggestions?q=test query")
+        response = self.client.get("/suggestions/?q=test query")
 
         assert response.status_code == 500
         assert "Failed to get address suggestions" in response.json()["detail"]
@@ -138,7 +141,7 @@ class TestAddressAPI(TestCase):
 
         mock_service.get_address_suggestions.return_value = []
 
-        response = self.client.get("/suggestions?q=nonexistent address")
+        response = self.client.get("/suggestions/?q=nonexistent address")
 
         assert response.status_code == 200
         data = response.json()
@@ -159,7 +162,7 @@ class TestAddressAPI(TestCase):
             "country": "USA",
         }
 
-        response = self.client.get("/place/place123")
+        response = self.client.get("/place/place123/")
 
         assert response.status_code == 200
         data = response.json()
@@ -178,7 +181,7 @@ class TestAddressAPI(TestCase):
 
         mock_service.get_place_details.return_value = None
 
-        response = self.client.get("/place/nonexistent")
+        response = self.client.get("/place/nonexistent/")
 
         assert response.status_code == 404
         assert "Place not found" in response.json()["detail"]
@@ -203,7 +206,7 @@ class TestAddressAPI(TestCase):
 
         mock_service.get_place_details.side_effect = Exception("Service error")
 
-        response = self.client.get("/place/place123")
+        response = self.client.get("/place/place123/")
 
         assert response.status_code == 500
         assert "Failed to get place details" in response.json()["detail"]
@@ -226,7 +229,7 @@ class TestAddressAPI(TestCase):
         }
 
         place_id = "place_with-special.chars123"
-        response = self.client.get(f"/place/{place_id}")
+        response = self.client.get(f"/place/{place_id}/")
 
         assert response.status_code == 200
         mock_service.get_place_details.assert_called_once_with(place_id)
@@ -245,7 +248,7 @@ class TestAddressAPI(TestCase):
         error = Exception("Test error")
         mock_service.get_address_suggestions.side_effect = error
 
-        response = self.client.get("/suggestions?q=test")
+        response = self.client.get("/suggestions/?q=test")
 
         assert response.status_code == 500
         mock_logger.error.assert_called_once()
@@ -266,7 +269,7 @@ class TestAddressAPI(TestCase):
         error = Exception("Test error")
         mock_service.get_place_details.side_effect = error
 
-        response = self.client.get("/place/place123")
+        response = self.client.get("/place/place123/")
 
         assert response.status_code == 500
         mock_logger.error.assert_called_once()
@@ -287,8 +290,8 @@ class TestAddressAPI(TestCase):
         ]
 
         # Make multiple requests
-        response1 = self.client.get("/suggestions?q=query1")
-        response2 = self.client.get("/suggestions?q=query2&limit=7")
+        response1 = self.client.get("/suggestions/?q=query1")
+        response2 = self.client.get("/suggestions/?q=query2&limit=7")
 
         assert response1.status_code == 200
         assert response2.status_code == 200
@@ -307,7 +310,7 @@ class TestAddressAPI(TestCase):
 
         mock_service.get_address_suggestions.return_value = []
 
-        response = self.client.get("/suggestions?q=café street")
+        response = self.client.get("/suggestions/?q=café street")
 
         assert response.status_code == 200
         mock_service.get_address_suggestions.assert_called_once_with("café street", 5)
@@ -327,7 +330,7 @@ class TestAddressAPI(TestCase):
             "country": "USA",
         }
 
-        response = self.client.get("/place/place123")
+        response = self.client.get("/place/place123/")
 
         assert response.status_code == 200
         data = response.json()
