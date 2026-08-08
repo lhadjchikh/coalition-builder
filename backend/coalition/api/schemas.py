@@ -142,6 +142,7 @@ class PublicStakeholderOut(ModelSchema):
     """Stakeholder fields that an anonymous endorsement response may expose."""
 
     name: str
+    state: str | None
 
     class Meta:
         model = Stakeholder
@@ -159,6 +160,10 @@ class PublicStakeholderOut(ModelSchema):
     @staticmethod
     def resolve_name(obj: Stakeholder) -> str:
         return obj.name
+
+    @staticmethod
+    def resolve_state(obj: Stakeholder) -> str | None:
+        return obj.state.abbrev if obj.state else None
 
 
 class EndorsementOut(ModelSchema):

@@ -396,7 +396,10 @@ def list_endorsements(
 
     Results are ordered by creation date, newest first.
     """
-    queryset = Endorsement.objects.select_related("stakeholder", "campaign").filter(
+    queryset = Endorsement.objects.select_related(
+        "stakeholder__state",
+        "campaign",
+    ).filter(
         campaign__active=True,
         status="approved",
         public_display=True,

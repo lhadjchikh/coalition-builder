@@ -87,6 +87,7 @@ class EndorsementDisplayAPITest(BaseTestCase):
 
         assert response.status_code == 200
         stakeholder = response.json()[0]["stakeholder"]
+        assert stakeholder["state"] == "CA"
         private_fields = {
             "email",
             "street_address",
