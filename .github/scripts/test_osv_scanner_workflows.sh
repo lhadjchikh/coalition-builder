@@ -9,6 +9,8 @@ comparison_workflow="${repository_root}/.github/workflows/osv_scanner_compare.ym
 scheduled_workflow="${repository_root}/.github/workflows/osv_scanner_scheduled.yml"
 results_validator="${repository_root}/.github/scripts/validate_osv_results.sh"
 osv_scanner_revision="06b2ab4348248b456ee06c9e953637f55e03504f"
+artifact_upload_revision="bbbca2ddaa5d8feaa63e36b76fdaad77386f024f"
+sarif_upload_revision="cdefb33c0f6224e58673d9004f47f7cb3e328b89"
 
 fail() {
   printf 'stage=osv-workflow-test outcome=failure message=%q\n' "$1" >&2
@@ -144,6 +146,10 @@ require_job_text "${scheduled_workflow}" "scan_scheduled" "osv-scanner-action@${
 require_job_text "${scheduled_workflow}" "scan_scheduled" "osv-reporter-action@${osv_scanner_revision}"
 require_job_text "${scheduled_workflow}" "scan_scheduled" ".github/scripts/validate_osv_results.sh"
 require_step_text "${scheduled_workflow}" "Remove existing result file" "rm -f -- results.json"
+require_step_text "${scheduled_workflow}" "Upload scan artifact" "actions/upload-artifact@${artifact_upload_revision}"
+require_step_text "${scheduled_workflow}" "Upload scan artifact" "path: results.sarif"
+require_step_text "${scheduled_workflow}" "Upload to code scanning" "github/codeql-action/upload-sarif@${sarif_upload_revision}"
+require_step_text "${scheduled_workflow}" "Upload to code scanning" "sarif_file: results.sarif"
 require_text "${scheduled_workflow}" "security-events: write"
 require_text "${scheduled_workflow}" "--fail-on-vuln=false"
 require_scan_targets "${scheduled_workflow}"
