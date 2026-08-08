@@ -226,10 +226,10 @@ LOGGING = {
 
 ## Cost Optimization
 
-- **Outbound email**: $0.10 per 1,000 emails (the 62,000/month free tier applies to sends from EC2/ECS, not Lambda)
+- **Outbound email**: Pricing depends on the account's SES plan. As of August 2026, à-la-carte sending is $0.10 per 1,000 emails while the default Essentials plan for new or inactive accounts starts at $0.16 per 1,000.
 - **Data transfer**: $0.12 per GB of attachments
 
-For low-traffic sites, you'll likely stay within the free tier.
+Free usage depends on the AWS account's credit or legacy free-tier eligibility. Check the [current SES pricing](https://aws.amazon.com/ses/pricing/) rather than assuming an EC2-specific allowance applies.
 
 ## Security Best Practices
 
