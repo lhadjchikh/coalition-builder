@@ -124,6 +124,7 @@ class HelpContentTest(TestCase):
         for page in HELP_PAGES:
             with self.subTest(slug=page.slug):
                 assert f'<h2 id="{page.slug}">{page.title}</h2>' in body
+                assert str(render(page).html) in body
 
     def test_each_page_offers_navigation_to_the_rest_of_the_guide(self) -> None:
         self.client.force_login(self.staff)
