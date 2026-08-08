@@ -18,7 +18,7 @@ flowchart TB
 
         lambda --> rds[(RDS PostgreSQL<br/>with PostGIS<br/>+ rate-limit cache)]
         lambda --> s3_static[S3 Static Assets]
-        lambda --> ses[SES]
+        lambda -.->|pending PR #312| ses[SES API]
         lambda --> geo[AWS Location Service]
 
         subgraph security["Security & Monitoring"]
@@ -34,6 +34,8 @@ flowchart TB
 
     vercel --> apigateway
 ```
+
+The SES edge is not operational in the current Lambda deployment. [PR #312](https://github.com/lhadjchikh/coalition-builder/pull/312) adds the SES API VPC endpoint, execution-role permissions, and application backend needed to enable it.
 
 ## AWS Resources
 

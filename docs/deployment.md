@@ -69,11 +69,13 @@ Internet
                                     API Gateway → Lambda (Django via Zappa)
                                                      ├── RDS PostgreSQL + PostGIS
                                                      ├── S3 (static & media)
-                                                     ├── SES (transactional email)
+                                                     ├╌ SES API (blocked pending PR #312)
                                                      └── AWS Location Service (geocoding)
 
 TIGER geodata import scaffolding (not currently provisioned)
 ```
+
+Transactional email is not operational on the current Lambda deployment. [PR #312](https://github.com/lhadjchikh/coalition-builder/pull/312) replaces the unreachable SMTP path with the SES API over a VPC endpoint.
 
 **Components:**
 

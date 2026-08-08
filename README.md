@@ -121,7 +121,7 @@ flowchart LR
         Lambda[λ Django on Lambda<br/>Zappa container image]
         RDS[(RDS PostgreSQL + PostGIS)]
         S3[S3 + CloudFront<br/>static & media]
-        SES[SES<br/>transactional email]
+        SES[SES API<br/>pending PR #312]
         Location[AWS Location Service<br/>geocoding]
     end
 
@@ -130,9 +130,11 @@ flowchart LR
     APIGW --> Lambda
     Lambda --> RDS
     Lambda --> S3
-    Lambda --> SES
+    Lambda -.->|pending #312| SES
     Lambda --> Location
 ```
+
+Transactional email is currently blocked in Lambda. [PR #312](https://github.com/lhadjchikh/coalition-builder/pull/312) replaces the unreachable SMTP path with the SES API over a VPC endpoint.
 
 There are no always-on servers: no ALB, no ECS service, and no NAT gateway — the Lambda reaches AWS services through VPC endpoints. Terraform is split into `shared` (VPC, RDS, bastion), `prod`, and `dev` environments, with GitHub Actions authenticating via OIDC.
 
