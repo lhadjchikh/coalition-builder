@@ -159,11 +159,11 @@ The ECS task definition needs to pull these secrets. Add to your task definition
 
 Which backend Django uses is decided in `backend/coalition/core/settings.py` and depends on where the app runs:
 
-| Environment                  | Backend                                        | Transport                       |
-| ---------------------------- | ---------------------------------------------- | ------------------------------- |
-| `DEBUG=True` (local)         | Django's console backend                       | Printed to stdout               |
-| Lambda (`IS_LAMBDA`)         | `coalition.core.ses_backend.SESEmailBackend`   | SES API over a VPC endpoint     |
-| Other deployments            | `coalition.core.email_backend.SafeSMTPBackend` | SES SMTP on port 587            |
+| Environment          | Backend                                        | Transport                   |
+| -------------------- | ---------------------------------------------- | --------------------------- |
+| `DEBUG=True` (local) | Django's console backend                       | Printed to stdout           |
+| Lambda (`IS_LAMBDA`) | `coalition.core.ses_backend.SESEmailBackend`   | SES API over a VPC endpoint |
+| Other deployments    | `coalition.core.email_backend.SafeSMTPBackend` | SES SMTP on port 587        |
 
 Set `EMAIL_BACKEND` explicitly to override the choice.
 
@@ -182,13 +182,13 @@ Location: `backend/coalition/core/ses_backend.py`
 
 Django's defaults for these are local-development values, and a deploy that misses them sends mail that is technically delivered but useless — verification links pointing at `http://localhost:3000`. Prod deploys refuse to proceed without the first two (`backend/scripts/configure_zappa.py`):
 
-| GitHub environment variable | Purpose                                                     |
-| --------------------------- | ----------------------------------------------------------- |
-| `SITE_URL`                  | Base URL for verification links (**required for prod**)       |
+| GitHub environment variable | Purpose                                                          |
+| --------------------------- | ---------------------------------------------------------------- |
+| `SITE_URL`                  | Base URL for verification links (**required for prod**)          |
 | `DEFAULT_FROM_EMAIL`        | Sender address; must pass the SES policy (**required for prod**) |
-| `API_URL`                   | Base URL for admin links in notification emails               |
-| `ADMIN_NOTIFICATION_EMAILS` | Comma-separated recipients for new-endorsement notices        |
-| `SES_CONFIGURATION_SET`     | SES configuration set recording bounces and deliveries        |
+| `API_URL`                   | Base URL for admin links in notification emails                  |
+| `ADMIN_NOTIFICATION_EMAILS` | Comma-separated recipients for new-endorsement notices           |
+| `SES_CONFIGURATION_SET`     | SES configuration set recording bounces and deliveries           |
 
 ### Failure handling and alerting
 
