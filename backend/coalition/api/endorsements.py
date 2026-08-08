@@ -214,7 +214,11 @@ def _validate_and_prepare_endorsement_data(
     ip_address = get_client_ip(request)
 
     # Verify campaign exists and allows endorsements
-    campaign = get_object_or_404(PolicyCampaign, id=data.campaign_id)
+    campaign = get_object_or_404(
+        PolicyCampaign,
+        id=data.campaign_id,
+        active=True,
+    )
     if not campaign.allow_endorsements:
         raise HttpError(400, "This campaign is not accepting endorsements")
 
@@ -371,6 +375,7 @@ def list_endorsements(
     Results are ordered by creation date, newest first.
     """
     queryset = Endorsement.objects.select_related("stakeholder", "campaign").filter(
+        campaign__active=True,
         status="approved",
         public_display=True,
         email_verified=True,

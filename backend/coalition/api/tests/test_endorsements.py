@@ -247,6 +247,38 @@ class EndorsementAPITest(BaseTestCase):
         data = response.json()
         assert "not accepting endorsements" in data["detail"]
 
+    def test_create_endorsement_inactive_campaign(self) -> None:
+        """Inactive campaigns do not accept submissions through a stale form."""
+        self.campaign.active = False
+        self.campaign.save()
+
+        endorsement_data = {
+            "campaign_id": self.campaign.id,
+            "stakeholder": {
+                "first_name": "Test",
+                "last_name": "User",
+                "organization": "Test Org",
+                "email": "test@example.com",
+                "street_address": "123 Test St",
+                "city": "Richmond",
+                "state": "VA",
+                "zip_code": "23220",
+                "type": "other",
+            },
+            "terms_accepted": True,
+            "org_authorized": True,
+            "form_metadata": get_valid_form_metadata(),
+        }
+
+        response = self.client.post(
+            "/api/endorsements/",
+            data=json.dumps(endorsement_data),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 404
+        assert not Stakeholder.objects.filter(email="test@example.com").exists()
+
     def test_create_endorsement_nonexistent_campaign(self) -> None:
         """Test POST /api/endorsements/ with invalid campaign ID"""
         endorsement_data = {

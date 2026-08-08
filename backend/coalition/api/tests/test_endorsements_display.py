@@ -94,6 +94,24 @@ class EndorsementDisplayAPITest(BaseTestCase):
         }
         assert private_fields.isdisjoint(stakeholder)
 
+    def test_inactive_campaign_endorsements_are_not_public(self) -> None:
+        Endorsement.objects.create(
+            stakeholder=self.stakeholders[0],
+            campaign=self.campaign,
+            statement="Previously public statement",
+            public_display=True,
+            status="approved",
+            email_verified=True,
+            display_publicly=True,
+        )
+        self.campaign.active = False
+        self.campaign.save()
+
+        response = self.client.get("/api/endorsements/")
+
+        assert response.status_code == 200
+        assert response.json() == []
+
     def test_display_order_newest_first(self) -> None:
         """Test that displayed endorsements are ordered by created_at descending"""
         # Create endorsements with display_publicly=True
