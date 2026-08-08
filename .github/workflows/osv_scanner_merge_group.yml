@@ -1,0 +1,61 @@
+name: OSV-Scanner Merge Group Scan
+
+on:
+  merge_group:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  scan_merge_group:
+    name: Reject newly introduced dependency vulnerabilities / osv-scan
+    runs-on: ubuntu-latest
+    env:
+      SCAN_TARGETS: |-
+        --lockfile=./backend/poetry.lock
+        --lockfile=./frontend/package-lock.json
+        --lockfile=./terraform/tests/go.mod
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout merge group base
+        env:
+          BASE_SHA: ${{ github.event.merge_group.base_sha }}
+        run: git checkout --force --detach "${BASE_SHA}"
+
+      - name: Scan existing dependencies
+        uses: google/osv-scanner-action/osv-scanner-action@06b2ab4348248b456ee06c9e953637f55e03504f # v2.5.0
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --format=json
+            --output=old-results.json
+            ${{ env.SCAN_TARGETS }}
+
+      - name: Checkout merge group head
+        env:
+          HEAD_SHA: ${{ github.sha }}
+        run: git checkout --force --detach "${HEAD_SHA}"
+
+      - name: Scan proposed dependencies
+        uses: google/osv-scanner-action/osv-scanner-action@06b2ab4348248b456ee06c9e953637f55e03504f # v2.5.0
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --format=json
+            --output=new-results.json
+            ${{ env.SCAN_TARGETS }}
+
+      - name: Reject newly introduced vulnerabilities
+        uses: google/osv-scanner-action/osv-reporter-action@06b2ab4348248b456ee06c9e953637f55e03504f # v2.5.0
+        with:
+          scan-args: |-
+            --output=results.sarif
+            --old=old-results.json
+            --new=new-results.json
+            --gh-annotations=true
+            --fail-on-vuln=true

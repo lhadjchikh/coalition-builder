@@ -160,7 +160,11 @@ Runs the complete test suite.
 
 #### `osv_scanner_pr.yml`
 
-Compares dependency lockfiles in pull requests and merge groups against `main`. The check fails only when a change introduces a known vulnerability.
+Compares dependency lockfiles in pull requests against `main`. The check fails only when a change introduces a known vulnerability.
+
+#### `osv_scanner_merge_group.yml`
+
+Compares a merge group's dependency lockfiles against its base commit. The check fails only when the merge group introduces a known vulnerability.
 
 #### `osv_scanner_scheduled.yml`
 

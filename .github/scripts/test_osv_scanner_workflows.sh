@@ -4,8 +4,10 @@ set -euo pipefail
 
 repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 pr_workflow="${repository_root}/.github/workflows/osv_scanner_pr.yml"
+merge_group_workflow="${repository_root}/.github/workflows/osv_scanner_merge_group.yml"
 scheduled_workflow="${repository_root}/.github/workflows/osv_scanner_scheduled.yml"
 osv_action_revision="8deb546fdb875b9996d27d4950be7312dac076a1"
+osv_scanner_revision="06b2ab4348248b456ee06c9e953637f55e03504f"
 
 fail() {
   printf 'stage=osv-workflow-test outcome=failure message=%q\n' "$1" >&2
@@ -21,6 +23,21 @@ require_text() {
   local path="$1"
   local expected="$2"
   grep -Fq -- "${expected}" "${path}" || fail "expected ${path} to contain: ${expected}"
+}
+
+require_job_text() {
+  local path="$1"
+  local job_name="$2"
+  local expected="$3"
+  local job_text
+
+  job_text="$(awk -v heading="  ${job_name}:" '
+    $0 == heading { in_job = 1 }
+    in_job && $0 != heading && /^  [[:alnum:]_]+:/ { exit }
+    in_job { print }
+  ' "${path}")"
+  grep -Fq -- "${expected}" <<<"${job_text}" ||
+    fail "expected ${job_name} job in ${path} to contain: ${expected}"
 }
 
 reject_text() {
@@ -40,13 +57,24 @@ require_scan_targets() {
 }
 
 require_file "${pr_workflow}"
+require_file "${merge_group_workflow}"
 require_file "${scheduled_workflow}"
 
 require_text "${pr_workflow}" "pull_request:"
-require_text "${pr_workflow}" "merge_group:"
 require_text "${pr_workflow}" "osv-scanner-reusable-pr.yml@${osv_action_revision}"
 require_text "${pr_workflow}" "security-events: write"
+reject_text "${pr_workflow}" "merge_group:"
 require_scan_targets "${pr_workflow}"
+
+require_text "${merge_group_workflow}" "merge_group:"
+require_job_text "${merge_group_workflow}" "scan_merge_group" "name: Reject newly introduced dependency vulnerabilities / osv-scan"
+require_job_text "${merge_group_workflow}" "scan_merge_group" "BASE_SHA: \${{ github.event.merge_group.base_sha }}"
+require_job_text "${merge_group_workflow}" "scan_merge_group" "git checkout --force --detach \"\${BASE_SHA}\""
+require_job_text "${merge_group_workflow}" "scan_merge_group" "osv-scanner-action@${osv_scanner_revision}"
+require_job_text "${merge_group_workflow}" "scan_merge_group" "osv-reporter-action@${osv_scanner_revision}"
+require_job_text "${merge_group_workflow}" "scan_merge_group" "--old=old-results.json"
+require_job_text "${merge_group_workflow}" "scan_merge_group" "--new=new-results.json"
+require_scan_targets "${merge_group_workflow}"
 
 require_text "${scheduled_workflow}" "schedule:"
 require_text "${scheduled_workflow}" "workflow_dispatch:"

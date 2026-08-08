@@ -193,10 +193,16 @@ _Figure 1: Workflow dependency tree showing how push/PR events trigger orchestra
 
 #### OSV-Scanner PR Scan (`osv_scanner_pr.yml`)
 
-- **Triggered by**: pull requests and merge groups targeting `main`
+- **Triggered by**: pull requests targeting `main`
 - Compares the proposed dependency state with `main`
 - Fails only when a change introduces a known vulnerability
 - Scans the backend Poetry lockfile, frontend npm lockfile, and Terraform test Go module
+
+#### OSV-Scanner Merge Group Scan (`osv_scanner_merge_group.yml`)
+
+- **Triggered by**: merge groups targeting `main`
+- Compares the merge group's proposed dependency state with its base commit
+- Uses the same explicit dependency scope and new-vulnerability gate as the pull-request scan
 
 #### OSV-Scanner Scheduled Scan (`osv_scanner_scheduled.yml`)
 
