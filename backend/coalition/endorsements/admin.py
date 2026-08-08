@@ -7,12 +7,16 @@ from django.http import HttpRequest
 from django.utils import timezone
 from django.utils.html import format_html
 
+from coalition.admin_help.admin_links import HelpLinkAdminMixin
+
 from .email_service import EndorsementEmailService
 from .models import Endorsement
 
 
 @admin.register(Endorsement)
-class EndorsementAdmin(admin.ModelAdmin):
+class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
+    help_page_slug = "reviewing-endorsements"
+
     list_display = (
         "stakeholder_name",
         "stakeholder_organization",
