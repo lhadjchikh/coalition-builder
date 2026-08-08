@@ -107,8 +107,8 @@ Matching CI exactly matters more than matching `scripts/lint.py`:
   Tests must be parallel-safe and not depend on cross-file ordering.
 - Coverage gate is `--cov-fail-under=80` in `addopts`, so it applies to every local run too.
 - Prettier is checked over the **whole repo**, not just `frontend/`: root
-  `*.{md,yml,yaml,json,css}` and `.github/workflows/*.yml` included. Run
-  `npm --prefix frontend run format:check` plus the root glob, or just `./scripts/lint.py`.
+  `*.{md,yml,yaml,json,css}` and `.github/workflows/*.yml` included. Use the exact commands
+  in `.github/workflows/lint_prettier.yml`; `./scripts/lint.py` formats a narrower file set.
 - `npm run lint` only covers `app components lib proxy.ts`. `services/`, `utils/`,
   `hooks/`, `contexts/` are unlinted by that script — still keep them clean.
 - `npm run typecheck` uses `tsconfig.build.json`, which **excludes** test files. Type errors
