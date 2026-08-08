@@ -95,6 +95,39 @@ class TestProvidedSecretARNs:
         assert settings["prod"]["aws_environment_variables"]["SECRET_KEY"] == arn
 
 
+class TestLocationConfiguration:
+    """Tests for the AWS Location place index in generated settings."""
+
+    def test_place_index_name_is_added_to_lambda_environment(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """The configured place index must be available to the geocoding service."""
+        settings = _generate_settings(
+            tmp_path,
+            {"AWS_LOCATION_PLACE_INDEX_NAME": "landandbay-geocoding-index"},
+        )
+
+        assert (
+            settings["base"]["environment_variables"][
+                "AWS_LOCATION_PLACE_INDEX_NAME"
+            ]
+            == "landandbay-geocoding-index"
+        )
+
+    def test_unconfigured_place_index_is_omitted_outside_ci(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Local settings should not contain a misleading empty index name."""
+        settings = _generate_settings(tmp_path)
+
+        assert (
+            "AWS_LOCATION_PLACE_INDEX_NAME"
+            not in settings["base"]["environment_variables"]
+        )
+
+
 class TestAssetConfiguration:
     """Tests for media bucket environment variables."""
 
@@ -347,6 +380,22 @@ class TestCIValidation:
                 },
             )
 
+    def test_ci_raises_when_location_place_index_name_missing(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """In CI, missing AWS_LOCATION_PLACE_INDEX_NAME should raise."""
+        with pytest.raises(RuntimeError, match="AWS_LOCATION_PLACE_INDEX_NAME"):
+            _generate_settings(
+                tmp_path,
+                {
+                    "CI": "true",
+                    "DATABASE_SECRET_ARN": self._arn,
+                    "DJANGO_SECRET_ARN": self._arn,
+                    "ZAPPA_ROLE_NAME": "my-role",
+                },
+            )
+
     def test_ci_succeeds_when_all_required_vars_provided(
         self,
         tmp_path: Path,
@@ -359,6 +408,7 @@ class TestCIValidation:
                 "DATABASE_SECRET_ARN": self._arn,
                 "DJANGO_SECRET_ARN": self._arn,
                 "ZAPPA_ROLE_NAME": "my-role",
+                "AWS_LOCATION_PLACE_INDEX_NAME": "landandbay-geocoding-index",
             },
         )
         db_url = settings["prod"]["aws_environment_variables"]

@@ -21,6 +21,7 @@ export AWS_REGION="us-east-1"
 export ZAPPA_DEPLOYMENT_BUCKET="coalition-zappa-deployments-abc123"
 export DEPLOYMENT_ENVIRONMENT="dev"
 export AWS_STORAGE_BUCKET_NAME="coalition-dev-assets-abc123"
+export AWS_LOCATION_PLACE_INDEX_NAME="coalition-geocoding-index"
 
 # Optional - Database names (defaults shown)
 export DEV_DB_NAME="coalition_dev"
@@ -71,6 +72,7 @@ For CI/CD, add these as GitHub Secrets:
 
 - `ZAPPA_DEPLOYMENT_BUCKET`
 - `AWS_STORAGE_BUCKET_NAME` (set separately in each GitHub Environment)
+- `AWS_LOCATION_PLACE_INDEX_NAME` (use the matching environment's Terraform `location_place_index_name` output)
 
 ### Optional Variables
 
@@ -97,11 +99,13 @@ the bucket name from its outputs:
 ```bash
 cd terraform/environments/dev
 terraform output -raw serverless_bucket_name   # -> AWS_STORAGE_BUCKET_NAME
+terraform output -raw location_place_index_name # -> AWS_LOCATION_PLACE_INDEX_NAME
 ```
 
-Set the dev environment's `AWS_STORAGE_BUCKET_NAME` to that bucket. Dev serves media
-directly from S3, so `CLOUDFRONT_DOMAIN` is left unset. (Staging is generated as an
-optional Zappa stage via `ENABLE_STAGING`, not a separate environment directory.)
+Set the dev environment's `AWS_STORAGE_BUCKET_NAME` and
+`AWS_LOCATION_PLACE_INDEX_NAME` to those outputs. Dev serves media directly from
+S3, so `CLOUDFRONT_DOMAIN` is left unset. (Staging is generated as an optional
+Zappa stage via `ENABLE_STAGING`, not a separate environment directory.)
 
 ### Production (`module.storage`)
 
@@ -114,11 +118,12 @@ attachment and Django cannot write to it.
 cd terraform/environments/prod
 terraform output static_assets_bucket_name         # -> AWS_STORAGE_BUCKET_NAME
 terraform output cloudfront_distribution_domain_name  # -> CLOUDFRONT_DOMAIN
+terraform output -raw location_place_index_name     # -> AWS_LOCATION_PLACE_INDEX_NAME
 ```
 
-Set the prod GitHub environment's `AWS_STORAGE_BUCKET_NAME` and `CLOUDFRONT_DOMAIN`
-variables to these two outputs so Lambda writes to, and Django serves from, the same
-bucket that is fronted by CloudFront.
+Set the prod GitHub environment's `AWS_STORAGE_BUCKET_NAME`, `CLOUDFRONT_DOMAIN`,
+and `AWS_LOCATION_PLACE_INDEX_NAME` variables to these outputs. The place index
+variable enables address autocomplete and geocoding in Lambda.
 
 ## Configuration Options
 
