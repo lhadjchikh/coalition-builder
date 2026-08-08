@@ -96,6 +96,10 @@ require_step_text \
 require_step_text \
   "${lambda_workflow}" \
   "Verify deployed address configuration" \
+  'aws lambda wait function-updated'
+require_step_text \
+  "${lambda_workflow}" \
+  "Verify deployed address configuration" \
   'Environment.Variables.AWS_LOCATION_PLACE_INDEX_NAME'
 require_step_text \
   "${lambda_workflow}" \

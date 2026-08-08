@@ -287,6 +287,8 @@ jobs:
           AWS_LOCATION_PLACE_INDEX_NAME: ${{ vars.AWS_LOCATION_PLACE_INDEX_NAME }}
           DEPLOYMENT_ENVIRONMENT: ${{ steps.deployment_environment.outputs.environment }}
         run: |
+          aws lambda wait function-updated --function-name "coalition-${DEPLOYMENT_ENVIRONMENT}"
+
           DEPLOYED_PLACE_INDEX_NAME=$(aws lambda get-function-configuration \
             --function-name "coalition-${DEPLOYMENT_ENVIRONMENT}" \
             --query 'Environment.Variables.AWS_LOCATION_PLACE_INDEX_NAME' \
