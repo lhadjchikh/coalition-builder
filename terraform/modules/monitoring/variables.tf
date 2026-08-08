@@ -19,3 +19,8 @@ variable "alert_email" {
   description = "Email address to receive budget and other alerts"
   type        = string
 }
+variable "application_log_group_name" {
+  description = "CloudWatch log group to watch for email delivery failures (empty disables the alarm)"
+  type        = string
+  default     = ""
+}

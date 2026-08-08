@@ -124,3 +124,14 @@ variable "enable_single_az_endpoints" {
   default     = false
 }
 
+variable "enable_ses_endpoint" {
+  description = "Create an interface VPC endpoint for the SES API so Lambda in private subnets can send email without internet egress"
+  type        = bool
+  default     = false
+
+  validation {
+    condition     = var.enable_ses_endpoint == false || var.create_vpc_endpoints == true
+    error_message = "enable_ses_endpoint requires create_vpc_endpoints to be true; the SES endpoint reuses the shared endpoint security group."
+  }
+}
+

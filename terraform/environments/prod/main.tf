@@ -63,6 +63,10 @@ module "networking" {
   # VPC endpoints for Lambda to reach AWS services
   create_vpc_endpoints       = true
   enable_single_az_endpoints = true
+
+  # Prod is the only environment that sends transactional email, and these
+  # subnets have no NAT or default route, so SES is only reachable this way.
+  enable_ses_endpoint = true
 }
 
 # VPC Peering - prod to shared
@@ -184,6 +188,10 @@ module "monitoring" {
   vpc_id              = module.networking.vpc_id
   budget_limit_amount = var.budget_limit_amount
   alert_email         = var.alert_email
+
+  # Email failures are contained so submissions survive; this alarm is what
+  # makes them visible. Zappa names the function <project_name>-<stage>.
+  application_log_group_name = "/aws/lambda/coalition-prod"
 }
 
 # SES Module (Route53 records created separately with shared provider)
@@ -199,6 +207,10 @@ module "ses" {
   dmarc_email            = var.ses_notification_email
   notification_email     = var.ses_notification_email
   enable_notifications   = true
+
+  # Lambda sends through the SES API with its execution role, so it needs no
+  # static SMTP credentials.
+  sender_role_names = [module.zappa.zappa_deployment_role_name]
 }
 
 # Wait for SES domain verification (record is created cross-account below)

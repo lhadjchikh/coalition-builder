@@ -105,6 +105,44 @@ resource "aws_iam_user_policy" "ses_smtp" {
   })
 }
 
+# Role-based sending for compute that can assume an IAM role (Lambda, ECS).
+# Preferred over the SMTP user below: no static access keys to store, rotate
+# or leak, and it works over the SES API interface VPC endpoint.
+resource "aws_iam_policy" "ses_send" {
+  count = length(var.sender_role_names) > 0 ? 1 : 0
+
+  name        = "${var.prefix}-ses-send"
+  description = "Allow sending mail through SES from the ${var.domain_name} domain"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ses:SendEmail",
+          "ses:SendRawEmail"
+        ]
+        Resource = "*"
+        Condition = {
+          # StringLike, not StringEquals: StringEquals compares "*@domain"
+          # literally, so it matches no real address at all.
+          StringLike = {
+            "ses:FromAddress" = var.verify_domain ? ["*@${var.domain_name}", var.from_email] : [var.from_email]
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ses_send" {
+  for_each = toset(var.sender_role_names)
+
+  role       = each.value
+  policy_arn = aws_iam_policy.ses_send[0].arn
+}
+
 # Calculate SES SMTP password using external data source
 data "external" "smtp_password" {
   program = ["python3", "${path.module}/scripts/calculate_ses_password.py"]
