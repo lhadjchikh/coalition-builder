@@ -159,9 +159,9 @@ case under `terraform/tests/modules/`.
 ## Gotchas
 
 - **`docs/` is partly stale.** It references an `ssr/` directory, a `frontend/src/` tree, a
-  `test:ci` npm script, and ECS deployment — none of which exist anymore (the app is on
-  Lambda + Vercel, components live at `frontend/components/`). Trust the code over `docs/`,
-  and fix docs you touch.
+  `test:ci` npm script, and a legacy ECS application deployment — none of which exist anymore
+  (the app is on Lambda + Vercel, components live at `frontend/components/`). TIGER geodata
+  import still uses ECS Fargate. Trust the code over `docs/`, and fix docs you touch.
 - Lambda specifics that bite: GDAL libs are at `/opt/lib64/`, `GDAL_LIBRARY_PATH` is set
   only inside the `if IS_LAMBDA:` branch of `settings.py` (so `collectstatic` at image build
   time can't rely on it), and the Lambda has **no internet egress**. Supported AWS services
