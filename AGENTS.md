@@ -75,7 +75,8 @@ Terraform:
 
 ```bash
 cd terraform && terraform fmt -recursive && tflint
-cd terraform/tests && make test-unit            # Terratest; see Makefile for targets
+cd terraform/tests
+go test -short -v -timeout 10m ./modules/       # validation only; no AWS resources
 ```
 
 Whole repo, auto-fixing (Python + Prettier + TS + Terraform):
