@@ -109,9 +109,7 @@ class TestLocationConfiguration:
         )
 
         assert (
-            settings["base"]["environment_variables"][
-                "AWS_LOCATION_PLACE_INDEX_NAME"
-            ]
+            settings["base"]["environment_variables"]["AWS_LOCATION_PLACE_INDEX_NAME"]
             == "landandbay-geocoding-index"
         )
 
