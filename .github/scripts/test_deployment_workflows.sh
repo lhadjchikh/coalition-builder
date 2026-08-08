@@ -104,7 +104,11 @@ require_step_text \
 require_step_text \
   "${lambda_workflow}" \
   "Verify deployed address configuration" \
-  'DEPLOYED_PLACE_INDEX_NAME'
+  'if [[ "${DEPLOYED_PLACE_INDEX_NAME}" != "${AWS_LOCATION_PLACE_INDEX_NAME}" ]]; then'
+require_step_text \
+  "${lambda_workflow}" \
+  "Verify deployed address configuration" \
+  'exit 1'
 
 require_text "${frontend_workflow}" 'group: deploy-frontend-'
 require_text "${frontend_workflow}" "cancel-in-progress: false"
