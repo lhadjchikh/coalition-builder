@@ -40,6 +40,18 @@ require_job_text() {
     fail "expected ${job_name} job in ${path} to contain: ${expected}"
 }
 
+require_merge_group_scan_order() {
+  local path="$1"
+
+  awk '
+    $0 == "      - name: Checkout merge group base" && next_stage == 0 { next_stage = 1; next }
+    $0 == "      - name: Scan existing dependencies" && next_stage == 1 { next_stage = 2; next }
+    $0 == "      - name: Checkout merge group head" && next_stage == 2 { next_stage = 3; next }
+    $0 == "      - name: Scan proposed dependencies" && next_stage == 3 { next_stage = 4; next }
+    END { exit next_stage == 4 ? 0 : 1 }
+  ' "${path}" || fail "expected ${path} to scan base before merge group head"
+}
+
 reject_text() {
   local path="$1"
   local rejected="$2"
@@ -70,11 +82,14 @@ require_text "${merge_group_workflow}" "merge_group:"
 require_job_text "${merge_group_workflow}" "scan_merge_group" "name: Reject newly introduced dependency vulnerabilities / osv-scan"
 require_job_text "${merge_group_workflow}" "scan_merge_group" "BASE_SHA: \${{ github.event.merge_group.base_sha }}"
 require_job_text "${merge_group_workflow}" "scan_merge_group" "git checkout --force --detach \"\${BASE_SHA}\""
+require_job_text "${merge_group_workflow}" "scan_merge_group" "HEAD_SHA: \${{ github.sha }}"
+require_job_text "${merge_group_workflow}" "scan_merge_group" "git checkout --force --detach \"\${HEAD_SHA}\""
 require_job_text "${merge_group_workflow}" "scan_merge_group" "osv-scanner-action@${osv_scanner_revision}"
 require_job_text "${merge_group_workflow}" "scan_merge_group" "osv-reporter-action@${osv_scanner_revision}"
 require_job_text "${merge_group_workflow}" "scan_merge_group" "--old=old-results.json"
 require_job_text "${merge_group_workflow}" "scan_merge_group" "--new=new-results.json"
 require_scan_targets "${merge_group_workflow}"
+require_merge_group_scan_order "${merge_group_workflow}"
 
 require_text "${scheduled_workflow}" "schedule:"
 require_text "${scheduled_workflow}" "workflow_dispatch:"
