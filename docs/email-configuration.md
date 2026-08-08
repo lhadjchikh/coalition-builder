@@ -190,15 +190,18 @@ poetry run zappa invoke prod \
 ### Common Issues
 
 1. **"Email address is not verified"**
+
    - You're in sandbox mode and trying to send to unverified address
    - Solution: Verify the recipient or request production access
 
 2. **"Connection timeout"** / emails appearing in CloudWatch instead of arriving
+
    - The Lambda cannot reach the SES SMTP endpoint from its private subnets
    - This is the known gap described at the top of this page
    - Solution: Add an SES interface VPC endpoint, switch to the SES API, or provide a NAT route
 
 3. **"Invalid credentials"**
+
    - SMTP credentials are incorrect
    - Solution: Regenerate SMTP credentials in SES console
 
