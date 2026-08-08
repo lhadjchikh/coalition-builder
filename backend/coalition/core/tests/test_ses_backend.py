@@ -185,7 +185,7 @@ class TestSESEmailBackend:
         assert mock_client.call_count == 1
 
     def test_client_uses_sesv2_with_bounded_timeouts(self) -> None:
-        """Every outbound call needs an explicit timeout so Lambda cannot hang."""
+        """Two sequential sends must leave time for the transaction to commit."""
         with patch("coalition.core.ses_backend.boto3.client") as mock_client:
             backend = SESEmailBackend()
             backend.send_messages(
@@ -195,5 +195,6 @@ class TestSESEmailBackend:
         (service,) = mock_client.call_args.args
         assert service == "sesv2"
         config = mock_client.call_args.kwargs["config"]
-        assert config.connect_timeout > 0
-        assert config.read_timeout > 0
+        assert config.retries["total_max_attempts"] == 1
+        assert "max_attempts" not in config.retries
+        assert config.connect_timeout + config.read_timeout < 10

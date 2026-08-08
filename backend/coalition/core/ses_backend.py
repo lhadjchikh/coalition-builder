@@ -22,9 +22,9 @@ from django.core.mail.message import EmailMessage
 logger = logging.getLogger(__name__)
 
 # Bounded so a hung SES call cannot consume the whole Lambda timeout.
-_CONNECT_TIMEOUT_SECONDS = 5
-_READ_TIMEOUT_SECONDS = 10
-_MAX_ATTEMPTS = 3
+_CONNECT_TIMEOUT_SECONDS = 3
+_READ_TIMEOUT_SECONDS = 5
+_TOTAL_MAX_ATTEMPTS = 1
 
 
 class SESEmailBackend(BaseEmailBackend):
@@ -51,7 +51,10 @@ class SESEmailBackend(BaseEmailBackend):
                 config=Config(
                     connect_timeout=_CONNECT_TIMEOUT_SECONDS,
                     read_timeout=_READ_TIMEOUT_SECONDS,
-                    retries={"max_attempts": _MAX_ATTEMPTS, "mode": "standard"},
+                    retries={
+                        "total_max_attempts": _TOTAL_MAX_ATTEMPTS,
+                        "mode": "standard",
+                    },
                 ),
             )
         return self._client
