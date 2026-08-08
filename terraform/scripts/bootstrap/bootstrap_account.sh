@@ -134,7 +134,7 @@ if [[ "$ENVIRONMENT" != "shared" && "$ENVIRONMENT" != "prod" && "$ENVIRONMENT" !
   exit 1
 fi
 
-if [[ "$ENVIRONMENT" == "shared" && ( -z "$PROD_ACCOUNT_ID" || -z "$DEV_ACCOUNT_ID" ) ]]; then
+if [[ "$ENVIRONMENT" == "shared" && (-z "$PROD_ACCOUNT_ID" || -z "$DEV_ACCOUNT_ID") ]]; then
   log_error "--prod-account-id and --dev-account-id are required for the shared environment"
   usage
   exit 1
@@ -248,9 +248,9 @@ aws_cmd cloudformation deploy \
   --template-file "${SCRIPT_DIR}/github-oidc-role.cfn.yml" \
   --stack-name "$OIDC_STACK_NAME" \
   --parameter-overrides \
-    "Environment=${ENVIRONMENT}" \
-    "GitHubOrg=${GITHUB_ORG}" \
-    "GitHubRepo=${GITHUB_REPO}" \
+  "Environment=${ENVIRONMENT}" \
+  "GitHubOrg=${GITHUB_ORG}" \
+  "GitHubRepo=${GITHUB_REPO}" \
   --capabilities CAPABILITY_NAMED_IAM \
   --no-fail-on-empty-changeset
 

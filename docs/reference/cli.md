@@ -248,14 +248,14 @@ poetry audit
 ### Linting and Formatting
 
 ```bash
-# Format code with Black
-poetry run black .
+# Format code with Ruff
+poetry run ruff format .
 
 # Check code formatting without changes
-poetry run black --check .
+poetry run ruff format --check .
 
 # Format specific files
-poetry run black coalition/ tests/
+poetry run ruff format coalition/ tests/
 
 # Lint with Ruff
 poetry run ruff check .
@@ -502,8 +502,8 @@ pre-commit install
 # Run pre-commit on all files
 pre-commit run --all-files
 
-# Run specific hook
-pre-commit run black
+# Run the Ruff formatter hook
+pre-commit run ruff-format
 
 # Update hook versions
 pre-commit autoupdate
@@ -522,7 +522,7 @@ cd backend && poetry run python manage.py test
 cd frontend && npm run test:ci
 
 # Simulate linting checks
-poetry run black --check .
+poetry run ruff format --check .
 poetry run ruff check .
 cd frontend && npm run lint
 

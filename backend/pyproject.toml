@@ -38,7 +38,6 @@ boto3 = "^1.40.16"
 pynamodb = "^6.1.0"
 
 [tool.poetry.group.dev.dependencies]
-black = "^26.3.1"
 ruff = "^0.11.12"
 pytest = "^9.0.3"
 pytest-django = "^4.9.0"
@@ -62,17 +61,12 @@ mkdocs-material = "^9.5.0"
 mkdocs-git-revision-date-localized-plugin = "^1.3.0"
 pydotplus = "^2.0.2"
 
-[tool.black]
-line-length = 88
-target-version = ["py311"]
-include = '\.pyi?$'
-
 [tool.ruff]
 target-version = "py313"
 line-length = 88
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "C90", "N", "B", "UP", "ANN", "A", "COM", "C4", "DTZ", "T10", "T20", "PT", "Q", "SIM", "ARG", "ERA"]
+select = ["E", "F", "I", "C90", "N", "B", "UP", "ANN", "A", "COM818", "COM819", "C4", "DTZ", "T10", "T20", "PT", "Q", "SIM", "ARG", "ERA"]
 ignore = [
     "ARG001",  # Unused function argument - common in Django views/handlers
     "PT027",   # Use pytest.raises instead of unittest assertRaises - Django uses unittest

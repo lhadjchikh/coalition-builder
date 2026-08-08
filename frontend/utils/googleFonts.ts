@@ -1,5 +1,8 @@
+type WebFontLoader = typeof import("webfontloader");
+type WebFontLoaderModule = WebFontLoader | { default: WebFontLoader };
+
 // Cache for the dynamically imported webfontloader module
-let cachedWebFontLoader: any = null;
+let cachedWebFontLoader: WebFontLoaderModule | null = null;
 
 /**
  * Load Google Fonts dynamically using webfontloader
@@ -25,10 +28,13 @@ export function loadGoogleFonts(googleFonts: string[]): void {
           const dynamicImport = new Function(
             "moduleName",
             "return import(moduleName)"
-          );
+          ) as (moduleName: string) => Promise<WebFontLoaderModule>;
           cachedWebFontLoader = await dynamicImport("webfontloader");
         }
-        const WebFont = cachedWebFontLoader.default || cachedWebFontLoader;
+        const WebFont =
+          "default" in cachedWebFontLoader
+            ? cachedWebFontLoader.default
+            : cachedWebFontLoader;
 
         // Format fonts for webfontloader (Family:weight1,weight2)
         // Filter out empty or whitespace-only font names

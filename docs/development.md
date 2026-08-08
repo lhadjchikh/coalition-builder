@@ -63,7 +63,7 @@ Docker Compose automatically loads `docker-compose.override.yml` if it exists.
 
 ### Code Style
 
-- Python: Black formatting, Ruff linting, mypy type checking
+- Python: Ruff formatting and linting, mypy type checking
 - TypeScript/React: Prettier formatting, ESLint
 - Git: Conventional commit messages
 

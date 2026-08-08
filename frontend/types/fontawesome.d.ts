@@ -5,7 +5,7 @@ declare module "@fortawesome/react-fontawesome" {
   export interface IconDefinition {
     prefix: string;
     iconName: string;
-    icon: any;
+    icon: unknown;
   }
 
   export interface FontAwesomeIconProps {
@@ -53,7 +53,7 @@ declare module "@fortawesome/free-solid-svg-icons" {
   export interface IconDefinition {
     prefix: string;
     iconName: string;
-    icon: any;
+    icon: unknown;
   }
 
   export const faShare: IconDefinition;
@@ -79,7 +79,7 @@ declare module "@fortawesome/free-brands-svg-icons" {
   export interface IconDefinition {
     prefix: string;
     iconName: string;
-    icon: any;
+    icon: unknown;
   }
 
   export const faFacebook: IconDefinition;

@@ -47,7 +47,8 @@ done
 echo -e "\n${BLUE}CloudFormation template validation${NC}"
 
 # Python helper script that handles CloudFormation YAML tags (!Sub, !If, etc.)
-CFN_YAML_HELPER=$(cat <<'PYEOF'
+CFN_YAML_HELPER=$(
+  cat <<'PYEOF'
 import yaml, sys, json
 
 # Register constructors for CloudFormation intrinsic functions
@@ -116,7 +117,6 @@ yaml_has_key() {
   local keys_json="$2"
   python3 -c "$CFN_YAML_HELPER" has "$file" "$keys_json" 2>/dev/null
 }
-
 
 # --- github-oidc-role.cfn.yml ---
 OIDC_TEMPLATE="${SCRIPT_DIR}/github-oidc-role.cfn.yml"

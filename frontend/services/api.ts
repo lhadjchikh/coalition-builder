@@ -219,7 +219,7 @@ class FrontendApiClient extends BaseApiClient {
   }
 
   // Enhanced POST method with CSRF support
-  async post<T>(endpoint: string, data?: any): Promise<T> {
+  async post<T>(endpoint: string, data?: unknown): Promise<T> {
     const csrfToken = await this.getCsrfToken();
 
     const headers = new Headers(this.defaultHeaders);
@@ -235,7 +235,7 @@ class FrontendApiClient extends BaseApiClient {
   }
 
   // Enhanced PUT method with CSRF support
-  async put<T>(endpoint: string, data?: any): Promise<T> {
+  async put<T>(endpoint: string, data?: unknown): Promise<T> {
     const csrfToken = await this.getCsrfToken();
 
     const headers = new Headers(this.defaultHeaders);
@@ -273,7 +273,7 @@ class FrontendApiClient extends BaseApiClient {
   }
 
   // Enhanced PATCH method with CSRF support
-  async patch<T>(endpoint: string, data?: any): Promise<T> {
+  async patch<T>(endpoint: string, data?: unknown): Promise<T> {
     // Get CSRF token from cookie
     const csrfToken = this.getCsrfTokenFromCookie();
 
