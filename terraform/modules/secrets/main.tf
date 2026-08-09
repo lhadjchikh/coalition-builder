@@ -41,7 +41,6 @@ resource "aws_secretsmanager_secret" "secret_key" {
 }
 
 # Database URL Secret Version
-# Secret versions - use lifecycle to avoid storing sensitive data in state
 resource "aws_secretsmanager_secret_version" "db_url" {
   secret_id = aws_secretsmanager_secret.db_url.id
   secret_string = jsonencode({
