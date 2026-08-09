@@ -57,12 +57,6 @@ variable "enable_vpc_endpoints" {
   default     = true
 }
 
-variable "enable_ses_endpoint" {
-  description = "Temporarily enable the SES API VPC endpoint for dev connectivity testing"
-  type        = bool
-  default     = false
-}
-
 # Database (in shared account, accessed via peering)
 variable "db_name" {
   description = "Database name in the shared RDS instance (dev database)"

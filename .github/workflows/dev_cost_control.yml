@@ -4,20 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       vpc_endpoints:
-        description: "VPC endpoints (disable to save at least ~$14.88/mo)"
+        description: "VPC Endpoints (disable to save ~$22/mo when not developing)"
         required: true
         type: choice
         options:
           - enable
           - disable
-      ses_endpoint:
-        description: "SES API endpoint (adds ~$7.44/mo while enabled)"
-        required: true
-        default: disable
-        type: choice
-        options:
-          - disable
-          - enable
 
 permissions:
   contents: read
@@ -39,7 +31,6 @@ jobs:
       TF_VAR_github_repo: ${{ vars.REPO_FULL_NAME }}
       TF_VAR_alert_email: ${{ vars.TF_VAR_ALERT_EMAIL }}
       TF_VAR_enable_vpc_endpoints: ${{ github.event.inputs.vpc_endpoints == 'enable' && 'true' || 'false' }}
-      TF_VAR_enable_ses_endpoint: ${{ github.event.inputs.vpc_endpoints == 'enable' && github.event.inputs.ses_endpoint == 'enable' && 'true' || 'false' }}
 
     steps:
       - name: Checkout
@@ -92,19 +83,13 @@ jobs:
       - name: Summary
         env:
           ACTION: ${{ github.event.inputs.vpc_endpoints }}
-          SES_ENDPOINT: ${{ github.event.inputs.ses_endpoint }}
         run: |
           if [ "$ACTION" = "enable" ]; then
             echo "### VPC Endpoints Enabled" >> $GITHUB_STEP_SUMMARY
             echo "Dev VPC endpoints are now **active**. Lambda can reach AWS services via private networking." >> $GITHUB_STEP_SUMMARY
-            if [ "$SES_ENDPOINT" = "enable" ]; then
-              echo "The SES API endpoint is **temporarily enabled** for connectivity testing and adds ~\$7.44/mo while active." >> $GITHUB_STEP_SUMMARY
-            else
-              echo "The SES API endpoint is **disabled**." >> $GITHUB_STEP_SUMMARY
-            fi
           else
             echo "### VPC Endpoints Disabled" >> $GITHUB_STEP_SUMMARY
-            echo "Dev VPC endpoints are now **disabled**, saving ~\$15/mo with the default endpoint set." >> $GITHUB_STEP_SUMMARY
+            echo "Dev VPC endpoints are now **disabled**, saving ~\$22/mo." >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "> **Note:** Lambda functions in the dev VPC will not be able to access Secrets Manager, Geo Places, or SES while endpoints are disabled (no internet egress and no VPC endpoints)." >> $GITHUB_STEP_SUMMARY
+            echo "> **Note:** Lambda functions in the dev VPC will not be able to access Secrets Manager, CloudWatch Logs, or Geo Places at all while endpoints are disabled (no internet egress and no VPC endpoints)." >> $GITHUB_STEP_SUMMARY
           fi
