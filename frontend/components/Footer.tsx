@@ -29,9 +29,9 @@ const Footer: React.FC<FooterProps> = ({
     <footer className={className || "bg-gray-900"}>
       <div className="max-w-7xl mx-auto section-spacing container-padding">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-12 mb-8 justify-items-center lg:justify-items-start items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 mb-8 justify-items-center lg:justify-items-start items-start">
           {/* Logo and Tagline Column */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-2">
             <div className="flex flex-col items-center lg:items-start">
               {/* Logo */}
               {orgInfo.theme?.logo_url ? (

@@ -95,4 +95,16 @@ describe("Footer navigation", () => {
     expect(screen.getByText("Test Organization")).toBeInTheDocument();
     expect(screen.getByText("Test tagline")).toBeInTheDocument();
   });
+
+  it("gives the organization wordmark extra desktop grid space", () => {
+    render(<Footer orgInfo={mockHomepage} />);
+
+    const mainFooterGrid = screen
+      .getByRole("contentinfo")
+      .querySelector(".grid");
+    const organizationColumn = mainFooterGrid?.firstElementChild;
+
+    expect(mainFooterGrid).toHaveClass("lg:grid-cols-5");
+    expect(organizationColumn).toHaveClass("lg:col-span-2");
+  });
 });
