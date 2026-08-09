@@ -1,5 +1,7 @@
 # Lambda Deployment Configuration
 
+> **Historical reference — do not use these setup instructions.** They predate the OIDC-authenticated, container-image deployment and still describe static keys, ECS inputs, and an unprovisioned staging environment. Use [Deployment Workflows](deployment/workflows.md) and [AWS Serverless Deployment](deployment/aws.md).
+
 ## GitHub Environment Variables
 
 The Lambda deployment workflows use GitHub environment variables for configuration. These should be set up for each environment (dev, staging, production).

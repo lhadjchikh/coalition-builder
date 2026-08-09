@@ -121,16 +121,20 @@ terraform/
 
 ### Deployment Commands
 
-Deploy `shared` first — `prod` and `dev` read its VPC and RDS outputs via remote state.
+Deploy `shared` first — `prod` and `dev` read its VPC and RDS outputs via remote state. Complete the [multi-account bootstrap](multi-account-aws.md) and configure the required inputs before these commands. `setup_remote_state.sh` generates each environment's gitignored `backend.hcl`.
 
 ```bash
 cd terraform/environments/shared
+../../scripts/setup_remote_state.sh shared
 terraform init -backend-config=backend.hcl
-terraform apply
+terraform plan -out=tfplan
+terraform apply tfplan
 
 cd ../prod
+../../scripts/setup_remote_state.sh prod
 terraform init -backend-config=backend.hcl
-terraform apply
+terraform plan -out=tfplan
+terraform apply tfplan
 
 # Deploy applications via GitHub Actions
 gh workflow run deploy_lambda.yml --ref main -f environment=prod

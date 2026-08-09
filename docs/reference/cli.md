@@ -428,16 +428,22 @@ aws ce get-cost-and-usage \
 
 ### Zappa Commands
 
+Run Zappa from `backend/`. `zappa_settings.json` is gitignored and must be generated from the same environment variables used by `deploy_lambda.yml`. Image deployments must receive a real, immutable ECR image URI; do not use the placeholder URI in the template.
+
 ```bash
-# Deploy or update a stage
-zappa deploy prod
-zappa update prod
+cd backend
+poetry install --only main
+poetry run python scripts/configure_zappa.py
+
+# Deploy or update a stage with an image that has already been built and pushed
+poetry run zappa deploy prod --docker-image-uri "$IMAGE_URI"
+poetry run zappa update prod --docker-image-uri "$IMAGE_URI"
 
 # Roll back to the previous version
-zappa rollback prod -n 1
+poetry run zappa rollback prod -n 1
 
 # Run a Django management command remotely
-zappa manage prod migrate
+poetry run zappa manage prod migrate
 ```
 
 ## NPM/Frontend Commands

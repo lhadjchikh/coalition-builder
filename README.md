@@ -153,9 +153,6 @@ For the resource inventory, IAM policies, and cost breakdown, see the [AWS Serve
 - [📡 API Reference](https://lhadjchikh.github.io/coalition-builder/api/) - Auto-generated API documentation
 - [🚀 Deployment Guide](https://lhadjchikh.github.io/coalition-builder/deployment/) - Serverless deployment overview
 - [☁️ AWS Deployment](https://lhadjchikh.github.io/coalition-builder/deployment/aws/) - Full infrastructure walkthrough
-- [λ Lambda Deployment](https://lhadjchikh.github.io/coalition-builder/LAMBDA_DEPLOYMENT/) - Django on Lambda
-- [▲ Vercel Deployment](https://lhadjchikh.github.io/coalition-builder/VERCEL_DEPLOYMENT/) - Next.js on Vercel
-- [🧰 Serverless Setup](https://lhadjchikh.github.io/coalition-builder/serverless-setup/) - Configure your own AWS resources
 
 ## 🚀 Quick Start
 

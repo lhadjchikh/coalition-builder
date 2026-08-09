@@ -17,17 +17,21 @@ Coalition Builder uses a **serverless architecture** for cost-effective, scalabl
 
 Terraform is organized into per-account environments. Deploy `shared` first — it creates the VPC and RDS instance that `prod` and `dev` read via remote state.
 
+Complete the account bootstrap in [Multi-Account AWS Setup](deployment/multi-account-aws.md) and export the required `TF_VAR_*` inputs from [Configure GitHub Secrets and Variables](#3-configure-github-secrets-and-variables) before running Terraform manually. The backend setup script generates the gitignored `backend.hcl` in each environment directory.
+
 ```bash
 cd terraform/environments/shared
+../../scripts/setup_remote_state.sh shared
 terraform init -backend-config=backend.hcl
-terraform apply
+terraform plan -out=tfplan
+terraform apply tfplan
 
 cd ../prod
+../../scripts/setup_remote_state.sh prod
 terraform init -backend-config=backend.hcl
-terraform apply
+terraform plan -out=tfplan
+terraform apply tfplan
 ```
-
-See [Multi-Account AWS Setup](deployment/multi-account-aws.md) for the bootstrap that must run before the first `terraform init`.
 
 ### 3. Configure GitHub Secrets and Variables
 
@@ -127,9 +131,8 @@ The ALB, ECS application service, and NAT gateway from the pre-2025 deployment h
 **Manual Deployment:**
 
 ```bash
-# Lambda backend
-cd backend
-poetry run zappa deploy prod
+# Lambda backend (preferred; builds and passes the immutable image URI)
+gh workflow run deploy_lambda.yml --ref main -f environment=prod
 
 # Vercel frontend
 cd frontend
@@ -323,8 +326,8 @@ The per-service cost breakdown lives in [AWS Serverless Deployment](deployment/a
 ### Getting Help
 
 - Check [GitHub Actions workflows](deployment/workflows.md)
-- View [Lambda deployment guide](LAMBDA_DEPLOYMENT.md)
-- See [Vercel deployment guide](VERCEL_DEPLOYMENT.md)
+- View [Deployment Workflows](deployment/workflows.md)
+- See [AWS Serverless Deployment](deployment/aws.md)
 - Review CloudWatch logs for errors
 
 ## Migration from ECS

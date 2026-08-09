@@ -1,5 +1,7 @@
 # Vercel Deployment Configuration
 
+> **Historical reference.** The current workflow deploys production from `main`, development from `development`, and previews from pull requests; there is no `staging` branch deployment. Use [Deployment Workflows](deployment/workflows.md) as the operational runbook.
+
 ## Initial Setup
 
 ### 1. Create Vercel Account and Project
