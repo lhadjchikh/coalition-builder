@@ -2,6 +2,7 @@
 Tests for endorsement email service functionality.
 """
 
+from datetime import timedelta
 from smtplib import SMTPException
 from unittest.mock import Mock, patch
 
@@ -10,6 +11,7 @@ from django.core import mail
 from django.core.exceptions import ImproperlyConfigured
 from django.db import OperationalError
 from django.template.exceptions import TemplateDoesNotExist
+from django.utils import timezone
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.content.models import HomePage
@@ -79,6 +81,47 @@ class EndorsementEmailServiceTest(BaseTestCase):
             EndorsementEmailService.send_verification_email(self.endorsement)
 
         mock_send_mail.assert_not_called()
+
+    @patch("coalition.endorsements.email_service.send_mail")
+    def test_failed_resend_preserves_previous_sent_timestamp(
+        self,
+        mock_send_mail: Mock,
+    ) -> None:
+        mock_send_mail.return_value = 1
+        EndorsementEmailService.send_verification_email(self.endorsement)
+        self.endorsement.refresh_from_db()
+        previous_sent_at = self.endorsement.verification_sent_at
+
+        mock_send_mail.return_value = 0
+        sent = EndorsementEmailService.send_verification_email(self.endorsement)
+
+        assert sent is False
+        self.endorsement.refresh_from_db()
+        assert self.endorsement.verification_sent_at == previous_sent_at
+
+    def test_failed_resend_does_not_overwrite_newer_concurrent_timestamp(
+        self,
+    ) -> None:
+        previous_sent_at = timezone.now() - timedelta(hours=1)
+        newer_sent_at = timezone.now() + timedelta(seconds=1)
+        self.endorsement.verification_sent_at = previous_sent_at
+        self.endorsement.save(update_fields=["verification_sent_at"])
+
+        def record_concurrent_success(_email: object) -> bool:
+            Endorsement.objects.filter(pk=self.endorsement.pk).update(
+                verification_sent_at=newer_sent_at,
+            )
+            return False
+
+        with patch(
+            "coalition.endorsements.email_service._deliver",
+            side_effect=record_concurrent_success,
+        ):
+            sent = EndorsementEmailService.send_verification_email(self.endorsement)
+
+        assert sent is False
+        self.endorsement.refresh_from_db()
+        assert self.endorsement.verification_sent_at == newer_sent_at
 
     def test_verification_email_uses_active_homepage_organization_name(self) -> None:
         HomePage.objects.create(

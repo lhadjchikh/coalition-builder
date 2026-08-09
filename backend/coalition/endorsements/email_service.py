@@ -107,7 +107,9 @@ class EndorsementEmailService:
 
         Returns True if the message was accepted for delivery.
         """
-        endorsement.verification_sent_at = timezone.now()
+        previous_sent_at = endorsement.verification_sent_at
+        attempt_sent_at = timezone.now()
+        endorsement.verification_sent_at = attempt_sent_at
         endorsement.save(update_fields=["verification_sent_at"])
 
         verification_url = (
@@ -132,8 +134,14 @@ class EndorsementEmailService:
         )
 
         if not delivered:
-            endorsement.verification_sent_at = None
-            endorsement.save(update_fields=["verification_sent_at"])
+            restored = Endorsement.objects.filter(
+                pk=endorsement.pk,
+                verification_sent_at=attempt_sent_at,
+            ).update(verification_sent_at=previous_sent_at)
+            if restored:
+                endorsement.verification_sent_at = previous_sent_at
+            else:
+                endorsement.refresh_from_db(fields=["verification_sent_at"])
 
         return delivered
 
