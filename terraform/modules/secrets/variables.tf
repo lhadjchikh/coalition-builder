@@ -4,6 +4,16 @@ variable "prefix" {
   default     = "coalition"
 }
 
+variable "environment" {
+  description = "Application environment that owns these secrets"
+  type        = string
+
+  validation {
+    condition     = contains(["dev", "prod"], var.environment)
+    error_message = "Environment must be dev or prod."
+  }
+}
+
 variable "app_db_username" {
   description = "Application database username"
   type        = string

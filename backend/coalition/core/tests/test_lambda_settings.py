@@ -59,3 +59,25 @@ class LambdaStorageSettingsTest(TestCase):
             assert staticfiles_backend == "coalition.core.storage.StaticStorage", (
                 f"Expected StaticStorage for Lambda, got {staticfiles_backend}"
             )
+
+    def test_database_name_comes_from_resolved_secret_url(self) -> None:
+        """Lambda must not override the database encoded in DATABASE_URL."""
+        from coalition.core import settings as settings_module
+
+        with patch.dict(
+            os.environ,
+            {
+                "AWS_LAMBDA_FUNCTION_NAME": "test-function",
+                "DATABASE_NAME": "wrong_database",
+                "DATABASE_URL": (
+                    "postgis://application:password@database.internal:5432/"
+                    "secret_database"
+                ),
+                "ENVIRONMENT": "dev",
+                "SECRET_KEY": "test-secret-key",
+            },
+            clear=True,
+        ):
+            reload(settings_module)
+
+            assert settings_module.DATABASES["default"]["NAME"] == "secret_database"

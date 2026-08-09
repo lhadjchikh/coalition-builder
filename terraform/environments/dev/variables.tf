@@ -57,11 +57,14 @@ variable "enable_vpc_endpoints" {
   default     = true
 }
 
-# Database (in shared account, accessed via peering)
-variable "db_name" {
-  description = "Database name in the shared RDS instance (dev database)"
-  type        = string
-  default     = "coalition"
+variable "database_isolation_ready" {
+  description = "Confirms the isolated development database and role grants passed the rollout runbook"
+  type        = bool
+
+  validation {
+    condition     = var.database_isolation_ready
+    error_message = "Complete and verify the database isolation rollout before applying the dev stack."
+  }
 }
 
 variable "app_db_username" {

@@ -59,10 +59,27 @@ variable "allowed_lambda_cidrs" {
 }
 
 # Database
-variable "db_name" {
-  description = "Database name"
-  type        = string
-  default     = "coalition"
+variable "environment_database_names" {
+  description = "Authoritative database names on the shared RDS instance"
+  type = object({
+    dev  = string
+    prod = string
+  })
+  default = {
+    dev  = "coalition_dev"
+    prod = "coalition"
+  }
+
+  validation {
+    condition = (
+      var.environment_database_names.dev != var.environment_database_names.prod &&
+      alltrue([
+        for database_name in values(var.environment_database_names) :
+        can(regex("^[a-z][a-z0-9_]*$", database_name))
+      ])
+    )
+    error_message = "Dev and prod database names must be distinct valid PostgreSQL identifiers."
+  }
 }
 
 variable "db_username" {

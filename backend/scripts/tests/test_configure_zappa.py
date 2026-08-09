@@ -98,6 +98,21 @@ class TestProvidedSecretARNs:
         assert settings["prod"]["aws_environment_variables"]["SECRET_KEY"] == arn
 
 
+# #316 Definition of Done: the database secret URL is the sole database-name source.
+class TestDatabaseIsolation:
+    def test_runtime_stages_do_not_override_the_secret_database_name(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        settings = _generate_settings(
+            tmp_path,
+            {"ENABLE_STAGING": "true"},
+        )
+
+        for stage in ("dev", "staging", "prod"):
+            assert "DATABASE_NAME" not in settings[stage]["environment_variables"]
+
+
 class TestLocationConfiguration:
     """Tests for the AWS Location place index in generated settings."""
 

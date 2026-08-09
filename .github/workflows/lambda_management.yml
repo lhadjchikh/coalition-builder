@@ -98,6 +98,18 @@ jobs:
         working-directory: ./backend
         run: poetry install --no-interaction --no-ansi --only main
 
+      - name: Validate database secret isolation
+        working-directory: ./backend
+        env:
+          DATABASE_SECRET_ARN: ${{ secrets.DATABASE_SECRET_ARN }}
+          EXPECTED_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+          EXPECTED_ENVIRONMENT: ${{ github.event.inputs.environment }}
+        run: |
+          poetry run python scripts/validate_database_secret.py \
+            --secret-arn "${DATABASE_SECRET_ARN}" \
+            --expected-account-id "${EXPECTED_ACCOUNT_ID}" \
+            --expected-environment "${EXPECTED_ENVIRONMENT}"
+
       - name: Configure Zappa settings
         working-directory: ./backend
         env:

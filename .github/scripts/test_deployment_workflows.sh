@@ -4,6 +4,7 @@ set -euo pipefail
 
 repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 lambda_workflow="${repository_root}/.github/workflows/deploy_lambda.yml"
+dev_cost_workflow="${repository_root}/.github/workflows/dev_cost_control.yml"
 frontend_workflow="${repository_root}/.github/workflows/deploy_frontend.yml"
 management_workflow="${repository_root}/.github/workflows/lambda_management.yml"
 terraform_workflow="${repository_root}/.github/workflows/deploy_terraform_environment.yml"
@@ -66,6 +67,7 @@ reject_text() {
 }
 
 require_file "${lambda_workflow}"
+require_file "${dev_cost_workflow}"
 require_file "${frontend_workflow}"
 require_file "${management_workflow}"
 require_file "${terraform_workflow}"
@@ -93,6 +95,14 @@ require_step_text \
   "${lambda_workflow}" \
   "Configure Zappa settings" \
   'AWS_LOCATION_PLACE_INDEX_NAME: ${{ vars.AWS_LOCATION_PLACE_INDEX_NAME }}'
+require_step_text \
+  "${lambda_workflow}" \
+  "Validate database secret isolation" \
+  'python scripts/validate_database_secret.py'
+require_step_text \
+  "${lambda_workflow}" \
+  "Validate database secret isolation" \
+  'EXPECTED_ENVIRONMENT: ${{ steps.deployment_environment.outputs.environment }}'
 require_step_text \
   "${lambda_workflow}" \
   "Verify deployed address configuration" \
@@ -128,9 +138,15 @@ require_step_text \
   "${management_workflow}" \
   "Configure Zappa settings" \
   'AWS_LOCATION_PLACE_INDEX_NAME: ${{ vars.AWS_LOCATION_PLACE_INDEX_NAME }}'
+require_step_text \
+  "${management_workflow}" \
+  "Validate database secret isolation" \
+  'python scripts/validate_database_secret.py'
 
 require_text "${terraform_workflow}" "TF_VAR_create_new_key_pair: \${{ vars.CREATE_NEW_KEY_PAIR }}"
+require_text "${terraform_workflow}" 'TF_VAR_database_isolation_ready: ${{ vars.DATABASE_ISOLATION_READY }}'
 require_text "${terraform_workflow}" "validate_terraform_environment_variables.sh"
+require_text "${dev_cost_workflow}" 'TF_VAR_database_isolation_ready: ${{ vars.DATABASE_ISOLATION_READY }}'
 require_text_occurrences \
   "${shellcheck_workflow}" \
   '".github/workflows/deploy_terraform_environment.yml"' \

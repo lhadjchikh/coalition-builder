@@ -62,13 +62,6 @@ variable "private_subnet_b_cidr" {
   default     = "10.1.4.0/24"
 }
 
-# Database (in shared account, accessed via peering)
-variable "db_name" {
-  description = "Database name in the shared RDS instance"
-  type        = string
-  default     = "coalition"
-}
-
 variable "app_db_username" {
   description = "Application database username"
   type        = string

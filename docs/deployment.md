@@ -17,6 +17,8 @@ Coalition Builder uses a **serverless architecture** for cost-effective, scalabl
 
 Terraform is organized into per-account environments. Deploy `shared` first — it creates the database VPC and RDS instance that `prod` and `dev` read via remote state before creating their own application VPCs.
 
+Production and development use separate logical databases on that shared instance. Follow the [Shared RDS database isolation runbook](deployment/database-isolation.md) before the first isolated dev deployment.
+
 Complete the account bootstrap in [Multi-Account AWS Setup](deployment/multi-account-aws.md) and export the required `TF_VAR_*` inputs from [Configure GitHub Secrets and Variables](#3-configure-github-secrets-and-variables) before running Terraform manually. The backend setup script generates the gitignored `backend.hcl` in each environment directory.
 
 ```bash
@@ -51,6 +53,7 @@ The Lambda, Lambda-management, and Terraform deployment workflows authenticate t
 **Common Terraform GitHub Environment variables:**
 
 - `AWS_ACCOUNT_ID`, `TF_VAR_PREFIX`, and `REPO_FULL_NAME`
+- `DATABASE_ISOLATION_READY=true` for `dev`, set only after completing the database isolation runbook
 - `TF_VAR_ALERT_EMAIL` for every environment
 - `SHARED_ACCOUNT_ID` for `prod` and `dev`
 - `TF_VAR_DOMAIN_NAME`, `BASTION_KEY_NAME`, `CREATE_NEW_KEY_PAIR`, `ALLOWED_BASTION_CIDRS`, and `ALLOWED_LAMBDA_CIDRS` for `shared`

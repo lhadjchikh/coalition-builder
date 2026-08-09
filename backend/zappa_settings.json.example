@@ -63,7 +63,6 @@
       "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
       "ENVIRONMENT": "dev",
       "DEBUG": "true",
-      "DATABASE_NAME": "coalition_dev",
       "AWS_STORAGE_BUCKET_NAME": "coalition-dev-assets-XXXXXXXX"
     },
     "aws_environment_variables": {
@@ -92,7 +91,6 @@
       "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
       "ENVIRONMENT": "staging",
       "DEBUG": "false",
-      "DATABASE_NAME": "coalition_staging",
       "AWS_STORAGE_BUCKET_NAME": "coalition-staging-assets-XXXXXXXX"
     },
     "aws_environment_variables": {
@@ -121,7 +119,6 @@
       "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
       "ENVIRONMENT": "production",
       "DEBUG": "false",
-      "DATABASE_NAME": "coalition_production",
       "AWS_STORAGE_BUCKET_NAME": "coalition-production-assets-XXXXXXXX"
     },
     "aws_environment_variables": {

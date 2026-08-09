@@ -137,32 +137,13 @@ resource "aws_iam_role_policy_attachment" "zappa_location_access" {
 module "secrets" {
   source = "../../modules/secrets"
 
+  environment     = "dev"
   prefix          = var.prefix
   app_db_username = var.app_db_username
   app_db_password = var.app_db_password
   db_endpoint     = data.terraform_remote_state.shared.outputs.database_endpoint
-  db_name         = var.db_name
+  db_name         = data.terraform_remote_state.shared.outputs.environment_database_names["dev"]
   site_password   = var.site_password
-}
-
-# SSM Module
-module "ssm" {
-  source = "../../modules/ssm"
-
-  prefix          = var.prefix
-  db_endpoint     = data.terraform_remote_state.shared.outputs.database_endpoint
-  db_name_prefix  = var.db_name
-  environments    = ["dev"]
-  app_db_username = var.app_db_username
-  app_db_password = var.app_db_password
-  site_password   = var.site_password
-  tags            = var.tags
-}
-
-# Attach SSM read policy to Zappa role
-resource "aws_iam_role_policy_attachment" "zappa_ssm_access" {
-  role       = module.zappa.zappa_deployment_role_name
-  policy_arn = module.ssm.ssm_read_policy_arn
 }
 
 # Monitoring Module

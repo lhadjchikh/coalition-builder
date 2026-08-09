@@ -212,13 +212,6 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         "coalition-production-assets",
     )
 
-    # Get database names
-    dev_db_name = get_env_or_default("DEV_DB_NAME", "coalition_dev")
-    production_db_name = get_env_or_default(
-        "PRODUCTION_DB_NAME",
-        "coalition",
-    )
-
     # Get VPC configuration (optional)
     vpc_subnet_ids = get_env_or_default("VPC_SUBNET_IDS", "").split(",")
     vpc_security_group_ids = get_env_or_default(
@@ -283,7 +276,6 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
                 **RUNTIME_ENVIRONMENT_VARIABLES,
                 "ENVIRONMENT": "dev",
                 "DEBUG": "true",
-                "DATABASE_NAME": dev_db_name,
                 "AWS_STORAGE_BUCKET_NAME": dev_assets_bucket,
             },
             deployment_environment,
@@ -300,7 +292,6 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
                 **RUNTIME_ENVIRONMENT_VARIABLES,
                 "ENVIRONMENT": "production",
                 "DEBUG": "false",
-                "DATABASE_NAME": production_db_name,
                 "AWS_STORAGE_BUCKET_NAME": production_assets_bucket,
             },
             deployment_environment,
@@ -399,10 +390,6 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             "STAGING_ASSETS_BUCKET",
             "coalition-staging-assets",
         )
-        staging_db_name = get_env_or_default(
-            "STAGING_DB_NAME",
-            "coalition_staging",
-        )
         if use_custom_docker:
             staging_docker_image = f"{ecr_registry}/coalition-staging:latest"
         else:
@@ -414,7 +401,6 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
                     **RUNTIME_ENVIRONMENT_VARIABLES,
                     "ENVIRONMENT": "staging",
                     "DEBUG": "false",
-                    "DATABASE_NAME": staging_db_name,
                     "AWS_STORAGE_BUCKET_NAME": staging_assets_bucket,
                 },
                 deployment_environment,

@@ -382,11 +382,9 @@ if IS_LAMBDA:
     FILE_UPLOAD_TEMP_DIR = "/tmp"
     FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
 
-    # Database configuration for multi-environment on single RDS
-    # Each environment uses a different database on the same RDS instance
+    # Lambda connections are short-lived; the resolved secret URL remains the
+    # sole authority for the environment's database name.
     if "DATABASE_URL" in os.environ:
-        database_name = os.environ.get("DATABASE_NAME", f"coalition_{ENVIRONMENT}")
-        DATABASES["default"]["NAME"] = database_name
         DATABASES["default"]["CONN_MAX_AGE"] = 0  # Disable persistent connections
         DATABASES["default"]["OPTIONS"] = {
             "connect_timeout": 30,
