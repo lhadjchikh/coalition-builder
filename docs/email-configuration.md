@@ -16,7 +16,7 @@ The Terraform configuration automates the production SES path across the SES, ne
 4. **Lambda Authorization** - Grants the execution role scoped SES send permissions
 5. **Private Connectivity** - Adds the SES API interface VPC endpoint
 6. **Monitoring** - Alarms on application-level delivery failures and publishes SES notifications
-7. **Legacy SMTP Credentials** - Retains credentials for non-Lambda deployments
+7. **Optional SMTP Credentials** - Supports credentials for non-Lambda deployments without provisioning them for Lambda
 
 ### Enable SES in Terraform
 
@@ -37,7 +37,7 @@ The module will:
 - Authorize configured Lambda sender roles to call the SES API
 - Add an SES API VPC endpoint when `enable_ses_endpoint` is enabled
 - Configure delivery-failure monitoring and SES notifications
-- Retain SMTP credentials in Secrets Manager for deployment targets that still use `SafeSMTPBackend`; Lambda does not consume them
+- Provision SMTP credentials in Secrets Manager only when `create_smtp_credentials = true`; the setting defaults to `true` for compatibility, while production Lambda explicitly disables it
 
 ## AWS SES Setup
 
@@ -76,7 +76,16 @@ To request production access:
 
 ### 3. Create SMTP Credentials for Non-Lambda Deployments
 
-Lambda does not need SMTP credentials. For a non-Lambda deployment using `SafeSMTPBackend`, create them manually if Terraform does not manage them:
+Lambda does not need SMTP credentials, and the production Terraform environment sets `create_smtp_credentials = false`. For a non-Lambda deployment using `SafeSMTPBackend`, either retain the module default or set the option explicitly:
+
+```hcl
+module "ses" {
+  # Other SES settings omitted.
+  create_smtp_credentials = true
+}
+```
+
+This creates an IAM user and access key, derives the SES SMTP password, and stores only the SMTP connection fields in `<prefix>/ses-smtp-credentials`. Alternatively, create credentials manually when Terraform should not manage a long-lived key:
 
 ```bash
 # In AWS Console -> SES -> SMTP settings -> Create SMTP credentials
@@ -84,7 +93,7 @@ Lambda does not need SMTP credentials. For a non-Lambda deployment using `SafeSM
 # Save the SMTP username and password securely
 ```
 
-The SMTP password is automatically calculated by Terraform using the included Python script.
+When enabled, Terraform calculates the SMTP password using the included Python script.
 
 ### 4. Configure SMTP Environment Variables
 
@@ -214,19 +223,23 @@ poetry run zappa invoke prod \
 ### Common Issues
 
 1. **"Email address is not verified"**
+
    - You're in sandbox mode and trying to send to unverified address
    - Solution: Verify the recipient or request production access
 
 2. **"Connection timeout" or a request that hangs until the Lambda times out**
+
    - The task cannot reach the SES endpoint. On Lambda this means the SES interface VPC endpoint is missing: the private subnets have no NAT and no default route, so the connection never completes rather than failing fast.
    - Solution: set `enable_ses_endpoint = true` for the environment. Confirm with `socket.gethostbyname("email.<region>.amazonaws.com")` from inside the function — it must return a private VPC address, not a public one.
    - For non-Lambda deployments, ensure the task has internet egress.
 
 3. **"Invalid credentials"**
+
    - SMTP credentials are incorrect
    - Solution: Regenerate SMTP credentials in SES console. On Lambda this error should not occur at all — it authenticates with the execution role, so check `sender_role_names` and the `ses:FromAddress` condition instead.
 
 4. **"Email address is not verified" for ordinary users**
+
    - The account is still in the SES sandbox, which only permits verified recipients. Sending to your own verified domain succeeds while every real endorser is rejected, so this can look like a partial outage.
    - Solution: request production access (see "Move Out of Sandbox" above), then confirm with `aws sesv2 get-account --query ProductionAccessEnabled`.
 

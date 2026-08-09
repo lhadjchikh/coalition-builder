@@ -67,6 +67,8 @@ resource "aws_ses_email_identity" "main" {
 
 # IAM user for SMTP credentials
 resource "aws_iam_user" "ses_smtp" {
+  count = var.create_smtp_credentials ? 1 : 0
+
   name = "${var.prefix}-ses-smtp-user"
   path = "/ses/"
 
@@ -77,13 +79,17 @@ resource "aws_iam_user" "ses_smtp" {
 
 # IAM access key for SMTP user
 resource "aws_iam_access_key" "ses_smtp" {
-  user = aws_iam_user.ses_smtp.name
+  count = var.create_smtp_credentials ? 1 : 0
+
+  user = aws_iam_user.ses_smtp[0].name
 }
 
 # IAM policy for SES sending
 resource "aws_iam_user_policy" "ses_smtp" {
+  count = var.create_smtp_credentials ? 1 : 0
+
   name = "${var.prefix}-ses-smtp-policy"
-  user = aws_iam_user.ses_smtp.name
+  user = aws_iam_user.ses_smtp[0].name
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -96,7 +102,7 @@ resource "aws_iam_user_policy" "ses_smtp" {
         ]
         Resource = "*"
         Condition = {
-          StringEquals = {
+          StringLike = {
             "ses:FromAddress" = var.verify_domain ? ["*@${var.domain_name}", var.from_email] : [var.from_email]
           }
         }
@@ -145,25 +151,26 @@ resource "aws_iam_role_policy_attachment" "ses_send" {
 
 # Calculate SES SMTP password using external data source
 data "external" "smtp_password" {
+  count = var.create_smtp_credentials ? 1 : 0
+
   program = ["python3", "${path.module}/scripts/calculate_ses_password.py"]
 
   query = {
-    secret_key = aws_iam_access_key.ses_smtp.secret
+    secret_key = aws_iam_access_key.ses_smtp[0].secret
     region     = var.aws_region
   }
 }
 
 # Convert IAM credentials to SES SMTP password
 locals {
-  # For SMTP username, use the access key ID directly
-  smtp_username = aws_iam_access_key.ses_smtp.id
-
-  # The calculated SMTP password from the external data source
-  smtp_password = data.external.smtp_password.result.value
+  smtp_username = one(aws_iam_access_key.ses_smtp[*].id)
+  smtp_password = one(data.external.smtp_password[*].result.value)
 }
 
 # Store SMTP credentials in Secrets Manager
 resource "aws_secretsmanager_secret" "ses_smtp" {
+  count = var.create_smtp_credentials ? 1 : 0
+
   name                    = "${var.prefix}/ses-smtp-credentials"
   description             = "SES SMTP credentials for ${var.prefix}"
   recovery_window_in_days = var.secret_recovery_days
@@ -242,7 +249,9 @@ resource "aws_sns_topic_subscription" "ses_email" {
 
 # Store credentials in Secrets Manager with calculated SMTP password
 resource "aws_secretsmanager_secret_version" "ses_smtp" {
-  secret_id = aws_secretsmanager_secret.ses_smtp.id
+  count = var.create_smtp_credentials ? 1 : 0
+
+  secret_id = aws_secretsmanager_secret.ses_smtp[0].id
   secret_string = jsonencode({
     EMAIL_HOST          = "email-smtp.${var.aws_region}.amazonaws.com"
     EMAIL_PORT          = "587"
@@ -250,8 +259,5 @@ resource "aws_secretsmanager_secret_version" "ses_smtp" {
     EMAIL_HOST_USER     = local.smtp_username
     EMAIL_HOST_PASSWORD = local.smtp_password
     DEFAULT_FROM_EMAIL  = var.from_email
-    # Also store raw IAM credentials if needed for SDK
-    AWS_ACCESS_KEY_ID     = aws_iam_access_key.ses_smtp.id
-    AWS_SECRET_ACCESS_KEY = aws_iam_access_key.ses_smtp.secret
   })
 }
