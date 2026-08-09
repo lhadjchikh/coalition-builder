@@ -21,7 +21,7 @@ class PersonAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
         "has_headshot",
     )
     list_filter = ("group", "is_active", "profile_page_enabled")
-    list_editable = ("order", "is_active", "profile_page_enabled")
+    list_editable = ("order", "is_active")
     search_fields = ("name", "title", "bio", "email")
     readonly_fields = ("slug", "created_at", "updated_at")
     fieldsets = (
