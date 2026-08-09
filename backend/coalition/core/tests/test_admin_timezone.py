@@ -59,16 +59,12 @@ class AdminTimezoneMiddlewareTest(TestCase):
         timezone.deactivate()
 
     def call_middleware(self, request: HttpRequest) -> str:
-        active_timezone = ""
-
-        def capture_timezone(captured_request: HttpRequest) -> HttpResponse:
-            nonlocal active_timezone
-            active_timezone = timezone.get_current_timezone_name()
-            return HttpResponse()
+        def capture_timezone(_request: HttpRequest) -> HttpResponse:
+            return HttpResponse(timezone.get_current_timezone_name())
 
         middleware = AdminTimezoneMiddleware(capture_timezone)
-        middleware(request)
-        return active_timezone
+        response = middleware(request)
+        return response.content.decode()
 
     def test_activates_site_timezone_for_admin_request(self) -> None:
         SiteConfiguration.objects.create(timezone="America/Los_Angeles")
