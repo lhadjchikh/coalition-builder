@@ -176,27 +176,50 @@ Measured from Cost Explorer (unblended) for July 2026, across all three accounts
 |            | _dev subtotal_          | _$24.68_   |
 | **Total**  |                         | **$82.04** |
 
+Displayed rows are curated from Cost Explorer service and usage-type results rather than copied service labels. Account subtotals include sub-cent lines omitted by the `$0.01` display threshold and are rounded independently, so the visible shared and dev rows are each one cent below their subtotal.
+
 Vercel is billed separately and is not included above.
 
 #### Refreshing these figures
 
-These are measured numbers, not estimates — regenerate them rather than adjusting them by hand. Costs are per-account, so all three profiles must be summed.
+These are measured numbers, not estimates — regenerate them rather than adjusting them by hand. Costs are per-account, so query all three account profiles. Cost Explorer has a single `us-east-1` API endpoint, so keep the explicit region even if the profiles default elsewhere.
 
 ```bash
-aws sso login --profile landandbay-prod
+profiles=(your-prod-profile your-shared-profile your-dev-profile)
 
-for p in landandbay-prod landandbay-shared landandbay-dev; do
-  echo "=== $p ==="
-  aws ce get-cost-and-usage --profile "$p" \
+for profile in "${profiles[@]}"; do
+  aws sso login --profile "$profile"
+
+  echo "=== $profile: service totals ==="
+  aws ce get-cost-and-usage --profile "$profile" --region us-east-1 \
     --time-period Start=2026-07-01,End=2026-08-01 \
     --granularity MONTHLY --metrics UnblendedCost \
     --group-by Type=DIMENSION,Key=SERVICE \
     --query 'ResultsByTime[].Groups[?to_number(Metrics.UnblendedCost.Amount) > `0.01`].[Keys[0],Metrics.UnblendedCost.Amount]' \
     --output text
+
+  echo "=== $profile: EC2 usage types ==="
+  aws ce get-cost-and-usage --profile "$profile" --region us-east-1 \
+    --time-period Start=2026-07-01,End=2026-08-01 \
+    --granularity MONTHLY --metrics UnblendedCost \
+    --filter '{"Dimensions":{"Key":"SERVICE","Values":["EC2 - Other"]}}' \
+    --group-by Type=DIMENSION,Key=USAGE_TYPE \
+    --query 'ResultsByTime[].Groups[?to_number(Metrics.UnblendedCost.Amount) > `0.01`].[Keys[0],Metrics.UnblendedCost.Amount]' \
+    --output text
 done
 ```
 
-To find out what is behind a surprising service total, re-run with `--group-by Type=DIMENSION,Key=USAGE_TYPE` and a `--filter` on that service. That is how the VPC line above resolved to `USE1-VpcEndpoint-Hours`.
+Translate raw Cost Explorer rows into the display labels consistently:
+
+| Display label           | Source                                                        |
+| ----------------------- | ------------------------------------------------------------- |
+| VPC interface endpoints | `EC2 - Other` usage type ending in `VpcEndpoint-Hours`        |
+| Public IPv4 addresses   | `EC2 - Other` public-IPv4 usage types                         |
+| EC2 (bastion)           | EC2 instance usage (`BoxUsage:*`)                             |
+| EC2 - Other             | Remaining EC2 - Other total after the named usage types above |
+| Other services          | Cost Explorer service name, shortened only for readability    |
+
+For any surprising service total, repeat the second query with that exact service in the filter. Preserve the mapping table when adding or renaming a curated row.
 
 ### What actually drives the bill
 

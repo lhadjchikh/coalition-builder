@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       vpc_endpoints:
-        description: "VPC Endpoints (disable to save ~$22/mo when not developing)"
+        description: "Dev VPC endpoints (disable both when not developing)"
         required: true
         type: choice
         options:

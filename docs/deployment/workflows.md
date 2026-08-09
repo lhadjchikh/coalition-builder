@@ -308,10 +308,10 @@ vercel rollback
 
 ### Dev VPC Endpoints Toggle
 
-The dev environment's two VPC endpoints (~$15/month at $0.01/hour per endpoint) can be disabled when you're not actively developing to save costs. Use the **Dev Cost Control** workflow:
+The dev environment's two VPC endpoints can be disabled when you're not actively developing. Use the **Dev Cost Control** workflow; see the authoritative [cost analysis](aws.md#cost-analysis) for current and measured figures.
 
 ```bash
-# Disable VPC endpoints (saves ~$15/mo)
+# Disable both dev VPC endpoints
 gh workflow run dev_cost_control.yml -f vpc_endpoints=disable
 
 # Re-enable before developing

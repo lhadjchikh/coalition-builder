@@ -404,7 +404,7 @@ Both authenticate via OIDC and select the target environment based on branch or 
 
 ### Dev Cost Control
 
-The **Dev Cost Control** workflow (`dev_cost_control.yml`) lets you toggle VPC endpoints in the dev environment on or off to save costs when not actively developing. VPC endpoints cost about $7.30/month each; the dev environment has two interface endpoints (Secrets Manager and Geo Places) totaling about $15/month. Lambda's own logs do not require a CloudWatch Logs interface endpoint.
+The **Dev Cost Control** workflow (`dev_cost_control.yml`) lets you toggle the dev environment's two interface endpoints (Secrets Manager and Geo Places) on or off when not actively developing. Lambda's own logs do not require a CloudWatch Logs interface endpoint. See the authoritative [cost analysis](aws.md#cost-analysis) instead of copying a monthly estimate here.
 
 ```bash
 # Disable to save costs
