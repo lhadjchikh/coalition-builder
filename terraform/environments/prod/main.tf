@@ -396,9 +396,10 @@ module "github_oidc" {
     "repo:${var.github_repo}:ref:refs/heads/main",
   ]
 
-  enable_terraform_policy      = true
-  enable_infrastructure_policy = true
-  resource_prefix              = var.prefix
-  additional_iam_prefixes      = ["coalition"]
-  peering_account_ids          = [var.shared_account_id]
+  enable_terraform_policy       = true
+  enable_infrastructure_policy  = true
+  resource_prefix               = var.prefix
+  additional_iam_prefixes       = ["coalition"]
+  additional_s3_bucket_prefixes = ["coalition"]
+  peering_account_ids           = [var.shared_account_id]
 }

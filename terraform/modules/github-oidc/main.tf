@@ -187,12 +187,16 @@ resource "aws_iam_role_policy" "infrastructure" {
             "s3:PutObjectAcl",
             "s3:PutBucketAcl",
           ]
-          Resource = [
-            "arn:aws:s3:::${var.resource_prefix}-*",
-            "arn:aws:s3:::${var.resource_prefix}-*/*",
-            "arn:aws:s3:::coalition-terraform-state-*",
-            "arn:aws:s3:::coalition-terraform-state-*/*",
-          ]
+          Resource = concat(
+            [
+              "arn:aws:s3:::${var.resource_prefix}-*",
+              "arn:aws:s3:::${var.resource_prefix}-*/*",
+              "arn:aws:s3:::coalition-terraform-state-*",
+              "arn:aws:s3:::coalition-terraform-state-*/*",
+            ],
+            [for prefix in var.additional_s3_bucket_prefixes : "arn:aws:s3:::${prefix}-*"],
+            [for prefix in var.additional_s3_bucket_prefixes : "arn:aws:s3:::${prefix}-*/*"],
+          )
         },
         {
           Sid    = "Route53"
@@ -247,6 +251,7 @@ resource "aws_iam_role_policy" "infrastructure" {
             "iam:ListUserPolicies",
             "iam:ListUserTags",
             "iam:ListAccessKeys",
+            "iam:ListGroupsForUser",
             "iam:SimulatePrincipalPolicy",
           ]
           Resource = "*"

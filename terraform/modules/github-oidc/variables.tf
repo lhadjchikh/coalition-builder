@@ -66,3 +66,9 @@ variable "additional_iam_prefixes" {
   type        = list(string)
   default     = []
 }
+
+variable "additional_s3_bucket_prefixes" {
+  description = "Additional S3 bucket prefixes managed by the infrastructure deployment role"
+  type        = list(string)
+  default     = []
+}
