@@ -139,6 +139,9 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
         "remove_from_display",
     ]
 
+    def has_add_permission(self, request: HttpRequest) -> bool:  # noqa: ARG002
+        return False
+
     @admin.display(description="Name", ordering="stakeholder__last_name")
     def stakeholder_name(self, obj: Endorsement) -> str:
         return obj.stakeholder.name

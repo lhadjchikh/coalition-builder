@@ -119,6 +119,12 @@ class EndorsementAdminTest(BaseTestCase):
             "admin_notes",
         }
 
+    def test_admin_creation_is_disabled(self) -> None:
+        request = HttpRequest()
+        request.user = self.user
+
+        assert self.admin.has_add_permission(request) is False
+
     def test_view_only_staff_cannot_access_mutating_actions(self) -> None:
         viewer = User.objects.create_user(username="endorsement-viewer", is_staff=True)
         viewer.user_permissions.add(
