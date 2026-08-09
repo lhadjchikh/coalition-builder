@@ -182,7 +182,7 @@ def main() -> None:
         ),
     )
     try:
-        database_name = validate_database_secret(
+        validate_database_secret(
             client,
             arguments.secret_arn,
             arguments.expected_account_id,
@@ -198,10 +198,8 @@ def main() -> None:
         )
         raise SystemExit(1) from error
     logger.info(
-        "stage=database-secret-validation correlation=deployment-%s "
-        "outcome=success database=%s",
+        "stage=database-secret-validation correlation=deployment-%s outcome=success",
         arguments.expected_environment,
-        database_name,
     )
 
 

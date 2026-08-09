@@ -144,7 +144,9 @@ require_step_text \
   'python scripts/validate_database_secret.py'
 
 require_text "${terraform_workflow}" "TF_VAR_create_new_key_pair: \${{ vars.CREATE_NEW_KEY_PAIR }}"
-require_text "${terraform_workflow}" 'TF_VAR_database_isolation_ready: ${{ vars.DATABASE_ISOLATION_READY }}'
+require_text \
+  "${terraform_workflow}" \
+  "TF_VAR_database_isolation_ready: \${{ github.event_name == 'pull_request' && 'true' || vars.DATABASE_ISOLATION_READY }}"
 require_text "${terraform_workflow}" "validate_terraform_environment_variables.sh"
 require_text "${dev_cost_workflow}" 'TF_VAR_database_isolation_ready: ${{ vars.DATABASE_ISOLATION_READY }}'
 require_text_occurrences \

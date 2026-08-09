@@ -35,7 +35,7 @@ jobs:
       TF_VAR_github_repo: ${{ vars.REPO_FULL_NAME }}
       TF_VAR_domain_name: ${{ vars.TF_VAR_DOMAIN_NAME }}
       TF_VAR_enable_api_custom_domain: ${{ vars.TF_VAR_ENABLE_API_CUSTOM_DOMAIN }}
-      TF_VAR_database_isolation_ready: ${{ vars.DATABASE_ISOLATION_READY }}
+      TF_VAR_database_isolation_ready: ${{ github.event_name == 'pull_request' && 'true' || vars.DATABASE_ISOLATION_READY }}
       TF_VAR_alert_email: ${{ vars.TF_VAR_ALERT_EMAIL }}
       TF_VAR_ses_from_email: ${{ vars.SES_FROM_EMAIL }}
       TF_VAR_ses_notification_email: ${{ vars.SES_NOTIFICATION_EMAIL }}

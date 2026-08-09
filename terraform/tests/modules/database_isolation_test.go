@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -131,23 +130,16 @@ func provisioningCommand(t *testing.T, extraArguments ...string) *exec.Cmd {
 func TestDatabaseProvisioningIsIdempotentAndNonDestructive(t *testing.T) {
 	t.Parallel()
 
-	temporaryDirectory := t.TempDir()
-	capturePrefix := filepath.Join(temporaryDirectory, "psql")
-	fakePsqlPath := filepath.Join(temporaryDirectory, "psql")
-	fakePsql := "#!/usr/bin/env bash\nset -euo pipefail\nprintf '%s\\n' \"$@\" >\"${PSQL_CAPTURE}.args\"\n"
-	require.NoError(t, os.WriteFile(fakePsqlPath, []byte(fakePsql), 0o700))
-
 	command := provisioningCommand(t)
 	command.Env = append(
 		os.Environ(),
 		"PGPASSWORD=master-password",
-		"PSQL_BIN="+fakePsqlPath,
-		"PSQL_CAPTURE="+capturePrefix,
+		"PSQL_BIN=/bin/echo",
 	)
 	output, err := command.CombinedOutput()
 	require.NoError(t, err, string(output))
 
-	psqlArguments := readRepositoryFile(t, capturePrefix+".args")
+	psqlArguments := string(output)
 	provisioningSQL := readRepositoryFile(t, "../../modules/database/scripts/provision_environment_databases.sql")
 	assert.Contains(t, psqlArguments, "new_development")
 	assert.Contains(t, psqlArguments, "existing_production")
