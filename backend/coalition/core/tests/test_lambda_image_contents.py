@@ -57,7 +57,11 @@ def _sources_copied_to_workdir(dockerfile: str) -> set[str]:
 def _template_dirs_below_base() -> list[str]:
     """Names of configured template directories that live inside ``BASE_DIR``."""
     base = Path(settings.BASE_DIR).resolve()
-    configured = (Path(entry).resolve() for entry in settings.TEMPLATES[0]["DIRS"])
+    configured = (
+        Path(entry).resolve()
+        for backend in settings.TEMPLATES
+        for entry in backend.get("DIRS", [])
+    )
     return [
         str(directory.relative_to(base))
         for directory in configured
@@ -84,6 +88,20 @@ COPY templates/ ./scripts/
     def test_settings_configure_a_template_dir_inside_the_project(self) -> None:
         """Guards the test below against passing on an empty expectation."""
         assert _template_dirs_below_base()
+
+    def test_template_dirs_are_collected_from_every_backend(self) -> None:
+        template_backend = settings.TEMPLATES[0]
+        configured_backends = [
+            {**template_backend, "NAME": "empty", "DIRS": []},
+            {
+                **template_backend,
+                "NAME": "project",
+                "DIRS": [Path(settings.BASE_DIR) / "extra_templates"],
+            },
+        ]
+
+        with self.settings(TEMPLATES=configured_backends):
+            assert _template_dirs_below_base() == ["extra_templates"]
 
     def test_every_configured_template_dir_is_copied_into_the_image(self) -> None:
         copied = _copied_sources()
