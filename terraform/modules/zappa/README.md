@@ -60,9 +60,11 @@ module "zappa" {
 Zappa — not Terraform — creates the API Gateway REST API. Rather than passing its
 id in as a variable (a copy that silently goes stale when the API is recreated),
 set `project_name`, `stage_name`, and `discover_api_gateway = true`, and the
-module looks the API up as `{project_name}-{stage_name}` and publishes its id as
-`api_gateway_id`. Leave `discover_api_gateway` at `false` until Zappa has
-deployed the stage, since the lookup fails when no such API exists.
+module normalizes their combined value using Zappa's lowercase, hyphen-separated
+naming convention (`My_App` and `my_stage` become `my-app-my-stage`), looks up
+that API, and publishes its id as `api_gateway_id`. Leave
+`discover_api_gateway` at `false` until Zappa has deployed the stage, since the
+lookup fails when no such API exists.
 
 ## Features
 
