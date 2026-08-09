@@ -85,6 +85,37 @@ describeInCI("API Service - POST/PATCH Methods", () => {
     });
   });
 
+  describe("verifyEndorsement", () => {
+    it("posts the verification token with CSRF protection", async () => {
+      document.cookie = "csrftoken=verification-csrf-token";
+      const verification = {
+        success: true,
+        message: "Email verified successfully",
+        status: "verified",
+      };
+      mockFetch.mockResolvedValueOnce(createMockResponse(verification));
+
+      const result = await API.verifyEndorsement("verification-token");
+
+      expect(result).toEqual(verification);
+      expect(mockFetch).toHaveBeenCalledWith(
+        getExpectedUrl(
+          "/api/endorsements/verify/verification-token/",
+          originalEnv
+        ),
+        expect.objectContaining({
+          method: "POST",
+          credentials: "same-origin",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "x-csrftoken": "verification-csrf-token",
+          }),
+          signal: expect.any(AbortSignal),
+        })
+      );
+    });
+  });
+
   describe("patch method", () => {
     it("should support PATCH requests", async () => {
       const mockData = { id: 1, name: "Updated" };
