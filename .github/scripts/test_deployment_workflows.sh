@@ -157,7 +157,7 @@ require_text \
   "${terraform_workflow}" \
   "TF_VAR_database_isolation_ready: \${{ github.event_name == 'pull_request' && 'true' || vars.DATABASE_ISOLATION_READY }}"
 require_text "${terraform_workflow}" "validate_terraform_environment_variables.sh"
-require_text "${dev_cost_workflow}" 'TF_VAR_database_isolation_ready: ${{ vars.DATABASE_ISOLATION_READY }}'
+reject_text "${dev_cost_workflow}" "TF_VAR_database_isolation_ready"
 require_text_occurrences \
   "${shellcheck_workflow}" \
   '".github/workflows/deploy_terraform_environment.yml"' \
