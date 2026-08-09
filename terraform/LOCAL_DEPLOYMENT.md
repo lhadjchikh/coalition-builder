@@ -72,7 +72,7 @@ Type `yes` when prompted to confirm.
   - `/<prefix>/database-url` in each application account
   - `/<prefix>/secret-key`
   - `/<prefix>/site-password`
-  - `/<prefix>/ses-smtp-credentials`
+  - `/<prefix>/ses-smtp-credentials` when the SES module's `create_smtp_credentials` option is enabled
 
 SSM database URL parameters are retired. Secrets Manager is the only active runtime secrets path.
 

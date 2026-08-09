@@ -190,15 +190,16 @@ module "monitoring" {
 module "ses" {
   source = "../../modules/ses"
 
-  prefix                 = var.prefix
-  aws_region             = var.aws_region
-  domain_name            = var.domain_name
-  from_email             = var.ses_from_email
-  verify_domain          = true
-  create_route53_records = false
-  dmarc_email            = var.ses_notification_email
-  notification_email     = var.ses_notification_email
-  enable_notifications   = true
+  prefix                  = var.prefix
+  aws_region              = var.aws_region
+  domain_name             = var.domain_name
+  from_email              = var.ses_from_email
+  verify_domain           = true
+  create_route53_records  = false
+  dmarc_email             = var.ses_notification_email
+  notification_email      = var.ses_notification_email
+  enable_notifications    = true
+  create_smtp_credentials = false
 
   # Lambda sends through the SES API with its execution role, so it needs no
   # static SMTP credentials.

@@ -1,11 +1,11 @@
 output "ses_smtp_secret_arn" {
   description = "ARN of the Secrets Manager secret containing SMTP credentials"
-  value       = aws_secretsmanager_secret.ses_smtp.arn
+  value       = one(aws_secretsmanager_secret.ses_smtp[*].arn)
 }
 
 output "ses_smtp_secret_name" {
   description = "Name of the Secrets Manager secret containing SMTP credentials"
-  value       = aws_secretsmanager_secret.ses_smtp.name
+  value       = one(aws_secretsmanager_secret.ses_smtp[*].name)
 }
 
 output "ses_domain_identity" {
@@ -25,7 +25,7 @@ output "ses_dkim_tokens" {
 
 output "ses_smtp_username" {
   description = "SMTP username for SES"
-  value       = aws_iam_access_key.ses_smtp.id
+  value       = one(aws_iam_access_key.ses_smtp[*].id)
   sensitive   = true
 }
 

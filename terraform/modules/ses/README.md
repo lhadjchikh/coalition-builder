@@ -7,9 +7,9 @@ This module configures AWS Simple Email Service (SES) for sending transactional 
 - **Automatic Domain Verification** - Verifies your domain with Route53 integration
 - **DKIM Configuration** - Sets up DKIM records for email authentication
 - **SPF & DMARC Records** - Configures email authentication records
-- **SMTP Credentials** - Automatically generates and stores SMTP credentials
-- **Password Calculation** - Automatically calculates SES SMTP password from IAM secret
-- **Secrets Management** - Stores credentials in AWS Secrets Manager
+- **Optional SMTP Credentials** - Generates credentials for non-role-based deployments when enabled
+- **Password Calculation** - Calculates the SES SMTP password from the IAM secret when credentials are enabled
+- **Secrets Management** - Stores only SMTP connection fields in AWS Secrets Manager
 - **Monitoring** - SNS notifications for bounces and complaints
 
 ## Usage
@@ -22,6 +22,7 @@ module "ses" {
   aws_region           = var.aws_region
   domain_name          = var.domain_name
   from_email           = "noreply@yourdomain.com"
+  create_smtp_credentials = true
   verify_domain        = true
   route53_zone_id      = var.route53_zone_id
   notification_email   = "admin@yourdomain.com"
@@ -31,40 +32,42 @@ module "ses" {
 
 ## Variables
 
-| Name                   | Description                                    | Type     | Default | Required |
-| ---------------------- | ---------------------------------------------- | -------- | ------- | -------- |
-| `prefix`               | Prefix for resource names                      | `string` | -       | yes      |
-| `aws_region`           | AWS region                                     | `string` | -       | yes      |
-| `domain_name`          | Domain name for sending emails                 | `string` | -       | yes      |
-| `from_email`           | Default from email address                     | `string` | -       | yes      |
-| `verify_domain`        | Whether to verify the entire domain            | `bool`   | `true`  | no       |
-| `verify_email`         | Whether to verify individual email (fallback)  | `bool`   | `false` | no       |
-| `route53_zone_id`      | Route53 zone ID for automatic DNS verification | `string` | `""`    | no       |
-| `create_spf_record`    | Whether to create SPF record                   | `bool`   | `true`  | no       |
-| `create_dmarc_record`  | Whether to create DMARC record                 | `bool`   | `true`  | no       |
-| `dmarc_email`          | Email for DMARC reports                        | `string` | `""`    | no       |
-| `enable_notifications` | Enable SNS notifications for SES events        | `bool`   | `true`  | no       |
-| `notification_email`   | Email for receiving SES notifications          | `string` | `""`    | no       |
+| Name                      | Description                                      | Type           | Default | Required |
+| ------------------------- | ------------------------------------------------ | -------------- | ------- | -------- |
+| `prefix`                  | Prefix for resource names                        | `string`       | -       | yes      |
+| `aws_region`              | AWS region                                       | `string`       | -       | yes      |
+| `domain_name`             | Domain name for sending emails                   | `string`       | -       | yes      |
+| `from_email`              | Default from email address                       | `string`       | -       | yes      |
+| `create_smtp_credentials` | Whether to create long-lived SMTP credentials    | `bool`         | `true`  | no       |
+| `verify_domain`           | Whether to verify the entire domain              | `bool`         | `true`  | no       |
+| `verify_email`            | Whether to verify individual email (fallback)    | `bool`         | `false` | no       |
+| `route53_zone_id`         | Route53 zone ID for automatic DNS verification   | `string`       | `""`    | no       |
+| `create_spf_record`       | Whether to create SPF record                     | `bool`         | `true`  | no       |
+| `create_dmarc_record`     | Whether to create DMARC record                   | `bool`         | `true`  | no       |
+| `dmarc_email`             | Email for DMARC reports                          | `string`       | `""`    | no       |
+| `enable_notifications`    | Enable SNS notifications for SES events          | `bool`         | `true`  | no       |
+| `notification_email`      | Email for receiving SES notifications            | `string`       | `""`    | no       |
+| `sender_role_names`       | IAM roles granted role-based SES API send access | `list(string)` | `[]`    | no       |
 
 ## Outputs
 
-| Name                   | Description                                                   |
-| ---------------------- | ------------------------------------------------------------- |
-| `ses_smtp_secret_arn`  | ARN of the Secrets Manager secret containing SMTP credentials |
-| `ses_smtp_secret_name` | Name of the Secrets Manager secret                            |
-| `ses_domain_identity`  | The verified SES domain identity                              |
-| `ses_smtp_username`    | SMTP username (sensitive)                                     |
-| `smtp_endpoint`        | SES SMTP endpoint                                             |
-| `smtp_port`            | SES SMTP port (587)                                           |
+| Name                   | Description                                      |
+| ---------------------- | ------------------------------------------------ |
+| `ses_smtp_secret_arn`  | ARN of the optional Secrets Manager SMTP secret  |
+| `ses_smtp_secret_name` | Name of the optional Secrets Manager SMTP secret |
+| `ses_domain_identity`  | The verified SES domain identity                 |
+| `ses_smtp_username`    | Optional SMTP username (sensitive)               |
+| `smtp_endpoint`        | SES SMTP endpoint                                |
+| `smtp_port`            | SES SMTP port (587)                              |
 
 ## How It Works
 
 1. **Domain Verification**: If `route53_zone_id` is provided, the module automatically creates verification records
 2. **DKIM Setup**: Creates three CNAME records for DKIM signing
-3. **IAM User Creation**: Creates an IAM user with SES sending permissions
-4. **Password Calculation**: Uses a Python script to calculate the SMTP password from the IAM secret key
-5. **Secret Storage**: Stores all credentials in AWS Secrets Manager
-6. **ECS Integration**: The compute module pulls these secrets and injects them into containers
+3. **Role Authorization**: Grants configured `sender_role_names` permission to send through the SES API
+4. **Optional IAM User Creation**: When `create_smtp_credentials` is true, creates an IAM user with SES sending permissions
+5. **Optional Password Calculation**: Uses a Python script to calculate the SMTP password from the IAM secret key
+6. **Optional Secret Storage**: Stores the SMTP connection fields in AWS Secrets Manager
 
 ## SMTP Password Calculation
 
@@ -80,7 +83,7 @@ signature = hmac.new(
 smtp_password = base64.b64encode(b'\x04' + signature).decode('utf-8')
 ```
 
-This is handled automatically by the `calculate_ses_password.py` script.
+When `create_smtp_credentials` is enabled, this is handled automatically by the `calculate_ses_password.py` script.
 
 ## Manual Steps Required
 

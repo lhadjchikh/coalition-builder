@@ -18,6 +18,12 @@ variable "from_email" {
   type        = string
 }
 
+variable "create_smtp_credentials" {
+  description = "Whether to create and store long-lived SES SMTP credentials"
+  type        = bool
+  default     = true
+}
+
 variable "verify_domain" {
   description = "Whether to verify the entire domain in SES"
   type        = bool
