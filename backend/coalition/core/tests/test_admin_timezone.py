@@ -45,7 +45,8 @@ class SiteConfigurationTest(TestCase):
         assert SiteConfiguration.objects.get().timezone == "America/Chicago"
 
     def test_configured_timezone_falls_back_to_django_setting(self) -> None:
-        assert SiteConfiguration.get_timezone() == settings.TIME_ZONE
+        with self.settings(TIME_ZONE="America/New_York"):
+            assert SiteConfiguration.get_timezone() == "America/New_York"
 
 
 class AdminTimezoneMiddlewareTest(TestCase):
