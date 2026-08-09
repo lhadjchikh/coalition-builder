@@ -152,7 +152,21 @@ func TestDatabaseProvisioningGuardsFailThroughSQL(t *testing.T) {
 
 	provisioningSQL := readRepositoryFile(t, "../../modules/database/scripts/provision_environment_databases.sql")
 	assert.NotContains(t, provisioningSQL, `\quit`)
-	assert.Equal(t, 3, strings.Count(provisioningSQL, "RAISE EXCEPTION"))
+	for _, privilegedRoleGuard := range []string{
+		"rolsuper",
+		"rolcreatedb",
+		"rolcreaterole",
+		"pg_has_role(application_role.rolname, 'rds_superuser', 'member')",
+		"Application roles must not inherit from each other",
+	} {
+		assert.Contains(t, provisioningSQL, privilegedRoleGuard)
+	}
+	assert.Equal(t, 2, strings.Count(provisioningSQL, "pg_has_role(%L, %L, 'member')"))
+
+	privilegeGuardPosition := strings.Index(provisioningSQL, "rolsuper")
+	databaseCreationPosition := strings.Index(provisioningSQL, "CREATE DATABASE")
+	assert.GreaterOrEqual(t, privilegeGuardPosition, 0)
+	assert.Greater(t, databaseCreationPosition, privilegeGuardPosition)
 }
 
 func TestDatabaseProvisioningHelpExitsSuccessfully(t *testing.T) {

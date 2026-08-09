@@ -37,6 +37,42 @@ $sql$,
   :'dev_user'
 ) \gexec
 
+SELECT format(
+  $sql$
+DO $guard$
+DECLARE
+  application_role RECORD;
+BEGIN
+  FOR application_role IN
+    SELECT rolname, rolsuper, rolcreatedb, rolcreaterole
+    FROM pg_roles
+    WHERE rolname IN (%L, %L)
+  LOOP
+    IF application_role.rolsuper
+      OR application_role.rolcreatedb
+      OR application_role.rolcreaterole
+      OR pg_has_role(application_role.rolname, 'rds_superuser', 'member')
+    THEN
+      RAISE EXCEPTION 'Application role privileges can bypass database isolation.';
+    END IF;
+  END LOOP;
+
+  IF pg_has_role(%L, %L, 'member')
+    OR pg_has_role(%L, %L, 'member')
+  THEN
+    RAISE EXCEPTION 'Application roles must not inherit from each other.';
+  END IF;
+END
+$guard$;
+$sql$,
+  :'prod_user',
+  :'dev_user',
+  :'prod_user',
+  :'dev_user',
+  :'dev_user',
+  :'prod_user'
+) \gexec
+
 SELECT format('CREATE DATABASE %I', :'dev_database')
 WHERE NOT EXISTS (
   SELECT FROM pg_database WHERE datname = :'dev_database'
