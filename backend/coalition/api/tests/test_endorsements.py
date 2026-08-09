@@ -100,6 +100,22 @@ class EndorsementSurvivesEmailOutageTest(BaseTestCase):
         assert endorsement.verification_sent_at is None
         assert endorsement.email_verified is False
 
+    def test_endorsement_persists_when_admin_notification_raises(self) -> None:
+        with patch.object(
+            EndorsementEmailService,
+            "send_admin_notification",
+            side_effect=RuntimeError("unexpected notification failure"),
+        ):
+            response = self.submit_endorsement()
+
+        assert response.status_code == 200, response.content
+        endorsement = Endorsement.objects.get(
+            stakeholder__email="dana@example.com",
+            campaign=self.campaign,
+        )
+        assert endorsement.status == "pending"
+        assert endorsement.email_verified is False
+
 
 class EndorsementAPITest(BaseTestCase):
     """Test basic endorsement API endpoints"""

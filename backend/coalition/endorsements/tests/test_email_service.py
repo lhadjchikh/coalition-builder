@@ -11,6 +11,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.template.exceptions import TemplateDoesNotExist
 
 from coalition.campaigns.models import PolicyCampaign
+from coalition.content.models import HomePage
 from coalition.test_base import BaseTestCase
 
 from ..email_service import EndorsementEmailService
@@ -60,6 +61,21 @@ class EndorsementEmailServiceTest(BaseTestCase):
         # Check that timestamp was updated
         self.endorsement.refresh_from_db()
         assert self.endorsement.verification_sent_at is not None
+
+    def test_verification_email_uses_active_homepage_organization_name(self) -> None:
+        HomePage.objects.create(
+            organization_name="Land and Bay Stewards",
+            tagline="Stewarding land and bay",
+            hero_title="Land and Bay Stewards",
+        )
+        mail.outbox = []
+
+        with self.settings(ORGANIZATION_NAME="Coalition Builder"):
+            sent = EndorsementEmailService.send_verification_email(self.endorsement)
+
+        assert sent is True
+        assert "Land and Bay Stewards" in mail.outbox[0].body
+        assert "Coalition Builder" not in mail.outbox[0].body
 
     @patch("coalition.endorsements.email_service.send_mail")
     def test_send_verification_email_failure(self, mock_send_mail: Mock) -> None:

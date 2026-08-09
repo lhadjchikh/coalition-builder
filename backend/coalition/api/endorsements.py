@@ -306,7 +306,7 @@ def _perform_spam_checks(
         )
 
 
-def _create_endorsement_with_emails(
+def _create_endorsement(
     campaign: PolicyCampaign,
     stakeholder_data: dict,
     statement: str,
@@ -315,9 +315,9 @@ def _create_endorsement_with_emails(
     org_authorized: bool,
     ip_address: str,
     request: HttpRequest,
-) -> Endorsement:
+) -> tuple[Endorsement, bool]:
     """
-    Create endorsement and handle email notifications.
+    Persist an endorsement and its terms acceptance record.
     """
     # Validate terms acceptance
     if not terms_accepted:
@@ -366,20 +366,47 @@ def _create_endorsement_with_emails(
             user_agent=request.META.get("HTTP_USER_AGENT", ""),
         )
 
-    # Send verification email
-    email_sent = EndorsementEmailService.send_verification_email(endorsement)
+    return endorsement, created
+
+
+def _send_verification_email(endorsement: Endorsement) -> None:
+    """Send verification mail without invalidating a persisted submission."""
+    try:
+        email_sent = EndorsementEmailService.send_verification_email(endorsement)
+    except Exception:
+        logger.exception(
+            "Unexpected verification-email failure for endorsement %s",
+            endorsement.id,
+        )
+        return
+
     if not email_sent:
-        # Log error with additional context for debugging
         logger.error(
-            f"Failed to send verification email for endorsement "
-            f"{endorsement.id} to {stakeholder.email}. Email delivery failed.",
+            "Failed to send verification email for endorsement %s. "
+            "Email delivery failed.",
+            endorsement.id,
         )
 
-    # Send admin notification for new endorsements
-    if created:
-        EndorsementEmailService.send_admin_notification(endorsement)
 
-    return endorsement
+def _notify_admins_of_new_endorsement(endorsement: Endorsement) -> None:
+    """Notify admins without invalidating a persisted submission."""
+    try:
+        EndorsementEmailService.send_admin_notification(endorsement)
+    except Exception:
+        logger.exception(
+            "Unexpected admin-notification failure for endorsement %s",
+            endorsement.id,
+        )
+
+
+def _send_endorsement_notifications(
+    endorsement: Endorsement,
+    created: bool,
+) -> None:
+    """Send post-commit notifications for a persisted endorsement."""
+    _send_verification_email(endorsement)
+    if created:
+        _notify_admins_of_new_endorsement(endorsement)
 
 
 @router.get("/", response=list[PublicEndorsementOut], auth=None)
@@ -442,7 +469,7 @@ def create_endorsement(
 
     try:
         with transaction.atomic():
-            return _create_endorsement_with_emails(
+            endorsement, created = _create_endorsement(
                 campaign,
                 stakeholder_data,
                 data.statement,
@@ -460,6 +487,9 @@ def create_endorsement(
         raise
     except Exception as e:
         raise HttpError(500, f"Unexpected error: {str(e)}") from e
+
+    _send_endorsement_notifications(endorsement, created)
+    return endorsement
 
 
 @router.post("/verify/{token}/", auth=None)

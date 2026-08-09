@@ -11,6 +11,8 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils import timezone
 
+from coalition.content.models import HomePage
+
 from .models import Endorsement
 
 logger = logging.getLogger(__name__)
@@ -39,11 +41,9 @@ class _OutboundEmail:
 def _deliver(email: _OutboundEmail) -> bool:
     """Render and send one message, reporting failure rather than raising.
 
-    Callers run inside ``transaction.atomic``: letting a transport error
-    propagate would roll back the endorsement the user just submitted, so a
-    broken mail path would destroy their submission instead of merely
-    delaying their verification link. Failures are logged with a traceback
-    and the delivery-failure marker so they still page an operator.
+    A broken mail path must delay a notification without invalidating the
+    endorsement it describes. Failures are logged with a traceback and the
+    delivery-failure marker so they still page an operator.
     """
     try:
         plain_message = render_to_string(f"{email.template_base}.txt", email.context)
@@ -86,6 +86,20 @@ def _admin_notification_recipients() -> list[str]:
     return [address for _name, address in getattr(settings, "ADMINS", [])]
 
 
+def _organization_name() -> str:
+    """Return the public organization's name from the active homepage."""
+    try:
+        homepage = HomePage.get_active()
+    except Exception:
+        logger.exception(
+            "Could not load active homepage branding; using configured fallback",
+        )
+        return settings.ORGANIZATION_NAME
+    if homepage:
+        return homepage.organization_name
+    return settings.ORGANIZATION_NAME
+
+
 class EndorsementEmailService:
     """Service for sending endorsement-related emails"""
 
@@ -110,7 +124,7 @@ class EndorsementEmailService:
                     "campaign": endorsement.campaign,
                     "verification_url": verification_url,
                     "site_url": settings.SITE_URL,
-                    "organization_name": settings.ORGANIZATION_NAME,
+                    "organization_name": _organization_name(),
                 },
                 recipients=[endorsement.stakeholder.email],
                 description=f"verification email for endorsement {endorsement.id}",
@@ -145,7 +159,7 @@ class EndorsementEmailService:
                         f"{settings.API_URL}/admin/endorsements/endorsement/"
                         f"{endorsement.id}/change/"
                     ),
-                    "organization_name": settings.ORGANIZATION_NAME,
+                    "organization_name": _organization_name(),
                 },
                 recipients=recipients,
                 description=f"admin notification for endorsement {endorsement.id}",
@@ -169,7 +183,7 @@ class EndorsementEmailService:
                     "campaign_url": (
                         f"{settings.SITE_URL}/campaigns/{endorsement.campaign.name}/"
                     ),
-                    "organization_name": settings.ORGANIZATION_NAME,
+                    "organization_name": _organization_name(),
                 },
                 recipients=[endorsement.stakeholder.email],
                 description=f"approval confirmation for endorsement {endorsement.id}",
