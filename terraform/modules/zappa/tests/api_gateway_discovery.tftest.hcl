@@ -110,7 +110,7 @@ run "published_id_follows_the_discovered_api" {
   }
 }
 
-run "discovery_requires_the_names_it_looks_up" {
+run "discovery_requires_project_name" {
   command = plan
 
   variables {
@@ -119,4 +119,15 @@ run "discovery_requires_the_names_it_looks_up" {
   }
 
   expect_failures = [var.project_name]
+}
+
+run "discovery_requires_stage_name" {
+  command = plan
+
+  variables {
+    discover_api_gateway = true
+    stage_name           = ""
+  }
+
+  expect_failures = [var.stage_name]
 }
