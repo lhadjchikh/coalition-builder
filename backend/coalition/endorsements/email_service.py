@@ -109,6 +109,9 @@ class EndorsementEmailService:
 
         Returns True if the message was accepted for delivery.
         """
+        endorsement.verification_sent_at = timezone.now()
+        endorsement.save(update_fields=["verification_sent_at"])
+
         verification_url = (
             f"{settings.SITE_URL}/verify-endorsement/{endorsement.verification_token}/"
         )
@@ -131,8 +134,8 @@ class EndorsementEmailService:
             ),
         )
 
-        if delivered:
-            endorsement.verification_sent_at = timezone.now()
+        if not delivered:
+            endorsement.verification_sent_at = None
             endorsement.save(update_fields=["verification_sent_at"])
 
         return delivered

@@ -8,6 +8,7 @@ from unittest.mock import Mock, patch
 from botocore.exceptions import ClientError
 from django.core import mail
 from django.core.exceptions import ImproperlyConfigured
+from django.db import OperationalError
 from django.template.exceptions import TemplateDoesNotExist
 
 from coalition.campaigns.models import PolicyCampaign
@@ -61,6 +62,23 @@ class EndorsementEmailServiceTest(BaseTestCase):
         # Check that timestamp was updated
         self.endorsement.refresh_from_db()
         assert self.endorsement.verification_sent_at is not None
+
+    @patch("coalition.endorsements.email_service.send_mail")
+    def test_timestamp_is_persisted_before_verification_email_is_sent(
+        self,
+        mock_send_mail: Mock,
+    ) -> None:
+        with (
+            patch.object(
+                self.endorsement,
+                "save",
+                side_effect=OperationalError("database unavailable"),
+            ),
+            self.assertRaises(OperationalError),
+        ):
+            EndorsementEmailService.send_verification_email(self.endorsement)
+
+        mock_send_mail.assert_not_called()
 
     def test_verification_email_uses_active_homepage_organization_name(self) -> None:
         HomePage.objects.create(
