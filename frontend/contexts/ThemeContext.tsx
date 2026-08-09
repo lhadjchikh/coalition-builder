@@ -1,5 +1,5 @@
 import * as React from "react";
-const { createContext, useContext, useEffect, useState } = React;
+const { createContext, useCallback, useContext, useEffect, useState } = React;
 import { Theme, DEFAULT_THEME, applyThemeToDocument } from "../utils/theme";
 
 interface ThemeContextType {
@@ -27,7 +27,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   const [loading, setLoading] = useState(!initialTheme && !isServer);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchActiveTheme = async (): Promise<void> => {
+  const fetchActiveTheme = useCallback(async (): Promise<void> => {
     // Only fetch on client side
     if (isServer) return;
 
@@ -52,7 +52,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [isServer]);
 
   const setTheme = (newTheme: Theme | null): void => {
     setThemeState(newTheme);
@@ -79,7 +79,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
         applyThemeToDocument(initialTheme);
       }
     }
-  }, [initialTheme, isServer]);
+  }, [fetchActiveTheme, initialTheme, isServer]);
 
   // Apply theme whenever it changes (client-side only)
   useEffect(() => {

@@ -42,7 +42,7 @@ Cross-platform development environment setup script that installs and configures
 
 **Languages/Tools Supported:**
 
-- **Python**: Black formatting, Ruff linting
+- **Python**: Ruff formatting and linting
 - **Go**: gofmt, go vet, golangci-lint, staticcheck, gosec
 - **JavaScript/TypeScript**: Prettier formatting (via npm)
 - **Terraform**: terraform fmt, tflint

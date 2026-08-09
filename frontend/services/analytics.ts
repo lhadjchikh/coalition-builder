@@ -14,11 +14,13 @@ import type {
   AnalyticsEvent,
   PageViewEvent,
   GtagCommand,
-  AnalyticsWindow,
 } from "../types/analytics";
 
 declare global {
-  interface Window extends AnalyticsWindow {}
+  interface Window {
+    gtag: GtagCommand;
+    dataLayer: unknown[];
+  }
 }
 
 export type { AnalyticsEvent, PageViewEvent };

@@ -1,5 +1,5 @@
 // Shared homepage data fetching and fallback logic
-import { NavItemData, HomePage, Campaign } from "../types";
+import { HomePage, Campaign } from "../types";
 
 export function getFallbackHomepage(): HomePage {
   return {
@@ -60,7 +60,7 @@ export async function fetchHomepage(): Promise<HomePage> {
   const response = await fetch(`${apiUrl}/api/homepage/`, {
     // Add cache control for Next.js SSR
     next: { revalidate: 300 }, // 5 minutes
-  } as any);
+  });
 
   if (!response.ok) {
     throw new Error(`Failed to fetch homepage: ${response.status}`);
@@ -74,7 +74,7 @@ export async function fetchCampaigns(): Promise<Campaign[]> {
   const response = await fetch(`${apiUrl}/api/campaigns/`, {
     // Add cache control for Next.js SSR
     next: { revalidate: 300 }, // 5 minutes
-  } as any);
+  });
 
   if (!response.ok) {
     throw new Error(`Failed to fetch campaigns: ${response.status}`);

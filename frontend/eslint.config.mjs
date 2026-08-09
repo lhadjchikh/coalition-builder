@@ -23,7 +23,23 @@ const eslintConfig = defineConfig([
       ],
     },
   },
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
+  {
+    files: ["*.config.js", "styles/**/*.config.js"],
+    rules: {
+      // Jest and Tailwind discover these files as CommonJS configuration.
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "build/**",
+    "coverage/**",
+    "next-env.d.ts",
+    "**/__tests__/**",
+    "__mocks__/**",
+    "tests/**",
+  ]),
 ]);
 
 export default eslintConfig;

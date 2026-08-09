@@ -41,7 +41,7 @@ log_info "Target platform: ${PLATFORM}"
 # ECR Public requires AWS authentication for pulls. For local builds,
 # pull the identical image from Docker Hub and retag it so the Dockerfile
 # (which references ECR Public for CI/CD) can resolve locally.
-if ! docker manifest inspect "${BASE_IMAGE}" > /dev/null 2>&1; then
+if ! docker manifest inspect "${BASE_IMAGE}" >/dev/null 2>&1; then
   log_warn "Cannot pull from ECR Public (auth required). Using Docker Hub mirror..."
   docker pull --platform "${PLATFORM}" "${DOCKER_HUB_MIRROR}"
   docker tag "${DOCKER_HUB_MIRROR}" "${BASE_IMAGE}"

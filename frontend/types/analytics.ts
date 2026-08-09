@@ -13,18 +13,6 @@ export interface GtagCommand {
   (command: "js", date: Date): void;
 }
 
-// Type definition for CookieConsent API
-export interface CookieConsentAPI {
-  acceptedCategory: (category: string) => boolean;
-}
-
-// Global window extensions for analytics
-export interface AnalyticsWindow {
-  gtag: GtagCommand;
-  dataLayer: unknown[];
-  CookieConsent?: CookieConsentAPI;
-}
-
 // Analytics event interface
 export interface AnalyticsEvent {
   action: string;

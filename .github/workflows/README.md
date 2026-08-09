@@ -106,7 +106,7 @@ _Figure 1: Workflow dependency tree showing how push/PR events trigger orchestra
 #### Python Linting (`lint_python.yml`)
 
 - **Triggered by**: Backend Check workflow
-- Runs Black code formatter, Ruff linter, and mypy type checker
+- Runs Ruff formatter and linter, plus the mypy type checker
 - Ensures consistent Python code style and type safety
 - mypy configured with gradual typing approach for existing codebase
 - Ignores migrations, tests, and third-party modules with known issues
