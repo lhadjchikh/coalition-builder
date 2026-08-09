@@ -33,8 +33,8 @@ admin.site.index_title = f"Welcome to {settings.ORGANIZATION_NAME} Administratio
 
 urlpatterns = [
     # Must precede admin.site.urls, which would otherwise claim "admin/help/".
-    path(f"{settings.ADMIN_URL_PATH}help/", include("coalition.admin_help.urls")),
-    path(settings.ADMIN_URL_PATH, admin.site.urls),
+    path("admin/help/", include("coalition.admin_help.urls")),
+    path("admin/", admin.site.urls),
     path("api/", api.urls),
     path("robots.txt", robots_txt, name="robots_txt"),
     path(

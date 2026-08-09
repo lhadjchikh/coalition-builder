@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
-from django.test import RequestFactory, TestCase, override_settings
+from django.test import RequestFactory, TestCase
 from django.utils import timezone
 
 from coalition.core.admin import SiteConfigurationAdmin
@@ -81,13 +81,6 @@ class AdminTimezoneMiddlewareTest(TestCase):
         request = self.factory.get("/admin/")
 
         assert self.call_middleware(request) == settings.TIME_ZONE
-
-    @override_settings(ADMIN_URL_PATH="staff/")
-    def test_uses_central_admin_path_setting(self) -> None:
-        SiteConfiguration.objects.create(timezone="America/Denver")
-        request = self.factory.get("/staff/")
-
-        assert self.call_middleware(request) == "America/Denver"
 
     def test_does_not_query_configuration_for_public_request(self) -> None:
         SiteConfiguration.objects.create(timezone="America/Los_Angeles")

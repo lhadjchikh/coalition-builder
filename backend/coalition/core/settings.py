@@ -220,9 +220,6 @@ CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "info@example.org")
 ADMIN_HELP_SUPERVISOR_CONTACT = os.getenv("ADMIN_HELP_SUPERVISOR_CONTACT", "")
 ADMIN_HELP_TECHNICAL_CONTACT = os.getenv("ADMIN_HELP_TECHNICAL_CONTACT", "")
 
-# Shared by URL routing and middleware that applies only to the Django admin.
-ADMIN_URL_PATH = "admin/"
-
 
 # Application definition
 

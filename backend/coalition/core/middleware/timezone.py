@@ -2,7 +2,6 @@
 
 from collections.abc import Callable
 
-from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
 
@@ -16,8 +15,7 @@ class AdminTimezoneMiddleware:
         self.get_response = get_response
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
-        admin_path_prefix = f"/{settings.ADMIN_URL_PATH}"
-        if not request.path_info.startswith(admin_path_prefix):
+        if not request.path_info.startswith("/admin/"):
             return self.get_response(request)
 
         timezone.activate(SiteConfiguration.get_timezone())
