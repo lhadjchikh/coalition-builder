@@ -28,6 +28,10 @@ def _sources_copied_to_workdir(dockerfile: str) -> set[str]:
     sources: set[str] = set()
     for line in dockerfile.splitlines():
         instruction = line.strip()
+        if instruction.upper().startswith("FROM "):
+            workdir = PurePosixPath("/")
+            sources.clear()
+            continue
         if instruction.upper().startswith("WORKDIR "):
             configured_workdir = PurePosixPath(instruction.split(maxsplit=1)[1])
             workdir = (
@@ -77,6 +81,18 @@ class LambdaImageCopiesConfiguredTemplateDirsTest(SimpleTestCase):
 WORKDIR /var/task
 COPY coalition/ ./coalition/
 COPY templates/ ./scripts/
+"""
+
+        assert "templates" not in _sources_copied_to_workdir(dockerfile)
+
+    def test_copy_in_discarded_stage_does_not_count(self) -> None:
+        dockerfile = """\
+FROM python:3.13 AS builder
+WORKDIR /var/task
+COPY templates/ ./templates/
+FROM python:3.13 AS app
+WORKDIR /var/task
+COPY coalition/ ./coalition/
 """
 
         assert "templates" not in _sources_copied_to_workdir(dockerfile)
