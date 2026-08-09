@@ -1,7 +1,9 @@
 locals {
-  # Zappa derives every per-stage resource name it creates from these two parts,
-  # e.g. project "coalition" at stage "prod" becomes "coalition-prod".
-  zappa_stage_resource_name = "${var.project_name}-${var.stage_name}"
+  # Zappa slugifies the combined project and stage before naming AWS resources.
+  zappa_stage_resource_name = trim(
+    replace(lower("${var.project_name}-${var.stage_name}"), "/[_-]+/", "-"),
+    "-"
+  )
 }
 
 # Zappa, not Terraform, creates the API Gateway REST API. Terraform discovers it

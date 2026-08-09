@@ -41,6 +41,21 @@ run "discovery_uses_the_zappa_naming_convention" {
   }
 }
 
+run "discovery_matches_zappa_name_normalization" {
+  command = plan
+
+  variables {
+    discover_api_gateway = true
+    project_name         = "My_App"
+    stage_name           = "my_stage"
+  }
+
+  assert {
+    condition     = data.aws_api_gateway_rest_api.zappa[0].name == "my-app-my-stage"
+    error_message = "Discovery must normalize project and stage names exactly as Zappa does before looking up the REST API."
+  }
+}
+
 run "discovery_follows_the_stage" {
   command = plan
 
