@@ -144,6 +144,10 @@ require_step_text \
   "${management_workflow}" \
   "Validate database secret isolation" \
   'python scripts/validate_database_secret.py'
+require_step_text \
+  "${management_workflow}" \
+  "Validate database secret isolation" \
+  "github.event.inputs.action == 'schedule' ||"
 
 require_text \
   "${infra_workflow}" \

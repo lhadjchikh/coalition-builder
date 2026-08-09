@@ -99,6 +99,10 @@ jobs:
         run: poetry install --no-interaction --no-ansi --only main
 
       - name: Validate database secret isolation
+        if: >-
+          github.event.inputs.action == 'schedule' ||
+          github.event.inputs.action == 'invoke' ||
+          github.event.inputs.action == 'certify'
         working-directory: ./backend
         env:
           DATABASE_SECRET_ARN: ${{ secrets.DATABASE_SECRET_ARN }}
