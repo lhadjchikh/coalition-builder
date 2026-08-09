@@ -229,6 +229,9 @@ class EndorsementEmailServiceTest(BaseTestCase):
 
         assert sent is True
         assert "Submitted: January 15, 2026 12:30 PM" in mail.outbox[0].body
+        html_message = mail.outbox[0].alternatives[0]
+        assert html_message.mimetype == "text/html"
+        assert "January 15, 2026 12:30 PM" in html_message.content
         assert self.endorsement.created_at == submitted_at
 
     def test_send_admin_notification_no_admins_configured(self) -> None:
