@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import API from "../../../../services/api";
 import VerifyEndorsementPage from "../page";
 
@@ -57,9 +57,35 @@ describe("VerifyEndorsementPage", () => {
       await screen.findByRole("heading", { name: "Verification failed" })
     ).toBeInTheDocument();
     expect(
-      screen.getByText(
-        "This verification link is invalid or has expired. Please submit your endorsement again."
-      )
+      screen.getByText(/we could not verify your endorsement right now/i)
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Try again" })).toBeEnabled();
+  });
+
+  it("retries verification after a temporary failure", async () => {
+    (API.verifyEndorsement as jest.Mock)
+      .mockRejectedValueOnce(new Error("Network unavailable"))
+      .mockResolvedValueOnce({
+        success: true,
+        message:
+          "Email verified successfully! Your endorsement is now under review.",
+        status: "verified",
+      });
+
+    render(
+      <VerifyEndorsementPage
+        params={Promise.resolve({ token: "verification-token" })}
+      />
+    );
+
+    fireEvent.click(await screen.findByRole("button", { name: "Try again" }));
+
+    expect(screen.getByText("Verifying your endorsement…")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(API.verifyEndorsement).toHaveBeenCalledTimes(2);
+    });
+    expect(
+      await screen.findByRole("heading", { name: "Endorsement verified" })
     ).toBeInTheDocument();
   });
 });

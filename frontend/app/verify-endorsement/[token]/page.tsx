@@ -15,6 +15,7 @@ export default function VerifyEndorsementPage({
 }: VerifyEndorsementPageProps) {
   const [verificationState, setVerificationState] =
     useState<VerificationState>("verifying");
+  const [verificationAttempt, setVerificationAttempt] = useState(0);
 
   useEffect(() => {
     let isActive = true;
@@ -37,7 +38,12 @@ export default function VerifyEndorsementPage({
     return () => {
       isActive = false;
     };
-  }, [params]);
+  }, [params, verificationAttempt]);
+
+  const retryVerification = () => {
+    setVerificationState("verifying");
+    setVerificationAttempt((previousAttempt) => previousAttempt + 1);
+  };
 
   return (
     <section className="mx-auto max-w-2xl px-6 py-20 text-center">
@@ -73,15 +79,25 @@ export default function VerifyEndorsementPage({
             Verification failed
           </h1>
           <p className="mt-4 text-gray-600">
-            This verification link is invalid or has expired. Please submit your
-            endorsement again.
+            We could not verify your endorsement right now. Try again. If the
+            problem continues, return to the campaign and submit the form again
+            to request a new verification email.
           </p>
-          <Link
-            href="/campaigns"
-            className="mt-8 inline-block rounded-md bg-blue-600 px-5 py-3 font-semibold text-white no-underline hover:bg-blue-700"
-          >
-            View campaigns
-          </Link>
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
+            <button
+              type="button"
+              className="rounded-md bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
+              onClick={retryVerification}
+            >
+              Try again
+            </button>
+            <Link
+              href="/campaigns"
+              className="inline-block rounded-md border border-blue-600 px-5 py-3 font-semibold text-blue-700 no-underline hover:bg-blue-50"
+            >
+              View campaigns
+            </Link>
+          </div>
         </>
       )}
     </section>
