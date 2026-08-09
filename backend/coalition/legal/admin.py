@@ -87,7 +87,9 @@ class TermsAcceptanceAdmin(admin.ModelAdmin):
     def endorsement_stakeholder(self, obj: TermsAcceptance) -> str:
         if obj.endorsement and obj.endorsement.stakeholder:
             stakeholder = obj.endorsement.stakeholder
-            return f"{stakeholder.name} ({stakeholder.organization})"
+            if stakeholder.organization:
+                return f"{stakeholder.name} ({stakeholder.organization})"
+            return stakeholder.name
         return "N/A"
 
     @admin.display(description="Document")
