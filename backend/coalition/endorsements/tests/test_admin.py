@@ -62,11 +62,22 @@ class EndorsementAdminTest(BaseTestCase):
         result = self.admin.stakeholder_organization(self.endorsement)
         assert result == "Test Org"
 
-    def test_status_badge_method(self) -> None:
-        """Test status_badge admin method"""
-        result = self.admin.status_badge(self.endorsement)
-        assert "pending" in result.lower()
-        assert "background-color" in result
+    def test_status_badge_uses_readable_text_color(self) -> None:
+        expected_text_colors = {
+            "pending": "#212529",
+            "verified": "#212529",
+            "approved": "#212529",
+            "rejected": "white",
+        }
+
+        for status, text_color in expected_text_colors.items():
+            with self.subTest(status=status):
+                self.endorsement.status = status
+
+                badge = self.admin.status_badge(self.endorsement)
+
+                assert self.endorsement.get_status_display() in badge
+                assert f"color: {text_color}" in badge
 
     def test_email_verified_badge_method(self) -> None:
         """Test email_verified_badge admin method"""
