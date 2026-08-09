@@ -59,17 +59,6 @@ jest.mock("next/link", () => {
 });
 
 describe("Footer navigation", () => {
-  const originalApiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-  afterEach(() => {
-    if (originalApiUrl === undefined) {
-      delete process.env.NEXT_PUBLIC_API_URL;
-      return;
-    }
-
-    process.env.NEXT_PUBLIC_API_URL = originalApiUrl;
-  });
-
   it("renders Terms of Use and Privacy Policy links", () => {
     render(<Footer orgInfo={mockHomepage} />);
 
@@ -100,26 +89,10 @@ describe("Footer navigation", () => {
     expect(screen.getByText("Contact")).toHaveAttribute("href", "/contact");
   });
 
-  it("builds the production admin link from the configured API URL", () => {
-    process.env.NEXT_PUBLIC_API_URL = "https://api.landandbay.org";
-
+  it("links Admin Login through the frontend admin route", () => {
     render(<Footer orgInfo={mockHomepage} />);
 
-    expect(screen.getByText("Admin Login")).toHaveAttribute(
-      "href",
-      "https://api.landandbay.org/admin/"
-    );
-  });
-
-  it("builds the development admin link without a duplicate slash", () => {
-    process.env.NEXT_PUBLIC_API_URL = "https://test-api.landandbay.org/";
-
-    render(<Footer orgInfo={mockHomepage} />);
-
-    expect(screen.getByText("Admin Login")).toHaveAttribute(
-      "href",
-      "https://test-api.landandbay.org/admin/"
-    );
+    expect(screen.getByText("Admin Login")).toHaveAttribute("href", "/admin");
   });
 
   it("renders organization name and tagline", () => {
