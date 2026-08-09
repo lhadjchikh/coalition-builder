@@ -2,13 +2,15 @@
 Tests for legal Django admin interface.
 """
 
+from types import SimpleNamespace
+
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
 from django.http import HttpRequest
 from django.test import TestCase
 
-from coalition.legal.admin import LegalDocumentAdmin
-from coalition.legal.models import LegalDocument
+from coalition.legal.admin import LegalDocumentAdmin, TermsAcceptanceAdmin
+from coalition.legal.models import LegalDocument, TermsAcceptance
 
 
 class LegalDocumentAdminTest(TestCase):
@@ -89,3 +91,32 @@ class LegalDocumentAdminTest(TestCase):
                 value = getattr(self.legal_document, field)
                 # Value can be None, but accessing it shouldn't error
                 assert (value is not None) or (value is None)
+
+
+class TermsAcceptanceAdminTest(TestCase):
+    def setUp(self) -> None:
+        self.admin = TermsAcceptanceAdmin(TermsAcceptance, AdminSite())
+
+    def test_stakeholder_label_omits_parentheses_without_organization(self) -> None:
+        acceptance = SimpleNamespace(
+            endorsement=SimpleNamespace(
+                stakeholder=SimpleNamespace(name="Leila Hadj-Chikh", organization=""),
+            ),
+        )
+
+        assert self.admin.endorsement_stakeholder(acceptance) == "Leila Hadj-Chikh"
+
+    def test_stakeholder_label_includes_organization_when_present(self) -> None:
+        acceptance = SimpleNamespace(
+            endorsement=SimpleNamespace(
+                stakeholder=SimpleNamespace(
+                    name="Leila Hadj-Chikh",
+                    organization="Coalition Builder",
+                ),
+            ),
+        )
+
+        assert (
+            self.admin.endorsement_stakeholder(acceptance)
+            == "Leila Hadj-Chikh (Coalition Builder)"
+        )
