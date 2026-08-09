@@ -12,7 +12,13 @@ repo offers on top of the user-level ones.
 | Expert                          | Reviews                                                                                          |
 | ------------------------------- | ------------------------------------------------------------------------------------------------ |
 | `advocacy-campaign-copy-expert` | What an endorser is agreeing to, legislative accuracy, position integrity, tax-status-neutrality  |
-| `content-publishing-expert`     | Sanitizer round-trips, metadata and social-card budgets, slug stability, heading semantics        |
+| `content-publishing-expert`     | Changes that damage already-published DB content, metadata budgets, slug and route stability     |
+
+Note what `content-publishing-expert` reviews and what it can't: authored content lives in Postgres
+and never appears in a diff, so it reviews the *contract* that content is stored under — the
+sanitizer allowlist, field lengths, slug and route rules, metadata plumbing — plus the prose that
+is committed (`backend/coalition/admin_help/content/`, fixtures, hardcoded copy). Its highest-value
+finding is a narrowed contract that existing rows already violate.
 
 These cite concrete paths in this codebase (`backend/coalition/stakeholders/models.py`,
 `backend/coalition/content/html_sanitizer.py`, `frontend/app/campaigns/[name]/page.tsx`). When

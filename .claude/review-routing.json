@@ -37,6 +37,10 @@
       "experts": ["content-publishing-expert"]
     },
     {
+      "match": "backend/coalition/*/migrations/*.py",
+      "experts": ["content-publishing-expert"]
+    },
+    {
       "match": "frontend/app/**/page.tsx",
       "experts": ["content-publishing-expert"]
     },
