@@ -16,6 +16,7 @@ from coalition.test_base import BaseTestCase
 from ..admin import EndorsementAdmin
 from ..email_service import EndorsementEmailService
 from ..models import Endorsement
+from .css_accessibility import contrast_ratio, parse_inline_styles
 
 
 class EndorsementAdminTest(BaseTestCase):
@@ -62,11 +63,23 @@ class EndorsementAdminTest(BaseTestCase):
         result = self.admin.stakeholder_organization(self.endorsement)
         assert result == "Test Org"
 
-    def test_status_badge_method(self) -> None:
-        """Test status_badge admin method"""
-        result = self.admin.status_badge(self.endorsement)
-        assert "pending" in result.lower()
-        assert "background-color" in result
+    def test_status_badge_uses_readable_text_color(self) -> None:
+        rendered_backgrounds = set()
+
+        for status, _ in Endorsement.STATUS_CHOICES:
+            with self.subTest(status=status):
+                self.endorsement.status = status
+
+                badge = self.admin.status_badge(self.endorsement)
+                style_declarations = parse_inline_styles(badge)
+                background_color = style_declarations["background-color"]
+                text_color = style_declarations["color"]
+                rendered_backgrounds.add(background_color)
+
+                assert self.endorsement.get_status_display() in badge
+                assert contrast_ratio(background_color, text_color) >= 4.5
+
+        assert len(rendered_backgrounds) == len(Endorsement.STATUS_CHOICES)
 
     def test_email_verified_badge_method(self) -> None:
         """Test email_verified_badge admin method"""

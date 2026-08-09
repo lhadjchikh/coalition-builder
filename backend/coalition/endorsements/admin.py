@@ -154,17 +154,21 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
 
     @admin.display(description="Status", ordering="status")
     def status_badge(self, obj: Endorsement) -> str:
-        colors = {
-            "pending": "#ffc107",  # warning yellow
-            "verified": "#17a2b8",  # info blue
-            "approved": "#28a745",  # success green
-            "rejected": "#dc3545",  # danger red
+        color_schemes = {
+            "pending": ("#ffc107", "#212529"),  # warning yellow
+            "verified": ("#17a2b8", "#212529"),  # info blue
+            "approved": ("#28a745", "#212529"),  # success green
+            "rejected": ("#dc3545", "white"),  # danger red
         }
-        color = colors.get(obj.status, "#6c757d")
+        background_color, text_color = color_schemes.get(
+            obj.status,
+            ("#6c757d", "white"),
+        )
         return format_html(
-            '<span style="background-color: {}; color: white; padding: 2px 8px; '
+            '<span style="background-color: {}; color: {}; padding: 2px 8px; '
             'border-radius: 3px; font-size: 11px;">{}</span>',
-            color,
+            background_color,
+            text_color,
             obj.get_status_display(),
         )
 
