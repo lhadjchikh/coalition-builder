@@ -49,9 +49,13 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
         "campaign__title",
         "statement",
     )
-    raw_id_fields = ("stakeholder", "campaign")
     ordering = ("-created_at",)
     readonly_fields = (
+        "stakeholder",
+        "campaign",
+        "statement",
+        "public_display",
+        "email_verified",
         "verification_token",
         "verification_sent_at",
         "verified_at",
@@ -134,6 +138,9 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
         "approve_for_display",
         "remove_from_display",
     ]
+
+    def has_add_permission(self, request: HttpRequest) -> bool:  # noqa: ARG002
+        return False
 
     @admin.display(description="Name", ordering="stakeholder__last_name")
     def stakeholder_name(self, obj: Endorsement) -> str:
