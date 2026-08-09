@@ -298,11 +298,43 @@ describe("EndorsementForm", () => {
         ).toBeInTheDocument();
       });
 
+      expect(screen.getByRole("dialog")).toHaveAttribute("aria-modal", "true");
+
       // Check that social share buttons are displayed
       expect(screen.getByTestId("social-share-buttons")).toBeInTheDocument();
       expect(
         screen.getByText("Help amplify your support by sharing this campaign:")
       ).toBeInTheDocument();
+    });
+
+    it("closes the confirmation dialog without resubmitting", async () => {
+      render(<EndorsementForm campaign={mockCampaign} />);
+
+      fireEvent.change(screen.getByTestId("type-select"), {
+        target: { value: "individual" },
+      });
+      fireEvent.change(screen.getByTestId("first-name-input"), {
+        target: { value: "John" },
+      });
+      fireEvent.change(screen.getByTestId("last-name-input"), {
+        target: { value: "Doe" },
+      });
+      fireEvent.change(screen.getByTestId("email-input"), {
+        target: { value: "john@example.com" },
+      });
+      await fillAddressFields();
+      fireEvent.click(screen.getByTestId("terms-checkbox"));
+      fireEvent.click(screen.getByTestId("submit-button"));
+
+      await waitFor(() =>
+        expect(screen.getByRole("dialog")).toBeInTheDocument()
+      );
+      fireEvent.click(
+        screen.getByRole("button", { name: "Close confirmation" })
+      );
+
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(API.createEndorsement).toHaveBeenCalledTimes(1);
     });
 
     it("passes correct props to SocialShareButtons component", async () => {

@@ -1,4 +1,5 @@
 import React, {
+  useEffect,
   useState,
   useRef,
   forwardRef,
@@ -118,6 +119,13 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
     });
     const formRef = useRef<HTMLFormElement>(null);
     const typeSelectRef = useRef<HTMLSelectElement>(null);
+    const confirmationCloseRef = useRef<HTMLButtonElement>(null);
+
+    useEffect(() => {
+      if (success) {
+        confirmationCloseRef.current?.focus();
+      }
+    }, [success]);
 
     // Expose methods to parent component
     useImperativeHandle(
@@ -307,31 +315,55 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
         )}
 
         {success && (
-          <div className="success-message" data-testid="success-message">
-            <h3>Thank you for your endorsement!</h3>
-            <p>
-              Your endorsement has been submitted successfully and will be
-              reviewed shortly.
-            </p>
-
-            <div className="share-endorsement-section">
-              <p className="share-cta">
-                Help amplify your support by sharing this campaign:
+          <div className="confirmation-dialog-backdrop">
+            <div
+              className="success-message confirmation-dialog"
+              data-testid="success-message"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="endorsement-confirmation-title"
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  setSuccess(false);
+                }
+              }}
+            >
+              <button
+                ref={confirmationCloseRef}
+                type="button"
+                className="confirmation-dialog-close"
+                aria-label="Close confirmation"
+                onClick={() => setSuccess(false)}
+              >
+                ×
+              </button>
+              <h3 id="endorsement-confirmation-title">
+                Thank you for your endorsement!
+              </h3>
+              <p>
+                Check your email and click the verification link. Your
+                endorsement will be sent for review after you verify it.
               </p>
-              <SocialShareButtons
-                url={`${window.location.origin}/campaigns/${campaign.name}`}
-                title={`I just endorsed ${campaign.title}!`}
-                description={`Join me in supporting this important initiative: ${
-                  campaign.summary || campaign.description
-                }`}
-                hashtags={[
-                  "PolicyChange",
-                  "CivicEngagement",
-                  campaign.name?.replace(/-/g, "") || "",
-                ]}
-                campaignName={campaign.name}
-                showLabel={false}
-              />
+
+              <div className="share-endorsement-section">
+                <p className="share-cta">
+                  Help amplify your support by sharing this campaign:
+                </p>
+                <SocialShareButtons
+                  url={`${window.location.origin}/campaigns/${campaign.name}`}
+                  title={`I just endorsed ${campaign.title}!`}
+                  description={`Join me in supporting this important initiative: ${
+                    campaign.summary || campaign.description
+                  }`}
+                  hashtags={[
+                    "PolicyChange",
+                    "CivicEngagement",
+                    campaign.name?.replace(/-/g, "") || "",
+                  ]}
+                  campaignName={campaign.name}
+                  showLabel={false}
+                />
+              </div>
             </div>
           </div>
         )}
