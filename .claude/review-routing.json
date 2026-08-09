@@ -30,7 +30,11 @@
     },
     {
       "match": "backend/coalition/admin_help/**",
-      "experts": ["content-publishing-expert"]
+      "experts": ["content-publishing-expert", "advocacy-campaign-copy-expert"]
+    },
+    {
+      "match": "backend/templates/emails/**",
+      "experts": ["advocacy-campaign-copy-expert"]
     },
     {
       "match": "backend/coalition/legal/**",

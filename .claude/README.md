@@ -9,16 +9,22 @@ Subagent definitions scoped to this repository. Claude Code discovers them autom
 `Agent`/`Task` tool, and the `/domain-review` skill lists this directory to learn which experts the
 repo offers on top of the user-level ones.
 
-| Expert                          | Reviews                                                                                          |
-| ------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `advocacy-campaign-copy-expert` | What an endorser is agreeing to, legislative accuracy, position integrity, tax-status-neutrality  |
-| `content-publishing-expert`     | Changes that damage already-published DB content, metadata budgets, slug and route stability     |
+| Expert                          | Reviews                                                                                       |
+| ------------------------------- | --------------------------------------------------------------------------------------------- |
+| `advocacy-campaign-copy-expert` | What the endorser is asked to click, what the platform mails them, and what it can prove       |
+| `content-publishing-expert`     | Changes that damage already-published DB content, metadata budgets, slug and route stability   |
 
-Note what `content-publishing-expert` reviews and what it can't: authored content lives in Postgres
-and never appears in a diff, so it reviews the *contract* that content is stored under — the
-sanitizer allowlist, field lengths, slug and route rules, metadata plumbing — plus the prose that
-is committed (`backend/coalition/admin_help/content/`, fixtures, hardcoded copy). Its highest-value
-finding is a narrowed contract that existing rows already violate.
+Both experts share a constraint worth stating plainly: **the content they care about is not in the
+diff.** Campaign summaries, endorsement statements, bill records, and page bodies are authored in
+the Django admin and live in Postgres. So each reviews the *contract* around that content, plus the
+copy that is committed.
+
+For `content-publishing-expert` the contract is the sanitizer allowlist, field lengths, slug and
+route rules, and metadata plumbing; its best finding is a narrowed contract that existing rows
+already violate. For `advocacy-campaign-copy-expert` it is the consent artifact in
+`EndorsementForm.tsx`, the endorser emails in `backend/templates/emails/`, the stakeholder and bill
+vocabulary, and the staff guidance in `admin_help/content/`; its best finding is a caveat with no
+field to live in, or a claim with nowhere to record its source.
 
 These cite concrete paths in this codebase (`backend/coalition/stakeholders/models.py`,
 `backend/coalition/content/html_sanitizer.py`, `frontend/app/campaigns/[name]/page.tsx`). When
