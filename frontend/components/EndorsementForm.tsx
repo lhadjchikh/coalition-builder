@@ -1,4 +1,5 @@
 import React, {
+  useEffect,
   useState,
   useRef,
   forwardRef,
@@ -122,6 +123,19 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
     const formRef = useRef<HTMLFormElement>(null);
     const typeSelectRef = useRef<HTMLSelectElement>(null);
     const submitButtonRef = useRef<HTMLButtonElement>(null);
+    const errorMessageRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      if (!error || !errorMessageRef.current) {
+        return;
+      }
+
+      errorMessageRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      errorMessageRef.current.focus({ preventScroll: true });
+    }, [error]);
 
     // Expose methods to parent component
     useImperativeHandle(
@@ -324,7 +338,13 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
         )}
 
         {error && (
-          <div className="error-message" data-testid="error-message">
+          <div
+            className="error-message"
+            data-testid="error-message"
+            ref={errorMessageRef}
+            role="alert"
+            tabIndex={-1}
+          >
             <p>Error: {error}</p>
           </div>
         )}
