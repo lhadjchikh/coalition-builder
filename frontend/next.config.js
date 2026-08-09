@@ -5,7 +5,8 @@ const API_BASE_URL =
   process.env.API_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
   "http://localhost:8000";
-const ADMIN_PAGE_URL = `${API_BASE_URL.replace(/\/+$/, "")}/admin/`;
+const BROWSER_API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || API_BASE_URL;
+const ADMIN_PAGE_URL = `${BROWSER_API_BASE_URL.replace(/\/+$/, "")}/admin/`;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

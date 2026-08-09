@@ -48,28 +48,29 @@ describe("next.config.js redirects", () => {
   });
 
   it("normalizes the production API URL before appending /admin/", async () => {
-    const originalApiUrl = process.env.API_URL;
-    process.env.API_URL = "https://api.landandbay.org/";
-    jest.resetModules();
+    const productionRedirects = await loadRedirectsForApiUrls(
+      "https://api.landandbay.org/",
+      "https://api.landandbay.org/"
+    );
 
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const productionConfig = require("../next.config.js");
-      const productionRedirects = await productionConfig.redirects();
+    expect(productionRedirects).toContainEqual({
+      source: "/admin",
+      destination: "https://api.landandbay.org/admin/",
+      permanent: false,
+    });
+  });
 
-      expect(productionRedirects).toContainEqual({
-        source: "/admin",
-        destination: "https://api.landandbay.org/admin/",
-        permanent: false,
-      });
-    } finally {
-      if (originalApiUrl === undefined) {
-        delete process.env.API_URL;
-      } else {
-        process.env.API_URL = originalApiUrl;
-      }
-      jest.resetModules();
-    }
+  it("uses the browser-reachable API URL when server and public URLs differ", async () => {
+    const developmentRedirects = await loadRedirectsForApiUrls(
+      "http://api:8000",
+      "http://localhost:8000"
+    );
+
+    expect(developmentRedirects).toContainEqual({
+      source: "/admin",
+      destination: "http://localhost:8000/admin/",
+      permanent: false,
+    });
   });
 });
 
@@ -78,3 +79,30 @@ describe("next.config.js build type checking", () => {
     expect(nextConfig.typescript.tsconfigPath).toBe("tsconfig.build.json");
   });
 });
+
+async function loadRedirectsForApiUrls(apiUrl, publicApiUrl) {
+  const originalApiUrl = process.env.API_URL;
+  const originalPublicApiUrl = process.env.NEXT_PUBLIC_API_URL;
+  process.env.API_URL = apiUrl;
+  process.env.NEXT_PUBLIC_API_URL = publicApiUrl;
+  jest.resetModules();
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const configuredNextConfig = require("../next.config.js");
+    return await configuredNextConfig.redirects();
+  } finally {
+    restoreEnvironmentVariable("API_URL", originalApiUrl);
+    restoreEnvironmentVariable("NEXT_PUBLIC_API_URL", originalPublicApiUrl);
+    jest.resetModules();
+  }
+}
+
+function restoreEnvironmentVariable(name, originalValue) {
+  if (originalValue === undefined) {
+    delete process.env[name];
+    return;
+  }
+
+  process.env[name] = originalValue;
+}
