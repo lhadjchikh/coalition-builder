@@ -235,6 +235,22 @@ describe("EndorsementForm", () => {
     expect(screen.getByTestId("zip-code-input")).toHaveValue("");
   });
 
+  it("clears dependent location fields when the street address is edited", async () => {
+    render(<EndorsementForm campaign={mockCampaign} />);
+
+    await fillAddressFields();
+    fireEvent.change(screen.getByTestId("street-address-input"), {
+      target: { value: "789 Different St" },
+    });
+
+    expect(screen.getByTestId("street-address-input")).toHaveValue(
+      "789 Different St"
+    );
+    expect(screen.getByTestId("city-input")).toHaveValue("");
+    expect(screen.getByTestId("state-select")).toHaveValue("");
+    expect(screen.getByTestId("zip-code-input")).toHaveValue("");
+  });
+
   describe("Social Sharing Integration", () => {
     it("displays social share buttons after successful submission", async () => {
       render(<EndorsementForm campaign={mockCampaign} />);
