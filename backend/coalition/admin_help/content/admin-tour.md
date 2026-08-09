@@ -18,6 +18,13 @@ Legislators, Legal documents, and Terms acceptances. They belong to other people
 jobs and several of them change how the whole public site looks. Don't experiment
 in them. If you think you need something there, ask {{ supervisor_contact }}.
 
+## Site timezone
+
+If you are responsible for site configuration, use
+[Site Administration → Site configuration]({% url 'admin:core_siteconfiguration_changelist' %})
+to choose the timezone used for dates and times throughout the admin. The setting
+applies to every administrator; it does not change how timestamps are stored.
+
 ## Four conventions worth knowing
 
 **The list page versus the detail page.**

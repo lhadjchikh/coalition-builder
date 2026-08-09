@@ -1,0 +1,27 @@
+"""Request-local timezone activation for Django's admin site."""
+
+from collections.abc import Callable
+
+from django.conf import settings
+from django.http import HttpRequest, HttpResponse
+from django.utils import timezone
+
+from coalition.core.models import SiteConfiguration
+
+
+class AdminTimezoneMiddleware:
+    """Render admin requests in the configured site timezone."""
+
+    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
+        self.get_response = get_response
+
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+        admin_path_prefix = f"/{settings.ADMIN_URL_PATH}"
+        if not request.path_info.startswith(admin_path_prefix):
+            return self.get_response(request)
+
+        timezone.activate(SiteConfiguration.get_timezone())
+        try:
+            return self.get_response(request)
+        finally:
+            timezone.deactivate()

@@ -220,6 +220,9 @@ CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "info@example.org")
 ADMIN_HELP_SUPERVISOR_CONTACT = os.getenv("ADMIN_HELP_SUPERVISOR_CONTACT", "")
 ADMIN_HELP_TECHNICAL_CONTACT = os.getenv("ADMIN_HELP_TECHNICAL_CONTACT", "")
 
+# Shared by URL routing and middleware that applies only to the Django admin.
+ADMIN_URL_PATH = "admin/"
+
 
 # Application definition
 
@@ -235,6 +238,7 @@ INSTALLED_APPS = [
     "lockdown",
     "storages",
     "tinymce",
+    "coalition.core.apps.CoreConfig",
     "coalition.admin_help.apps.AdminHelpConfig",
     "coalition.content.apps.ContentConfig",
     "coalition.campaigns.apps.CampaignsConfig",
@@ -294,6 +298,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "coalition.core.middleware.timezone.AdminTimezoneMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
