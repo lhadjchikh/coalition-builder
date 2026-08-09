@@ -80,13 +80,33 @@ run "discovered_id_is_published_to_callers" {
   override_data {
     target = data.aws_api_gateway_rest_api.zappa[0]
     values = {
-      id = "uk2du4bcdh"
+      id = "firstmockid"
     }
   }
 
   assert {
-    condition     = output.api_gateway_id == "uk2du4bcdh"
+    condition     = output.api_gateway_id == "firstmockid"
     error_message = "The module must publish the discovered id so environments never hold a second copy of it."
+  }
+}
+
+run "published_id_follows_the_discovered_api" {
+  command = plan
+
+  variables {
+    discover_api_gateway = true
+  }
+
+  override_data {
+    target = data.aws_api_gateway_rest_api.zappa[0]
+    values = {
+      id = "secondmockid"
+    }
+  }
+
+  assert {
+    condition     = output.api_gateway_id == "secondmockid"
+    error_message = "The published id must change when discovery resolves to a different REST API."
   }
 }
 
