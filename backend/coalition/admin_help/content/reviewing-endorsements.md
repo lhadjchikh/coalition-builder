@@ -26,9 +26,9 @@ consent, your display decision, the submission date, and who reviewed it.
 
 The **Endorsement type** column is the one to read carefully. It shows one of:
 
-- *Individual* — no organization given
-- *On behalf of [Organization]* — they claim authority to speak for the organization
-- *Individual (affiliated with [Organization])* — they work there but are signing
+- _Individual_ — no organization given
+- _On behalf of [Organization]_ — they claim authority to speak for the organization
+- _Individual (affiliated with [Organization])_ — they work there but are signing
   personally
 
 The middle case carries the most weight and deserves the most scrutiny. An
@@ -44,14 +44,14 @@ Click a row to open it. The form is grouped into sections:
 - **Email Verification** — verification status, timestamps, and a **Verification
   Link**
 - **Admin Review** — status, your display decision, admin notes, and who reviewed it
-- **Terms & Authorization** *(collapsed — click to expand)* — whether they accepted
+- **Terms & Authorization** _(collapsed — click to expand)_ — whether they accepted
   the Terms of Use, when, and whether they claimed organizational authority
-- **Timestamps** *(collapsed)*
+- **Timestamps** _(collapsed)_
 
 !!! tip "Stakeholder and Campaign look like empty boxes"
-    Those two fields show a record's ID number next to a magnifying glass, rather
-    than a dropdown. Click the magnifying glass to look up or change the record.
-    You will almost never need to change either one.
+Those two fields show a record's ID number next to a magnifying glass, rather
+than a dropdown. Click the magnifying glass to look up or change the record.
+You will almost never need to change either one.
 
 Then work through this mentally:
 
@@ -89,10 +89,10 @@ auto-approved endorsements as reviewed**. This records you as the reviewer and
 clears it from the queue without changing its status or sending a second email.
 
 !!! warning "Changing Status on the detail page skips the email"
-    If you instead set the Status dropdown to "Approved" inside an individual
-    record and save, it approves the endorsement and records you as reviewer — but
-    **no confirmation email is sent**. For normal approvals, always use the bulk
-    action.
+If you instead set the Status dropdown to "Approved" inside an individual
+record and save, it approves the endorsement and records you as reviewer — but
+**no confirmation email is sent**. For normal approvals, always use the bulk
+action.
 
 ## Rejecting
 
@@ -123,15 +123,15 @@ immediately.
 
 ## The other actions, and when to use them
 
-| Action | What it does | When |
-|---|---|---|
-| **Send verification emails** | Resends the verification link to endorsers who haven't verified | Someone says they never got the email, or their 24-hour link expired |
-| **Send approval notifications** | Re-sends the approval confirmation to already-approved endorsers | Rarely — an email failed to send the first time |
-| **Mark as email verified** | Flags the email as verified, skipping the link entirely | **Almost never.** See below. |
+| Action                          | What it does                                                     | When                                                                 |
+| ------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------- |
+| **Send verification emails**    | Resends the verification link to endorsers who haven't verified  | Someone says they never got the email, or their 24-hour link expired |
+| **Send approval notifications** | Re-sends the approval confirmation to already-approved endorsers | Rarely — an email failed to send the first time                      |
+| **Mark as email verified**      | Flags the email as verified, skipping the link entirely          | **Almost never.** See below.                                         |
 
 !!! warning "Mark as email verified destroys our proof"
-    Email verification is the evidence that an address is real and that its owner
-    agreed to endorse. Marking it verified by hand throws that away.
+Email verification is the evidence that an address is real and that its owner
+agreed to endorse. Marking it verified by hand throws that away.
 
     The **Verification Link** on the detail page has the same problem: clicking it
     yourself verifies the endorsement as though the endorser had.

@@ -1,9 +1,9 @@
 Go to [Campaigns → Policy campaigns → Add policy campaign]({% url 'admin:campaigns_policycampaign_add' %}).
 
 !!! tip "Fill in Title first, even though Name is above it"
-    **Name** sits at the top of the form, but it fills itself in from **Title** as
-    you type. Click into Title first and let Name populate. If you type into Name
-    yourself, the automatic fill stops and you're maintaining it by hand.
+**Name** sits at the top of the form, but it fills itself in from **Title** as
+you type. Click into Title first and let Name populate. If you type into Name
+yourself, the automatic fill stops and you're maintaining it by hand.
 
 ## The fields, in order
 
@@ -14,8 +14,8 @@ becomes part of the public web address — a campaign named
 `oyster-restoration-funding` lives at `{{ site_url }}/campaigns/oyster-restoration-funding`.
 
 !!! warning "Do not change Name after a campaign is public"
-    Changing it breaks every link anyone has shared, bookmarked, emailed, or
-    posted. Get it right the first time, then leave it alone.
+Changing it breaks every link anyone has shared, bookmarked, emailed, or
+posted. Get it right the first time, then leave it alone.
 
 ### Title
 
@@ -53,8 +53,8 @@ Whichever way you upload, fill in:
   allowed to use it.
 
 !!! warning "Only upload images we have the rights to use"
-    If you are not certain we can use a photo, ask {{ supervisor_contact }} before
-    uploading it.
+If you are not certain we can use a photo, ask {{ supervisor_contact }} before
+uploading it.
 
 ### Active
 

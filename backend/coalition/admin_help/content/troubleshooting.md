@@ -32,7 +32,7 @@ completely, not merely unlisted.
 ## "The same person seems to have endorsed twice"
 
 Not possible for the same campaign — the system refuses duplicates. So check
-whether the two entries are for *different* campaigns, whether they are two
+whether the two entries are for _different_ campaigns, whether they are two
 different people at the same organization, or whether one person used two email
 addresses.
 

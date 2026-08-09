@@ -43,13 +43,13 @@ CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 
 ### Organization Configuration
 
-| Variable                            | Description                                        | Default                          | Required |
-| ----------------------------------- | -------------------------------------------------- | -------------------------------- | -------- |
-| `ORGANIZATION_NAME`                 | Organization name for emails and branding          | `Coalition Builder`              | Yes      |
-| `ORG_TAGLINE`                       | Organization tagline (fallback)                    | `Building advocacy partnerships` | No       |
-| `CONTACT_EMAIL`                     | Primary contact email address                      | `info@example.org`               | Yes      |
-| `ADMIN_HELP_SUPERVISOR_CONTACT`     | Supervisor contact shown in the in-admin guide     | Generic supervisor wording       | No       |
-| `ADMIN_HELP_TECHNICAL_CONTACT`      | Technical support contact shown in the admin guide | Generic support wording          | No       |
+| Variable                        | Description                                        | Default                          | Required |
+| ------------------------------- | -------------------------------------------------- | -------------------------------- | -------- |
+| `ORGANIZATION_NAME`             | Organization name for emails and branding          | `Coalition Builder`              | Yes      |
+| `ORG_TAGLINE`                   | Organization tagline (fallback)                    | `Building advocacy partnerships` | No       |
+| `CONTACT_EMAIL`                 | Primary contact email address                      | `info@example.org`               | Yes      |
+| `ADMIN_HELP_SUPERVISOR_CONTACT` | Supervisor contact shown in the in-admin guide     | Generic supervisor wording       | No       |
+| `ADMIN_HELP_TECHNICAL_CONTACT`  | Technical support contact shown in the admin guide | Generic support wording          | No       |
 
 **Note:** `ORGANIZATION_NAME` and `CONTACT_EMAIL` are required for proper email functionality. These also serve as fallbacks when no active homepage configuration exists in the database.
 

@@ -24,12 +24,12 @@ them a verification link.
 
 ## The four statuses
 
-| Status | Meaning | What you do |
-|---|---|---|
-| **Pending Email Verification** | Submitted, but they haven't clicked the link in their email yet. | Nothing. Wait. |
-| **Email Verified** | They clicked the link. A real, reachable person. | **Review it.** |
-| **Approved for Display** | It was approved manually or by the optional automatic-approval setting. | Confirm a reviewer is recorded, then optionally select it for public display. |
-| **Rejected** | You reviewed it and turned it down. | Nothing further. |
+| Status                         | Meaning                                                                 | What you do                                                                   |
+| ------------------------------ | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| **Pending Email Verification** | Submitted, but they haven't clicked the link in their email yet.        | Nothing. Wait.                                                                |
+| **Email Verified**             | They clicked the link. A real, reachable person.                        | **Review it.**                                                                |
+| **Approved for Display**       | It was approved manually or by the optional automatic-approval setting. | Confirm a reviewer is recorded, then optionally select it for public display. |
+| **Rejected**                   | You reviewed it and turned it down.                                     | Nothing further.                                                              |
 
 Your review queue is every endorsement where **Email verified** is **Yes** and
 **Reviewed at** is **Empty**. This works whether verification leaves records at
@@ -46,7 +46,7 @@ are true at once**:
 
 1. **Public display** — the endorser's own consent. This box is checked by default
    on the public form, so an endorsement that fails this gate is one where the
-   person deliberately *unchecked* it. That is a clear "please don't put my name
+   person deliberately _unchecked_ it. That is a clear "please don't put my name
    out there." The field is technically editable here, but **never tick it on
    someone's behalf.** If they opted out, they stay out.
 2. **Email verified** — they clicked the link in their email.
@@ -56,8 +56,8 @@ are true at once**:
 5. **Display publicly** — you separately selected it to appear on the page.
 
 !!! warning "The two column names that trip everyone up"
-    **Public display** is what the *endorser* consented to.
-    **Display publicly** is what *you* decided.
+**Public display** is what the _endorser_ consented to.
+**Display publicly** is what _you_ decided.
 
     They sound identical. They mean opposite-facing things. Read them slowly, every
     time.

@@ -3,13 +3,13 @@ here is live on the public site the moment you save it.
 
 ## The sections you will use
 
-| Section | What's in it |
-|---|---|
-| [Campaigns → Policy campaigns]({% url 'admin:campaigns_policycampaign_changelist' %}) | Every campaign. Where you create new ones. |
-| [Campaigns → Bills]({% url 'admin:campaigns_bill_changelist' %}) | Every bill on its own. You'll usually add bills from inside a campaign instead. |
-| [Endorsements → Endorsements]({% url 'admin:endorsements_endorsement_changelist' %}) | Your review queue. Home base. |
-| [Stakeholders → Stakeholders]({% url 'admin:stakeholders_stakeholder_changelist' %}) | Everyone who has ever endorsed. Mostly for looking things up. |
-| [Content → Images]({% url 'admin:content_image_changelist' %}) | The image library. Upload images here, or straight from the campaign form. |
+| Section                                                                               | What's in it                                                                    |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| [Campaigns → Policy campaigns]({% url 'admin:campaigns_policycampaign_changelist' %}) | Every campaign. Where you create new ones.                                      |
+| [Campaigns → Bills]({% url 'admin:campaigns_bill_changelist' %})                      | Every bill on its own. You'll usually add bills from inside a campaign instead. |
+| [Endorsements → Endorsements]({% url 'admin:endorsements_endorsement_changelist' %})  | Your review queue. Home base.                                                   |
+| [Stakeholders → Stakeholders]({% url 'admin:stakeholders_stakeholder_changelist' %})  | Everyone who has ever endorsed. Mostly for looking things up.                   |
+| [Content → Images]({% url 'admin:content_image_changelist' %})                        | The image library. Upload images here, or straight from the campaign form.      |
 
 ## The sections you will not use
 
@@ -36,24 +36,24 @@ fastest way to spot a batch of near-identical spam submissions.
 **The Action dropdown** at the top-left of a list page performs an operation on many
 records at once: tick the checkboxes on the left, choose an action, click **Go**.
 This is the fast way to work through a review queue, and on the endorsement list
-it is also the *correct* way — see
+it is also the _correct_ way — see
 [Reviewing and approving endorsements]({% url 'admin_help:page' 'reviewing-endorsements' %}).
 
 ## Two places it is easy to slip
 
 !!! warning "Some checkboxes are editable from the list page itself"
-    On the campaign list, **Active** and **Allow endorsements** are live checkboxes
-    in each row, with a **Save** button at the bottom of the page. That means you
-    can publish or unpublish a campaign without ever opening it — including by
-    accident, while you meant to be looking at something else. The bill list works
-    the same way for **Is primary**.
+On the campaign list, **Active** and **Allow endorsements** are live checkboxes
+in each row, with a **Save** button at the bottom of the page. That means you
+can publish or unpublish a campaign without ever opening it — including by
+accident, while you meant to be looking at something else. The bill list works
+the same way for **Is primary**.
 
     Nothing happens until you click Save at the bottom. If you tick something by
     mistake, navigate away instead of saving.
 
 !!! warning "Nothing here has an undo"
-    There is no undo button, and some actions send email that cannot be unsent.
-    Read the action you picked before you click Go.
+There is no undo button, and some actions send email that cannot be unsent.
+Read the action you picked before you click Go.
 
 ## Reading the campaign list
 

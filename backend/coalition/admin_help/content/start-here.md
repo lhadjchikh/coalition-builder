@@ -11,10 +11,10 @@ support behind the policy.**
 
 The site has two halves:
 
-| Half | Who sees it | What it is |
-|---|---|---|
-| **The public site** | Anyone on the internet | Campaign pages, the endorsement form, the list of supporters |
-| **The admin** | Only staff with a login | This control panel, where campaigns are built and endorsements are reviewed |
+| Half                | Who sees it             | What it is                                                                  |
+| ------------------- | ----------------------- | --------------------------------------------------------------------------- |
+| **The public site** | Anyone on the internet  | Campaign pages, the endorsement form, the list of supporters                |
+| **The admin**       | Only staff with a login | This control panel, where campaigns are built and endorsements are reviewed |
 
 You will spend nearly all of your time in the admin.
 
@@ -28,21 +28,21 @@ point of your role. It protects the organization's credibility.
 The admin uses specific words for specific things. Learning these five makes
 everything else click.
 
-**Campaign** *(labelled "Policy campaign" in the admin)*
+**Campaign** _(labelled "Policy campaign" in the admin)_
 : A policy position we're advocating for. Each campaign gets its own public page
-  with its own endorsement form. Example: a campaign supporting a bill to fund
-  oyster restoration.
+with its own endorsement form. Example: a campaign supporting a bill to fund
+oyster restoration.
 
 **Bill**
 : A piece of actual legislation, federal or state, attached to a campaign. A
-  campaign can have several bills, or none. Bills are optional context — a
-  campaign works fine without one.
+campaign can have several bills, or none. Bills are optional context — a
+campaign works fine without one.
 
 **Stakeholder**
 : A person who has interacted with us, usually because they filled out an
-  endorsement form. Their record holds their name, email, organization, address,
-  and what kind of stakeholder they are: farmer, waterman, business, nonprofit,
-  scientist, health care professional, government, individual, or other.
+endorsement form. Their record holds their name, email, organization, address,
+and what kind of stakeholder they are: farmer, waterman, business, nonprofit,
+scientist, health care professional, government, individual, or other.
 
     Stakeholders are created **automatically** when someone endorses. You will
     rarely create one by hand. One email address means one stakeholder record,
@@ -51,15 +51,15 @@ everything else click.
 
 **Endorsement**
 : The link between one stakeholder and one campaign. This is the thing you review.
-  A stakeholder can endorse a given campaign only once; the system refuses
-  duplicates.
+A stakeholder can endorse a given campaign only once; the system refuses
+duplicates.
 
 **Status**
 : Where an endorsement sits in the pipeline. Four values: Pending Email
-  Verification → Email Verified → Approved for Display, or Rejected. An optional
-  automatic-approval setting can move a verified endorsement directly to Approved
-  for Display; it still needs a human reviewer. Explained in full on [How an
-  endorsement travels]({% url 'admin_help:page' 'endorsement-pipeline' %}).
+Verification → Email Verified → Approved for Display, or Rejected. An optional
+automatic-approval setting can move a verified endorsement directly to Approved
+for Display; it still needs a human reviewer. Explained in full on [How an
+endorsement travels]({% url 'admin_help:page' 'endorsement-pipeline' %}).
 
 ## Your first week
 
