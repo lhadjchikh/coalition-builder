@@ -64,6 +64,10 @@ module "networking" {
   create_vpc_endpoints       = var.enable_vpc_endpoints
   enable_single_az_endpoints = true
 
+  # Opt in temporarily through the Dev Cost Control workflow when validating
+  # SES connectivity from the dev VPC.
+  enable_ses_endpoint = var.enable_ses_endpoint
+
   # Nothing here calls the CloudWatch Logs API; Lambda's own logs arrive
   # without it. Saves ~$7.44/mo whenever dev endpoints are switched on.
   enable_logs_endpoint = false
