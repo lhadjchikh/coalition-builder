@@ -22,7 +22,7 @@ def list_people(request: HttpRequest) -> QuerySet[PersonGroup]:
 def get_person_profile(request: HttpRequest, person_slug: str) -> Person:
     """Get one active, publicly enabled biography within a visible group."""
     return get_object_or_404(
-        Person.objects.select_related("group", "headshot"),
+        Person.objects.select_related("group", "profile_image"),
         slug=person_slug,
         is_active=True,
         profile_page_enabled=True,

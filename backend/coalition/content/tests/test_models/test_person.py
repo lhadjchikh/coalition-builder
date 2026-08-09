@@ -23,7 +23,7 @@ class PersonModelTest(BaseTestCase):
 
         assert person.slug == "jane-doe"
         assert person.bio == ""
-        assert person.headshot is None
+        assert person.profile_image is None
         assert person.email == ""
         assert person.linkedin_url == ""
         assert person.order == 0
@@ -39,14 +39,14 @@ class PersonModelTest(BaseTestCase):
 
         assert list(Person.objects.all()) == [first_earlier, first_later, second]
 
-    def test_declares_protected_group_and_nullable_headshot_boundaries(self) -> None:
+    def test_declares_group_and_profile_image_delete_boundaries(self) -> None:
         group_field = Person._meta.get_field("group")
-        headshot_field = Person._meta.get_field("headshot")
+        profile_image_field = Person._meta.get_field("profile_image")
 
         assert group_field.remote_field.on_delete is PROTECT
-        assert headshot_field.remote_field.on_delete is SET_NULL
-        assert headshot_field.null is True
-        assert headshot_field.blank is True
+        assert profile_image_field.remote_field.on_delete is SET_NULL
+        assert profile_image_field.null is True
+        assert profile_image_field.blank is True
 
     def test_sanitizes_name_title_and_bio_before_saving(self) -> None:
         person = self.create_person(
@@ -148,18 +148,18 @@ class PersonModelTest(BaseTestCase):
         assert person.email == ""
         assert person.linkedin_url == ""
 
-    def test_deleting_headshot_sets_reference_to_null(self) -> None:
+    def test_deleting_profile_image_sets_reference_to_null(self) -> None:
         image = Image.objects.create(title="Jane", alt_text="Jane Doe")
-        person = self.create_person(headshot=image)
+        person = self.create_person(profile_image=image)
 
         image.delete()
         person.refresh_from_db()
 
-        assert person.headshot is None
+        assert person.profile_image is None
 
-    def test_deleting_person_preserves_headshot(self) -> None:
+    def test_deleting_person_preserves_profile_image(self) -> None:
         image = Image.objects.create(title="Jane", alt_text="Jane Doe")
-        person = self.create_person(headshot=image)
+        person = self.create_person(profile_image=image)
 
         person.delete()
 

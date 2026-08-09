@@ -26,14 +26,14 @@ const groups: PersonGroup[] = [
         linkedin_url: "https://www.linkedin.com/in/jane-doe",
         order: 1,
         profile_page_enabled: true,
-        headshot_url: "https://example.com/jane.jpg",
-        headshot_alt_text: "",
-        headshot_title: "Jane portrait",
-        headshot_author: "Photographer",
-        headshot_license: "CC BY 4.0",
-        headshot_source_url: "https://example.com/source",
-        headshot_caption: "Portrait credit",
-        headshot_caption_display: "below",
+        profile_image_url: "https://example.com/jane.jpg",
+        profile_image_alt_text: "",
+        profile_image_title: "Jane portrait",
+        profile_image_author: "Photographer",
+        profile_image_license: "CC BY 4.0",
+        profile_image_source_url: "https://example.com/source",
+        profile_image_caption: "Portrait credit",
+        profile_image_caption_display: "below",
       },
       {
         id: 2,
@@ -43,14 +43,14 @@ const groups: PersonGroup[] = [
         linkedin_url: "",
         order: 2,
         profile_page_enabled: false,
-        headshot_url: "",
-        headshot_alt_text: "",
-        headshot_title: "",
-        headshot_author: "",
-        headshot_license: "",
-        headshot_source_url: "",
-        headshot_caption: "",
-        headshot_caption_display: "",
+        profile_image_url: "",
+        profile_image_alt_text: "",
+        profile_image_title: "",
+        profile_image_author: "",
+        profile_image_license: "",
+        profile_image_source_url: "",
+        profile_image_caption: "",
+        profile_image_caption_display: "",
       },
     ],
   },
@@ -105,7 +105,7 @@ describe("TeamPage", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("uses image alt fallback, credits, and a same-size missing-headshot placeholder", () => {
+  it("uses image alt fallback, credits, and a same-size missing-photo placeholder", () => {
     render(
       <TeamPage
         orgInfo={homepage}
@@ -117,7 +117,7 @@ describe("TeamPage", () => {
 
     expect(screen.getByRole("img", { name: "Jane Doe" })).toBeInTheDocument();
     expect(screen.getByText("Portrait credit")).toBeInTheDocument();
-    const placeholder = screen.getByTestId("headshot-placeholder");
+    const placeholder = screen.getByTestId("profile-image-placeholder");
     expect(placeholder).toHaveClass("aspect-square");
     expect(placeholder.querySelector("img")).not.toBeInTheDocument();
   });

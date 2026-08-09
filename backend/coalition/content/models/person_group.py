@@ -21,10 +21,12 @@ class PersonGroupQuerySet(models.QuerySet["PersonGroup"]):
         return self.filter(is_visible=True, people__is_active=True).distinct()
 
     def with_public_people(self) -> "Self":
-        """Prefetch active people and their headshots in deterministic order."""
+        """Prefetch active people and profile photos in deterministic order."""
         from .person import Person
 
-        active_people = Person.objects.filter(is_active=True).select_related("headshot")
+        active_people = Person.objects.filter(is_active=True).select_related(
+            "profile_image",
+        )
         return self.publishable().prefetch_related(
             Prefetch("people", queryset=active_people, to_attr="active_people"),
         )

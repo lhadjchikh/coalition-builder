@@ -18,7 +18,7 @@ class PersonAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
         "order",
         "is_active",
         "profile_page_enabled",
-        "has_headshot",
+        "has_profile_image",
     )
     list_filter = ("group", "is_active", "profile_page_enabled")
     list_editable = ("order", "is_active")
@@ -43,7 +43,7 @@ class PersonAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
             "Biography & Contact",
             {"fields": ("bio", "email", "linkedin_url")},
         ),
-        ("Headshot", {"fields": ("headshot",)}),
+        ("Profile photo", {"fields": ("profile_image",)}),
         (
             "Metadata",
             {
@@ -53,7 +53,7 @@ class PersonAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
         ),
     )
 
-    @admin.display(description="Has Headshot", boolean=True)
-    def has_headshot(self, obj: Person) -> bool:
+    @admin.display(description="Has profile photo", boolean=True)
+    def has_profile_image(self, obj: Person) -> bool:
         """Report whether the person references an image."""
-        return obj.headshot_id is not None
+        return obj.profile_image_id is not None

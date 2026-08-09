@@ -27,12 +27,13 @@ class Person(models.Model):
     slug = models.SlugField(max_length=SLUG_MAX_LENGTH, unique=True, editable=False)
     title = models.CharField(max_length=200)
     bio = HTMLField(blank=True)
-    headshot = models.ForeignKey(
+    profile_image = models.ForeignKey(
         "content.Image",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="person_headshots",
+        related_name="person_profile_images",
+        verbose_name="profile photo",
     )
     email = models.EmailField(blank=True)
     linkedin_url = models.URLField(
@@ -55,44 +56,44 @@ class Person(models.Model):
         return self.name
 
     @property
-    def headshot_url(self) -> str:
-        """Return the headshot URL or an empty public value."""
-        return self.headshot.image_url if self.headshot else ""
+    def profile_image_url(self) -> str:
+        """Return the profile photo URL or an empty public value."""
+        return self.profile_image.image_url if self.profile_image else ""
 
     @property
-    def headshot_alt_text(self) -> str:
-        """Return the stored headshot alt text or an empty public value."""
-        return self.headshot.alt_text if self.headshot else ""
+    def profile_image_alt_text(self) -> str:
+        """Return the stored profile photo alt text or an empty public value."""
+        return self.profile_image.alt_text if self.profile_image else ""
 
     @property
-    def headshot_title(self) -> str:
-        """Return the headshot title or an empty public value."""
-        return self.headshot.title if self.headshot else ""
+    def profile_image_title(self) -> str:
+        """Return the profile photo title or an empty public value."""
+        return self.profile_image.title if self.profile_image else ""
 
     @property
-    def headshot_author(self) -> str:
-        """Return the headshot author or an empty public value."""
-        return self.headshot.author if self.headshot else ""
+    def profile_image_author(self) -> str:
+        """Return the profile photo author or an empty public value."""
+        return self.profile_image.author if self.profile_image else ""
 
     @property
-    def headshot_license(self) -> str:
-        """Return the headshot license or an empty public value."""
-        return self.headshot.license if self.headshot else ""
+    def profile_image_license(self) -> str:
+        """Return the profile photo license or an empty public value."""
+        return self.profile_image.license if self.profile_image else ""
 
     @property
-    def headshot_source_url(self) -> str:
-        """Return the headshot source URL or an empty public value."""
-        return self.headshot.source_url if self.headshot else ""
+    def profile_image_source_url(self) -> str:
+        """Return the profile photo source URL or an empty public value."""
+        return self.profile_image.source_url if self.profile_image else ""
 
     @property
-    def headshot_caption(self) -> str:
-        """Return the headshot caption or an empty public value."""
-        return self.headshot.caption if self.headshot else ""
+    def profile_image_caption(self) -> str:
+        """Return the profile photo caption or an empty public value."""
+        return self.profile_image.caption if self.profile_image else ""
 
     @property
-    def headshot_caption_display(self) -> str:
-        """Return the headshot caption mode or an empty public value."""
-        return self.headshot.caption_display if self.headshot else ""
+    def profile_image_caption_display(self) -> str:
+        """Return the profile photo caption mode or an empty public value."""
+        return self.profile_image.caption_display if self.profile_image else ""
 
     def clean(self) -> None:
         """Require meaningful biography content before publishing a profile page."""

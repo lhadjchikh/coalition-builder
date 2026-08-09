@@ -247,14 +247,14 @@ class ContentBlockOut(ModelSchema):
 class PersonOut(ModelSchema):
     """Explicit public fields for a compact team-page person card."""
 
-    headshot_url: str
-    headshot_alt_text: str
-    headshot_title: str
-    headshot_author: str
-    headshot_license: str
-    headshot_source_url: str
-    headshot_caption: str
-    headshot_caption_display: str
+    profile_image_url: str
+    profile_image_alt_text: str
+    profile_image_title: str
+    profile_image_author: str
+    profile_image_license: str
+    profile_image_source_url: str
+    profile_image_caption: str
+    profile_image_caption_display: str
 
     class Meta:
         model = Person

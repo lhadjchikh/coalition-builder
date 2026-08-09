@@ -28,7 +28,7 @@ class PersonAdminTest(BaseTestCase):
             "order",
             "is_active",
             "profile_page_enabled",
-            "has_headshot",
+            "has_profile_image",
         )
         assert self.admin.list_filter == (
             "group",
@@ -39,14 +39,14 @@ class PersonAdminTest(BaseTestCase):
         assert self.admin.readonly_fields == ("slug", "created_at", "updated_at")
         assert len(self.admin.fieldsets) == 4
 
-    def test_reports_whether_person_has_a_headshot(self) -> None:
+    def test_reports_whether_person_has_a_profile_image(self) -> None:
         person = Person.objects.create(
             group=self.group,
             name="Jane Doe",
             title="Director",
         )
 
-        assert self.admin.has_headshot(person) is False
+        assert self.admin.has_profile_image(person) is False
 
     def test_changelist_cannot_enable_profile_without_biography_field(self) -> None:
         superuser = User.objects.create_superuser(

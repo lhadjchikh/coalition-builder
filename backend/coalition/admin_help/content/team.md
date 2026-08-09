@@ -1,4 +1,4 @@
-The public team area has two levels. The `/team` page is a compact directory with each person's headshot, name, and title. A person can also have an optional profile page containing their full biography.
+The public team area has two levels. The `/team` page is a compact directory with each person's profile photo, name, and title. A person can also have an optional profile page containing their full biography.
 
 ## Create a group
 
@@ -15,9 +15,9 @@ Open [People]({% url 'admin:content_person_changelist' %}) and choose **Add pers
 
 Use **Active** to control whether the person appears publicly. Within a group, lower **Order** values appear first. You can also change order and active status from the people table embedded in the group form.
 
-## Prepare a headshot
+## Prepare a profile photo
 
-Use a square image, recommended at **800 × 800 pixels**. Crop around the person's head and shoulders and leave a little space above the head. Upload it through [Images]({% url 'admin:content_image_changelist' %}) with meaningful alt text and all required credit information, then select it as the person's headshot. The site uses a neutral square placeholder when no headshot is selected.
+Use a square image, recommended at **800 × 800 pixels**. A formal portrait, candid photo, or illustration can all work as long as the person is easy to recognize at card size. Upload it through [Images]({% url 'admin:content_image_changelist' %}) with meaningful alt text and all required credit information, then select it as the person's profile photo. The site uses a neutral square placeholder when no profile photo is selected.
 
 ## Enable an optional profile page
 

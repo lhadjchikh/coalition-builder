@@ -15,14 +15,14 @@ const person: PersonDetail = {
   linkedin_url: "https://www.linkedin.com/in/jane-doe",
   order: 1,
   profile_page_enabled: true,
-  headshot_url: "",
-  headshot_alt_text: "",
-  headshot_title: "",
-  headshot_author: "",
-  headshot_license: "",
-  headshot_source_url: "",
-  headshot_caption: "",
-  headshot_caption_display: "",
+  profile_image_url: "",
+  profile_image_alt_text: "",
+  profile_image_title: "",
+  profile_image_author: "",
+  profile_image_license: "",
+  profile_image_source_url: "",
+  profile_image_caption: "",
+  profile_image_caption_display: "",
 };
 
 describe("PersonProfilePage", () => {

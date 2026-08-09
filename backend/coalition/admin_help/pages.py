@@ -46,7 +46,7 @@ HELP_PAGES: tuple[HelpPage, ...] = (
     HelpPage(
         slug="team",
         title="Managing the team page",
-        blurb="Groups, people, headshots, biography pages, ordering, and publication.",
+        blurb="Groups, people, profile photos, biographies, ordering, and publication.",
     ),
     HelpPage(
         slug="bills",

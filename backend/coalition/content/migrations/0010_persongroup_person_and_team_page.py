@@ -85,13 +85,14 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "headshot",
+                    "profile_image",
                     models.ForeignKey(
                         blank=True,
                         null=True,
                         on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="person_headshots",
+                        related_name="person_profile_images",
                         to="content.image",
+                        verbose_name="profile photo",
                     ),
                 ),
             ],

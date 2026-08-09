@@ -240,14 +240,14 @@ export interface Person {
   linkedin_url: string;
   order: number;
   profile_page_enabled: boolean;
-  headshot_url: string;
-  headshot_alt_text: string;
-  headshot_title: string;
-  headshot_author: string;
-  headshot_license: string;
-  headshot_source_url: string;
-  headshot_caption: string;
-  headshot_caption_display: ImageCaptionDisplay;
+  profile_image_url: string;
+  profile_image_alt_text: string;
+  profile_image_title: string;
+  profile_image_author: string;
+  profile_image_license: string;
+  profile_image_source_url: string;
+  profile_image_caption: string;
+  profile_image_caption_display: ImageCaptionDisplay;
 }
 
 export interface PersonDetail extends Person {

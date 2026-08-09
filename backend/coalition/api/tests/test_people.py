@@ -96,7 +96,7 @@ class PeopleAPITest(BaseTestCase):
         assert "bio" not in response_text
         assert "Full private listing biography" not in response_text
 
-    def test_serializes_headshot_attribution_and_profile_state(self) -> None:
+    def test_serializes_profile_image_attribution_and_profile_state(self) -> None:
         group = PersonGroup.objects.create(name="Staff")
         image = Image.objects.create(
             title="Portrait",
@@ -110,7 +110,7 @@ class PeopleAPITest(BaseTestCase):
         person = self.create_person(
             group,
             "Jane Doe",
-            headshot=image,
+            profile_image=image,
             bio="<p>Full biography.</p>",
             profile_page_enabled=True,
             linkedin_url="https://www.linkedin.com/in/jane-doe",
@@ -126,17 +126,17 @@ class PeopleAPITest(BaseTestCase):
         public_person = response.json()[0]["people"][0]
         assert public_person == self.expected_person(
             person,
-            headshot_url="https://cdn.test/jane.jpg",
-            headshot_alt_text="Jane at a podium",
-            headshot_title="Portrait",
-            headshot_author="Photographer",
-            headshot_license="CC BY 4.0",
-            headshot_source_url="https://example.com/photo",
-            headshot_caption="Portrait credit",
-            headshot_caption_display="below",
+            profile_image_url="https://cdn.test/jane.jpg",
+            profile_image_alt_text="Jane at a podium",
+            profile_image_title="Portrait",
+            profile_image_author="Photographer",
+            profile_image_license="CC BY 4.0",
+            profile_image_source_url="https://example.com/photo",
+            profile_image_caption="Portrait credit",
+            profile_image_caption_display="below",
         )
 
-    def test_no_headshot_serializes_empty_attribution_fields(self) -> None:
+    def test_no_profile_image_serializes_empty_attribution_fields(self) -> None:
         group = PersonGroup.objects.create(name="Staff")
         person = self.create_person(group, "Jane Doe")
 
@@ -203,10 +203,10 @@ class PeopleAPITest(BaseTestCase):
                 )
                 assert response.status_code == 405
 
-    def test_query_count_does_not_grow_with_groups_people_or_headshots(self) -> None:
+    def test_query_count_is_constant_for_people_and_profile_images(self) -> None:
         image = Image.objects.create(title="Portrait", alt_text="Portrait")
         first_group = PersonGroup.objects.create(name="Group 0")
-        self.create_person(first_group, "Person 0", headshot=image)
+        self.create_person(first_group, "Person 0", profile_image=image)
 
         with self.assertNumQueries(2):
             small_response = self.client.get("/api/people/")
@@ -223,7 +223,7 @@ class PeopleAPITest(BaseTestCase):
                     name=f"Person {group_index}-{person_index}",
                     slug=f"person-{group_index}-{person_index}",
                     title="Member",
-                    headshot=image,
+                    profile_image=image,
                     order=person_index,
                 )
                 for group_index, group in enumerate(groups, start=1)
@@ -275,14 +275,14 @@ class PeopleAPITest(BaseTestCase):
             "linkedin_url": person.linkedin_url,
             "order": person.order,
             "profile_page_enabled": person.profile_page_enabled,
-            "headshot_url": "",
-            "headshot_alt_text": "",
-            "headshot_title": "",
-            "headshot_author": "",
-            "headshot_license": "",
-            "headshot_source_url": "",
-            "headshot_caption": "",
-            "headshot_caption_display": "",
+            "profile_image_url": "",
+            "profile_image_alt_text": "",
+            "profile_image_title": "",
+            "profile_image_author": "",
+            "profile_image_license": "",
+            "profile_image_source_url": "",
+            "profile_image_caption": "",
+            "profile_image_caption_display": "",
         }
         expected.update(overrides)
         return expected
