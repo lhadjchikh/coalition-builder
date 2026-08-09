@@ -21,18 +21,32 @@ The stable secret name intentionally preserves each existing ARN. The deployment
 
 Do not enable development deployment until the backup, role, database, and verification steps below are complete. The dev Terraform workflow enforces this with the `DATABASE_ISOLATION_READY` GitHub Environment variable.
 
+### Prepare account contexts
+
+Use named AWS CLI profiles for each account so every cross-account command has an explicit credential context. Replace these example profile names with locally configured profiles, then confirm the production and development account IDs before continuing.
+
+```bash
+export SHARED_AWS_PROFILE=coalition-shared
+export PROD_AWS_PROFILE=coalition-prod
+export DEV_AWS_PROFILE=coalition-dev
+
+PROD_AWS_ACCOUNT_ID="$(AWS_PROFILE="${PROD_AWS_PROFILE}" aws sts get-caller-identity --query Account --output text)"
+DEV_AWS_ACCOUNT_ID="$(AWS_PROFILE="${DEV_AWS_PROFILE}" aws sts get-caller-identity --query Account --output text)"
+export PROD_AWS_ACCOUNT_ID DEV_AWS_ACCOUNT_ID
+```
+
 ### Back up production
 
 Create a manual snapshot before applying any Terraform or changing roles, grants, or secrets. Replace the identifier if the Terraform `prefix` is not `coalition`.
 
 ```bash
 snapshot_id="coalition-before-db-isolation-$(date -u +%Y%m%d%H%M%S)"
-aws rds create-db-snapshot \
+AWS_PROFILE="${SHARED_AWS_PROFILE}" aws rds create-db-snapshot \
   --db-instance-identifier coalition-db \
   --db-snapshot-identifier "${snapshot_id}" \
   --cli-connect-timeout 5 \
   --cli-read-timeout 30
-aws rds wait db-snapshot-completed \
+AWS_PROFILE="${SHARED_AWS_PROFILE}" aws rds wait db-snapshot-completed \
   --db-snapshot-identifier "${snapshot_id}" \
   --cli-connect-timeout 5 \
   --cli-read-timeout 30
@@ -43,9 +57,9 @@ Record the snapshot identifier and confirm its status is `available`. Do not con
 After the snapshot is available, apply only the shared stack so the authoritative map is available in remote state. This changes the RDS module input from the old `db_name` variable to the production entry with the same value, so the plan must show no RDS replacement.
 
 ```bash
-terraform -chdir=terraform/environments/shared plan
-terraform -chdir=terraform/environments/shared apply
-terraform -chdir=terraform/environments/shared output -json environment_database_names
+AWS_PROFILE="${SHARED_AWS_PROFILE}" terraform -chdir=terraform/environments/shared plan
+AWS_PROFILE="${SHARED_AWS_PROFILE}" terraform -chdir=terraform/environments/shared apply
+AWS_PROFILE="${SHARED_AWS_PROFILE}" terraform -chdir=terraform/environments/shared output -json environment_database_names
 ```
 
 ### Provision the development database
@@ -53,13 +67,22 @@ terraform -chdir=terraform/environments/shared output -json environment_database
 Connect through the shared-account bastion or an SSH tunnel; the RDS instance is private. Obtain the names from shared state instead of typing copies.
 
 ```bash
-database_names="$(terraform -chdir=terraform/environments/shared output -json environment_database_names)"
+database_names="$(AWS_PROFILE="${SHARED_AWS_PROFILE}" terraform -chdir=terraform/environments/shared output -json environment_database_names)"
 prod_database="$(jq -r .prod <<<"${database_names}")"
 dev_database="$(jq -r .dev <<<"${database_names}")"
-rds_endpoint="$(terraform -chdir=terraform/environments/shared output -raw database_endpoint)"
+rds_endpoint="$(AWS_PROFILE="${SHARED_AWS_PROFILE}" terraform -chdir=terraform/environments/shared output -raw database_endpoint)"
 ```
 
 Ensure the existing production login and a distinct development login exist. The role names and passwords must match `APP_DB_USERNAME` and `APP_DB_PASSWORD` in their respective `prod` and `dev` GitHub Environments. Create or rotate the development password interactively with `psql`'s `\password` command so it does not enter shell history. Do not rotate the production password as part of this rollout.
+
+GitHub does not reveal stored secret values. Enter the three known login names explicitly for the provisioning command:
+
+```bash
+read -rp "RDS master username: " DB_USERNAME
+read -rp "Production application username: " PROD_APP_DB_USERNAME
+read -rp "Development application username: " DEV_APP_DB_USERNAME
+export DB_USERNAME PROD_APP_DB_USERNAME DEV_APP_DB_USERNAME
+```
 
 Run the idempotent provisioning script from a host that can reach RDS. It requires existing roles, refuses missing production data, creates only the missing development database, enables PostGIS there, and applies cross-environment denials before matching grants.
 
@@ -91,8 +114,8 @@ gh workflow run deploy_infra.yml --ref main -f environment=dev
 The `database_secret_arn` outputs should match the existing `DATABASE_SECRET_ARN` values because the secret names are stable. If an environment was configured with a different ARN, correct it before deploying Lambda.
 
 ```bash
-prod_secret_arn="$(terraform -chdir=terraform/environments/prod output -raw database_secret_arn)"
-dev_secret_arn="$(terraform -chdir=terraform/environments/dev output -raw database_secret_arn)"
+prod_secret_arn="$(AWS_PROFILE="${PROD_AWS_PROFILE}" terraform -chdir=terraform/environments/prod output -raw database_secret_arn)"
+dev_secret_arn="$(AWS_PROFILE="${DEV_AWS_PROFILE}" terraform -chdir=terraform/environments/dev output -raw database_secret_arn)"
 gh secret set DATABASE_SECRET_ARN --env prod --body "${prod_secret_arn}"
 gh secret set DATABASE_SECRET_ARN --env dev --body "${dev_secret_arn}"
 ```
@@ -109,11 +132,11 @@ gh workflow run deploy_lambda.yml --ref main -f environment=dev
 For each account, describe the database secret and confirm the account, `Environment` tag, `dbname`, and URL path without printing the password or full URL. The `backend/scripts/validate_database_secret.py` command performs these checks with bounded AWS request timeouts and is the same validator used by deployment workflows.
 
 ```bash
-poetry -C backend run python scripts/validate_database_secret.py \
+AWS_PROFILE="${PROD_AWS_PROFILE}" poetry -C backend run python scripts/validate_database_secret.py \
   --secret-arn "${prod_secret_arn}" \
   --expected-account-id "${PROD_AWS_ACCOUNT_ID}" \
   --expected-environment prod
-poetry -C backend run python scripts/validate_database_secret.py \
+AWS_PROFILE="${DEV_AWS_PROFILE}" poetry -C backend run python scripts/validate_database_secret.py \
   --secret-arn "${dev_secret_arn}" \
   --expected-account-id "${DEV_AWS_ACCOUNT_ID}" \
   --expected-environment dev
@@ -124,12 +147,12 @@ Verify database permissions through the bastion: each matching role must connect
 Verify both Lambda configurations expose the selected environment's secret ARN as `DATABASE_URL` and do not contain `DATABASE_NAME`. Then check each API health endpoint and confirm migrations exist independently in both databases.
 
 ```bash
-aws lambda get-function-configuration \
+AWS_PROFILE="${PROD_AWS_PROFILE}" aws lambda get-function-configuration \
   --function-name coalition-prod \
   --query 'Environment.Variables.{database_secret:DATABASE_URL,database_override:DATABASE_NAME}' \
   --cli-connect-timeout 5 \
   --cli-read-timeout 30
-aws lambda get-function-configuration \
+AWS_PROFILE="${DEV_AWS_PROFILE}" aws lambda get-function-configuration \
   --function-name coalition-dev \
   --query 'Environment.Variables.{database_secret:DATABASE_URL,database_override:DATABASE_NAME}' \
   --cli-connect-timeout 5 \
