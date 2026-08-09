@@ -88,7 +88,6 @@ When `create_smtp_credentials` is enabled, this is handled automatically by the 
 ## Manual Steps Required
 
 1. **Request Production Access**:
-
    - New SES accounts start in sandbox mode
    - Request production access in AWS Console → SES → Account dashboard
    - Takes ~24 hours for approval

@@ -223,23 +223,19 @@ poetry run zappa invoke prod \
 ### Common Issues
 
 1. **"Email address is not verified"**
-
    - You're in sandbox mode and trying to send to unverified address
    - Solution: Verify the recipient or request production access
 
 2. **"Connection timeout" or a request that hangs until the Lambda times out**
-
    - The task cannot reach the SES endpoint. On Lambda this means the SES interface VPC endpoint is missing: the private subnets have no NAT and no default route, so the connection never completes rather than failing fast.
    - Solution: set `enable_ses_endpoint = true` for the environment. Confirm with `socket.gethostbyname("email.<region>.amazonaws.com")` from inside the function — it must return a private VPC address, not a public one.
    - For non-Lambda deployments, ensure the task has internet egress.
 
 3. **"Invalid credentials"**
-
    - SMTP credentials are incorrect
    - Solution: Regenerate SMTP credentials in SES console. On Lambda this error should not occur at all — it authenticates with the execution role, so check `sender_role_names` and the `ses:FromAddress` condition instead.
 
 4. **"Email address is not verified" for ordinary users**
-
    - The account is still in the SES sandbox, which only permits verified recipients. Sending to your own verified domain succeeds while every real endorser is rejected, so this can look like a partial outage.
    - Solution: request production access (see "Move Out of Sandbox" above), then confirm with `aws sesv2 get-account --query ProductionAccessEnabled`.
 
