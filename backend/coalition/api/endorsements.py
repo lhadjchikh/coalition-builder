@@ -4,7 +4,9 @@ import logging
 import uuid
 from typing import Any
 
+from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -26,10 +28,32 @@ from .schemas import (
     EndorsementCreateSchema,
     EndorsementOut,
     EndorsementVerifySchema,
+    PublicEndorsementOut,
 )
 
 router = Router()
 logger = logging.getLogger(__name__)
+
+ENDORSEMENT_CHANGE_PERMISSIONS = ("endorsements.change_endorsement",)
+ENDORSEMENT_PRIVATE_READ_PERMISSIONS = (
+    "endorsements.view_endorsement",
+    "stakeholders.view_stakeholder",
+)
+
+
+def _require_staff_permissions(
+    request: HttpRequest,
+    required_permissions: tuple[str, ...],
+) -> User:
+    user = request.user
+    if (
+        isinstance(user, User)
+        and user.is_active
+        and user.is_staff
+        and user.has_perms(required_permissions)
+    ):
+        return user
+    raise HttpError(403, "Admin access required with appropriate permissions")
 
 
 def sanitize_csv_field(value: str) -> str:
@@ -213,7 +237,11 @@ def _validate_and_prepare_endorsement_data(
     ip_address = get_client_ip(request)
 
     # Verify campaign exists and allows endorsements
-    campaign = get_object_or_404(PolicyCampaign, id=data.campaign_id)
+    campaign = get_object_or_404(
+        PolicyCampaign,
+        id=data.campaign_id,
+        active=True,
+    )
     if not campaign.allow_endorsements:
         raise HttpError(400, "This campaign is not accepting endorsements")
 
@@ -354,7 +382,7 @@ def _create_endorsement_with_emails(
     return endorsement
 
 
-@router.get("/", response=list[EndorsementOut], auth=None)
+@router.get("/", response=list[PublicEndorsementOut], auth=None)
 def list_endorsements(
     request: HttpRequest,
     campaign_id: int | None = None,
@@ -369,10 +397,15 @@ def list_endorsements(
 
     Results are ordered by creation date, newest first.
     """
-    queryset = Endorsement.objects.select_related("stakeholder", "campaign").filter(
+    queryset = Endorsement.objects.select_related(
+        "stakeholder__state",
+        "campaign",
+    ).filter(
+        campaign__active=True,
         status="approved",
         public_display=True,
         email_verified=True,
+        reviewed_at__isnull=False,
         display_publicly=True,  # Admin approved for display
     )
 
@@ -461,11 +494,11 @@ def verify_endorsement(request: HttpRequest, token: str) -> dict:
     if endorsement.is_verification_expired:
         raise HttpError(400, "Verification link has expired. Please request a new one.")
 
-    # Verify the endorsement
+    was_approved = endorsement.status == "approved"
     endorsement.verify_email()
 
-    # Send confirmation email
-    EndorsementEmailService.send_confirmation_email(endorsement)
+    if not was_approved and endorsement.status == "approved":
+        EndorsementEmailService.send_confirmation_email(endorsement)
 
     return {
         "success": True,
@@ -525,19 +558,24 @@ def admin_approve_endorsement(request: HttpRequest, endorsement_id: int) -> dict
     CSRF protected: This endpoint requires CSRF token validation to prevent
     cross-site request forgery attacks against logged-in administrators.
     """
-    # Require staff/admin access for endorsement approval
-    if not request.user.is_authenticated or not request.user.is_staff:
-        raise HttpError(403, "Admin access required for endorsement approval")
+    staff_user = _require_staff_permissions(request, ENDORSEMENT_CHANGE_PERMISSIONS)
 
     endorsement = get_object_or_404(Endorsement, id=endorsement_id)
 
     if endorsement.status == "approved":
+        if endorsement.reviewed_at is None:
+            endorsement.approve(user=staff_user)
+            return {
+                "success": True,
+                "message": "Endorsement review recorded successfully",
+                "status": endorsement.status,
+            }
         return {
             "success": True,
             "message": "Endorsement was already approved",
         }
 
-    endorsement.approve(user=request.user)
+    endorsement.approve(user=staff_user)
 
     # Send confirmation email
     EndorsementEmailService.send_confirmation_email(endorsement)
@@ -556,9 +594,7 @@ def admin_reject_endorsement(request: HttpRequest, endorsement_id: int) -> dict:
     CSRF protected: This endpoint requires CSRF token validation to prevent
     cross-site request forgery attacks against logged-in administrators.
     """
-    # Require staff/admin access for endorsement rejection
-    if not request.user.is_authenticated or not request.user.is_staff:
-        raise HttpError(403, "Admin access required for endorsement rejection")
+    staff_user = _require_staff_permissions(request, ENDORSEMENT_CHANGE_PERMISSIONS)
 
     endorsement = get_object_or_404(Endorsement, id=endorsement_id)
 
@@ -568,7 +604,7 @@ def admin_reject_endorsement(request: HttpRequest, endorsement_id: int) -> dict:
             "message": "Endorsement was already rejected",
         }
 
-    endorsement.reject(user=request.user)
+    endorsement.reject(user=staff_user)
 
     return {
         "success": True,
@@ -580,13 +616,18 @@ def admin_reject_endorsement(request: HttpRequest, endorsement_id: int) -> dict:
 @router.get("/admin/pending/", response=list[EndorsementOut])
 def admin_list_pending_endorsements(request: HttpRequest) -> list[Endorsement]:
     """Admin endpoint to list endorsements requiring review"""
-    # Require staff/admin access for pending endorsements list
-    if not request.user.is_authenticated or not request.user.is_staff:
-        raise HttpError(403, "Admin access required for pending endorsements list")
+    _require_staff_permissions(request, ENDORSEMENT_PRIVATE_READ_PERMISSIONS)
 
     queryset = (
         Endorsement.objects.select_related("stakeholder", "campaign")
-        .filter(status__in=["pending", "verified"])
+        .filter(
+            Q(status__in=["pending", "verified"])
+            | Q(
+                status="approved",
+                email_verified=True,
+                reviewed_at__isnull=True,
+            ),
+        )
         .order_by("-created_at")
     )
 
@@ -599,9 +640,7 @@ def export_endorsements_csv(
     campaign_id: int | None = None,
 ) -> HttpResponse:
     """Export endorsements to CSV format (admin only)"""
-    # Require staff/admin access for data export
-    if not request.user.is_authenticated or not request.user.is_staff:
-        raise HttpError(403, "Admin access required for data export")
+    _require_staff_permissions(request, ENDORSEMENT_PRIVATE_READ_PERMISSIONS)
 
     # Get approved endorsements
     queryset = Endorsement.objects.select_related("stakeholder", "campaign").filter(
@@ -734,9 +773,7 @@ def export_endorsements_json(
     campaign_id: int | None = None,
 ) -> HttpResponse:
     """Export endorsements to JSON format (admin only)"""
-    # Require staff/admin access for data export
-    if not request.user.is_authenticated or not request.user.is_staff:
-        raise HttpError(403, "Admin access required for data export")
+    _require_staff_permissions(request, ENDORSEMENT_PRIVATE_READ_PERMISSIONS)
 
     # Get approved endorsements
     queryset = Endorsement.objects.select_related("stakeholder", "campaign").filter(

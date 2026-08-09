@@ -167,7 +167,7 @@ class EndorsementEmailService:
                     "stakeholder": endorsement.stakeholder,
                     "campaign": endorsement.campaign,
                     "campaign_url": (
-                        f"{settings.SITE_URL}/campaigns/{endorsement.campaign.id}/"
+                        f"{settings.SITE_URL}/campaigns/{endorsement.campaign.name}/"
                     ),
                     "organization_name": settings.ORGANIZATION_NAME,
                 },

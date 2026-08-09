@@ -118,7 +118,8 @@ class EndorsementEmailServiceTest(BaseTestCase):
         self.endorsement.status = "approved"
         self.endorsement.save()
 
-        result = EndorsementEmailService.send_confirmation_email(self.endorsement)
+        with self.settings(SITE_URL="https://example.test"):
+            result = EndorsementEmailService.send_confirmation_email(self.endorsement)
 
         assert result is True
         assert len(mail.outbox) == 1
@@ -126,6 +127,7 @@ class EndorsementEmailServiceTest(BaseTestCase):
         email = mail.outbox[0]
         assert "has been approved" in email.subject.lower()
         assert self.stakeholder.email in email.to
+        assert f"https://example.test/campaigns/{self.campaign.name}/" in email.body
 
 
 def ses_rejection() -> ClientError:

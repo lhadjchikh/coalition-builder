@@ -138,6 +138,34 @@ class StakeholderOut(ModelSchema):
         return obj.name
 
 
+class PublicStakeholderOut(ModelSchema):
+    """Stakeholder fields that an anonymous endorsement response may expose."""
+
+    name: str
+    state: str | None
+
+    class Meta:
+        model = Stakeholder
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "organization",
+            "role",
+            "city",
+            "state",
+            "type",
+        ]
+
+    @staticmethod
+    def resolve_name(obj: Stakeholder) -> str:
+        return obj.name
+
+    @staticmethod
+    def resolve_state(obj: Stakeholder) -> str | None:
+        return obj.state.abbrev if obj.state else None
+
+
 class EndorsementOut(ModelSchema):
     """Response schema for Endorsement model with nested data."""
 
@@ -151,6 +179,25 @@ class EndorsementOut(ModelSchema):
             "verification_sent_at",
             "admin_notes",
             "display_publicly",  # Redundant for public API - only show approved
+        ]
+
+
+class PublicEndorsementOut(ModelSchema):
+    """Endorsement fields intended for the anonymous public listing."""
+
+    stakeholder: PublicStakeholderOut
+    campaign: PolicyCampaignOut
+
+    class Meta:
+        model = Endorsement
+        fields = [
+            "id",
+            "stakeholder",
+            "campaign",
+            "statement",
+            "public_display",
+            "status",
+            "created_at",
         ]
 
 
