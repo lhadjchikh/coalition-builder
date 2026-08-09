@@ -6,10 +6,10 @@ This runbook controls the one-time rollout and ongoing verification of developme
 
 `terraform/modules/database-names/environment_database_names.json` is the single source of truth for the RDS creation-time name and logical environment database names. The database-names module loads the environment map for the shared, `dev`, and `prod` stacks, while shared state exports that map for operational commands. Direct module consumption lets application-account plans remain valid before the new shared-state output has been applied.
 
-| Environment | Database         | Compatibility decision                                                                                       |
-| ----------- | ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| `prod`      | `coalition_prod` | Preserve the existing production database and data selected by the production Secrets Manager URL.          |
-| `dev`       | `coalition_dev`  | Preserve or create the isolated development database. Development migrations and writes occur only here.    |
+| Environment | Database         | Compatibility decision                                                                                   |
+| ----------- | ---------------- | -------------------------------------------------------------------------------------------------------- |
+| `prod`      | `coalition_prod` | Preserve the existing production database and data selected by the production Secrets Manager URL.       |
+| `dev`       | `coalition_dev`  | Preserve or create the isolated development database. Development migrations and writes occur only here. |
 
 The RDS instance was originally created with `coalition`. That immutable creation-time input remains separate from the environment database map so changing the production runtime name cannot propose replacing the RDS instance. The unused `coalition` logical database may be removed operationally after both application environments are verified against their authoritative databases.
 
