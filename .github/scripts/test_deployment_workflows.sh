@@ -7,6 +7,7 @@ lambda_workflow="${repository_root}/.github/workflows/deploy_lambda.yml"
 dev_cost_workflow="${repository_root}/.github/workflows/dev_cost_control.yml"
 frontend_workflow="${repository_root}/.github/workflows/deploy_frontend.yml"
 management_workflow="${repository_root}/.github/workflows/lambda_management.yml"
+infra_workflow="${repository_root}/.github/workflows/deploy_infra.yml"
 terraform_workflow="${repository_root}/.github/workflows/deploy_terraform_environment.yml"
 shellcheck_workflow="${repository_root}/.github/workflows/lint_shellcheck.yml"
 
@@ -70,6 +71,7 @@ require_file "${lambda_workflow}"
 require_file "${dev_cost_workflow}"
 require_file "${frontend_workflow}"
 require_file "${management_workflow}"
+require_file "${infra_workflow}"
 require_file "${terraform_workflow}"
 require_file "${shellcheck_workflow}"
 require_absent_file "${repository_root}/.github/workflows/deploy_app.yml"
@@ -142,6 +144,13 @@ require_step_text \
   "${management_workflow}" \
   "Validate database secret isolation" \
   'python scripts/validate_database_secret.py'
+
+require_text \
+  "${infra_workflow}" \
+  "apply: \${{ github.event_name == 'workflow_dispatch' }}"
+require_text \
+  "${terraform_workflow}" \
+  "if: inputs.apply && github.ref == 'refs/heads/main' && steps.plan.outputs.has_changes == 'true'"
 
 require_text "${terraform_workflow}" "TF_VAR_create_new_key_pair: \${{ vars.CREATE_NEW_KEY_PAIR }}"
 require_text \

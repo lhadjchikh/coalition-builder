@@ -149,6 +149,7 @@ jobs:
     uses: ./.github/workflows/deploy_terraform_environment.yml
     with:
       environment: prod
+      apply: ${{ github.event_name == 'workflow_dispatch' }}
     secrets: inherit
     permissions:
       contents: read

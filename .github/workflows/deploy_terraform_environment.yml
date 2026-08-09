@@ -7,6 +7,11 @@ on:
         description: Terraform environment to plan or apply
         required: true
         type: string
+      apply:
+        description: Apply the saved plan after validation
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -97,6 +102,6 @@ jobs:
           fi
 
       - name: Terraform apply
-        if: github.ref == 'refs/heads/main' && steps.plan.outputs.has_changes == 'true'
+        if: inputs.apply && github.ref == 'refs/heads/main' && steps.plan.outputs.has_changes == 'true'
         working-directory: ${{ env.TF_DIRECTORY }}
         run: terraform apply tfplan
