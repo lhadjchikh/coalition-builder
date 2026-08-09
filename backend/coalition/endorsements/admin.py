@@ -37,7 +37,7 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
         "display_publicly",
         "created_at",
         "campaign",
-        ("reviewed_by", admin.EmptyFieldListFilter),
+        ("reviewed_at", admin.EmptyFieldListFilter),
         "stakeholder__type",
         "stakeholder__state",
     )
@@ -49,7 +49,7 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
         "campaign__title",
         "statement",
     )
-    raw_id_fields = ("stakeholder", "campaign", "reviewed_by")
+    raw_id_fields = ("stakeholder", "campaign")
     ordering = ("-created_at",)
     readonly_fields = (
         "verification_token",
@@ -58,6 +58,8 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
         "terms_accepted",
         "terms_accepted_at",
         "org_authorized",
+        "reviewed_by",
+        "reviewed_at",
         "created_at",
         "updated_at",
         "verification_link",
@@ -224,7 +226,7 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
         count = queryset.filter(
             status="approved",
             email_verified=True,
-            reviewed_by__isnull=True,
+            reviewed_at__isnull=True,
         ).update(
             reviewed_by=request.user,
             reviewed_at=reviewed_at,

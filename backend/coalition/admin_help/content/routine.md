@@ -1,6 +1,6 @@
 ## Every workday during an active campaign
 
-- [ ] Filter endorsements by **Email verified: Yes** and **Reviewed by: Empty**, then clear the queue
+- [ ] Filter endorsements by **Email verified: Yes** and **Reviewed at: Empty**, then clear the queue
 - [ ] Approve the legitimate ones, reject the spam, note anything uncertain
 - [ ] Run **Approve for public display** on the ones cleared for the public page
 - [ ] Flag anything notable — a large organization, an unusual statement — to

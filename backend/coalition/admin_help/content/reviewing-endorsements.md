@@ -5,11 +5,14 @@ This is the daily job. It assumes you have read
 
 Go to [Endorsements → Endorsements]({% url 'admin:endorsements_endorsement_changelist' %}).
 In the filter sidebar on the right, under **Email verified**, click **Yes**. Then,
-under **Reviewed by**, click **Empty**.
+under **Reviewed at**, click **Empty**.
 
-That is your work queue: verified people waiting on a human decision. Most rows have
+That is your work queue: verified people waiting on a human decision. The review
+timestamp is the durable record that the decision happened; the reviewer's name can
+later become unavailable if their staff account is removed. Most rows have
 the status **Email Verified**. If automatic approval is enabled, some arrive with
-the status **Approved for Display** but no reviewer; they still require your review.
+the status **Approved for Display** but no review timestamp; they still require
+your review.
 
 The other filters are there when you need them — by campaign, by whether the email
 is verified, by the endorser's consent, by your display decision, by date, and by

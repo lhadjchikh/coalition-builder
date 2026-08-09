@@ -80,8 +80,13 @@ class EndorsementAdminTest(BaseTestCase):
         result = self.admin.email_verified_badge(self.endorsement)
         assert "✓ verified" in result.lower()
 
-    def test_reviewed_by_empty_filter_is_available(self) -> None:
-        assert ("reviewed_by", EmptyFieldListFilter) in self.admin.list_filter
+    def test_reviewed_at_empty_filter_is_available(self) -> None:
+        assert ("reviewed_at", EmptyFieldListFilter) in self.admin.list_filter
+        assert ("reviewed_by", EmptyFieldListFilter) not in self.admin.list_filter
+
+    def test_review_metadata_is_readonly(self) -> None:
+        assert {"reviewed_by", "reviewed_at"}.issubset(self.admin.readonly_fields)
+        assert "reviewed_by" not in self.admin.raw_id_fields
 
     def test_view_only_staff_cannot_access_mutating_actions(self) -> None:
         viewer = User.objects.create_user(username="endorsement-viewer", is_staff=True)
@@ -286,6 +291,8 @@ class EndorsementAdminTest(BaseTestCase):
         request._messages = Mock()
         self.endorsement.status = "approved"
         self.endorsement.email_verified = True
+        self.endorsement.reviewed_by = self.user
+        self.endorsement.reviewed_at = None
         self.endorsement.save()
 
         with patch.object(self.admin, "message_user") as mock_message:
@@ -300,6 +307,31 @@ class EndorsementAdminTest(BaseTestCase):
         mock_message.assert_called_once_with(
             request,
             "Successfully marked 1 auto-approved endorsement(s) as reviewed.",
+        )
+
+    def test_mark_auto_approved_does_not_overwrite_completed_review(self) -> None:
+        request = HttpRequest()
+        request.user = self.user
+        request._messages = Mock()
+        original_reviewed_at = timezone.now()
+        self.endorsement.status = "approved"
+        self.endorsement.email_verified = True
+        self.endorsement.reviewed_by = None
+        self.endorsement.reviewed_at = original_reviewed_at
+        self.endorsement.save()
+
+        with patch.object(self.admin, "message_user") as mock_message:
+            self.admin.mark_auto_approved_reviewed(
+                request,
+                Endorsement.objects.filter(id=self.endorsement.id),
+            )
+
+        self.endorsement.refresh_from_db()
+        assert self.endorsement.reviewed_by is None
+        assert self.endorsement.reviewed_at == original_reviewed_at
+        mock_message.assert_called_once_with(
+            request,
+            "Successfully marked 0 auto-approved endorsement(s) as reviewed.",
         )
 
     def test_reject_endorsements_already_rejected(self) -> None:

@@ -563,6 +563,13 @@ def admin_approve_endorsement(request: HttpRequest, endorsement_id: int) -> dict
     endorsement = get_object_or_404(Endorsement, id=endorsement_id)
 
     if endorsement.status == "approved":
+        if endorsement.reviewed_at is None:
+            endorsement.approve(user=staff_user)
+            return {
+                "success": True,
+                "message": "Endorsement review recorded successfully",
+                "status": endorsement.status,
+            }
         return {
             "success": True,
             "message": "Endorsement was already approved",

@@ -32,7 +32,7 @@ them a verification link.
 | **Rejected** | You reviewed it and turned it down. | Nothing further. |
 
 Your review queue is every endorsement where **Email verified** is **Yes** and
-**Reviewed by** is **Empty**. This works whether verification leaves records at
+**Reviewed at** is **Empty**. This works whether verification leaves records at
 Email Verified or the optional automatic-approval setting moves them directly to
 Approved for Display.
 

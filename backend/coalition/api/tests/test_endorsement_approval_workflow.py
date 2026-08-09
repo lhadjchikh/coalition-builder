@@ -10,6 +10,7 @@ as an integrated flow, covering gaps not addressed by individual unit tests.
 
 import json
 import uuid
+from unittest.mock import patch
 
 from django.contrib.auth.models import Permission, User
 from django.core.cache import cache
@@ -278,8 +279,7 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
         assert auto_approved.id in returned_ids
         assert len(data) == 3
 
-    def test_admin_approve_already_approved_is_idempotent(self) -> None:
-        """Test that approving an already-approved endorsement is handled gracefully."""
+    def test_admin_approve_records_review_for_auto_approved_endorsement(self) -> None:
         stakeholder = self.create_stakeholder(
             email="test@example.com",
             type="individual",
@@ -288,16 +288,53 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
             stakeholder=stakeholder,
             campaign=self.campaign,
             status="approved",
+            email_verified=True,
+        )
+
+        self.client.force_login(self.admin_user)
+        with patch(
+            "coalition.api.endorsements.EndorsementEmailService.send_confirmation_email",
+        ) as send_confirmation_email:
+            response = self.client.post(
+                f"/api/endorsements/admin/approve/{endorsement.id}/",
+            )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert "review recorded" in data["message"].lower()
+        endorsement.refresh_from_db()
+        assert endorsement.reviewed_by == self.admin_user
+        assert endorsement.reviewed_at is not None
+        send_confirmation_email.assert_not_called()
+
+        pending_response = self.client.get("/api/endorsements/admin/pending/")
+        pending_ids = {item["id"] for item in pending_response.json()}
+        assert endorsement.id not in pending_ids
+
+    def test_admin_approve_already_reviewed_is_idempotent(self) -> None:
+        stakeholder = self.create_stakeholder(
+            email="test@example.com",
+            type="individual",
+        )
+        original_reviewed_at = timezone.now()
+        endorsement = Endorsement.objects.create(
+            stakeholder=stakeholder,
+            campaign=self.campaign,
+            status="approved",
             reviewed_by=self.admin_user,
+            reviewed_at=original_reviewed_at,
         )
 
         self.client.force_login(self.admin_user)
         response = self.client.post(
             f"/api/endorsements/admin/approve/{endorsement.id}/",
         )
+
         assert response.status_code == 200
-        data = response.json()
-        assert "already approved" in data["message"].lower()
+        assert "already approved" in response.json()["message"].lower()
+        endorsement.refresh_from_db()
+        assert endorsement.reviewed_by == self.admin_user
+        assert endorsement.reviewed_at == original_reviewed_at
 
     def test_admin_reject_already_rejected_is_idempotent(self) -> None:
         """Test that rejecting an already-rejected endorsement is handled gracefully."""
