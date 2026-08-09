@@ -3,14 +3,16 @@ package modules
 import (
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"testing"
 
 	"terraform-tests/common"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSESModuleStructure(t *testing.T) {
@@ -18,13 +20,33 @@ func TestSESModuleStructure(t *testing.T) {
 }
 
 func TestProductionDisablesSESSMTPCredentials(t *testing.T) {
-	productionSource, err := os.ReadFile("../../environments/prod/main.tf")
-	assert.NoError(t, err)
+	const productionPath = "../../environments/prod/main.tf"
+	productionSource, err := os.ReadFile(productionPath)
+	require.NoError(t, err)
 
-	productionOptOut := regexp.MustCompile(
-		`(?s)module "ses" \{.*?create_smtp_credentials\s*=\s*false.*?\n\}`,
+	productionConfig, diagnostics := hclsyntax.ParseConfig(
+		productionSource,
+		productionPath,
+		hcl.InitialPos,
 	)
-	assert.Regexp(t, productionOptOut, string(productionSource))
+	require.False(t, diagnostics.HasErrors(), diagnostics.Error())
+	productionBody, isSyntaxBody := productionConfig.Body.(*hclsyntax.Body)
+	require.True(t, isSyntaxBody)
+
+	var sesModule *hclsyntax.Block
+	for _, block := range productionBody.Blocks {
+		if block.Type == "module" && len(block.Labels) == 1 && block.Labels[0] == "ses" {
+			sesModule = block
+			break
+		}
+	}
+	require.NotNil(t, sesModule)
+
+	credentialSetting, exists := sesModule.Body.Attributes["create_smtp_credentials"]
+	require.True(t, exists)
+	settingRange := credentialSetting.Expr.Range()
+	settingSource := productionSource[settingRange.Start.Byte:settingRange.End.Byte]
+	assert.Equal(t, "false", strings.TrimSpace(string(settingSource)))
 }
 
 func TestSESModulePlanCreatesExpectedResources(t *testing.T) {
