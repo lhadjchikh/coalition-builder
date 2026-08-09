@@ -20,6 +20,9 @@ RUN poetry config virtualenvs.create false && \
 
 # Copy application code
 COPY coalition/ ./coalition/
+# settings.TEMPLATES adds BASE_DIR/templates ahead of the per-app directories;
+# without it the admin overrides and the endorsement emails have no templates.
+COPY templates/ ./templates/
 COPY scripts/ ./scripts/
 COPY manage.py ./
 COPY zappa_settings.json ./
