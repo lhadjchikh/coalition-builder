@@ -49,13 +49,13 @@ describe("next.config.js redirects", () => {
 
   it("normalizes the production API URL before appending /admin/", async () => {
     const productionRedirects = await loadRedirectsForApiUrls(
-      "https://api.landandbay.org/",
-      "https://api.landandbay.org/"
+      "https://api.example.org/",
+      "https://api.example.org/"
     );
 
     expect(productionRedirects).toContainEqual({
       source: "/admin",
-      destination: "https://api.landandbay.org/admin/",
+      destination: "https://api.example.org/admin/",
       permanent: false,
     });
   });
