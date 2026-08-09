@@ -12,6 +12,7 @@ from . import (
     homepage,
     legal,
     legislators,
+    people,
     stakeholders,
     themes,
 )
@@ -29,6 +30,7 @@ api.add_router("/homepage/", homepage.router)
 api.add_router("/content-blocks/", content_blocks.router)
 api.add_router("/themes/", themes.router)
 api.add_router("/legal/", legal.router)
+api.add_router("/people/", people.router)
 
 
 @api.get("/health", tags=["Health"])

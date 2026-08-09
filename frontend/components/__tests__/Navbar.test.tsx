@@ -49,7 +49,7 @@ describe("Navbar", () => {
 
     it("renders default navigation items when provided", () => {
       render(<Navbar navItems={DEFAULT_NAV_ITEMS} />);
-      expect(screen.getByText("About")).toBeInTheDocument();
+      expect(screen.getByText("About Us")).toBeInTheDocument();
       expect(screen.getByText("Campaigns")).toBeInTheDocument();
       expect(screen.getByText("Contact")).toBeInTheDocument();
     });

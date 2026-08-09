@@ -1,7 +1,7 @@
 // SSR API client using shared base client
 // This ensures consistency with frontend API while adding SSR-specific features
 
-import { BaseApiClient } from "../services/api-client";
+import { ApiRequestError, BaseApiClient } from "../services/api-client";
 
 // SSR-compatible API client that extends the shared base client
 class SSRApiClient extends BaseApiClient {
@@ -23,6 +23,7 @@ class SSRApiClient extends BaseApiClient {
     try {
       const response = await fetch(url, {
         headers: this.defaultHeaders,
+        signal: options?.signal ?? AbortSignal.timeout(this.timeout),
         // Add cache settings for SSR
         next: {
           revalidate: 300, // Revalidate every 5 minutes
@@ -31,7 +32,7 @@ class SSRApiClient extends BaseApiClient {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new ApiRequestError(response.status);
       }
 
       return await response.json();

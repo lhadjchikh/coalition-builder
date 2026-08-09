@@ -5,6 +5,17 @@ from coalition.content.models import ContentBlock, HomePage
 
 
 class ContentBlockModelTest(TestCase):
+    def test_team_is_a_valid_page_type(self) -> None:
+        block = ContentBlock(
+            page_type="team",
+            block_type="text",
+            content="Meet the team",
+        )
+
+        block.full_clean()
+
+        assert ("team", "Team Page") in ContentBlock.PAGE_TYPES
+
     def setUp(self) -> None:
         self.homepage = HomePage.objects.create(
             organization_name="Test Organization",

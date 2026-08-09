@@ -230,6 +230,39 @@ export interface ContentBlock {
   updated_at: string;
 }
 
+export type ImageCaptionDisplay = "" | "below" | "overlay" | "tooltip" | "none";
+
+export interface Person {
+  id: number;
+  name: string;
+  slug: string;
+  title: string;
+  linkedin_url: string;
+  order: number;
+  profile_page_enabled: boolean;
+  headshot_url: string;
+  headshot_alt_text: string;
+  headshot_title: string;
+  headshot_author: string;
+  headshot_license: string;
+  headshot_source_url: string;
+  headshot_caption: string;
+  headshot_caption_display: ImageCaptionDisplay;
+}
+
+export interface PersonDetail extends Person {
+  bio: string;
+}
+
+export interface PersonGroup {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+  order: number;
+  people: Person[];
+}
+
 export interface HomePage {
   id: number;
   // Organization info
@@ -272,6 +305,7 @@ export interface HomePage {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  has_team_content?: boolean;
 }
 
 // Legal document types

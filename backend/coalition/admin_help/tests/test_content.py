@@ -57,6 +57,25 @@ class HelpRegistryTest(TestCase):
         assert last_previous == HELP_PAGES[-2]
         assert last_next is None
 
+    def test_team_help_covers_the_complete_publication_workflow(self) -> None:
+        page = get_page("team")
+
+        assert page is not None
+        source = (CONTENT_DIR / "team.md").read_text()
+        for required_guidance in (
+            "create a group",
+            "add a person",
+            "800 × 800",
+            "square",
+            "hiding a group",
+            "/team",
+            "our team",
+            "profile page",
+            "5 minutes",
+        ):
+            with self.subTest(required_guidance=required_guidance):
+                assert required_guidance in source.lower()
+
 
 @without_static_manifest
 class HelpContentTest(TestCase):

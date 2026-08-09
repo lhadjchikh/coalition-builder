@@ -12,12 +12,21 @@ import type {
   Legislator,
   Endorsement,
   EndorsementCreate,
+  PersonDetail,
+  PersonGroup,
 } from "../types";
 
 export interface ApiClientConfig {
   baseURL: string;
   timeout?: number;
   headers?: Record<string, string>;
+}
+
+export class ApiRequestError extends Error {
+  constructor(public readonly status: number) {
+    super(`HTTP error! status: ${status}`);
+    this.name = "ApiRequestError";
+  }
 }
 
 export abstract class BaseApiClient {
@@ -116,6 +125,16 @@ export abstract class BaseApiClient {
 
   async getContentBlock(blockId: number): Promise<ContentBlock> {
     return this.request<ContentBlock>(`/api/content-blocks/${blockId}/`);
+  }
+
+  async getPeople(): Promise<PersonGroup[]> {
+    return this.request<PersonGroup[]>("/api/people/");
+  }
+
+  async getPerson(slug: string): Promise<PersonDetail> {
+    return this.request<PersonDetail>(
+      `/api/people/${encodeURIComponent(slug)}/`
+    );
   }
 
   async getTermsOfUse(): Promise<LegalDocumentResponse> {

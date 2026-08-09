@@ -9,7 +9,7 @@ import CookieConsent from "../components/CookieConsent";
 import GoogleAnalytics from "../components/GoogleAnalytics";
 import ThemeStyles from "../components/ThemeStyles";
 import GoogleFontsLoader from "../components/GoogleFontsLoader";
-import { DEFAULT_NAV_ITEMS } from "../types";
+import { getDefaultNavItems } from "../types";
 import { getFallbackHomepage } from "../utils/homepage-data";
 
 const org = process.env.ORGANIZATION_NAME || "Coalition Builder";
@@ -125,7 +125,7 @@ export default async function RootLayout({
               organizationName={organizationName}
               logoUrl={homepage?.theme?.logo_url}
               logoAltText={homepage?.theme?.logo_alt_text}
-              navItems={DEFAULT_NAV_ITEMS}
+              navItems={getDefaultNavItems(homepage?.has_team_content === true)}
             />
             <main style={{ flex: 1 }}>{children}</main>
             <Footer orgInfo={homepage} />

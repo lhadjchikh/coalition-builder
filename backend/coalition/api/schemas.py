@@ -9,11 +9,18 @@ from pydantic import Field, validator
 from coalition.stakeholders.validators import AddressValidator
 
 if TYPE_CHECKING:
-    from coalition.content.models import ContentBlock, HomePage, Theme
+    from coalition.content.models import ContentBlock, HomePage, PersonGroup, Theme
 
 # Import models for ModelSchema
 from coalition.campaigns.models import Bill, PolicyCampaign
-from coalition.content.models import ContentBlock, HomePage, Theme, Video
+from coalition.content.models import (
+    ContentBlock,
+    HomePage,
+    Person,
+    PersonGroup,
+    Theme,
+    Video,
+)
 from coalition.endorsements.models import Endorsement
 from coalition.legislators.models import Legislator
 from coalition.stakeholders.models import Stakeholder
@@ -237,6 +244,52 @@ class ContentBlockOut(ModelSchema):
         fields = "__all__"
 
 
+class PersonOut(ModelSchema):
+    """Explicit public fields for a compact team-page person card."""
+
+    headshot_url: str
+    headshot_alt_text: str
+    headshot_title: str
+    headshot_author: str
+    headshot_license: str
+    headshot_source_url: str
+    headshot_caption: str
+    headshot_caption_display: str
+
+    class Meta:
+        model = Person
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "title",
+            "linkedin_url",
+            "order",
+            "profile_page_enabled",
+        ]
+
+
+class PersonDetailOut(PersonOut):
+    """A publicly enabled person's full biography page fields."""
+
+    bio: str
+
+
+class PersonGroupOut(ModelSchema):
+    """A visible team group with its prefetched active people."""
+
+    people: list[PersonOut]
+
+    class Meta:
+        model = PersonGroup
+        fields = ["id", "name", "slug", "description", "order"]
+
+    @staticmethod
+    def resolve_people(obj: "PersonGroup") -> list[Person]:
+        """Return only the active people attached by the public query plan."""
+        return list(getattr(obj, "active_people", []))
+
+
 class ThemeOut(ModelSchema):
     """Response schema for Theme model with computed URL fields."""
 
@@ -296,6 +349,7 @@ class HomePageOut(ModelSchema):
     hero_background_video_url: str | None = None
     hero_background_video_data: VideoOut | None = None
     theme: ThemeOut | None = None
+    has_team_content: bool = False
 
     class Meta:
         model = HomePage
@@ -321,6 +375,11 @@ class HomePageOut(ModelSchema):
         """Get the effective theme for this homepage"""
         theme = obj.get_theme()
         return theme if theme else None
+
+    @staticmethod
+    def resolve_has_team_content(obj: "HomePage") -> bool:
+        """Return the availability signal assigned by the homepage handler."""
+        return bool(getattr(obj, "has_team_content", False))
 
 
 # Spam prevention metadata schema with comprehensive validation

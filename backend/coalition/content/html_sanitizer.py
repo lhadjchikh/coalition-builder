@@ -10,6 +10,11 @@ import bleach
 class HTMLSanitizer:
     """Sanitize HTML content to prevent XSS attacks while preserving safe formatting."""
 
+    UNSAFE_BLOCK_PATTERN = re.compile(
+        r"<(script|style)\b[^>]*>.*?(?:</\1\s*>|$)",
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+
     # Safe HTML tags that are allowed
     ALLOWED_TAGS = [
         # Text formatting
@@ -431,6 +436,15 @@ class HTMLSanitizer:
         cleaned = re.sub(r"data\s*:\s*text/html", "", cleaned, flags=re.IGNORECASE)
 
         return cleaned
+
+    @classmethod
+    def sanitize_bio(cls, html: str | None) -> str:
+        """Sanitize a biography without executable or page-level style payloads."""
+        if not html:
+            return ""
+
+        without_unsafe_blocks = cls.UNSAFE_BLOCK_PATTERN.sub("", html)
+        return cls.sanitize(without_unsafe_blocks)
 
     @classmethod
     def sanitize_plain_text(cls, text: str | None) -> str:

@@ -22,6 +22,9 @@ class HomePage(models.Model):
     Only one instance should exist - the active homepage configuration.
     """
 
+    if TYPE_CHECKING:
+        has_team_content: bool
+
     # Theme relationship
     theme = models.ForeignKey(
         "content.Theme",

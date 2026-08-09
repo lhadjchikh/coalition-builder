@@ -19,6 +19,14 @@ jest.mock("../../components/Navbar", () => ({
     <nav data-testid="navbar">
       <span>{organizationName}</span>
       <span>{navItems?.length || 0} nav items</span>
+      <span data-testid="nav-labels">
+        {navItems
+          ?.flatMap((navItem) => [
+            navItem.label,
+            ...(navItem.children?.map((child) => child.label) || []),
+          ])
+          .join("|")}
+      </span>
     </nav>
   ),
 }));
@@ -332,5 +340,55 @@ describe("RootLayout", () => {
 
     const appRoot = container.querySelector('[data-ssr="true"]');
     expect(appRoot).toBeInTheDocument();
+  });
+
+  it("shows Our Team without an extra request when homepage availability is true", async () => {
+    const homepageWithTeam = { ...mockHomepage, has_team_content: true };
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes("/api/homepage/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async (): Promise<HomePage> => homepageWithTeam,
+        });
+      }
+      if (url.includes("/api/themes/active/") && !url.includes("/css/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ google_fonts: [] }),
+        });
+      }
+      if (url.includes("/api/themes/active/css/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ css_variables: "", custom_css: "" }),
+        });
+      }
+      return Promise.reject(new Error("Unknown URL"));
+    });
+
+    const layoutResult = await RootLayout({ children: <div>Content</div> });
+    render(layoutResult.props.children[1].props.children);
+
+    expect(screen.getByTestId("nav-labels")).toHaveTextContent("Our Team");
+    expect(global.fetch).toHaveBeenCalledTimes(3);
+  });
+
+  it("fails closed and hides Our Team when availability is false", async () => {
+    const homepageWithoutTeam = { ...mockHomepage, has_team_content: false };
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes("/api/homepage/")) {
+        return Promise.resolve({
+          ok: true,
+          json: async (): Promise<HomePage> => homepageWithoutTeam,
+        });
+      }
+      return Promise.resolve({ ok: false, status: 404 });
+    });
+
+    const layoutResult = await RootLayout({ children: <div>Content</div> });
+    render(layoutResult.props.children[1].props.children);
+
+    expect(screen.getByTestId("nav-labels")).not.toHaveTextContent("Our Team");
+    expect(screen.getByTestId("nav-labels")).toHaveTextContent("About Us");
   });
 });
