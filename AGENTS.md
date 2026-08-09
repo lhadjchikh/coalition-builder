@@ -26,6 +26,7 @@ backend/coalition/       Django project package
   api/                   Django Ninja routers + schemas.py (one module per resource)
   campaigns/             PolicyCampaign, Bill
   content/               Homepage, ContentBlock, Image, Video, Theme + HTML sanitizer
+  admin_help/            Staff-only in-admin operating guide (repository Markdown)
   core/                  settings.py, urls.py, middleware/, secrets.py, storage.py, email
   endorsements/          Endorsement model, email verification, spam prevention
   legal/  legislators/  regions/  stakeholders/
@@ -160,12 +161,14 @@ case under `terraform/tests/modules/`.
 
 - **`docs/` is partly stale.** It references an `ssr/` directory, a `frontend/src/` tree, a
   `test:ci` npm script, and a legacy ECS application deployment — none of which exist anymore
-  (the app is on Lambda + Vercel, components live at `frontend/components/`). TIGER geodata
-  import still uses ECS Fargate. Trust the code over `docs/`, and fix docs you touch.
+  (the app is on Lambda + Vercel, components live at `frontend/components/`). ECS-based TIGER
+  import scaffolding exists but no current Terraform environment provisions it. Trust the code
+  over `docs/`, and fix docs you touch.
 - Lambda specifics that bite: GDAL libs are at `/opt/lib64/`, `GDAL_LIBRARY_PATH` is set
   only inside the `if IS_LAMBDA:` branch of `settings.py` (so `collectstatic` at image build
-  time can't rely on it), and the Lambda has **no internet egress**. Supported AWS services
-  require configured VPC endpoints; other public services need an explicit egress design.
+  time can't rely on it), and the Lambda has **no internet egress**. Supported AWS services,
+  including SES API delivery, require configured VPC endpoints; other public services need an
+  explicit egress design.
 - `settings.py` branches heavily on `IS_LAMBDA` and `ENVIRONMENT`; changes to config need
   coverage in `coalition/core/tests/test_lambda_settings.py` and friends.
 - Local `node` may be v20 while `package.json` requires >= 22 — check before debugging odd

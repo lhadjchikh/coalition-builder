@@ -1,5 +1,7 @@
 # Serverless Setup for Contributors
 
+> **Historical reference — not a deployment runbook.** This page describes the earlier hand-configured Zappa setup and includes obsolete credential and staging instructions. Use the current [Deployment Guide](deployment.md), [AWS Serverless Deployment](deployment/aws.md), and [Deployment Workflows](deployment/workflows.md) instead.
+
 This guide helps you set up your own AWS resources for deploying the Coalition Builder application using Lambda and Zappa.
 
 ## Why Configuration is Needed

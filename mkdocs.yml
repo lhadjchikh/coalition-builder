@@ -53,6 +53,7 @@ nav:
   - Deployment:
       - Overview: deployment.md
       - AWS Deployment: deployment/aws.md
+      - Multi-Account AWS: deployment/multi-account-aws.md
       - Docker Deployment: deployment/docker.md
       - Lambda Deployment: LAMBDA_DEPLOYMENT.md
       - Vercel Deployment: VERCEL_DEPLOYMENT.md

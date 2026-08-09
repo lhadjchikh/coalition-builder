@@ -2,17 +2,21 @@
 
 ## Overview
 
-The Coalition Builder uses AWS Simple Email Service (SES) for sending transactional emails like endorsement verifications and admin notifications. Since the ECS tasks run in public subnets with internet access, we can use SES via SMTP.
+Coalition Builder uses AWS Simple Email Service (SES) for transactional messages such as endorsement verifications, admin notifications, and approval confirmations. Lambda sends through the SES API over a private VPC endpoint and authenticates with its execution role. Non-Lambda deployments can continue to use SES SMTP.
+
+[PR #312](https://github.com/lhadjchikh/coalition-builder/pull/312) replaced the unreachable Lambda SMTP path and silent console fallback with the SES API backend, explicit failure handling, and CloudWatch alerting.
 
 ## Automated Setup with Terraform
 
-The Terraform configuration includes an SES module that automates most of the setup:
+The Terraform configuration automates the production SES path across the SES, networking, and monitoring modules:
 
 1. **Domain Verification** - Automatically verifies your domain if you provide a Route53 zone ID
 2. **DKIM Setup** - Configures DKIM for better deliverability
 3. **SPF & DMARC Records** - Sets up email authentication records
-4. **SMTP Credentials** - Creates IAM user and stores credentials in Secrets Manager
-5. **Monitoring** - Sets up SNS notifications for bounces and complaints
+4. **Lambda Authorization** - Grants the execution role scoped SES send permissions
+5. **Private Connectivity** - Adds the SES API interface VPC endpoint
+6. **Monitoring** - Alarms on application-level delivery failures and publishes SES notifications
+7. **Legacy SMTP Credentials** - Retains credentials for non-Lambda deployments
 
 ### Enable SES in Terraform
 
@@ -20,24 +24,20 @@ Add these variables to your `terraform.tfvars`:
 
 ```hcl
 # Email configuration
-ses_from_email            = "noreply@yourdomain.com"
-ses_verify_domain         = true
-ses_notification_email    = "admin@yourdomain.com"  # For bounce notifications
-
-# Application email settings
-contact_email             = "info@yourdomain.com"  # Organization contact email
-admin_notification_emails = "admin1@yourdomain.com,admin2@yourdomain.com"  # Comma-separated admin emails
-organization_name         = "Your Organization Name"
+ses_from_email         = "noreply@yourdomain.com"
+ses_notification_email = "admin@yourdomain.com"
 ```
+
+Set `SITE_URL`, `DEFAULT_FROM_EMAIL`, `ADMIN_NOTIFICATION_EMAILS`, and `SES_CONFIGURATION_SET` as GitHub Environment variables for the Lambda deployment. Production deployment validation requires the first two; see [Required deployment settings](#required-deployment-settings).
 
 The module will:
 
 - Verify your domain automatically if you're using Route53
 - Create all necessary DNS records (DKIM, SPF, DMARC)
-- Generate SMTP credentials with IAM user
-- **Automatically calculate the SMTP password** from the IAM secret
-- Store complete credentials in AWS Secrets Manager
-- Configure the ECS task to use them automatically
+- Authorize configured Lambda sender roles to call the SES API
+- Add an SES API VPC endpoint when `enable_ses_endpoint` is enabled
+- Configure delivery-failure monitoring and SES notifications
+- Retain SMTP credentials in Secrets Manager for deployment targets that still use `SafeSMTPBackend`; Lambda does not consume them
 
 ## AWS SES Setup
 
@@ -74,9 +74,9 @@ To request production access:
 3. Fill out the form explaining your use case
 4. Wait for approval (usually 24 hours)
 
-### 3. Create SMTP Credentials (Manual Method)
+### 3. Create SMTP Credentials for Non-Lambda Deployments
 
-If not using Terraform automation:
+Lambda does not need SMTP credentials. For a non-Lambda deployment using `SafeSMTPBackend`, create them manually if Terraform does not manage them:
 
 ```bash
 # In AWS Console -> SES -> SMTP settings -> Create SMTP credentials
@@ -86,9 +86,9 @@ If not using Terraform automation:
 
 The SMTP password is automatically calculated by Terraform using the included Python script.
 
-### 4. Configure Environment Variables
+### 4. Configure SMTP Environment Variables
 
-Add these to your `.env` file or AWS Secrets Manager:
+For a non-Lambda SMTP deployment, add these to your `.env` file or AWS Secrets Manager:
 
 ```bash
 # For SES SMTP (us-east-1 region)
@@ -111,9 +111,9 @@ For other regions, replace `us-east-1` with your region:
 - US West (Oregon): email-smtp.us-west-2.amazonaws.com
 - EU (Ireland): email-smtp.eu-west-1.amazonaws.com
 
-### 5. Store Credentials in AWS Secrets Manager
+### 5. Store SMTP Credentials in AWS Secrets Manager
 
-For production, store the SMTP credentials in Secrets Manager:
+For a non-Lambda production deployment, store the SMTP credentials in Secrets Manager:
 
 ```bash
 # Create a secret for email configuration
@@ -130,30 +130,9 @@ aws secretsmanager create-secret \
   }'
 ```
 
-### 6. Update ECS Task Definition
+### 6. Lambda delivery
 
-The ECS task definition needs to pull these secrets. Add to your task definition:
-
-```json
-"secrets": [
-  {
-    "name": "EMAIL_HOST",
-    "valueFrom": "arn:aws:secretsmanager:region:account:secret:coalition/email-config:EMAIL_HOST::"
-  },
-  {
-    "name": "EMAIL_HOST_USER",
-    "valueFrom": "arn:aws:secretsmanager:region:account:secret:coalition/email-config:EMAIL_HOST_USER::"
-  },
-  {
-    "name": "EMAIL_HOST_PASSWORD",
-    "valueFrom": "arn:aws:secretsmanager:region:account:secret:coalition/email-config:EMAIL_HOST_PASSWORD::"
-  },
-  {
-    "name": "DEFAULT_FROM_EMAIL",
-    "valueFrom": "arn:aws:secretsmanager:region:account:secret:coalition/email-config:DEFAULT_FROM_EMAIL::"
-  }
-]
-```
+Do not expose static SMTP credentials to Lambda. It uses the SES API through its execution role, as described in [Sending from Lambda](#sending-from-lambda). Production deployments must provide `SITE_URL` and `DEFAULT_FROM_EMAIL`; the workflow rejects a deployment when either is missing.
 
 ## Email Backend
 
@@ -210,15 +189,19 @@ python manage.py shell
 ### 2. Test in Production
 
 ```bash
-# SSH into bastion or ECS task
-# Check environment variables are set
-env | grep EMAIL
+# Inspect selected non-secret settings inside Lambda
+cd backend
+poetry run zappa invoke prod \
+  'from django.conf import settings; print(settings.EMAIL_BACKEND, settings.DEFAULT_FROM_EMAIL, settings.SITE_URL)' \
+  --raw
 
-# Test sending
-python manage.py shell
->>> from django.core.mail import send_mail
->>> send_mail('Test Subject', 'Test message', None, ['verified@example.com'])
+# Invoke an explicit send test
+poetry run zappa invoke prod \
+  'from django.core.mail import send_mail; print(send_mail("Test Subject", "Test message", None, ["verified@example.com"]))' \
+  --raw
 ```
+
+`zappa invoke` is not an interactive shell; it requires a function path or, as above, an explicit Python expression with `--raw`.
 
 ### 3. Monitor SES
 
@@ -271,40 +254,20 @@ LOGGING = {
 
 ## Cost Optimization
 
-- **First 62,000 emails/month from EC2/ECS**: Free
-- **Additional emails**: $0.10 per 1,000 emails
+- **Outbound email**: Pricing depends on the account's SES plan. As of August 2026, à-la-carte sending is $0.10 per 1,000 emails while the default Essentials plan for new or inactive accounts starts at $0.16 per 1,000.
 - **Data transfer**: $0.12 per GB of attachments
 
-For low-traffic sites, you'll likely stay within the free tier.
+Free usage depends on the AWS account's credit or legacy free-tier eligibility. Check the [current SES pricing](https://aws.amazon.com/ses/pricing/) rather than assuming an EC2-specific allowance applies.
 
 ## Security Best Practices
 
 1. **Never commit SMTP credentials** to version control
-2. **Use IAM roles** for ECS tasks instead of access keys when possible
+2. **Use IAM roles** for the Lambda execution role instead of access keys when possible
 3. **Enable DKIM signing** for better deliverability
 4. **Set up SPF records** in your DNS
 5. **Monitor for bounces and complaints** to maintain sender reputation
 6. **Use dedicated IPs** only for high-volume sending (>100k/month)
 
-## Alternative: Using SES API Directly
+## SES API Implementation
 
-If you prefer using the SES API instead of SMTP, you can use boto3:
-
-```python
-# In settings.py
-EMAIL_BACKEND = 'django_ses.SESBackend'  # requires django-ses package
-
-# Or create custom backend using boto3
-import boto3
-ses_client = boto3.client('ses', region_name='us-east-1')
-ses_client.send_email(
-    Source='noreply@example.com',
-    Destination={'ToAddresses': ['recipient@example.com']},
-    Message={
-        'Subject': {'Data': 'Test'},
-        'Body': {'Text': {'Data': 'Test message'}}
-    }
-)
-```
-
-The SMTP approach is simpler and doesn't require additional dependencies.
+Lambda delivery is implemented by `backend/coalition/core/ses_backend.py`; application code should use Django's mail API rather than instantiate a boto3 SES client directly. `backend/coalition/core/settings.py` selects this backend when `IS_LAMBDA` is set and retains `SafeSMTPBackend` for other production targets.

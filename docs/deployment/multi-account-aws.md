@@ -332,7 +332,7 @@ Each environment's OIDC role restricts which GitHub contexts can assume it:
 
 ### Workflow Configuration
 
-All deployment workflows use OIDC. The key configuration:
+The Lambda, Lambda-management, and Terraform deployment workflows use OIDC. The legacy geodata-import workflow and Terraform integration-test job still require static access-key secrets. The OIDC configuration is:
 
 ```yaml
 permissions:
@@ -347,7 +347,7 @@ steps:
       aws-region: us-east-1
 ```
 
-No `AWS_ACCESS_KEY_ID` or `AWS_SECRET_ACCESS_KEY` secrets are needed.
+These OIDC-backed workflows do not need `AWS_ACCESS_KEY_ID` or `AWS_SECRET_ACCESS_KEY` secrets.
 
 ### IAM Permission Scoping
 
@@ -404,7 +404,7 @@ Both authenticate via OIDC and select the target environment based on branch or 
 
 ### Dev Cost Control
 
-The **Dev Cost Control** workflow (`dev_cost_control.yml`) lets you toggle VPC endpoints in the dev environment on or off to save costs when not actively developing. VPC endpoints cost ~$7.30/month each; the dev environment has 3 interface endpoints (Secrets Manager, CloudWatch Logs, Geo Places) totaling ~$22/month.
+The **Dev Cost Control** workflow (`dev_cost_control.yml`) lets you toggle the dev environment's two interface endpoints (Secrets Manager and Geo Places) on or off when not actively developing. Lambda's own logs do not require a CloudWatch Logs interface endpoint. See the authoritative [cost analysis](aws.md#cost-analysis) instead of copying a monthly estimate here.
 
 ```bash
 # Disable to save costs
@@ -414,4 +414,4 @@ gh workflow run dev_cost_control.yml -f vpc_endpoints=disable
 gh workflow run dev_cost_control.yml -f vpc_endpoints=enable
 ```
 
-When disabled, Lambda functions in the dev VPC cannot reach these AWS services at all, because the private subnets have no internet egress (no NAT). Re-enable before deploying or testing.
+When disabled, Lambda functions in the dev VPC cannot reach Secrets Manager or Geo Places because the private subnets have no internet egress (no NAT). Re-enable before deploying or testing.
