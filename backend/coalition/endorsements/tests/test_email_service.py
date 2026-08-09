@@ -95,6 +95,37 @@ class EndorsementEmailServiceTest(BaseTestCase):
         assert "Land and Bay Stewards" in mail.outbox[0].body
         assert "Coalition Builder" not in mail.outbox[0].body
 
+    def test_verification_email_uses_configured_name_without_homepage(self) -> None:
+        HomePage.objects.all().delete()
+        mail.outbox = []
+
+        with self.settings(ORGANIZATION_NAME="Configured Organization"):
+            sent = EndorsementEmailService.send_verification_email(self.endorsement)
+
+        assert sent is True
+        assert "Configured Organization" in mail.outbox[0].body
+
+    @patch(
+        "coalition.endorsements.email_service.HomePage.get_active",
+        side_effect=OperationalError("homepage lookup failed"),
+    )
+    def test_homepage_lookup_failure_prevents_wrong_brand_email(
+        self,
+        mock_get_active: Mock,
+    ) -> None:
+        mail.outbox = []
+
+        with self.assertLogs(
+            "coalition.endorsements.email_service",
+            level="ERROR",
+        ) as captured:
+            sent = EndorsementEmailService.send_verification_email(self.endorsement)
+
+        assert sent is False
+        assert mail.outbox == []
+        assert "EMAIL_DELIVERY_FAILED" in captured.output[0]
+        mock_get_active.assert_called_once_with()
+
     @patch("coalition.endorsements.email_service.send_mail")
     def test_send_verification_email_failure(self, mock_send_mail: Mock) -> None:
         """Test verification email sending failure"""

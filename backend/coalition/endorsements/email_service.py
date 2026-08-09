@@ -46,8 +46,12 @@ def _deliver(email: _OutboundEmail) -> bool:
     delivery-failure marker so they still page an operator.
     """
     try:
-        plain_message = render_to_string(f"{email.template_base}.txt", email.context)
-        html_message = render_to_string(f"{email.template_base}.html", email.context)
+        email_context = {
+            **email.context,
+            "organization_name": _organization_name(),
+        }
+        plain_message = render_to_string(f"{email.template_base}.txt", email_context)
+        html_message = render_to_string(f"{email.template_base}.html", email_context)
         sent_count = send_mail(
             subject=email.subject,
             message=plain_message,
@@ -88,13 +92,7 @@ def _admin_notification_recipients() -> list[str]:
 
 def _organization_name() -> str:
     """Return the public organization's name from the active homepage."""
-    try:
-        homepage = HomePage.get_active()
-    except Exception:
-        logger.exception(
-            "Could not load active homepage branding; using configured fallback",
-        )
-        return settings.ORGANIZATION_NAME
+    homepage = HomePage.get_active()
     if homepage:
         return homepage.organization_name
     return settings.ORGANIZATION_NAME
@@ -127,7 +125,6 @@ class EndorsementEmailService:
                     "campaign": endorsement.campaign,
                     "verification_url": verification_url,
                     "site_url": settings.SITE_URL,
-                    "organization_name": _organization_name(),
                 },
                 recipients=[endorsement.stakeholder.email],
                 description=f"verification email for endorsement {endorsement.id}",
@@ -162,7 +159,6 @@ class EndorsementEmailService:
                         f"{settings.API_URL}/admin/endorsements/endorsement/"
                         f"{endorsement.id}/change/"
                     ),
-                    "organization_name": _organization_name(),
                 },
                 recipients=recipients,
                 description=f"admin notification for endorsement {endorsement.id}",
@@ -186,7 +182,6 @@ class EndorsementEmailService:
                     "campaign_url": (
                         f"{settings.SITE_URL}/campaigns/{endorsement.campaign.name}/"
                     ),
-                    "organization_name": _organization_name(),
                 },
                 recipients=[endorsement.stakeholder.email],
                 description=f"approval confirmation for endorsement {endorsement.id}",
