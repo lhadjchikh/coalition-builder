@@ -471,6 +471,12 @@ describe("EndorsementForm", () => {
       (API.createEndorsement as jest.Mock).mockRejectedValue(
         new Error("Submission failed")
       );
+      const scrollIntoViewMock = jest.fn();
+      Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+        configurable: true,
+        value: scrollIntoViewMock,
+        writable: true,
+      });
 
       render(<EndorsementForm campaign={mockCampaign} />);
 
@@ -492,8 +498,14 @@ describe("EndorsementForm", () => {
       fireEvent.click(screen.getByTestId("terms-checkbox"));
       fireEvent.click(screen.getByTestId("submit-button"));
 
-      await waitFor(() => {
-        expect(screen.getByTestId("error-message")).toBeInTheDocument();
+      const errorMessage = await screen.findByTestId("error-message");
+
+      expect(errorMessage).toHaveAttribute("role", "alert");
+      expect(errorMessage).toHaveAttribute("tabindex", "-1");
+      expect(errorMessage).toHaveFocus();
+      expect(scrollIntoViewMock).toHaveBeenCalledWith({
+        behavior: "smooth",
+        block: "center",
       });
 
       // Should not show social share buttons
