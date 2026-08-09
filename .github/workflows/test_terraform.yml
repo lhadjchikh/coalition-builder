@@ -45,6 +45,8 @@ jobs:
           terraform -chdir=terraform/modules/github-oidc test
           terraform -chdir=terraform/modules/zappa init -backend=false -input=false
           terraform -chdir=terraform/modules/zappa test
+          terraform -chdir=terraform/modules/ses init -backend=false -input=false
+          terraform -chdir=terraform/modules/ses test
 
   # Run all tests (unit tests don't need AWS, integration tests do)
   tests:
