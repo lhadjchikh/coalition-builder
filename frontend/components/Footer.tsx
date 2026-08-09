@@ -13,6 +13,9 @@ interface FooterProps {
   className?: string;
 }
 
+const getAdminUrl = (apiBaseUrl: string | undefined): string =>
+  `${apiBaseUrl?.replace(/\/+$/, "") ?? ""}/admin/`;
+
 const Footer: React.FC<FooterProps> = ({
   orgInfo,
   showSocialLinks = true,
@@ -24,6 +27,7 @@ const Footer: React.FC<FooterProps> = ({
   }
 
   const currentYear = new Date().getFullYear();
+  const adminUrl = getAdminUrl(process.env.NEXT_PUBLIC_API_URL);
 
   return (
     <footer className={className || "bg-gray-900"}>
@@ -159,7 +163,7 @@ const Footer: React.FC<FooterProps> = ({
                   </li>
                   <li>
                     <Link
-                      href="/admin/"
+                      href={adminUrl}
                       className="text-gray-400 hover:text-white transition-colors duration-200 hover:underline text-sm sm:text-base"
                     >
                       Admin Login
