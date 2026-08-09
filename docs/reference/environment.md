@@ -576,9 +576,6 @@ SITE_URL="http://testserver"
 ENDORSEMENT_RATE_LIMIT_WINDOW=60
 ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS=10
 
-# Cache for testing (in-memory)
-CACHE_URL=locmem://
-
 # Test Organization Settings
 ORGANIZATION_NAME="Test Coalition"
 ORG_TAGLINE="Testing advocacy partnerships"
