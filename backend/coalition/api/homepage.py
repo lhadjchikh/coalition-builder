@@ -2,7 +2,7 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import Router
 
-from coalition.content.models import HomePage
+from coalition.content.models import HomePage, PersonGroup
 
 from .schemas import HomePageOut
 
@@ -26,6 +26,12 @@ def create_default_homepage() -> HomePage:
     )
 
 
+def add_team_availability(homepage: HomePage) -> HomePage:
+    """Attach the public-team availability signal used by site navigation."""
+    homepage.has_team_content = PersonGroup.objects.publishable().exists()
+    return homepage
+
+
 @router.get("/", response=HomePageOut)
 def get_homepage(request: HttpRequest) -> HomePage:
     """Get the active homepage configuration"""
@@ -34,10 +40,11 @@ def get_homepage(request: HttpRequest) -> HomePage:
         # Create a default homepage if none exists
         homepage = create_default_homepage()
 
-    return homepage
+    return add_team_availability(homepage)
 
 
 @router.get("/{homepage_id}/", response=HomePageOut)
 def get_homepage_by_id(request: HttpRequest, homepage_id: int) -> HomePage:
     """Get a specific homepage configuration by ID with content blocks"""
-    return get_object_or_404(HomePage, id=homepage_id)
+    homepage = get_object_or_404(HomePage, id=homepage_id)
+    return add_team_availability(homepage)

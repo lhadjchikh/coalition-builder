@@ -44,6 +44,11 @@ HELP_PAGES: tuple[HelpPage, ...] = (
         blurb="Every field on the campaign form, and the checklist before you publish.",
     ),
     HelpPage(
+        slug="team",
+        title="Managing the team page",
+        blurb="Groups, people, headshots, biography pages, ordering, and publication.",
+    ),
+    HelpPage(
         slug="bills",
         title="Adding bills to a campaign",
         blurb="Attaching legislation, and the state-versus-federal rule people miss.",

@@ -32,6 +32,7 @@ class ContentBlock(models.Model):
         ("about", "About Page"),
         ("campaigns", "Campaigns Page"),
         ("contact", "Contact Page"),
+        ("team", "Team Page"),
     ]
 
     LAYOUT_OPTIONS = [
