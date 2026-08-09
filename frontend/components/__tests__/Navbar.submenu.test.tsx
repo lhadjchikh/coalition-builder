@@ -63,6 +63,20 @@ describe("Navbar submenus", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("stays open when the pointer leaves while focus remains inside", () => {
+    render(<Navbar navItems={DEFAULT_NAV_ITEMS} />);
+    const group = screen.getByTestId("desktop-nav-group-about-us");
+    const trigger = screen.getByLabelText("Toggle About Us submenu");
+    fireEvent.focus(trigger);
+    const teamLink = screen.getByRole("link", { name: "Our Team" });
+    teamLink.focus();
+
+    fireEvent.mouseLeave(group);
+
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(teamLink).toHaveFocus();
+  });
+
   it("opens on trigger focus", () => {
     render(<Navbar navItems={DEFAULT_NAV_ITEMS} />);
     const trigger = screen.getByLabelText("Toggle About Us submenu");

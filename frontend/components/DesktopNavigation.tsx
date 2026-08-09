@@ -45,7 +45,11 @@ const DesktopSubmenu: React.FC<{
       className="relative flex items-center"
       data-testid={`desktop-nav-group-${item.label.toLowerCase().replaceAll(" ", "-")}`}
       onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
+      onMouseLeave={(event) => {
+        if (!event.currentTarget.contains(document.activeElement)) {
+          setIsOpen(false);
+        }
+      }}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget))
           setIsOpen(false);
