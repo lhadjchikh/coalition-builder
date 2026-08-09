@@ -107,6 +107,9 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<boolean>(false);
+    const [confirmationEmail, setConfirmationEmail] = useState<string | null>(
+      null
+    );
 
     // Spam prevention state
     const [formStartTime] = useState<string>(new Date().toISOString());
@@ -208,6 +211,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
         };
 
         await API.createEndorsement(endorsementData);
+        setConfirmationEmail(stakeholder.email);
         setSuccess(true);
 
         // Track successful endorsement submission
@@ -307,10 +311,14 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           </div>
         )}
 
-        {success && (
+        {success && confirmationEmail && (
           <EndorsementConfirmationDialog
             campaign={campaign}
-            onClose={() => setSuccess(false)}
+            email={confirmationEmail}
+            onClose={() => {
+              setSuccess(false);
+              setConfirmationEmail(null);
+            }}
             returnFocusTo={submitButtonRef.current}
           />
         )}

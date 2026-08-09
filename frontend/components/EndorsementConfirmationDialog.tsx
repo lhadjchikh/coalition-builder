@@ -1,17 +1,22 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import API from "../services/api";
 import { Campaign } from "../types/index";
 import SocialShareButtons from "./SocialShareButtons";
 
 interface EndorsementConfirmationDialogProps {
   campaign: Campaign;
+  email: string;
   onClose: () => void;
   returnFocusTo: HTMLElement | null;
 }
 
 const EndorsementConfirmationDialog: React.FC<
   EndorsementConfirmationDialogProps
-> = ({ campaign, onClose, returnFocusTo }) => {
+> = ({ campaign, email, onClose, returnFocusTo }) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const [resendState, setResendState] = useState<
+    "idle" | "sending" | "sent" | "failed"
+  >("idle");
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -33,6 +38,16 @@ const EndorsementConfirmationDialog: React.FC<
   const closeOnCancel = (event: React.SyntheticEvent<HTMLDialogElement>) => {
     event.preventDefault();
     onClose();
+  };
+
+  const requestAnotherVerificationEmail = async () => {
+    setResendState("sending");
+    try {
+      await API.resendEndorsementVerification(email, campaign.id);
+      setResendState("sent");
+    } catch {
+      setResendState("failed");
+    }
   };
 
   return (
@@ -60,9 +75,27 @@ const EndorsementConfirmationDialog: React.FC<
         be sent for review after you verify it.
       </p>
       <p>
-        If the email does not arrive, close this message and resubmit the form
-        to request another verification email.
+        If the email does not arrive, you can request another copy without
+        submitting the form again.
       </p>
+      <button
+        type="button"
+        className="confirmation-resend-button"
+        disabled={resendState === "sending" || resendState === "sent"}
+        onClick={requestAnotherVerificationEmail}
+      >
+        {resendState === "sending"
+          ? "Requesting verification email…"
+          : "Send another verification email"}
+      </button>
+      {resendState === "sent" && (
+        <p role="status">Another verification email has been requested.</p>
+      )}
+      {resendState === "failed" && (
+        <p role="alert">
+          We could not request another email. Please try again later.
+        </p>
+      )}
 
       <div className="share-endorsement-section">
         <p className="share-cta">

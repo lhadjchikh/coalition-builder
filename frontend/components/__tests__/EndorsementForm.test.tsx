@@ -19,6 +19,7 @@ jest.mock("../../services/api", () => ({
     getEndorsements: jest.fn(),
     getCampaignEndorsements: jest.fn(),
     createEndorsement: jest.fn(),
+    resendEndorsementVerification: jest.fn(),
     getHomepageById: jest.fn(),
     getContentBlocks: jest.fn(),
     getContentBlocksByPageType: jest.fn(),
@@ -196,6 +197,11 @@ describe("EndorsementForm", () => {
       campaign_id: 1,
       stakeholder_id: 1,
     });
+    (API.resendEndorsementVerification as jest.Mock).mockResolvedValue({
+      success: true,
+      message:
+        "If an endorsement exists for this email and campaign, a verification email has been sent.",
+    });
   });
 
   it("handles honeypot field changes", () => {
@@ -310,8 +316,8 @@ describe("EndorsementForm", () => {
         ).toBeInTheDocument();
       });
       expect(
-        screen.getByText(/resubmit the form to request another verification/i)
-      ).toBeInTheDocument();
+        screen.getByRole("button", { name: "Send another verification email" })
+      ).toBeEnabled();
 
       const confirmationDialog = screen.getByRole("dialog");
       expect(confirmationDialog.tagName).toBe("DIALOG");
@@ -322,6 +328,43 @@ describe("EndorsementForm", () => {
       expect(
         screen.getByText("Help amplify your support by sharing this campaign:")
       ).toBeInTheDocument();
+    });
+
+    it("requests another verification email without resubmitting", async () => {
+      render(<EndorsementForm campaign={mockCampaign} />);
+
+      fireEvent.change(screen.getByTestId("type-select"), {
+        target: { value: "individual" },
+      });
+      fireEvent.change(screen.getByTestId("first-name-input"), {
+        target: { value: "John" },
+      });
+      fireEvent.change(screen.getByTestId("last-name-input"), {
+        target: { value: "Doe" },
+      });
+      fireEvent.change(screen.getByTestId("email-input"), {
+        target: { value: "john@example.com" },
+      });
+      await fillAddressFields();
+      fireEvent.click(screen.getByTestId("terms-checkbox"));
+      fireEvent.click(screen.getByTestId("submit-button"));
+
+      fireEvent.click(
+        await screen.findByRole("button", {
+          name: "Send another verification email",
+        })
+      );
+
+      await waitFor(() => {
+        expect(API.resendEndorsementVerification).toHaveBeenCalledWith(
+          "john@example.com",
+          mockCampaign.id
+        );
+      });
+      expect(
+        screen.getByText(/another verification email has been requested/i)
+      ).toBeInTheDocument();
+      expect(API.createEndorsement).toHaveBeenCalledTimes(1);
     });
 
     it("closes the confirmation dialog without resubmitting", async () => {

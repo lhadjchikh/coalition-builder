@@ -6,6 +6,7 @@ import type {
   Endorsement,
   EndorsementCreate,
   EndorsementVerification,
+  EndorsementVerificationResend,
 } from "../types";
 
 export function getBaseUrl(): string {
@@ -319,6 +320,16 @@ class FrontendApiClient extends BaseApiClient {
   async verifyEndorsement(token: string): Promise<EndorsementVerification> {
     return this.post<EndorsementVerification>(
       `/api/endorsements/verify/${encodeURIComponent(token)}/`
+    );
+  }
+
+  async resendEndorsementVerification(
+    email: string,
+    campaignId: number
+  ): Promise<EndorsementVerificationResend> {
+    return this.post<EndorsementVerificationResend>(
+      "/api/endorsements/resend-verification/",
+      { email, campaign_id: campaignId }
     );
   }
 }
