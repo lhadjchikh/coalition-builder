@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import API from "../../../services/api";
+import type { EndorsementVerification } from "../../../types";
 
 interface VerifyEndorsementPageProps {
   params: Promise<{ token: string }>;
@@ -10,11 +11,26 @@ interface VerifyEndorsementPageProps {
 
 type VerificationState = "verifying" | "verified" | "failed";
 
+function verificationConfirmation(
+  status: EndorsementVerification["status"] | null
+): string {
+  if (status === "approved") {
+    return "Thank you. Your endorsement has been approved.";
+  }
+  if (status === "rejected") {
+    return "Your email is verified. This endorsement was not approved.";
+  }
+  return "Thank you. Your endorsement is now under review.";
+}
+
 export default function VerifyEndorsementPage({
   params,
 }: VerifyEndorsementPageProps) {
   const [verificationState, setVerificationState] =
     useState<VerificationState>("verifying");
+  const [verificationStatus, setVerificationStatus] = useState<
+    EndorsementVerification["status"] | null
+  >(null);
   const [verificationAttempt, setVerificationAttempt] = useState(0);
 
   useEffect(() => {
@@ -23,8 +39,9 @@ export default function VerifyEndorsementPage({
     const verifyToken = async () => {
       try {
         const { token } = await params;
-        await API.verifyEndorsement(token);
+        const verification = await API.verifyEndorsement(token);
         if (isActive) {
+          setVerificationStatus(verification.status);
           setVerificationState("verified");
         }
       } catch {
@@ -41,6 +58,7 @@ export default function VerifyEndorsementPage({
   }, [params, verificationAttempt]);
 
   const retryVerification = () => {
+    setVerificationStatus(null);
     setVerificationState("verifying");
     setVerificationAttempt((previousAttempt) => previousAttempt + 1);
   };
@@ -62,7 +80,7 @@ export default function VerifyEndorsementPage({
             Endorsement verified
           </h1>
           <p className="mt-4 text-gray-600">
-            Thank you. Your endorsement is now under review.
+            {verificationConfirmation(verificationStatus)}
           </p>
           <Link
             href="/"
@@ -80,8 +98,8 @@ export default function VerifyEndorsementPage({
           </h1>
           <p className="mt-4 text-gray-600">
             We could not verify your endorsement right now. Try again. If the
-            problem continues, return to the campaign and submit the form again
-            to request a new verification email.
+            problem continues, contact the campaign organizers to request a new
+            link.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <button

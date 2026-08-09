@@ -318,6 +318,9 @@ describe("EndorsementForm", () => {
       expect(
         screen.getByRole("button", { name: "Send another verification email" })
       ).toBeEnabled();
+      expect(
+        screen.getByText(/verifying your email completes your submission/i)
+      ).toBeInTheDocument();
 
       const confirmationDialog = screen.getByRole("dialog");
       expect(confirmationDialog.tagName).toBe("DIALOG");

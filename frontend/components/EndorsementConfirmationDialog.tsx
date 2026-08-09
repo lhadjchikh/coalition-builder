@@ -71,8 +71,8 @@ const EndorsementConfirmationDialog: React.FC<
         Thank you for your endorsement!
       </h3>
       <p>
-        Check your email and click the verification link. Your endorsement will
-        be sent for review after you verify it.
+        Check your email and click the verification link. Verifying your email
+        completes your submission.
       </p>
       <p>
         If the email does not arrive, you can request another copy without

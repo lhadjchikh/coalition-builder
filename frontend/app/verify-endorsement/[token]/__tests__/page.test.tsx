@@ -42,6 +42,25 @@ describe("VerifyEndorsementPage", () => {
     );
   });
 
+  it("reports an auto-approved endorsement accurately", async () => {
+    (API.verifyEndorsement as jest.Mock).mockResolvedValue({
+      success: true,
+      message: "Email verified successfully",
+      status: "approved",
+    });
+
+    render(
+      <VerifyEndorsementPage
+        params={Promise.resolve({ token: "approved-token" })}
+      />
+    );
+
+    expect(
+      await screen.findByText("Thank you. Your endorsement has been approved.")
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/under review/i)).not.toBeInTheDocument();
+  });
+
   it("shows a useful error when verification fails", async () => {
     (API.verifyEndorsement as jest.Mock).mockRejectedValue(
       new Error("HTTP error! status: 404")
@@ -58,6 +77,9 @@ describe("VerifyEndorsementPage", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText(/we could not verify your endorsement right now/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/contact the campaign organizers to request a new link/i)
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Try again" })).toBeEnabled();
   });
