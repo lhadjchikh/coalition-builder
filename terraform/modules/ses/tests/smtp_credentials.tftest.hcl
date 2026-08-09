@@ -1,4 +1,11 @@
-mock_provider "aws" {}
+mock_provider "aws" {
+  override_resource {
+    target = aws_iam_access_key.ses_smtp
+    values = {
+      id = "AKIAEXAMPLE"
+    }
+  }
+}
 
 mock_provider "external" {
   override_data {
@@ -48,11 +55,15 @@ run "smtp_credentials_are_created_by_default" {
   }
 
   assert {
-    condition = alltrue([
-      !contains(keys(jsondecode(aws_secretsmanager_secret_version.ses_smtp[0].secret_string)), "AWS_ACCESS_KEY_ID"),
-      !contains(keys(jsondecode(aws_secretsmanager_secret_version.ses_smtp[0].secret_string)), "AWS_SECRET_ACCESS_KEY"),
-    ])
-    error_message = "The SMTP secret must not expose raw IAM access key credentials."
+    condition = jsondecode(aws_secretsmanager_secret_version.ses_smtp[0].secret_string) == {
+      DEFAULT_FROM_EMAIL  = "admin@example.org"
+      EMAIL_HOST          = "email-smtp.us-east-1.amazonaws.com"
+      EMAIL_HOST_PASSWORD = "mock-smtp-password"
+      EMAIL_HOST_USER     = "AKIAEXAMPLE"
+      EMAIL_PORT          = "587"
+      EMAIL_USE_TLS       = "True"
+    }
+    error_message = "The SMTP secret must contain exactly the connection fields required by non-Lambda deployments."
   }
 }
 
