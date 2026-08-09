@@ -179,6 +179,33 @@ resource "aws_ses_configuration_set" "main" {
   name = "${var.prefix}-config-set"
 }
 
+data "aws_caller_identity" "current" {}
+
+# Permit SES to publish only this configuration set's events to the topic.
+resource "aws_sns_topic_policy" "ses_notifications" {
+  count = var.enable_notifications ? 1 : 0
+  arn   = aws_sns_topic.ses_notifications[0].arn
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowSESPublish"
+        Effect    = "Allow"
+        Principal = { Service = "ses.amazonaws.com" }
+        Action    = "sns:Publish"
+        Resource  = aws_sns_topic.ses_notifications[0].arn
+        Condition = {
+          StringEquals = {
+            "AWS:SourceAccount" = data.aws_caller_identity.current.account_id
+            "AWS:SourceArn"     = "arn:aws:ses:${var.aws_region}:${data.aws_caller_identity.current.account_id}:configuration-set/${aws_ses_configuration_set.main.name}"
+          }
+        }
+      }
+    ]
+  })
+}
+
 # Event destination for bounce/complaint notifications
 resource "aws_ses_event_destination" "sns" {
   count                  = var.enable_notifications ? 1 : 0
@@ -191,6 +218,8 @@ resource "aws_ses_event_destination" "sns" {
   }
 
   matching_types = ["bounce", "complaint", "delivery", "reject"]
+
+  depends_on = [aws_sns_topic_policy.ses_notifications]
 }
 
 # SNS topic for SES notifications
