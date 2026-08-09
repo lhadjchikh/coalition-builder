@@ -22,8 +22,9 @@ in them. If you think you need something there, ask {{ supervisor_contact }}.
 
 If you are responsible for site configuration, use
 [Site Administration → Site configuration]({% url 'admin:core_siteconfiguration_changelist' %})
-to choose the timezone used for dates and times throughout the admin. The setting
-applies to every administrator; it does not change how timestamps are stored.
+to choose the timezone used for dates and times throughout the admin and in
+administrator notification emails. The setting applies to every administrator;
+it does not change how timestamps are stored.
 
 ## Four conventions worth knowing
 

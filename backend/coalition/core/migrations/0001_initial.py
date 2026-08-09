@@ -28,7 +28,8 @@ class Migration(migrations.Migration):
                     models.CharField(
                         default="UTC",
                         help_text=(
-                            "Timezone used to display dates and times in the admin site."
+                            "Timezone used for dates and times in the admin site and "
+                            "administrator notification emails."
                         ),
                         max_length=63,
                         validators=[coalition.core.models.validate_timezone_name],

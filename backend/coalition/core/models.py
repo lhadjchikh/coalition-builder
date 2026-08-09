@@ -36,7 +36,10 @@ class SiteConfiguration(models.Model):
         max_length=63,
         default="UTC",
         validators=[validate_timezone_name],
-        help_text="Timezone used to display dates and times in the admin site.",
+        help_text=(
+            "Timezone used for dates and times in the admin site and administrator "
+            "notification emails."
+        ),
     )
 
     class Meta:
