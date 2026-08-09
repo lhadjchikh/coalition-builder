@@ -77,6 +77,20 @@ class TestDatabaseSecretIsolation:
 
         client.get_secret_value.assert_not_called()
 
+    def test_rejects_a_malformed_secret_arn(self) -> None:
+        client = _secrets_client()
+
+        with pytest.raises(DatabaseSecretValidationError, match="Secrets Manager ARN"):
+            validate_database_secret(
+                client,
+                "not-an-arn",
+                "123456789012",
+                "dev",
+                expected_database_name="coalition_dev",
+            )
+
+        client.describe_secret.assert_not_called()
+
     def test_rejects_a_secret_tagged_for_another_environment(self) -> None:
         client = _secrets_client(environment="prod")
 
@@ -149,6 +163,83 @@ class TestDatabaseSecretIsolation:
         client.get_secret_value.return_value = {"SecretString": "not-json"}
 
         with pytest.raises(DatabaseSecretValidationError, match="valid JSON"):
+            validate_database_secret(
+                client,
+                SECRET_ARN,
+                "123456789012",
+                "dev",
+                expected_database_name="coalition_dev",
+            )
+
+    def test_rejects_a_secret_without_a_string_payload(self) -> None:
+        client = _secrets_client()
+        client.get_secret_value.return_value = {}
+
+        with pytest.raises(DatabaseSecretValidationError, match="SecretString"):
+            validate_database_secret(
+                client,
+                SECRET_ARN,
+                "123456789012",
+                "dev",
+                expected_database_name="coalition_dev",
+            )
+
+    def test_rejects_a_non_object_secret_payload(self) -> None:
+        client = _secrets_client()
+        client.get_secret_value.return_value = {
+            "SecretString": json.dumps(["coalition_dev"]),
+        }
+
+        with pytest.raises(DatabaseSecretValidationError, match="must be an object"):
+            validate_database_secret(
+                client,
+                SECRET_ARN,
+                "123456789012",
+                "dev",
+                expected_database_name="coalition_dev",
+            )
+
+    @pytest.mark.parametrize(
+        ("secret_payload", "error_message"),
+        [
+            (
+                {
+                    "dbname": "",
+                    "url": "postgis://application:password@database.internal/coalition_dev",
+                },
+                "non-empty 'dbname'",
+            ),
+            (
+                {"dbname": "coalition_dev", "url": ""},
+                "non-empty 'url'",
+            ),
+            (
+                {
+                    "dbname": "coalition_dev",
+                    "url": "mysql://application:password@database.internal/coalition_dev",
+                },
+                "PostgreSQL scheme",
+            ),
+            (
+                {
+                    "dbname": "coalition_dev",
+                    "url": "postgis://application:password@database.internal",
+                },
+                "exactly one database",
+            ),
+        ],
+    )
+    def test_rejects_invalid_secret_database_fields(
+        self,
+        secret_payload: dict[str, str],
+        error_message: str,
+    ) -> None:
+        client = _secrets_client()
+        client.get_secret_value.return_value = {
+            "SecretString": json.dumps(secret_payload),
+        }
+
+        with pytest.raises(DatabaseSecretValidationError, match=error_message):
             validate_database_secret(
                 client,
                 SECRET_ARN,
