@@ -172,6 +172,16 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
       }
     };
 
+    const setStreetAddressAndClearDependentFields = (streetAddress: string) => {
+      setStakeholder((previousStakeholder) => ({
+        ...previousStakeholder,
+        street_address: streetAddress,
+        city: "",
+        state: "",
+        zip_code: "",
+      }));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       setIsSubmitting(true);
@@ -547,6 +557,8 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           <div className="form-group">
             <label htmlFor="address-autocomplete">Address *</label>
             <AddressAutocomplete
+              initialValue={stakeholder.street_address}
+              onInputChange={setStreetAddressAndClearDependentFields}
               onAddressSelect={(components) => {
                 setStakeholder((prev) => ({
                   ...prev,
@@ -575,7 +587,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
                   type="text"
                   value={stakeholder.street_address}
                   onChange={(e) =>
-                    handleStakeholderChange("street_address", e.target.value)
+                    setStreetAddressAndClearDependentFields(e.target.value)
                   }
                   required
                   data-testid="street-address-input"

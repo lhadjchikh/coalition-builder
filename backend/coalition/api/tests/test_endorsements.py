@@ -243,6 +243,35 @@ class EndorsementAPITest(BaseTestCase):
         assert endorsement.statement == expected
         assert endorsement.public_display
 
+    def test_create_endorsement_rejects_empty_street_address(self) -> None:
+        """Invalid address input must produce a client error rather than a 500."""
+        endorsement_data = {
+            "campaign_id": self.campaign.id,
+            "stakeholder": {
+                "first_name": "Morgan",
+                "last_name": "Lee",
+                "email": "morgan@example.com",
+                "street_address": "",
+                "city": "Baltimore",
+                "state": "MD",
+                "zip_code": "21201",
+                "type": "individual",
+            },
+            "statement": "I support this campaign",
+            "public_display": True,
+            "terms_accepted": True,
+            "form_metadata": get_valid_form_metadata(),
+        }
+
+        response = self.client.post(
+            "/api/endorsements/",
+            data=json.dumps(endorsement_data),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 422, response.content
+        assert not Stakeholder.objects.filter(email="morgan@example.com").exists()
+
     def test_create_endorsement_existing_stakeholder(self) -> None:
         """Test POST /api/endorsements/ with existing stakeholder email"""
         # Use existing stakeholder's email with EXACT matching info (security)

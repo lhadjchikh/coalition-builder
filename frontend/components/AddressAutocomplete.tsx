@@ -17,6 +17,7 @@ interface AddressComponents {
 
 interface AddressAutocompleteProps {
   onAddressSelect: (components: AddressComponents) => void;
+  onInputChange?: (streetAddress: string) => void;
   initialValue?: string;
   placeholder?: string;
   required?: boolean;
@@ -26,6 +27,7 @@ interface AddressAutocompleteProps {
 
 export default function AddressAutocomplete({
   onAddressSelect,
+  onInputChange,
   initialValue = "",
   placeholder = "Start typing your address...",
   required = false,
@@ -38,6 +40,12 @@ export default function AddressAutocomplete({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const addressRequestVersionRef = useRef(0);
+
+  useEffect(() => {
+    addressRequestVersionRef.current += 1;
+    setQuery(initialValue);
+  }, [initialValue]);
 
   // Click outside handler
   useEffect(() => {
@@ -91,13 +99,17 @@ export default function AddressAutocomplete({
   // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+    addressRequestVersionRef.current += 1;
     setQuery(value);
+    onInputChange?.(value);
     setSelectedIndex(-1);
     searchAddresses(value);
   };
 
   // Handle suggestion selection
   const handleSelectSuggestion = async (suggestion: AddressSuggestion) => {
+    const requestVersion = addressRequestVersionRef.current + 1;
+    addressRequestVersionRef.current = requestVersion;
     setQuery(suggestion.text);
     setShowSuggestions(false);
     setSuggestions([]);
@@ -110,9 +122,11 @@ export default function AddressAutocomplete({
 
       if (response.ok) {
         const addressComponents = await response.json();
+        if (requestVersion !== addressRequestVersionRef.current) return;
         onAddressSelect(addressComponents);
       } else {
         console.error("Failed to fetch place details");
+        if (requestVersion !== addressRequestVersionRef.current) return;
         // Fallback: let user enter manually
         onAddressSelect({
           street_address: suggestion.text,
@@ -123,6 +137,7 @@ export default function AddressAutocomplete({
       }
     } catch (error) {
       console.error("Error fetching place details:", error);
+      if (requestVersion !== addressRequestVersionRef.current) return;
       // Fallback: let user enter manually
       onAddressSelect({
         street_address: suggestion.text,
