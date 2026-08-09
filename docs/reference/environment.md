@@ -70,7 +70,7 @@ ADMIN_HELP_TECHNICAL_CONTACT="Technical support (support@example.org)"
 | `AWS_STORAGE_BUCKET_NAME` | S3 bucket name for media file uploads | -           | Production |
 | `AWS_REGION`              | AWS region for S3 bucket              | `us-east-1` | No         |
 
-**Note:** In production, media files (uploaded images) are automatically stored in AWS S3. The ECS task role provides authentication for S3 access.
+**Note:** In production, media files (uploaded images) are automatically stored in AWS S3. The Lambda execution role provides authentication for S3 access.
 
 **File Organization:**
 
@@ -379,7 +379,7 @@ AWS_STORAGE_BUCKET_NAME=coalition-static-assets-a4853294
 # Optional: Direct backend serving
 BACKEND_DOMAIN=api.yourdomain.com
 
-# Backend configuration (in ECS/production)
+# Backend configuration (in Lambda/production)
 USE_S3_DIRECT_URLS=false  # Use CloudFront URLs (recommended)
 # USE_S3_DIRECT_URLS=true  # Use S3 URLs directly
 ```

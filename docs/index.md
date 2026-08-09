@@ -79,7 +79,7 @@ flowchart TD
 - **Static & Media**: S3 behind CloudFront
 - **Infrastructure**: Terraform-managed AWS resources
 
-The repository retains ECS-based TIGER import scaffolding, but no current Terraform environment provisions it. The ALB, ECS application service, and NAT gateway used by the pre-2025 deployment have been removed; see the [AWS Serverless Deployment guide](deployment/aws.md) for the resource inventory and cost breakdown.
+The repository retains ECS-based TIGER import scaffolding, but no current Terraform environment provisions it. The ALB, ECS application service, and NAT gateway used by the previous ECS deployment have been removed; see the [AWS Serverless Deployment guide](deployment/aws.md) for the resource inventory and cost breakdown.
 
 ### Frontend Architecture
 

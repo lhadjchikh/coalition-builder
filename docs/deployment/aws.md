@@ -59,7 +59,7 @@ Lambda sends transactional email through the SES API over a private VPC endpoint
 #### RDS PostgreSQL
 
 - **Engine**: PostgreSQL 16 with PostGIS
-- **Instance**: db.t3.micro (dev) to db.t3.small (production)
+- **Instance**: One shared `db.t4g.micro` instance by default
 - **Storage**: 20GB GP3 with autoscaling
 - **Multi-AZ**: Disabled (cost optimization)
 - **Backup**: 7-day retention
@@ -70,8 +70,10 @@ Lambda sends transactional email through the SES API over a private VPC endpoint
 - **Development, when enabled**: Secrets Manager and AWS Location (`geo.places`)
 - **Placement**: Single AZ (`enable_single_az_endpoints`) to halve hourly cost
 - **Purpose**: Let the Lambda in private subnets reach AWS services without a NAT gateway
-- **CloudWatch Logs**: No interface endpoint is provisioned; Lambda delivers its own logs without one
+- **CloudWatch Logs**: The per-account environments provision no Logs interface endpoint; Lambda delivers its own logs without one. The retained root configuration still uses the networking module's default Logs endpoint.
 - **Cost**: $0.01/hour each — see [Cost Analysis](#cost-analysis). The July 2026 snapshot predates the Logs-to-SES endpoint swap in production and removal of the Logs endpoint in development.
+
+#### Rate Limiting and State Locking
 
 There is no application rate-limiting DynamoDB table. The bootstrap still creates DynamoDB tables for Terraform state locking. Application rate limiting uses the PostgreSQL-backed Django cache; see [Rate Limiting](../rate-limiting.md).
 
@@ -105,10 +107,11 @@ The repository contains an ECS Fargate module and manual workflow for TIGER impo
 
 ```text
 terraform/
+├── main.tf                  # Retained single-account root configuration
 ├── environments/
-│   ├── shared/            # VPC, RDS, bastion
-│   ├── prod/              # Lambda, API Gateway, S3, SES
-│   └── dev/               # Lambda, S3
+│   ├── shared/              # Database VPC, RDS, bastion
+│   ├── prod/                # Production application VPC and services
+│   └── dev/                 # Development application VPC and services
 └── modules/
     ├── networking/        # VPC, subnets, VPC endpoints
     ├── database/          # RDS PostgreSQL with PostGIS
@@ -248,6 +251,16 @@ To find out what is behind a surprising service total, re-run with `--group-by T
         "geo:GetPlace"
       ],
       "Resource": "arn:aws:geo:*:*:place-index/coalition-*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["ses:SendEmail", "ses:SendRawEmail"],
+      "Resource": "*",
+      "Condition": {
+        "StringLike": {
+          "ses:FromAddress": ["*@example.org", "noreply@example.org"]
+        }
+      }
     }
   ]
 }
@@ -320,15 +333,15 @@ Only `dev` and `prod` are provisioned. `zappa_settings.json.template` also defin
 
 - Lambda: 512MB memory, no keep-warm
 - API Gateway: Lower throttling limits
-- RDS: `coalition_dev` database on the shared account's RDS instance
-- Rate limiting: `django_cache` table in the dev database
+- RDS: The Secrets Manager URL currently defaults to the shared instance's `coalition` database
+- Rate limiting: `django_cache` table in the selected application database
 
 ### Production
 
 - Lambda: 1024MB memory, 4-minute keep-warm
 - API Gateway: Full throttling protection
-- RDS: `coalition` database on the shared account's RDS instance
-- Rate limiting: `django_cache` table in the production database
+- RDS: The Secrets Manager URL defaults to the shared instance's `coalition` database
+- Rate limiting: `django_cache` table in the selected application database
 - X-Ray: Enabled
 
 ## Backup & Disaster Recovery

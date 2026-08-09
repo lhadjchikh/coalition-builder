@@ -192,7 +192,7 @@ python manage.py shell
 # Inspect selected non-secret settings inside Lambda
 cd backend
 poetry run zappa invoke prod \
-  'import os; print({name: os.environ.get(name) for name in ("EMAIL_BACKEND", "DEFAULT_FROM_EMAIL", "SITE_URL")})' \
+  'from django.conf import settings; print(settings.EMAIL_BACKEND, settings.DEFAULT_FROM_EMAIL, settings.SITE_URL)' \
   --raw
 
 # Invoke an explicit send test

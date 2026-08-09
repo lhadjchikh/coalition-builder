@@ -15,7 +15,7 @@ Coalition Builder uses a **serverless architecture** for cost-effective, scalabl
 
 ### 2. Deploy Infrastructure
 
-Terraform is organized into per-account environments. Deploy `shared` first — it creates the VPC and RDS instance that `prod` and `dev` read via remote state.
+Terraform is organized into per-account environments. Deploy `shared` first — it creates the database VPC and RDS instance that `prod` and `dev` read via remote state before creating their own application VPCs.
 
 Complete the account bootstrap in [Multi-Account AWS Setup](deployment/multi-account-aws.md) and export the required `TF_VAR_*` inputs from [Configure GitHub Secrets and Variables](#3-configure-github-secrets-and-variables) before running Terraform manually. The backend setup script generates the gitignored `backend.hcl` in each environment directory.
 
@@ -117,7 +117,7 @@ Transactional email uses the SES API over a private VPC endpoint and authenticat
 - **Rate Limiting**: PostgreSQL-backed Django cache — see [Rate Limiting](rate-limiting.md)
 - **Geographic Data**: The repository includes an ECS import module and workflow, but no current environment provisions them
 
-The ALB, ECS application service, and NAT gateway from the pre-2025 deployment have been removed. The Lambda reaches AWS services through VPC endpoints rather than a NAT gateway. See [AWS Serverless Deployment](deployment/aws.md) for the full resource inventory.
+The ALB, ECS application service, and NAT gateway from the previous ECS deployment have been removed. The Lambda reaches AWS services through VPC endpoints rather than a NAT gateway. See [AWS Serverless Deployment](deployment/aws.md) for the full resource inventory.
 
 ## Deployment Options
 
