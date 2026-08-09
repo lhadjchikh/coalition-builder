@@ -2,7 +2,7 @@
 Tests for endorsement email service functionality.
 """
 
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from smtplib import SMTPException
 from unittest.mock import Mock, patch
 
@@ -15,6 +15,7 @@ from django.utils import timezone
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.content.models import HomePage
+from coalition.core.models import SiteConfiguration
 from coalition.test_base import BaseTestCase
 
 from ..email_service import EndorsementEmailService
@@ -214,6 +215,25 @@ class EndorsementEmailServiceTest(BaseTestCase):
             assert "admin1@example.com" in email.to
             assert "admin2@example.com" in email.to
 
+    def test_admin_notification_uses_site_timezone(self) -> None:
+        submitted_at = datetime(2026, 1, 15, 20, 30, tzinfo=UTC)
+        Endorsement.objects.filter(pk=self.endorsement.pk).update(
+            created_at=submitted_at,
+        )
+        self.endorsement.refresh_from_db()
+        SiteConfiguration.objects.create(timezone="America/Los_Angeles")
+        mail.outbox = []
+
+        with self.settings(ADMIN_NOTIFICATION_EMAILS=["admin@example.com"]):
+            sent = EndorsementEmailService.send_admin_notification(self.endorsement)
+
+        assert sent is True
+        assert "Submitted: January 15, 2026 12:30 PM" in mail.outbox[0].body
+        html_message = mail.outbox[0].alternatives[0]
+        assert html_message.mimetype == "text/html"
+        assert "January 15, 2026 12:30 PM" in html_message.content
+        assert self.endorsement.created_at == submitted_at
+
     def test_send_admin_notification_no_admins_configured(self) -> None:
         """Test admin notification when no admins configured"""
         with self.settings(ADMIN_NOTIFICATION_EMAILS=[]):
@@ -303,6 +323,23 @@ class EndorsementEmailFailureContainmentTest(BaseTestCase):
             result = EndorsementEmailService.send_admin_notification(self.endorsement)
 
         assert result is False
+
+    @patch("coalition.endorsements.email_service.send_mail")
+    @patch(
+        "coalition.endorsements.email_service.SiteConfiguration.get_timezone",
+        side_effect=OperationalError("site configuration unavailable"),
+    )
+    def test_admin_timezone_lookup_failure_is_contained(
+        self,
+        mock_get_timezone: Mock,
+        mock_send_mail: Mock,
+    ) -> None:
+        with self.settings(ADMIN_NOTIFICATION_EMAILS=["admin@example.com"]):
+            sent = EndorsementEmailService.send_admin_notification(self.endorsement)
+
+        assert sent is False
+        mock_get_timezone.assert_called_once_with()
+        mock_send_mail.assert_not_called()
 
     @patch("coalition.endorsements.email_service.send_mail")
     def test_confirmation_email_contains_ses_rejection(

@@ -3,6 +3,7 @@ Email service for endorsement verification and notifications
 """
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -12,6 +13,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 
 from coalition.content.models import HomePage
+from coalition.core.models import SiteConfiguration
 
 from .models import Endorsement
 
@@ -36,6 +38,29 @@ class _OutboundEmail:
     context: dict[str, Any]
     recipients: list[str]
     description: str
+    timezone_provider: Callable[[], str] | None = None
+
+
+def _render_messages(
+    email: _OutboundEmail,
+    email_context: dict[str, Any],
+) -> tuple[str, str]:
+    """Render both message formats in the email's requested timezone."""
+    render_timezone = (
+        email.timezone_provider()
+        if email.timezone_provider is not None
+        else timezone.get_current_timezone()
+    )
+    with timezone.override(render_timezone):
+        plain_message = render_to_string(
+            f"{email.template_base}.txt",
+            email_context,
+        )
+        html_message = render_to_string(
+            f"{email.template_base}.html",
+            email_context,
+        )
+    return plain_message, html_message
 
 
 def _deliver(email: _OutboundEmail) -> bool:
@@ -50,8 +75,7 @@ def _deliver(email: _OutboundEmail) -> bool:
             **email.context,
             "organization_name": _organization_name(),
         }
-        plain_message = render_to_string(f"{email.template_base}.txt", email_context)
-        html_message = render_to_string(f"{email.template_base}.html", email_context)
+        plain_message, html_message = _render_messages(email, email_context)
         sent_count = send_mail(
             subject=email.subject,
             message=plain_message,
@@ -170,6 +194,7 @@ class EndorsementEmailService:
                 },
                 recipients=recipients,
                 description=f"admin notification for endorsement {endorsement.id}",
+                timezone_provider=SiteConfiguration.get_timezone,
             ),
         )
 
