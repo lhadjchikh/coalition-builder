@@ -1,24 +1,41 @@
-SELECT EXISTS (
-  SELECT FROM pg_database WHERE datname = :'prod_database'
-) AS prod_database_exists \gset
-\if :prod_database_exists
-\else
-  \echo 'Production database does not exist; refusing to create or replace it.'
-  \quit 3
-\endif
+SELECT format(
+  $sql$
+DO $guard$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_database WHERE datname = %L) THEN
+    RAISE EXCEPTION 'Production database does not exist; refusing to create or replace it.';
+  END IF;
+END
+$guard$;
+$sql$,
+  :'prod_database'
+) \gexec
 
-SELECT EXISTS (SELECT FROM pg_roles WHERE rolname = :'prod_user') AS prod_user_exists \gset
-SELECT EXISTS (SELECT FROM pg_roles WHERE rolname = :'dev_user') AS dev_user_exists \gset
-\if :prod_user_exists
-\else
-  \echo 'Production application role does not exist.'
-  \quit 4
-\endif
-\if :dev_user_exists
-\else
-  \echo 'Development application role does not exist.'
-  \quit 5
-\endif
+SELECT format(
+  $sql$
+DO $guard$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = %L) THEN
+    RAISE EXCEPTION 'Production application role does not exist.';
+  END IF;
+END
+$guard$;
+$sql$,
+  :'prod_user'
+) \gexec
+
+SELECT format(
+  $sql$
+DO $guard$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = %L) THEN
+    RAISE EXCEPTION 'Development application role does not exist.';
+  END IF;
+END
+$guard$;
+$sql$,
+  :'dev_user'
+) \gexec
 
 SELECT format('CREATE DATABASE %I', :'dev_database')
 WHERE NOT EXISTS (

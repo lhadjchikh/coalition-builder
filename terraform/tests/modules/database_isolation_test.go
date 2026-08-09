@@ -130,7 +130,7 @@ func provisioningCommand(t *testing.T, extraArguments ...string) *exec.Cmd {
 }
 
 // #316 Definition of Done: provision missing databases and least-privilege grants safely.
-func TestDatabaseProvisioningIsIdempotentAndNonDestructive(t *testing.T) {
+func TestDatabaseProvisioningUsesNonDestructiveSQL(t *testing.T) {
 	t.Parallel()
 
 	command := provisioningCommand(t)
@@ -152,6 +152,14 @@ func TestDatabaseProvisioningIsIdempotentAndNonDestructive(t *testing.T) {
 	assert.Contains(t, provisioningSQL, "REVOKE CONNECT ON DATABASE")
 	assert.Contains(t, provisioningSQL, "CREATE EXTENSION IF NOT EXISTS postgis")
 	assert.NotContains(t, strings.ToUpper(provisioningSQL), "DROP DATABASE")
+}
+
+func TestDatabaseProvisioningGuardsFailThroughSQL(t *testing.T) {
+	t.Parallel()
+
+	provisioningSQL := readRepositoryFile(t, "../../modules/database/scripts/provision_environment_databases.sql")
+	assert.NotContains(t, provisioningSQL, `\quit`)
+	assert.Equal(t, 3, strings.Count(provisioningSQL, "RAISE EXCEPTION"))
 }
 
 // #316 Definition of Done: prevent database-name or role collisions at the boundary.
