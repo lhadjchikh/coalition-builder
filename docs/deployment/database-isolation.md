@@ -23,15 +23,7 @@ Do not enable development deployment until the backup, role, database, and verif
 
 ### Back up production
 
-Apply only the shared stack first so the authoritative map is available in remote state. This changes the RDS module input from the old `db_name` variable to the production entry with the same value, so the plan must show no RDS replacement.
-
-```bash
-terraform -chdir=terraform/environments/shared plan
-terraform -chdir=terraform/environments/shared apply
-terraform -chdir=terraform/environments/shared output -json environment_database_names
-```
-
-Create a manual snapshot before changing roles, grants, or secrets. Replace the identifier if the Terraform `prefix` is not `coalition`.
+Create a manual snapshot before applying any Terraform or changing roles, grants, or secrets. Replace the identifier if the Terraform `prefix` is not `coalition`.
 
 ```bash
 snapshot_id="coalition-before-db-isolation-$(date -u +%Y%m%d%H%M%S)"
@@ -47,6 +39,14 @@ aws rds wait db-snapshot-completed \
 ```
 
 Record the snapshot identifier and confirm its status is `available`. Do not continue from a failed or incomplete snapshot.
+
+After the snapshot is available, apply only the shared stack so the authoritative map is available in remote state. This changes the RDS module input from the old `db_name` variable to the production entry with the same value, so the plan must show no RDS replacement.
+
+```bash
+terraform -chdir=terraform/environments/shared plan
+terraform -chdir=terraform/environments/shared apply
+terraform -chdir=terraform/environments/shared output -json environment_database_names
+```
 
 ### Provision the development database
 
