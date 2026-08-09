@@ -21,14 +21,38 @@ worse than no reviewer.
 
 ### Adding an expert
 
-Add `agents/<name>-expert.md` with frontmatter (`name`, `description`, `tools`, `model`, `effort`)
-and a body that says what it looks for, how to report findings, and what it does *not* review so it
-doesn't overlap the others. Then route it in `review-routing.json`. An expert with no routing rule
-only runs when someone names it explicitly.
+Add `agents/<name>-expert.md` with frontmatter (`name`, `description`, `tools`) and a body that says
+what it looks for, how to report findings, and what it does *not* review so it doesn't overlap the
+others. Then assign it a profile in `model-policy.json` and route it in `review-routing.json`. An
+expert with no routing rule only runs when someone names it explicitly.
 
 Keep an expert here when it cites this repo's paths or domain. Cross-repo reviewers
 (`code-review-expert`, `intent-faithfulness-expert`, `agent-skill-design-expert`, …) belong in
 `~/.claude/agents/`.
+
+## `model-policy.json`
+
+Assigns each expert above an execution profile, and is the source of truth for the `model:` and
+`effort:` frontmatter in `agents/*.md` — set those by editing this file and regenerating, not by
+hand. Same schema and profile vocabulary as the shared policy in the `ai-tools` repo
+(`agents/lhadjchikh/model-policy.json`); the profiles used here are copied from it, so re-copy a
+profile if its definition changes there.
+
+Both experts run `deep-review` (frontier capability, high reasoning, tolerant latency → Claude
+`opus`/`high`). Regenerate and verify with the `ai-tools` adapter:
+
+```bash
+AI_TOOLS=~/path/to/ai-tools/agents/lhadjchikh
+python3 "$AI_TOOLS/scripts/sync_model_policy.py" sync \
+  --policy .claude/model-policy.json --agents .claude/agents --codex .claude/codex
+```
+
+`sync` rewrites the frontmatter in place and emits Codex adapter layers under `.claude/codex/`,
+which is gitignored — those are a per-machine install artifact, not repo content. Swap `sync` for
+`check` to fail instead of rewrite; run it after a `sync` so the Codex layers exist.
+
+The assignment is a bijection: every agent in `agents/` needs an entry here, and every entry needs
+an agent file. The adapter errors on either gap rather than guessing a default.
 
 ## `review-routing.json`
 

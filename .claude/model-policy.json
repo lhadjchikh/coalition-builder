@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "profiles": {
+    "deep-review": {
+      "capability": "frontier",
+      "reasoning": "high",
+      "latency": "tolerant",
+      "claude": {
+        "model": "opus",
+        "effort": "high"
+      },
+      "codex": {
+        "selection": "runtime",
+        "model_reasoning_effort": "high"
+      }
+    }
+  },
+  "experts": {
+    "advocacy-campaign-copy-expert": "deep-review",
+    "content-publishing-expert": "deep-review"
+  }
+}
