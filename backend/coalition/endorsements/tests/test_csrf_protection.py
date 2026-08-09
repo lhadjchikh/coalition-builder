@@ -2,7 +2,7 @@
 Test CSRF protection for endorsement admin endpoints.
 """
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Permission, User
 from django.test import Client
 from django.test.utils import override_settings
 
@@ -25,6 +25,12 @@ class CSRFProtectionTest(BaseTestCase):
             email="admin@example.com",
             password="testpass",
             is_staff=True,
+        )
+        self.admin_user.user_permissions.add(
+            Permission.objects.get(
+                codename="change_endorsement",
+                content_type__app_label="endorsements",
+            ),
         )
 
         # Create test data
