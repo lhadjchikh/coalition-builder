@@ -100,6 +100,8 @@ jest.mock("../AddressAutocomplete", () => {
       state: string;
       zip_code: string;
     }) => void;
+    onInputChange?: (streetAddress: string) => void;
+    initialValue?: string;
     [key: string]: unknown;
   }) {
     // Use a ref to ensure we only call once
@@ -119,9 +121,11 @@ jest.mock("../AddressAutocomplete", () => {
     }, [props]);
 
     return (
-      <div data-testid="address-autocomplete">
+      <div>
         <input
           type="text"
+          value={props.initialValue || ""}
+          onChange={(event) => props.onInputChange?.(event.target.value)}
           placeholder={props.placeholder || "Start typing your address..."}
           data-testid={props.testId || "address-autocomplete"}
         />
@@ -213,6 +217,22 @@ describe("EndorsementForm", () => {
     // Check it again
     fireEvent.click(publicDisplayCheckbox);
     expect(publicDisplayCheckbox).toBeChecked();
+  });
+
+  it("uses a manually entered autocomplete address in form state", async () => {
+    render(<EndorsementForm campaign={mockCampaign} />);
+
+    await fillAddressFields();
+    fireEvent.change(screen.getByTestId("address-autocomplete"), {
+      target: { value: "456 Manual Entry Ave" },
+    });
+
+    expect(screen.getByTestId("street-address-input")).toHaveValue(
+      "456 Manual Entry Ave"
+    );
+    expect(screen.getByTestId("city-input")).toHaveValue("");
+    expect(screen.getByTestId("state-select")).toHaveValue("");
+    expect(screen.getByTestId("zip-code-input")).toHaveValue("");
   });
 
   describe("Social Sharing Integration", () => {

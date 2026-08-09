@@ -1,6 +1,8 @@
+from collections.abc import Callable
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from ninja import ModelSchema, Schema
 from pydantic import Field, validator
 
@@ -410,6 +412,17 @@ class SpamPreventionMetadata(Schema):
         return v
 
 
+def _validate_address_input(
+    submitted_value: str,
+    address_validator: Callable[[str], str],
+) -> str:
+    """Adapt Django validation errors to Pydantic request validation errors."""
+    try:
+        return address_validator(submitted_value)
+    except DjangoValidationError as error:
+        raise ValueError("; ".join(error.messages)) from error
+
+
 # Input schemas for creating endorsements
 class StakeholderCreateSchema(Schema):
     """Input schema for creating stakeholder records with validation."""
@@ -451,17 +464,17 @@ class StakeholderCreateSchema(Schema):
     @validator("zip_code")
     def validate_zip_code(cls, v: str) -> str:  # noqa: N805
         """Validate ZIP code format"""
-        return AddressValidator.validate_zip_code(v)
+        return _validate_address_input(v, AddressValidator.validate_zip_code)
 
     @validator("street_address")
     def validate_street_address(cls, v: str) -> str:  # noqa: N805
         """Validate street address"""
-        return AddressValidator.validate_street_address(v)
+        return _validate_address_input(v, AddressValidator.validate_street_address)
 
     @validator("city")
     def validate_city(cls, v: str) -> str:  # noqa: N805
         """Validate city name"""
-        return AddressValidator.validate_city(v)
+        return _validate_address_input(v, AddressValidator.validate_city)
 
 
 class EndorsementCreateSchema(Schema):

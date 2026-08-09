@@ -31,6 +31,38 @@ describe("AddressAutocomplete", () => {
     });
   });
 
+  it("reports manually entered street addresses", () => {
+    const onInputChange = jest.fn();
+
+    render(
+      <AddressAutocomplete
+        onAddressSelect={jest.fn()}
+        onInputChange={onInputChange}
+      />
+    );
+
+    fireEvent.change(screen.getByTestId("address-autocomplete"), {
+      target: { value: "456 Manual Entry Ave" },
+    });
+
+    expect(onInputChange).toHaveBeenCalledWith("456 Manual Entry Ave");
+  });
+
+  it("updates the displayed address when its initial value is reset", () => {
+    const { rerender } = render(
+      <AddressAutocomplete
+        initialValue="100 Main St"
+        onAddressSelect={jest.fn()}
+      />
+    );
+
+    rerender(
+      <AddressAutocomplete initialValue="" onAddressSelect={jest.fn()} />
+    );
+
+    expect(screen.getByTestId("address-autocomplete")).toHaveValue("");
+  });
+
   it("requests place details from the trailing-slash API route", async () => {
     const onAddressSelect = jest.fn();
     fetchMock

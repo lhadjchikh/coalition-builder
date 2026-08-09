@@ -547,6 +547,16 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           <div className="form-group">
             <label htmlFor="address-autocomplete">Address *</label>
             <AddressAutocomplete
+              initialValue={stakeholder.street_address}
+              onInputChange={(streetAddress) => {
+                setStakeholder((previousStakeholder) => ({
+                  ...previousStakeholder,
+                  street_address: streetAddress,
+                  city: "",
+                  state: "",
+                  zip_code: "",
+                }));
+              }}
               onAddressSelect={(components) => {
                 setStakeholder((prev) => ({
                   ...prev,
