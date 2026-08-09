@@ -84,9 +84,40 @@ class EndorsementAdminTest(BaseTestCase):
         assert ("reviewed_at", EmptyFieldListFilter) in self.admin.list_filter
         assert ("reviewed_by", EmptyFieldListFilter) not in self.admin.list_filter
 
-    def test_review_metadata_is_readonly(self) -> None:
-        assert {"reviewed_by", "reviewed_at"}.issubset(self.admin.readonly_fields)
-        assert "reviewed_by" not in self.admin.raw_id_fields
+    def test_submission_and_automated_fields_are_readonly(self) -> None:
+        expected_readonly_fields = {
+            "stakeholder",
+            "campaign",
+            "statement",
+            "public_display",
+            "email_verified",
+            "verification_token",
+            "verification_sent_at",
+            "verified_at",
+            "terms_accepted",
+            "terms_accepted_at",
+            "org_authorized",
+            "reviewed_by",
+            "reviewed_at",
+            "created_at",
+            "updated_at",
+            "verification_link",
+        }
+
+        assert expected_readonly_fields.issubset(self.admin.readonly_fields)
+        assert self.admin.raw_id_fields == ()
+
+    def test_only_moderation_fields_are_editable_on_change_form(self) -> None:
+        request = HttpRequest()
+        request.user = self.user
+
+        form_class = self.admin.get_form(request, self.endorsement)
+
+        assert set(form_class.base_fields) == {
+            "status",
+            "display_publicly",
+            "admin_notes",
+        }
 
     def test_view_only_staff_cannot_access_mutating_actions(self) -> None:
         viewer = User.objects.create_user(username="endorsement-viewer", is_staff=True)

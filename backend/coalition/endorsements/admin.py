@@ -49,9 +49,13 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
         "campaign__title",
         "statement",
     )
-    raw_id_fields = ("stakeholder", "campaign")
     ordering = ("-created_at",)
     readonly_fields = (
+        "stakeholder",
+        "campaign",
+        "statement",
+        "public_display",
+        "email_verified",
         "verification_token",
         "verification_sent_at",
         "verified_at",

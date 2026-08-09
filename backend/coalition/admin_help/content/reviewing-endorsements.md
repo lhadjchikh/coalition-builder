@@ -48,10 +48,10 @@ Click a row to open it. The form is grouped into sections:
   the Terms of Use, when, and whether they claimed organizational authority
 - **Timestamps** _(collapsed)_
 
-!!! tip "Stakeholder and Campaign look like empty boxes"
-Those two fields show a record's ID number next to a magnifying glass, rather
-than a dropdown. Click the magnifying glass to look up or change the record.
-You will almost never need to change either one.
+The submission details and email-verification fields are read-only. They preserve
+what the endorser submitted and what the verification process recorded. If any of
+them are wrong, record the problem in **Admin notes** and reject the endorsement;
+do not rewrite the source record.
 
 Then work through this mentally:
 
