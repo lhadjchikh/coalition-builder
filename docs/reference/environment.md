@@ -43,11 +43,13 @@ CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 
 ### Organization Configuration
 
-| Variable            | Description                               | Default                          | Required |
-| ------------------- | ----------------------------------------- | -------------------------------- | -------- |
-| `ORGANIZATION_NAME` | Organization name for emails and branding | `Coalition Builder`              | Yes      |
-| `ORG_TAGLINE`       | Organization tagline (fallback)           | `Building advocacy partnerships` | No       |
-| `CONTACT_EMAIL`     | Primary contact email address             | `info@example.org`               | Yes      |
+| Variable                        | Description                                        | Default                          | Required |
+| ------------------------------- | -------------------------------------------------- | -------------------------------- | -------- |
+| `ORGANIZATION_NAME`             | Organization name for emails and branding          | `Coalition Builder`              | Yes      |
+| `ORG_TAGLINE`                   | Organization tagline (fallback)                    | `Building advocacy partnerships` | No       |
+| `CONTACT_EMAIL`                 | Primary contact email address                      | `info@example.org`               | Yes      |
+| `ADMIN_HELP_SUPERVISOR_CONTACT` | Supervisor contact shown in the in-admin guide     | Generic supervisor wording       | No       |
+| `ADMIN_HELP_TECHNICAL_CONTACT`  | Technical support contact shown in the admin guide | Generic support wording          | No       |
 
 **Note:** `ORGANIZATION_NAME` and `CONTACT_EMAIL` are required for proper email functionality. These also serve as fallbacks when no active homepage configuration exists in the database.
 
@@ -57,6 +59,8 @@ CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 ORGANIZATION_NAME="Environmental Coalition"
 ORG_TAGLINE="Protecting our planet through policy"
 CONTACT_EMAIL="info@environmentalcoalition.org"
+ADMIN_HELP_SUPERVISOR_CONTACT="Campaign director (director@example.org)"
+ADMIN_HELP_TECHNICAL_CONTACT="Technical support (support@example.org)"
 ```
 
 ### File Storage Configuration
@@ -96,7 +100,7 @@ AWS_REGION="us-west-2"
 | `EMAIL_HOST_PASSWORD`                | SMTP password                                              | Auto from Secrets Manager            | No       |
 | `DEFAULT_FROM_EMAIL`                 | Default sender email                                       | -                                    | Yes      |
 | `ADMIN_NOTIFICATION_EMAILS`          | Comma-separated admin emails for endorsement notifications | -                                    | Yes      |
-| `AUTO_APPROVE_VERIFIED_ENDORSEMENTS` | Auto-approve after email verification                      | `true`                               | No       |
+| `AUTO_APPROVE_VERIFIED_ENDORSEMENTS` | Auto-approve after email verification                      | `false`                              | No       |
 | `AKISMET_SECRET_API_KEY`             | Akismet API key for spam detection                         | -                                    | No       |
 | `SITE_URL`                           | Base URL for email links                                   | -                                    | Yes      |
 | `API_URL`                            | Backend API URL (for admin links)                          | `http://localhost:8000`              | No       |

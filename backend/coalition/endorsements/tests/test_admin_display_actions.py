@@ -4,6 +4,7 @@ Tests for admin actions related to display_publicly functionality.
 
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.admin import EndorsementAdmin
@@ -65,6 +66,7 @@ class AdminDisplayActionsTest(BaseTestCase):
                 public_display=True,
                 status="approved" if i < 3 else "pending",
                 email_verified=True,
+                reviewed_at=timezone.now() if i < 3 else None,
                 display_publicly=False,
             )
             self.endorsements.append(endorsement)
@@ -141,8 +143,23 @@ class AdminDisplayActionsTest(BaseTestCase):
             public_display=True,
             status="approved",
             email_verified=True,
+            reviewed_at=timezone.now(),
         )
         test_endorsements.append(e3)
+
+        # Auto-approved but not yet reviewed
+        e4 = Endorsement.objects.create(
+            stakeholder=self.endorsements[3].stakeholder,
+            campaign=PolicyCampaign.objects.create(
+                name="c4",
+                title="C4",
+                allow_endorsements=True,
+            ),
+            public_display=True,
+            status="approved",
+            email_verified=True,
+        )
+        test_endorsements.append(e4)
 
         request = MockRequest(self.admin_user)
         queryset = Endorsement.objects.filter(id__in=[e.id for e in test_endorsements])
@@ -158,10 +175,12 @@ class AdminDisplayActionsTest(BaseTestCase):
         e1.refresh_from_db()
         e2.refresh_from_db()
         e3.refresh_from_db()
+        e4.refresh_from_db()
 
         assert e1.display_publicly is False
         assert e2.display_publicly is False
         assert e3.display_publicly is True
+        assert e4.display_publicly is False
 
         # Check message
         assert "Successfully approved 1 endorsement(s)" in messages[0]
