@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 env:
-  GO_VERSION: "1.24"
+  GO_VERSION: "1.25"
 
 jobs:
   go-lint:
@@ -99,14 +99,12 @@ jobs:
           echo "✅ staticcheck passed"
 
       - name: Run golangci-lint - ${{ matrix.go-project.name }}
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v9
         with:
-          version: latest
+          version: v2.12.2
           working-directory: ${{ matrix.go-project.path }}
           args: --timeout=5m
           skip-cache: false
-          skip-pkg-cache: false
-          skip-build-cache: false
 
       - name: Check for ineffective assignments - ${{ matrix.go-project.name }}
         run: |

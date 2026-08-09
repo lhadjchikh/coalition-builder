@@ -48,7 +48,7 @@ Plan-only validation tests using real AWS credentials:
 
 ### Prerequisites
 
-1. **Go 1.24+** installed
+1. **Go 1.25+** installed
 2. **AWS CLI** configured with appropriate credentials (for integration tests only)
 3. **Terraform** installed (version 1.12.1+)
 4. **Make** (optional, for convenience commands)
@@ -346,7 +346,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
         with:
-          go-version: "1.24"
+          go-version: "1.25"
       - name: Run unit tests
         run: |
           cd terraform/tests

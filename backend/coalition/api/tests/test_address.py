@@ -11,6 +11,18 @@ class TestAddressAPI(TestCase):
         """Set up test client"""
         self.client = Client()
 
+    def test_uses_application_client_without_reassigning_router(self) -> None:
+        """Keep the address router attached to the application API."""
+        assert isinstance(self.client, Client)
+
+        response = self.client.get("/api/address/suggestions/?q=ab")
+
+        from coalition.api.address import router
+        from coalition.api.api import api
+
+        assert response.status_code == 400
+        assert router.api is api
+
     @patch("coalition.api.address.GeocodingService")
     def test_get_address_suggestions_success_with_proxied_path(
         self,

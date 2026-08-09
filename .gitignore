@@ -110,3 +110,6 @@ backend/zappa_settings.py
 
 # Claude - Codex adapter layers generated from .claude/model-policy.json
 .claude/codex/
+
+# Agent scratch space (campaign drafts, review ledgers)
+.context/
