@@ -9,7 +9,7 @@ the expectation from ``settings.TEMPLATES`` keeps that list honest as the
 settings change.
 """
 
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from django.conf import settings
 from django.test import SimpleTestCase
@@ -18,10 +18,24 @@ LAMBDA_DOCKERFILE = Path(settings.BASE_DIR) / "docker" / "app" / "Dockerfile.lam
 
 
 def _copied_sources() -> set[str]:
-    """Build-context paths the Lambda image copies, normalized without slashes."""
+    """Build-context paths copied to matching locations below ``WORKDIR``."""
+    return _sources_copied_to_workdir(LAMBDA_DOCKERFILE.read_text())
+
+
+def _sources_copied_to_workdir(dockerfile: str) -> set[str]:
+    """Sources whose image destination matches their build-context path."""
+    workdir = PurePosixPath("/")
     sources: set[str] = set()
-    for line in LAMBDA_DOCKERFILE.read_text().splitlines():
+    for line in dockerfile.splitlines():
         instruction = line.strip()
+        if instruction.upper().startswith("WORKDIR "):
+            configured_workdir = PurePosixPath(instruction.split(maxsplit=1)[1])
+            workdir = (
+                configured_workdir
+                if configured_workdir.is_absolute()
+                else workdir / configured_workdir
+            )
+            continue
         if not instruction.upper().startswith("COPY "):
             continue
         arguments = [
@@ -29,7 +43,14 @@ def _copied_sources() -> set[str]:
             for argument in instruction.split()[1:]
             if not argument.startswith("--")
         ]
-        sources.update(argument.rstrip("/") for argument in arguments[:-1])
+        destination = PurePosixPath(arguments[-1])
+        resolved_destination = (
+            destination if destination.is_absolute() else workdir / destination
+        )
+        for argument in arguments[:-1]:
+            source = PurePosixPath(argument)
+            if resolved_destination == workdir / source:
+                sources.add(str(source))
     return sources
 
 
@@ -46,6 +67,15 @@ def _template_dirs_below_base() -> list[str]:
 
 class LambdaImageCopiesConfiguredTemplateDirsTest(SimpleTestCase):
     """A configured template directory left out of the image breaks only in prod."""
+
+    def test_copy_source_at_wrong_destination_does_not_count(self) -> None:
+        dockerfile = """\
+WORKDIR /var/task
+COPY coalition/ ./coalition/
+COPY templates/ ./scripts/
+"""
+
+        assert "templates" not in _sources_copied_to_workdir(dockerfile)
 
     def test_the_dockerfile_copy_list_is_readable(self) -> None:
         """Guards the two tests below against silently parsing nothing."""
