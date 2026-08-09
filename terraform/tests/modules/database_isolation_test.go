@@ -101,6 +101,12 @@ func TestDatabaseSecretsAreEnvironmentScoped(t *testing.T) {
 	assert.Contains(t, secretsVariables, `variable "environment"`)
 	assert.Regexp(t, `Environment\s*=\s*var\.environment`, secretsMain)
 	assert.Regexp(t, `DatabaseName\s*=\s*var\.db_name`, secretsMain)
+	assert.Contains(
+		t,
+		secretsMain,
+		`url      = "postgis://${var.app_db_username}:${var.app_db_password}@${var.db_endpoint}/${var.db_name}"`,
+	)
+	assert.Regexp(t, `dbname\s*=\s*var\.db_name`, secretsMain)
 }
 
 func provisioningCommand(t *testing.T, extraArguments ...string) *exec.Cmd {
