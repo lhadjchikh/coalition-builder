@@ -332,7 +332,7 @@ Each environment's OIDC role restricts which GitHub contexts can assume it:
 
 ### Workflow Configuration
 
-All deployment workflows use OIDC. The key configuration:
+The Lambda, Lambda-management, and Terraform deployment workflows use OIDC. The legacy geodata-import workflow and Terraform integration-test job still require static access-key secrets. The OIDC configuration is:
 
 ```yaml
 permissions:
@@ -347,7 +347,7 @@ steps:
       aws-region: us-east-1
 ```
 
-No `AWS_ACCESS_KEY_ID` or `AWS_SECRET_ACCESS_KEY` secrets are needed.
+These OIDC-backed workflows do not need `AWS_ACCESS_KEY_ID` or `AWS_SECRET_ACCESS_KEY` secrets.
 
 ### IAM Permission Scoping
 

@@ -174,18 +174,18 @@ Runs security scans.
 ### Development Environment
 
 ```yaml
-Environment: development
-Branch: development or feature/*
+Environment: dev
+Branch: development
 Lambda Stage: dev
-Vercel: Preview deployment
+Vercel: Development deployment
 ```
 
 ### Production Environment
 
 ```yaml
-Environment: production
+Environment: prod
 Branch: main
-Lambda Stage: production
+Lambda Stage: prod
 Vercel: Production deployment
 Keep-warm: Yes (4 minutes)
 X-Ray: Enabled
@@ -200,16 +200,14 @@ X-Ray: Enabled
 ### Development
 
 ```bash
-DOMAIN_NAME=api-dev.yourdomain.com
-CERTIFICATE_ARN=arn:aws:acm:us-east-1:...
+TF_VAR_DOMAIN_NAME=yourdomain.com
 DEVELOPMENT_API_URL=https://api-dev.yourdomain.com
 ```
 
 ### Production
 
 ```bash
-DOMAIN_NAME=api.yourdomain.com
-CERTIFICATE_ARN=arn:aws:acm:us-east-1:...
+TF_VAR_DOMAIN_NAME=yourdomain.com
 PRODUCTION_API_URL=https://api.yourdomain.com
 ```
 

@@ -31,32 +31,51 @@ See [Multi-Account AWS Setup](deployment/multi-account-aws.md) for the bootstrap
 
 ### 3. Configure GitHub Secrets and Variables
 
-Deployment workflows authenticate to AWS with OIDC role assumption, so no long-lived AWS access keys are needed.
+The Lambda, Lambda-management, and Terraform deployment workflows authenticate to AWS with OIDC role assumption. The legacy geodata-import workflow and Terraform integration-test job still use `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`; do not remove those credentials until those workflows are migrated or retired.
 
-**GitHub Environment secrets** (`prod` and `dev`, used by the Lambda and Terraform jobs):
+**Lambda GitHub Environment secrets** (`prod` and `dev`):
 
 - `DATABASE_SECRET_ARN`, `DJANGO_SECRET_ARN` - Secrets Manager ARNs the Lambda role must be able to read
 
-**GitHub Environment variables** (`prod` and `dev`):
+**Terraform GitHub Environment secrets:**
+
+| Environment   | Required secrets                                                | Optional secret                                             |
+| ------------- | --------------------------------------------------------------- | ----------------------------------------------------------- |
+| `shared`      | `DB_USERNAME`, `DB_PASSWORD`, `APP_DB_USERNAME`                 | `TF_VAR_BASTION_PUBLIC_KEY` when `CREATE_NEW_KEY_PAIR=true` |
+| `prod`, `dev` | `APP_DB_USERNAME`, `APP_DB_PASSWORD`, `SHARED_PEERING_ROLE_ARN` | `SITE_PASSWORD`                                             |
+
+**Common Terraform GitHub Environment variables:**
+
+- `AWS_ACCOUNT_ID`, `TF_VAR_PREFIX`, and `REPO_FULL_NAME`
+- `TF_VAR_ALERT_EMAIL` for every environment
+- `SHARED_ACCOUNT_ID` for `prod` and `dev`
+- `TF_VAR_DOMAIN_NAME`, `BASTION_KEY_NAME`, `CREATE_NEW_KEY_PAIR`, `ALLOWED_BASTION_CIDRS`, and `ALLOWED_LAMBDA_CIDRS` for `shared`
+- `SES_FROM_EMAIL`, `SES_NOTIFICATION_EMAIL`, and `TF_VAR_DOMAIN_NAME` for `prod`
+
+The reusable Terraform workflow also accepts optional variables such as `TF_VAR_API_GATEWAY_ID` and additional bastion settings. Treat `.github/workflows/deploy_terraform_environment.yml` and `.github/scripts/validate_terraform_environment_variables.sh` as the authoritative input list.
+
+**Lambda GitHub Environment variables** (`prod` and `dev`):
 
 - `AWS_ACCOUNT_ID` - determines the `github-actions-<env>` role to assume
 - `ZAPPA_S3_BUCKET`, `ZAPPA_ROLE_NAME` - from Terraform outputs
 - `AWS_STORAGE_BUCKET_NAME`, `CLOUDFRONT_DOMAIN`
 - `AWS_LOCATION_PLACE_INDEX_NAME`
 - `VPC_SUBNET_IDS`, `VPC_SECURITY_GROUP_IDS`
+- The selected environment's `PRODUCTION_API_URL` or `DEVELOPMENT_API_URL`
 - `SITE_URL`, `DEFAULT_FROM_EMAIL` - required for production email links and the SES sender
-- `ADMIN_NOTIFICATION_EMAILS`, `SES_CONFIGURATION_SET` - notification recipients and SES event tracking
+- `ADMIN_NOTIFICATION_EMAILS`, `SES_CONFIGURATION_SET` - optional notification recipients and SES event tracking
 
 **Repository secrets** (used by the frontend job, which does not select a GitHub Environment):
 
 - `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
 
-**Repository variables** (used by the frontend job):
+**Repository variables** (used by the frontend job, which has no GitHub Environment scope):
 
 - `PRODUCTION_API_URL` / `DEVELOPMENT_API_URL`, `PRODUCTION_SITE_URL` / `DEVELOPMENT_SITE_URL`
-- `AWS_STORAGE_BUCKET_NAME`, `CLOUDFRONT_DOMAIN`
+- `AWS_STORAGE_BUCKET_NAME`, `CLOUDFRONT_DOMAIN`, `PRODUCTION_DOMAIN`
+- `GOOGLE_ANALYTICS_ID` - optional analytics identifier
 
-Some names intentionally exist at both repository and environment scope because the frontend and Lambda workflows read different scopes. See [Deployment Workflows](deployment/workflows.md) for workflow behavior.
+`PRODUCTION_API_URL` and `DEVELOPMENT_API_URL` intentionally exist at both repository and environment scope because the frontend and Lambda workflows read different scopes. See [Deployment Workflows](deployment/workflows.md) for workflow behavior.
 
 ### 4. Deploy Applications
 
