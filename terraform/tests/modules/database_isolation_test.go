@@ -68,7 +68,11 @@ func TestEnvironmentDatabasesUseSharedAuthoritativeNames(t *testing.T) {
 	assert.Contains(t, sharedMain, `module "database_names"`)
 	assert.Contains(t, databaseNamesModule, `jsondecode(file("${path.module}/environment_database_names.json"))`)
 	assert.Contains(t, sharedMain, `db_name                    = module.database_names.rds_initial_database_name`)
-	assert.NotContains(t, sharedMain, `db_name                    = module.database_names.environment_database_names["prod"]`)
+	assert.NotContains(
+		t,
+		sharedMain,
+		`db_name                    = module.database_names.environment_database_names["prod"]`,
+	)
 	assert.Contains(t, databaseModule, `host     = aws_db_instance.postgres.address`)
 	assert.Contains(t, databaseModule, `port     = aws_db_instance.postgres.port`)
 	assert.Contains(t, databaseModule, `dbname = "postgres"`)
