@@ -65,7 +65,7 @@ func TestNetworkingModuleCreatesPublicSubnets(t *testing.T) {
 	assert.Len(t, publicSubnetIDs, 2)
 
 	for i, subnetID := range publicSubnetIDs {
-		subnet := common.GetSubnetById(t, subnetID, testConfig.AWSRegion)
+		subnet := common.GetSubnetByID(t, subnetID, testConfig.AWSRegion)
 		assert.Equal(t, "available", string(subnet.State))
 		assert.True(t, *subnet.MapPublicIpOnLaunch)
 
@@ -97,7 +97,7 @@ func TestNetworkingModuleCreatesPrivateSubnets(t *testing.T) {
 	assert.Len(t, privateSubnetIDs, 2)
 
 	for i, subnetID := range privateSubnetIDs {
-		subnet := common.GetSubnetById(t, subnetID, testConfig.AWSRegion)
+		subnet := common.GetSubnetByID(t, subnetID, testConfig.AWSRegion)
 		assert.Equal(t, "available", string(subnet.State))
 		assert.False(t, *subnet.MapPublicIpOnLaunch)
 
@@ -125,7 +125,7 @@ func TestNetworkingModuleCreatesDatabaseSubnets(t *testing.T) {
 	assert.Len(t, dbSubnetIDs, 2)
 
 	for i, subnetID := range dbSubnetIDs {
-		subnet := common.GetSubnetById(t, subnetID, testConfig.AWSRegion)
+		subnet := common.GetSubnetByID(t, subnetID, testConfig.AWSRegion)
 		assert.Equal(t, "available", string(subnet.State))
 		assert.False(t, *subnet.MapPublicIpOnLaunch)
 
@@ -239,7 +239,7 @@ func TestNetworkingModuleValidatesResourceNaming(t *testing.T) {
 	// Validate subnet naming
 	publicSubnetIDs := terraform.OutputList(t, terraformOptions, "public_subnet_ids")
 	for _, subnetID := range publicSubnetIDs {
-		subnet := common.GetSubnetById(t, subnetID, testConfig.AWSRegion)
+		subnet := common.GetSubnetByID(t, subnetID, testConfig.AWSRegion)
 		// Note: Tag validation simplified - EC2 tags use complex structure
 		assert.NotNil(t, subnet)
 	}

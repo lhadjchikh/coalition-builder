@@ -208,8 +208,8 @@ func (tc *TestConfig) getModuleSpecificVars(
 	return baseVars
 }
 
-// GetSubnetById gets a subnet by ID using AWS SDK v2 directly
-func GetSubnetById(t *testing.T, subnetID, region string) *types.Subnet {
+// GetSubnetByID gets a subnet by ID using AWS SDK v2 directly
+func GetSubnetByID(t *testing.T, subnetID, region string) *types.Subnet {
 	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(region))
 	assert.NoError(t, err)
 
@@ -223,8 +223,8 @@ func GetSubnetById(t *testing.T, subnetID, region string) *types.Subnet {
 	return &result.Subnets[0]
 }
 
-// GetSecurityGroupById gets a security group by ID using AWS SDK v2 directly
-func GetSecurityGroupById(t *testing.T, sgID, region string) *types.SecurityGroup {
+// GetSecurityGroupByID gets a security group by ID using AWS SDK v2 directly
+func GetSecurityGroupByID(t *testing.T, sgID, region string) *types.SecurityGroup {
 	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(region))
 	assert.NoError(t, err)
 
@@ -257,8 +257,8 @@ func GetInternetGatewaysForVpc(t *testing.T, vpcID, region string) []types.Inter
 	return result.InternetGateways
 }
 
-// GetEc2InstanceById gets an EC2 instance by ID using AWS SDK v2 directly
-func GetEc2InstanceById(t *testing.T, instanceID, region string) *types.Instance {
+// GetEC2InstanceByID gets an EC2 instance by ID using AWS SDK v2 directly
+func GetEC2InstanceByID(t *testing.T, instanceID, region string) *types.Instance {
 	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(region))
 	assert.NoError(t, err)
 
@@ -281,11 +281,11 @@ func ValidateAWSResource(t *testing.T, awsRegion, resourceType, resourceID strin
 		assert.NotNil(t, vpc)
 		// Note: VPC state validation removed as Terratest VPC struct doesn't expose State field
 	case "subnet":
-		subnet := GetSubnetById(t, resourceID, awsRegion)
+		subnet := GetSubnetByID(t, resourceID, awsRegion)
 		assert.NotNil(t, subnet)
 		assert.Equal(t, types.SubnetStateAvailable, subnet.State)
 	case "security_group":
-		sg := GetSecurityGroupById(t, resourceID, awsRegion)
+		sg := GetSecurityGroupByID(t, resourceID, awsRegion)
 		assert.NotNil(t, sg)
 	case "load_balancer":
 		// Load balancer validation would go here
