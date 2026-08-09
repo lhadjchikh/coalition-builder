@@ -103,7 +103,7 @@ Rerun the command once. The second run must succeed without recreating either da
 
 ### Apply application-account Terraform
 
-Set the dev gate only after provisioning succeeds, then apply `prod` and `dev`. The production plan must retain `coalition`; the development secret version must change to `coalition_dev`; and the plans must remove the unused SSM parameters and read-policy attachments.
+Set the dev gate only after provisioning succeeds, then apply `prod` and `dev`. A merge to `main` may generate the production plan, but production apply is manual-only so it cannot run before this runbook's snapshot and provisioning gates. The production plan must retain `coalition` and must not replace `aws_secretsmanager_secret_version.db_url`; the development secret version must change to `coalition_dev`; and the plans must remove the unused SSM parameters and read-policy attachments. Stop if the production plan proposes replacing its database secret version and reconcile the configured credential before applying.
 
 ```bash
 gh variable set DATABASE_ISOLATION_READY --env dev --body true
@@ -186,6 +186,23 @@ If provisioning or dev verification fails, set `DATABASE_ISOLATION_READY=false`,
 Do not point development back at production after any development migration or write. Application-code rollback must retain the isolated secret URL and database grants; use the Lambda management workflow to roll back code only.
 
 If production validation fails before deployment, correct its unchanged secret ARN or restore the `Environment=prod` tag, then rerun validation. The existing production Lambda remains active because the workflow stops before updating it.
+
+If a production apply unexpectedly promoted a new database secret version, identify the previous version before changing stages, then move `AWSCURRENT` back explicitly. Replace the placeholders only after confirming the version timestamps and current stage assignments:
+
+```bash
+AWS_PROFILE="${PROD_AWS_PROFILE}" aws secretsmanager list-secret-version-ids \
+  --secret-id "${prod_secret_arn}" \
+  --include-deprecated \
+  --cli-connect-timeout 5 \
+  --cli-read-timeout 30
+AWS_PROFILE="${PROD_AWS_PROFILE}" aws secretsmanager update-secret-version-stage \
+  --secret-id "${prod_secret_arn}" \
+  --version-stage AWSCURRENT \
+  --move-to-version-id PREVIOUS_VERSION_ID \
+  --remove-from-version-id CURRENT_VERSION_ID \
+  --cli-connect-timeout 5 \
+  --cli-read-timeout 30
+```
 
 If a production data incident occurs, stop both deployment workflows and follow the RDS snapshot restore procedure to a new instance. Never overwrite the current instance directly. Validate the restored instance and explicitly cut production over after review; development remains on `coalition_dev` and must not be used as a production restore source.
 
