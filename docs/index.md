@@ -70,21 +70,16 @@ flowchart TD
 
 ## Architecture
 
-### Serverless Architecture (Current)
+### Serverless Architecture
 
-- **Backend**: Django API on AWS Lambda (via Zappa)
+- **Backend**: Django API on AWS Lambda (via Zappa, as a container image)
 - **Frontend**: Next.js on Vercel Edge Network
 - **Database**: PostgreSQL with PostGIS (RDS)
-- **Rate Limiting**: DynamoDB (serverless)
+- **Rate Limiting**: PostgreSQL-backed Django cache — see [Rate Limiting](rate-limiting.md)
+- **Static & Media**: S3 behind CloudFront
 - **Infrastructure**: Terraform-managed AWS resources
-- **Cost**: ~$39/month (46% reduction from ECS)
 
-### Legacy Architecture (Deprecated)
-
-- **Backend**: Django API on ECS Fargate
-- **Frontend**: Next.js on ECS with SSR
-- **Infrastructure**: ALB + ECS + NAT Gateway
-- **Cost**: ~$73/month
+The repository retains ECS-based TIGER import scaffolding, but no current Terraform environment provisions it. The ALB, ECS application service, and NAT gateway used by the previous ECS deployment have been removed; see the [AWS Serverless Deployment guide](deployment/aws.md) for the resource inventory and cost breakdown.
 
 ### Frontend Architecture
 
@@ -122,9 +117,9 @@ The `/frontend` directory contains a Next.js application that serves as the prim
 1. **[Installation](installation.md)** - Quick setup for development
 2. **[Configuration](configuration.md)** - Environment variables and settings
 3. **[Development](development.md)** - Development workflow and contributing
-4. **[Lambda Deployment](LAMBDA_DEPLOYMENT.md)** - Backend deployment to AWS Lambda
-5. **[Vercel Deployment](VERCEL_DEPLOYMENT.md)** - Frontend deployment to Vercel
-6. **[Legacy Deployment](deployment.md)** - ECS deployment (deprecated)
+4. **[Deployment Overview](deployment.md)** - How the serverless pieces fit together
+5. **[Lambda Deployment](LAMBDA_DEPLOYMENT.md)** - Backend deployment to AWS Lambda
+6. **[Vercel Deployment](VERCEL_DEPLOYMENT.md)** - Frontend deployment to Vercel
 
 ## User Guides
 
@@ -151,7 +146,7 @@ Comprehensive guides for managing your coalition platform:
 - **[Lambda Deployment](LAMBDA_DEPLOYMENT.md)** - Deploy Django to AWS Lambda with Zappa
 - **[Vercel Deployment](VERCEL_DEPLOYMENT.md)** - Deploy Next.js to Vercel Edge Network
 - **[GitHub Workflows](deployment/workflows.md)** - CI/CD pipelines for automated deployment
-- **[Geographic Data Import](deployment/geodata-import.md)** - Import TIGER shapefiles via ECS
+- **[Geographic Data Import](deployment/geodata-import.md)** - Retained ECS import design (not currently provisioned)
 
 ## Documentation
 

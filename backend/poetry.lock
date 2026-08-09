@@ -925,18 +925,18 @@ PyYAML = ">=3.11"
 
 [[package]]
 name = "markdown"
-version = "3.8.2"
+version = "3.10.3"
 description = "Python implementation of John Gruber's Markdown."
 optional = false
-python-versions = ">=3.9"
-groups = ["docs"]
+python-versions = ">=3.10"
+groups = ["main", "docs"]
 files = [
-    {file = "markdown-3.8.2-py3-none-any.whl", hash = "sha256:5c83764dbd4e00bdd94d85a19b8d55ccca20fe35b2e678a1422b380324dd5f24"},
-    {file = "markdown-3.8.2.tar.gz", hash = "sha256:247b9a70dd12e27f67431ce62523e675b866d254f900c4fe75ce3dda62237c45"},
+    {file = "markdown-3.10.3-py3-none-any.whl", hash = "sha256:fa6c92a00a4a3c98b22728c64a935ae1928250ae65058a6ded814d2cc29a4cea"},
+    {file = "markdown-3.10.3.tar.gz", hash = "sha256:3589362618f743188b4d955b874402bc814f4f83f544dc207719f4baa7d9c45f"},
 ]
 
 [package.extras]
-docs = ["mdx_gh_links (>=0.2)", "mkdocs (>=1.6)", "mkdocs-gen-files", "mkdocs-literate-nav", "mkdocs-nature (>=0.6)", "mkdocs-section-index", "mkdocstrings[python]"]
+docs = ["mdx_gh_links (>=0.2)", "mkdocs (>=1.6)", "mkdocs-gen-files", "mkdocs-literate-nav", "mkdocs-nature (>=0.6)", "mkdocs-section-index", "mkdocstrings[python] (>=0.28.3)"]
 testing = ["coverage", "pyyaml"]
 
 [[package]]
@@ -1800,14 +1800,14 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pymdown-extensions"
-version = "11.0.1"
+version = "11.0"
 description = "Extension pack for Python Markdown."
 optional = false
 python-versions = ">=3.10"
 groups = ["docs"]
 files = [
-    {file = "pymdown_extensions-11.0.1-py3-none-any.whl", hash = "sha256:db3943a62bab7e03af1364f0c4083e64b91fb097675a4b6cceccfbe9a77e5eb2"},
-    {file = "pymdown_extensions-11.0.1.tar.gz", hash = "sha256:dd2905ae6fc5b75582fafb139a1266ffc754705efa902aa50067fa7ff4f94ec0"},
+    {file = "pymdown_extensions-11.0-py3-none-any.whl", hash = "sha256:fbc4acb641814fa9d17521bbd21a5240ef739a662f11c06330c4b78c93e954d6"},
+    {file = "pymdown_extensions-11.0.tar.gz", hash = "sha256:8269cef0247f9e2d0a62fcea10860aba05c1cbab5470fd4b63230b96434dc589"},
 ]
 
 [package.dependencies]
@@ -2520,6 +2520,18 @@ cfn_flip = ">=1.0.2"
 policy = ["awacs (>=2.0.0)"]
 
 [[package]]
+name = "types-markdown"
+version = "3.10.2.20260712"
+description = "Typing stubs for Markdown"
+optional = false
+python-versions = ">=3.10"
+groups = ["dev"]
+files = [
+    {file = "types_markdown-3.10.2.20260712-py3-none-any.whl", hash = "sha256:a551ddedde46e0eaca7059aa3d0e42db71afe2b53d8b58f72f2de63f3284f625"},
+    {file = "types_markdown-3.10.2.20260712.tar.gz", hash = "sha256:25aea17282490f35ab6b17a87771abd2f479185aaff8e8f4a0035043f02f2c52"},
+]
+
+[[package]]
 name = "types-pyyaml"
 version = "6.0.12.20250809"
 description = "Typing stubs for PyYAML"
@@ -2745,4 +2757,4 @@ wheel = "*"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.13"
-content-hash = "2915f706a9c8943bd9aa30393f804e3a37a6f382e80ecd96a615f4bf8d390bc7"
+content-hash = "212a496237b47d12519b288f8a8aff871c1fb94725759d28765d738bd0cb9d95"

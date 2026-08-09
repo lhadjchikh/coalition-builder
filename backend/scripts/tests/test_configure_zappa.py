@@ -7,7 +7,10 @@ from unittest.mock import patch
 
 import pytest
 
-from scripts.configure_zappa import configure_zappa_settings
+from scripts.configure_zappa import (
+    RUNTIME_ENVIRONMENT_VARIABLES,
+    configure_zappa_settings,
+)
 
 
 def _generate_settings(
@@ -98,20 +101,30 @@ class TestProvidedSecretARNs:
 class TestLocationConfiguration:
     """Tests for the AWS Location place index in generated settings."""
 
-    def test_place_index_name_is_added_to_lambda_environment(
+    def test_place_index_name_is_added_to_each_stage_aws_environment(
         self,
         tmp_path: Path,
     ) -> None:
-        """The configured place index must be available to the geocoding service."""
+        """Every stage must expose the place index through Lambda configuration."""
         settings = _generate_settings(
             tmp_path,
-            {"AWS_LOCATION_PLACE_INDEX_NAME": "landandbay-geocoding-index"},
+            {
+                "AWS_LOCATION_PLACE_INDEX_NAME": "landandbay-geocoding-index",
+                "ENABLE_STAGING": "true",
+            },
         )
 
-        assert (
-            settings["base"]["environment_variables"]["AWS_LOCATION_PLACE_INDEX_NAME"]
-            == "landandbay-geocoding-index"
-        )
+        for stage in ("dev", "staging", "prod"):
+            assert (
+                settings[stage]["aws_environment_variables"][
+                    "AWS_LOCATION_PLACE_INDEX_NAME"
+                ]
+                == "landandbay-geocoding-index"
+            )
+            assert (
+                "AWS_LOCATION_PLACE_INDEX_NAME"
+                not in settings[stage]["environment_variables"]
+            )
 
     def test_unconfigured_place_index_is_omitted_outside_ci(
         self,
@@ -120,10 +133,26 @@ class TestLocationConfiguration:
         """Local settings should not contain a misleading empty index name."""
         settings = _generate_settings(tmp_path)
 
-        assert (
-            "AWS_LOCATION_PLACE_INDEX_NAME"
-            not in settings["base"]["environment_variables"]
-        )
+        for stage in ("dev", "prod"):
+            for environment_key in (
+                "environment_variables",
+                "aws_environment_variables",
+            ):
+                assert (
+                    "AWS_LOCATION_PLACE_INDEX_NAME"
+                    not in settings[stage][environment_key]
+                )
+
+    def test_runtime_variables_are_materialized_in_each_stage(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Stage maps must retain runtime variables when overriding base settings."""
+        settings = _generate_settings(tmp_path, {"ENABLE_STAGING": "true"})
+
+        for stage in ("dev", "staging", "prod"):
+            stage_environment = settings[stage]["environment_variables"]
+            assert RUNTIME_ENVIRONMENT_VARIABLES.items() <= stage_environment.items()
 
 
 class TestAssetConfiguration:
@@ -151,6 +180,8 @@ class TestAssetConfiguration:
                 "DEPLOYMENT_ENVIRONMENT": "prod",
                 "AWS_STORAGE_BUCKET_NAME": "coalition-production-assets-example",
                 "CLOUDFRONT_DOMAIN": "media.example.cloudfront.net",
+                "SITE_URL": "https://example.org",
+                "DEFAULT_FROM_EMAIL": "admin@example.org",
             },
         )
         assert (
@@ -169,6 +200,8 @@ class TestAssetConfiguration:
                 "DEPLOYMENT_ENVIRONMENT": "prod",
                 "AWS_STORAGE_BUCKET_NAME": "production-assets",
                 "CLOUDFRONT_DOMAIN": "media.example.cloudfront.net",
+                "SITE_URL": "https://example.org",
+                "DEFAULT_FROM_EMAIL": "admin@example.org",
             },
         )
         assert (
@@ -328,6 +361,8 @@ class TestDeploymentEnvironmentValidation:
                 "ENABLE_STAGING": "true",
                 "DEPLOYMENT_ENVIRONMENT": "staging",
                 "AWS_STORAGE_BUCKET_NAME": "coalition-staging-assets-example",
+                "SITE_URL": "https://staging.example.org",
+                "DEFAULT_FROM_EMAIL": "admin@example.org",
             },
         )
         assert (
@@ -464,3 +499,133 @@ class TestStagingGating:
         settings = _generate_settings(tmp_path)
         stage_keys = {k for k in settings if k != "base"}
         assert stage_keys == {"dev", "prod"}
+
+
+class TestEmailConfiguration:
+    """Lambda needs email settings baked in, or mail is wrong rather than absent.
+
+    Django defaults SITE_URL to http://localhost:3000, so a deploy without it
+    sends verification links that no recipient can ever follow. That fails as
+    quietly as an unreachable mail server, so prod deploys must refuse.
+    """
+
+    _prod_env = {
+        "DEPLOYMENT_ENVIRONMENT": "prod",
+        "CLOUDFRONT_DOMAIN": "cdn.example.org",
+        "SITE_URL": "https://landandbay.org",
+        "DEFAULT_FROM_EMAIL": "admin@landandbay.org",
+    }
+
+    def test_prod_receives_site_url_for_verification_links(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        settings = _generate_settings(tmp_path, self._prod_env)
+
+        env = settings["prod"]["environment_variables"]
+        assert env["SITE_URL"] == "https://landandbay.org"
+
+    def test_prod_receives_sender_address(self, tmp_path: Path) -> None:
+        settings = _generate_settings(tmp_path, self._prod_env)
+
+        env = settings["prod"]["environment_variables"]
+        assert env["DEFAULT_FROM_EMAIL"] == "admin@landandbay.org"
+
+    def test_optional_email_settings_are_passed_through(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        settings = _generate_settings(
+            tmp_path,
+            {
+                **self._prod_env,
+                "API_URL": "https://api.landandbay.org",
+                "ADMIN_NOTIFICATION_EMAILS": "ops@landandbay.org",
+                "SES_CONFIGURATION_SET": "landandbay-config-set",
+            },
+        )
+
+        env = settings["prod"]["environment_variables"]
+        assert env["API_URL"] == "https://api.landandbay.org"
+        assert env["ADMIN_NOTIFICATION_EMAILS"] == "ops@landandbay.org"
+        assert env["SES_CONFIGURATION_SET"] == "landandbay-config-set"
+
+    def test_unset_optional_email_settings_are_omitted(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Empty values must not override Django's own defaults."""
+        settings = _generate_settings(tmp_path, self._prod_env)
+
+        env = settings["prod"]["environment_variables"]
+        assert "ADMIN_NOTIFICATION_EMAILS" not in env
+        assert "SES_CONFIGURATION_SET" not in env
+
+    def test_prod_without_site_url_raises(self, tmp_path: Path) -> None:
+        env = {k: v for k, v in self._prod_env.items() if k != "SITE_URL"}
+
+        with pytest.raises(RuntimeError, match="SITE_URL"):
+            _generate_settings(tmp_path, env)
+
+    def test_prod_without_sender_address_raises(self, tmp_path: Path) -> None:
+        env = {k: v for k, v in self._prod_env.items() if k != "DEFAULT_FROM_EMAIL"}
+
+        with pytest.raises(RuntimeError, match="DEFAULT_FROM_EMAIL"):
+            _generate_settings(tmp_path, env)
+
+    def test_dev_deployment_does_not_require_email_settings(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Dev logs mail to the console, so it needs no sender or site URL."""
+        settings = _generate_settings(tmp_path, {"DEPLOYMENT_ENVIRONMENT": "dev"})
+
+        assert "SITE_URL" not in settings["dev"]["environment_variables"]
+
+    def test_selected_staging_receives_email_settings(self, tmp_path: Path) -> None:
+        """A generated non-debug staging Lambda must not use local email defaults."""
+        email_settings = {
+            "SITE_URL": "https://staging.example.org",
+            "API_URL": "https://api.staging.example.org",
+            "DEFAULT_FROM_EMAIL": "admin@example.org",
+            "ADMIN_NOTIFICATION_EMAILS": "ops@example.org",
+            "SES_CONFIGURATION_SET": "example-staging",
+        }
+
+        settings = _generate_settings(
+            tmp_path,
+            {
+                "ENABLE_STAGING": "true",
+                "DEPLOYMENT_ENVIRONMENT": "staging",
+                **email_settings,
+            },
+        )
+
+        staging_environment = settings["staging"]["environment_variables"]
+        assert all(
+            staging_environment[name] == configured_value
+            for name, configured_value in email_settings.items()
+        )
+
+    @pytest.mark.parametrize("missing_setting", ["SITE_URL", "DEFAULT_FROM_EMAIL"])
+    def test_staging_requires_email_settings(
+        self,
+        tmp_path: Path,
+        missing_setting: str,
+    ) -> None:
+        """Staging sends real mail and must reject local-development defaults."""
+        email_settings = {
+            "SITE_URL": "https://staging.example.org",
+            "DEFAULT_FROM_EMAIL": "admin@example.org",
+        }
+        del email_settings[missing_setting]
+
+        with pytest.raises(RuntimeError, match=missing_setting):
+            _generate_settings(
+                tmp_path,
+                {
+                    "ENABLE_STAGING": "true",
+                    "DEPLOYMENT_ENVIRONMENT": "staging",
+                    **email_settings,
+                },
+            )

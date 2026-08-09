@@ -3,6 +3,7 @@ Tests for endorsement display API functionality.
 """
 
 from django.test import Client
+from django.utils import timezone
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.models import Endorsement
@@ -51,6 +52,7 @@ class EndorsementDisplayAPITest(BaseTestCase):
                 public_display=True,
                 status="approved",
                 email_verified=True,
+                reviewed_at=timezone.now(),
                 display_publicly=(
                     i % 2 == 0
                 ),  # Only even indices have display_publicly=True
@@ -66,13 +68,54 @@ class EndorsementDisplayAPITest(BaseTestCase):
         assert len(data) == 3
 
         # Check that only display_publicly=True endorsements are returned
-        returned_emails = {e["stakeholder"]["email"] for e in data}
-        expected_emails = {
-            "user0@example.com",
-            "user2@example.com",
-            "user4@example.com",
+        returned_names = {e["stakeholder"]["first_name"] for e in data}
+        assert returned_names == {"User0", "User2", "User4"}
+
+    def test_public_response_excludes_private_stakeholder_fields(self) -> None:
+        Endorsement.objects.create(
+            stakeholder=self.stakeholders[0],
+            campaign=self.campaign,
+            statement="Public statement",
+            public_display=True,
+            status="approved",
+            email_verified=True,
+            reviewed_at=timezone.now(),
+            display_publicly=True,
+        )
+
+        response = self.client.get("/api/endorsements/")
+
+        assert response.status_code == 200
+        stakeholder = response.json()[0]["stakeholder"]
+        assert stakeholder["state"] == "CA"
+        private_fields = {
+            "email",
+            "street_address",
+            "zip_code",
+            "latitude",
+            "longitude",
+            "email_updates",
         }
-        assert returned_emails == expected_emails
+        assert private_fields.isdisjoint(stakeholder)
+
+    def test_inactive_campaign_endorsements_are_not_public(self) -> None:
+        Endorsement.objects.create(
+            stakeholder=self.stakeholders[0],
+            campaign=self.campaign,
+            statement="Previously public statement",
+            public_display=True,
+            status="approved",
+            email_verified=True,
+            reviewed_at=timezone.now(),
+            display_publicly=True,
+        )
+        self.campaign.active = False
+        self.campaign.save()
+
+        response = self.client.get("/api/endorsements/")
+
+        assert response.status_code == 200
+        assert response.json() == []
 
     def test_display_order_newest_first(self) -> None:
         """Test that displayed endorsements are ordered by created_at descending"""
@@ -85,6 +128,7 @@ class EndorsementDisplayAPITest(BaseTestCase):
                 public_display=True,
                 status="approved",
                 email_verified=True,
+                reviewed_at=timezone.now(),
                 display_publicly=True,
             )
 
@@ -95,10 +139,10 @@ class EndorsementDisplayAPITest(BaseTestCase):
         data = response.json()
         assert len(data) == 3
 
-        # Check order - newest should be first (user2, user1, user0)
-        assert data[0]["stakeholder"]["email"] == "user2@example.com"
-        assert data[1]["stakeholder"]["email"] == "user1@example.com"
-        assert data[2]["stakeholder"]["email"] == "user0@example.com"
+        # Check order - newest should be first (User2, User1, User0)
+        assert data[0]["stakeholder"]["first_name"] == "User2"
+        assert data[1]["stakeholder"]["first_name"] == "User1"
+        assert data[2]["stakeholder"]["first_name"] == "User0"
 
     def test_all_conditions_required_for_display(self) -> None:
         """Test that all conditions must be met for an endorsement to be displayed"""
@@ -141,6 +185,7 @@ class EndorsementDisplayAPITest(BaseTestCase):
                 stakeholder=self.stakeholders[i],
                 campaign=self.campaign,
                 statement=f"Statement {i}",
+                reviewed_at=timezone.now(),
                 **conditions,
             )
 
@@ -151,7 +196,7 @@ class EndorsementDisplayAPITest(BaseTestCase):
         data = response.json()
         # Should only see the last endorsement where all conditions are met
         assert len(data) == 1
-        assert data[0]["stakeholder"]["email"] == "user4@example.com"
+        assert data[0]["stakeholder"]["first_name"] == "User4"
 
     def test_campaign_filter_with_display_publicly(self) -> None:
         """Test campaign filtering works with display_publicly"""
@@ -172,6 +217,7 @@ class EndorsementDisplayAPITest(BaseTestCase):
                 public_display=True,
                 status="approved",
                 email_verified=True,
+                reviewed_at=timezone.now(),
                 display_publicly=True,
             )
 
@@ -200,6 +246,7 @@ class EndorsementDisplayAPITest(BaseTestCase):
             public_display=True,
             status="approved",
             email_verified=True,
+            reviewed_at=timezone.now(),
             display_publicly=True,
         )
 
@@ -216,3 +263,19 @@ class EndorsementDisplayAPITest(BaseTestCase):
         assert "statement" in endorsement
         assert "public_display" in endorsement
         assert "status" in endorsement
+
+    def test_unreviewed_endorsement_is_not_public(self) -> None:
+        Endorsement.objects.create(
+            stakeholder=self.stakeholders[0],
+            campaign=self.campaign,
+            statement="Auto-approved but not reviewed",
+            public_display=True,
+            status="approved",
+            email_verified=True,
+            display_publicly=True,
+        )
+
+        response = self.client.get("/api/endorsements/")
+
+        assert response.status_code == 200
+        assert response.json() == []

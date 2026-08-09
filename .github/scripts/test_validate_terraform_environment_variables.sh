@@ -100,17 +100,62 @@ assert_repository_identity_mismatch_is_rejected() {
   fi
 }
 
-assert_prod_configuration_is_accepted() {
+application_environment=(
+  AWS_ACCOUNT_ID=123456789012
+  TF_VAR_prefix=example-app
+  TF_VAR_enable_api_custom_domain=true
+)
+
+assert_application_configuration_is_accepted() {
+  local environment="$1"
+
   env -i PATH="${PATH}" GITHUB_RUN_ID=test \
+    "${application_environment[@]}" \
+    "${VALIDATOR}" "${environment}" >/dev/null
+}
+
+# Terraform discovers the API Gateway id by name, so this flag is the only thing
+# standing between a deployment and destroying the live custom domain. An unset
+# or misspelled value must stop the deployment rather than read as "false".
+assert_custom_domain_flag_is_required() {
+  local environment="$1"
+
+  if env -i PATH="${PATH}" GITHUB_RUN_ID=test \
     AWS_ACCOUNT_ID=123456789012 \
     TF_VAR_prefix=example-app \
-    "${VALIDATOR}" prod >/dev/null
+    "${VALIDATOR}" "${environment}" >/dev/null 2>&1; then
+    printf 'Expected %s validation to reject a missing TF_VAR_enable_api_custom_domain\n' \
+      "${environment}" >&2
+    return 1
+  fi
+}
+
+assert_non_boolean_custom_domain_flag_is_rejected() {
+  local environment="$1"
+
+  if env -i PATH="${PATH}" GITHUB_RUN_ID=test \
+    AWS_ACCOUNT_ID=123456789012 \
+    TF_VAR_prefix=example-app \
+    TF_VAR_enable_api_custom_domain=yes \
+    "${VALIDATOR}" "${environment}" >/dev/null 2>&1; then
+    printf 'Expected %s validation to reject a non-boolean TF_VAR_enable_api_custom_domain\n' \
+      "${environment}" >&2
+    return 1
+  fi
+}
+
+# The shared account holds no API Gateway, so the custom domain flag is none of
+# its business — it must neither be required there nor validated there.
+assert_shared_environment_ignores_the_custom_domain_flag() {
+  env -i PATH="${PATH}" GITHUB_RUN_ID=test \
+    "${shared_environment[@]}" \
+    TF_VAR_enable_api_custom_domain=not-a-boolean \
+    "${VALIDATOR}" shared >/dev/null
 }
 
 assert_unknown_environment_is_rejected() {
   if env -i PATH="${PATH}" GITHUB_RUN_ID=test \
-    AWS_ACCOUNT_ID=123456789012 \
-    TF_VAR_prefix=example-app \
+    "${application_environment[@]}" \
     "${VALIDATOR}" unknown >/dev/null 2>&1; then
     printf 'Expected validation to reject an unknown environment\n' >&2
     return 1
@@ -122,7 +167,14 @@ assert_existing_key_configuration_is_accepted
 assert_all_shared_variables_are_required
 assert_empty_network_boundaries_are_rejected
 assert_repository_identity_mismatch_is_rejected
-assert_prod_configuration_is_accepted
+assert_shared_environment_ignores_the_custom_domain_flag
+
+for application_environment_name in prod dev; do
+  assert_application_configuration_is_accepted "${application_environment_name}"
+  assert_custom_domain_flag_is_required "${application_environment_name}"
+  assert_non_boolean_custom_domain_flag_is_rejected "${application_environment_name}"
+done
+
 assert_unknown_environment_is_rejected
 
 printf 'Terraform deployment variable validation tests passed.\n'

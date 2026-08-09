@@ -129,7 +129,8 @@ class EndorsementVerificationTest(BaseTestCase):
         endorsement.save()
         assert not endorsement.should_display_publicly
 
-        # Verified, approved, and selected for display = display
+        # Verified, approved, reviewed, and selected for display = display
+        endorsement.reviewed_at = timezone.now()
         endorsement.display_publicly = True
         endorsement.save()
         assert endorsement.should_display_publicly

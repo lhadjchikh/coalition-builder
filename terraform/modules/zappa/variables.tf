@@ -53,6 +53,28 @@ variable "project_name" {
   description = "Zappa project name (used for Lambda function naming, e.g. 'coalition' creates 'coalition-prod')"
   type        = string
   default     = ""
+
+  validation {
+    condition     = !var.discover_api_gateway || var.project_name != ""
+    error_message = "When discover_api_gateway is true, project_name must be set: the REST API is looked up as {project_name}-{stage_name}."
+  }
+}
+
+variable "stage_name" {
+  description = "Zappa stage name (used with project_name to address Zappa-created resources, e.g. 'prod' gives 'coalition-prod')"
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = !var.discover_api_gateway || var.stage_name != ""
+    error_message = "When discover_api_gateway is true, stage_name must be set: the REST API is looked up as {project_name}-{stage_name}."
+  }
+}
+
+variable "discover_api_gateway" {
+  description = "Look up the API Gateway REST API that Zappa created for this stage. Leave false until Zappa has deployed, since the lookup fails when the API does not exist."
+  type        = bool
+  default     = false
 }
 
 variable "tags" {

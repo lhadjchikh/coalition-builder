@@ -2,6 +2,8 @@ from typing import TYPE_CHECKING
 
 from django.contrib import admin
 
+from coalition.admin_help.admin_links import HelpLinkAdminMixin
+
 from .models import Bill, PolicyCampaign
 
 if TYPE_CHECKING:
@@ -28,8 +30,10 @@ class BillInline(admin.TabularInline):
 
 
 @admin.register(PolicyCampaign)
-class PolicyCampaignAdmin(admin.ModelAdmin):
+class PolicyCampaignAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
     """Admin interface for PolicyCampaign model"""
+
+    help_page_slug = "campaigns"
 
     inlines = [BillInline]
 
@@ -100,8 +104,10 @@ class PolicyCampaignAdmin(admin.ModelAdmin):
 
 
 @admin.register(Bill)
-class BillAdmin(admin.ModelAdmin):
+class BillAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
     """Admin interface for Bill model"""
+
+    help_page_slug = "bills"
 
     list_display = (
         "policy",

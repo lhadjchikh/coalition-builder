@@ -67,7 +67,7 @@ output "cloudfront_distribution_domain_name" {
 # DNS
 output "api_domain_name" {
   description = "Custom domain name for the API"
-  value       = var.api_gateway_id != "" ? aws_api_gateway_domain_name.api[0].domain_name : ""
+  value       = var.enable_api_custom_domain ? aws_api_gateway_domain_name.api[0].domain_name : ""
 }
 
 # ACM

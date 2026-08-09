@@ -2,9 +2,7 @@
 
 ## Overview
 
-Coalition Builder uses a **serverless architecture** for cost-effective, scalable deployment. The application is split between AWS Lambda (Django backend) and Vercel (Next.js frontend).
-
-**Cost Savings**: ~46% reduction from legacy ECS deployment ($39/month vs $73/month)
+Coalition Builder uses a **serverless architecture** for cost-effective, scalable deployment. The application is split between AWS Lambda (Django backend) and Vercel (Next.js frontend). For the resource-by-resource cost breakdown, see [AWS Serverless Deployment](deployment/aws.md#cost-analysis).
 
 ## Quick Start
 
@@ -13,37 +11,75 @@ Coalition Builder uses a **serverless architecture** for cost-effective, scalabl
 - AWS CLI configured with deployment permissions
 - GitHub repository with Actions enabled
 - Domain name with DNS access (optional)
-- Terraform 1.0+ for infrastructure
+- Terraform 1.12+ for infrastructure
 
 ### 2. Deploy Infrastructure
 
+Terraform is organized into per-account environments. Deploy `shared` first — it creates the database VPC and RDS instance that `prod` and `dev` read via remote state before creating their own application VPCs.
+
+Complete the account bootstrap in [Multi-Account AWS Setup](deployment/multi-account-aws.md) and export the required `TF_VAR_*` inputs from [Configure GitHub Secrets and Variables](#3-configure-github-secrets-and-variables) before running Terraform manually. The backend setup script generates the gitignored `backend.hcl` in each environment directory.
+
 ```bash
-cd terraform
-terraform init
-terraform apply -target=module.dynamodb
-terraform apply -target=module.zappa
-terraform apply -target=module.geodata_import
+cd terraform/environments/shared
+../../scripts/setup_remote_state.sh shared
+terraform init -backend-config=backend.hcl
+terraform plan -out=tfplan
+terraform apply tfplan
+
+cd ../prod
+../../scripts/setup_remote_state.sh prod
+terraform init -backend-config=backend.hcl
+terraform plan -out=tfplan
+terraform apply tfplan
 ```
 
-### 3. Configure GitHub Secrets
+### 3. Configure GitHub Secrets and Variables
 
-Set these in your GitHub repository settings:
+The Lambda, Lambda-management, and Terraform deployment workflows authenticate to AWS with OIDC role assumption. The legacy geodata-import workflow and Terraform integration-test job still use `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`; do not remove those credentials until those workflows are migrated or retired.
 
-**Secrets:**
+**Lambda GitHub Environment secrets** (`prod` and `dev`):
 
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-- `VERCEL_TOKEN`
-- `VERCEL_ORG_ID`
-- `VERCEL_PROJECT_ID`
+- `DATABASE_SECRET_ARN`, `DJANGO_SECRET_ARN` - Secrets Manager ARNs the Lambda role must be able to read
 
-**Environment Variables** (per environment):
+**Terraform GitHub Environment secrets:**
 
-- `DOMAIN_NAME` (optional)
-- `CERTIFICATE_ARN` (optional)
-- `PRODUCTION_API_URL`
-- `STAGING_API_URL`
-- `DEVELOPMENT_API_URL`
+| Environment   | Required secrets                                                | Optional secret                                             |
+| ------------- | --------------------------------------------------------------- | ----------------------------------------------------------- |
+| `shared`      | `DB_USERNAME`, `DB_PASSWORD`, `APP_DB_USERNAME`                 | `TF_VAR_BASTION_PUBLIC_KEY` when `CREATE_NEW_KEY_PAIR=true` |
+| `prod`, `dev` | `APP_DB_USERNAME`, `APP_DB_PASSWORD`, `SHARED_PEERING_ROLE_ARN` | `SITE_PASSWORD`                                             |
+
+**Common Terraform GitHub Environment variables:**
+
+- `AWS_ACCOUNT_ID`, `TF_VAR_PREFIX`, and `REPO_FULL_NAME`
+- `TF_VAR_ALERT_EMAIL` for every environment
+- `SHARED_ACCOUNT_ID` for `prod` and `dev`
+- `TF_VAR_DOMAIN_NAME`, `BASTION_KEY_NAME`, `CREATE_NEW_KEY_PAIR`, `ALLOWED_BASTION_CIDRS`, and `ALLOWED_LAMBDA_CIDRS` for `shared`
+- `SES_FROM_EMAIL`, `SES_NOTIFICATION_EMAIL`, and `TF_VAR_DOMAIN_NAME` for `prod`
+
+The reusable Terraform workflow also accepts optional variables such as `TF_VAR_API_GATEWAY_ID` and additional bastion settings. Treat `.github/workflows/deploy_terraform_environment.yml` and `.github/scripts/validate_terraform_environment_variables.sh` as the authoritative input list.
+
+**Lambda GitHub Environment variables** (`prod` and `dev`):
+
+- `AWS_ACCOUNT_ID` - determines the `github-actions-<env>` role to assume
+- `ZAPPA_S3_BUCKET`, `ZAPPA_ROLE_NAME` - from Terraform outputs
+- `AWS_STORAGE_BUCKET_NAME`, `CLOUDFRONT_DOMAIN`
+- `AWS_LOCATION_PLACE_INDEX_NAME`
+- `VPC_SUBNET_IDS`, `VPC_SECURITY_GROUP_IDS`
+- The selected environment's `PRODUCTION_API_URL` or `DEVELOPMENT_API_URL`
+- `SITE_URL`, `DEFAULT_FROM_EMAIL` - required for production email links and the SES sender
+- `ADMIN_NOTIFICATION_EMAILS`, `SES_CONFIGURATION_SET` - optional notification recipients and SES event tracking
+
+**Repository secrets** (used by the frontend job, which does not select a GitHub Environment):
+
+- `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
+
+**Repository variables** (used by the frontend job, which has no GitHub Environment scope):
+
+- `PRODUCTION_API_URL` / `DEVELOPMENT_API_URL`, `PRODUCTION_SITE_URL` / `DEVELOPMENT_SITE_URL`
+- `AWS_STORAGE_BUCKET_NAME`, `CLOUDFRONT_DOMAIN`, `PRODUCTION_DOMAIN`
+- `GOOGLE_ANALYTICS_ID` - optional analytics identifier
+
+`PRODUCTION_API_URL` and `DEVELOPMENT_API_URL` intentionally exist at both repository and environment scope because the frontend and Lambda workflows read different scopes. See [Deployment Workflows](deployment/workflows.md) for workflow behavior.
 
 ### 4. Deploy Applications
 
@@ -57,33 +93,31 @@ gh workflow run deploy_frontend.yml --ref main -f environment=prod
 
 ## Architecture
 
-### Current: Serverless Architecture
+```text
+Internet
+    ├── Vercel (Next.js Frontend) ──/api/*──┐
+    └── CloudFront CDN (static & media)     │
+                                            ▼
+                                    API Gateway → Lambda (Django via Zappa)
+                                                     ├── RDS PostgreSQL + PostGIS
+                                                     ├── S3 (static & media)
+                                                     ├── SES API (transactional email)
+                                                     └── AWS Location Service (geocoding)
 
+TIGER geodata import scaffolding (not currently provisioned)
 ```
-Internet → CloudFront CDN
-    ├── Vercel (Next.js Frontend)
-    └── API Gateway → Lambda (Django)
-         ├── RDS PostgreSQL
-         └── DynamoDB (Rate Limiting)
 
-ECS Fargate (TIGER Imports Only)
-```
+Transactional email uses the SES API over a private VPC endpoint and authenticates through the Lambda execution role; see [PR #312](https://github.com/lhadjchikh/coalition-builder/pull/312).
 
 **Components:**
 
 - **Frontend**: Next.js on Vercel Edge Network
-- **Backend**: Django on AWS Lambda (via Zappa)
+- **Backend**: Django on AWS Lambda (via Zappa, as a container image)
 - **Database**: RDS PostgreSQL with PostGIS
-- **Rate Limiting**: DynamoDB (replaces Redis)
-- **Geographic Data**: Imported via ECS Fargate tasks
+- **Rate Limiting**: PostgreSQL-backed Django cache — see [Rate Limiting](rate-limiting.md)
+- **Geographic Data**: The repository includes an ECS import module and workflow, but no current environment provisions them
 
-### Legacy: ECS Architecture (Deprecated)
-
-The previous ECS-based deployment is still documented for reference but deprecated:
-
-- Higher costs ($73/month vs $39/month)
-- More complex infrastructure management
-- Less scalable
+The ALB, ECS application service, and NAT gateway from the previous ECS deployment have been removed. The Lambda reaches AWS services through VPC endpoints rather than a NAT gateway. See [AWS Serverless Deployment](deployment/aws.md) for the full resource inventory.
 
 ## Deployment Options
 
@@ -91,35 +125,29 @@ The previous ECS-based deployment is still documented for reference but deprecat
 
 **Automatic via GitHub Actions:**
 
-- Push to `main` branch triggers production deployment
-- Backend deploys to Lambda with production settings
-- Frontend deploys to Vercel with custom domain
+- Backend changes pushed to `main` deploy Lambda with production settings
+- Frontend changes pushed to `main` independently deploy Vercel with the production custom domain
 
 **Manual Deployment:**
 
 ```bash
-# Lambda backend
-cd backend
-poetry run zappa deploy prod
+# Lambda backend (preferred; builds and passes the immutable image URI)
+gh workflow run deploy_lambda.yml --ref main -f environment=prod
 
 # Vercel frontend
 cd frontend
 vercel --prod
 ```
 
-### Staging Deployment
-
-**Automatic:**
-
-- Push to `staging` branch
-- Deploys to staging environment with keep-warm enabled
-
 ### Development Deployment
 
 **Automatic:**
 
-- Push to feature branches creates preview deployments
-- Pull requests get preview URLs
+- Backend changes pushed to `development` trigger the `dev` Lambda deployment
+- Frontend changes pushed to `development` independently trigger the development Vercel deployment
+- Pull requests touching `frontend/` get Vercel preview URLs
+
+> **No staging environment.** `zappa_settings.json.template` defines a `staging` stage, but no Terraform environment or deployment workflow targets it. Only `dev` and `prod` are provisioned and wired to CI.
 
 **Local Development:**
 
@@ -198,7 +226,7 @@ Environment variables are set via GitHub Actions:
 
 2. **Configure DNS:**
 
-   ```
+   ```text
    Type: CNAME
    Name: @
    Value: cname.vercel-dns.com
@@ -263,24 +291,14 @@ Environment variables are set via GitHub Actions:
 
 ## Cost Management
 
-### Monthly Costs (Approximate)
-
-**Serverless Architecture:**
-
-- Lambda: ~$5
-- API Gateway: ~$4
-- Vercel: $0-20 (depending on traffic)
-- RDS: ~$15
-- DynamoDB: ~$1
-- Other (S3, CloudWatch): ~$5
-- **Total: ~$39/month**
+The per-service cost breakdown lives in [AWS Serverless Deployment](deployment/aws.md#cost-analysis) so there is a single set of figures to keep current.
 
 **Cost Optimization:**
 
-- DynamoDB pay-per-request billing
+- Lambda and API Gateway bill per request, with no idle cost
 - Lambda keep-warm only for production
 - Vercel free tier for development
-- ECS only for occasional TIGER imports
+- Retained TIGER import scaffolding incurs no ECS cost because no current environment provisions it
 
 ## Troubleshooting
 
@@ -304,18 +322,10 @@ Environment variables are set via GitHub Actions:
 ### Getting Help
 
 - Check [GitHub Actions workflows](deployment/workflows.md)
-- View [Lambda deployment guide](LAMBDA_DEPLOYMENT.md)
-- See [Vercel deployment guide](VERCEL_DEPLOYMENT.md)
+- View [Deployment Workflows](deployment/workflows.md)
+- See [AWS Serverless Deployment](deployment/aws.md)
 - Review CloudWatch logs for errors
 
-## Migration from Legacy
+## Migration from ECS
 
-If migrating from the ECS deployment:
-
-1. **Backup Data:** Export database and user uploads
-2. **Test Serverless:** Deploy to staging first
-3. **Update DNS:** Point to new endpoints
-4. **Monitor:** Check performance and error rates
-5. **Cleanup:** Remove ECS resources after verification
-
-See the migration plan in `backend/local/SERVERLESS_MIGRATION_PLAN.md` for detailed steps.
+The migration from ECS Fargate to this serverless architecture is complete — see [PR #222](https://github.com/lhadjchikh/coalition-builder/pull/222). The ALB, ECS application service, and NAT gateway have been decommissioned, and no ECS deployment path remains for the application. ECS-based TIGER import scaffolding remains in the repository but is not provisioned in any current environment; see [Geodata Import](deployment/geodata-import.md).

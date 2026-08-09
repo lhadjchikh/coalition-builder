@@ -405,29 +405,45 @@ terraform graph | dot -Tpng > graph.png
 ### AWS CLI Commands
 
 ```bash
-# Deploy to ECS
-aws ecs update-service \
-    --cluster coalition-cluster \
-    --service coalition-backend \
-    --force-new-deployment
+# Deploy the backend (preferred: via GitHub Actions)
+gh workflow run deploy_lambda.yml --ref main -f environment=prod
 
-# Check deployment status
-aws ecs describe-services \
-    --cluster coalition-cluster \
-    --services coalition-backend
+# Update the Lambda image directly
+aws lambda update-function-code \
+    --function-name coalition-prod \
+    --image-uri "$ECR_REGISTRY/coalition-prod:latest"
 
-# View logs
-aws logs get-log-events \
-    --log-group-name /ecs/coalition-backend \
-    --log-stream-name stream-name
+# Check the deployed configuration
+aws lambda get-function-configuration --function-name coalition-prod
 
-# Update environment variables
-aws ecs describe-task-definition \
-    --task-definition coalition-backend \
-    --query taskDefinition > task-def.json
+# Tail logs
+aws logs tail /aws/lambda/coalition-prod --follow
 
-# Register new task definition
-aws ecs register-task-definition --cli-input-json file://task-def.json
+# Inspect costs by service, then drill into usage types
+aws ce get-cost-and-usage \
+    --time-period Start=2026-07-01,End=2026-08-01 \
+    --granularity MONTHLY --metrics UnblendedCost \
+    --group-by Type=DIMENSION,Key=SERVICE
+```
+
+### Zappa Commands
+
+Run Zappa from `backend/`. `zappa_settings.json` is gitignored and must be generated from the same environment variables used by `deploy_lambda.yml`. Image deployments must receive a real, immutable ECR image URI; do not use the placeholder URI in the template.
+
+```bash
+cd backend
+poetry install --only main
+poetry run python scripts/configure_zappa.py
+
+# Deploy or update a stage with an image that has already been built and pushed
+poetry run zappa deploy prod --docker-image-uri "$IMAGE_URI"
+poetry run zappa update prod --docker-image-uri "$IMAGE_URI"
+
+# Roll back to the previous version
+poetry run zappa rollback prod -n 1
+
+# Run a Django management command remotely
+poetry run zappa manage prod migrate
 ```
 
 ## NPM/Frontend Commands

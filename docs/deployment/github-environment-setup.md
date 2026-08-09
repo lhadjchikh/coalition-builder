@@ -14,16 +14,23 @@ This guide explains how to configure GitHub environment variables for AWS SES em
 
 Add the following **Environment variables** (not secrets):
 
-#### Email Configuration Variables
+#### Infrastructure Variables
 
-| Variable Name               | Example Value                         | Description                                   |
-| --------------------------- | ------------------------------------- | --------------------------------------------- |
-| `SES_FROM_EMAIL`            | `noreply@yourdomain.com`              | Default sender email address                  |
-| `SES_VERIFY_DOMAIN`         | `true`                                | Whether to verify entire domain               |
-| `SES_NOTIFICATION_EMAIL`    | `admin@yourdomain.com`                | Email for bounce/complaint notifications      |
-| `CONTACT_EMAIL`             | `info@yourdomain.com`                 | Organization contact email                    |
-| `ADMIN_NOTIFICATION_EMAILS` | `admin1@domain.com,admin2@domain.com` | Comma-separated admin emails for endorsements |
-| `ORGANIZATION_NAME`         | `Your Organization Name`              | Organization name for email templates         |
+| Variable Name            | Example Value            | Description                                              |
+| ------------------------ | ------------------------ | -------------------------------------------------------- |
+| `SES_FROM_EMAIL`         | `noreply@yourdomain.com` | Domain sender identity provisioned by Terraform          |
+| `SES_NOTIFICATION_EMAIL` | `admin@yourdomain.com`   | Recipient for SES bounce, complaint, and delivery events |
+
+#### Lambda Application Variables
+
+| Variable Name               | Example Value                         | Description                                                |
+| --------------------------- | ------------------------------------- | ---------------------------------------------------------- |
+| `DEFAULT_FROM_EMAIL`        | `noreply@yourdomain.com`              | Sender used by Django; required for production deployments |
+| `SITE_URL`                  | `https://yourdomain.com`              | Base URL for verification links; required for production   |
+| `ADMIN_NOTIFICATION_EMAILS` | `admin1@domain.com,admin2@domain.com` | Comma-separated admin notification recipients              |
+| `SES_CONFIGURATION_SET`     | `your-prefix-config-set`              | SES configuration set for delivery and bounce events       |
+
+`API_URL` is derived from the environment's `PRODUCTION_API_URL` or `DEVELOPMENT_API_URL` variable.
 
 ### 3. How to Add Variables
 
@@ -37,26 +44,22 @@ Add the following **Environment variables** (not secrets):
 ```yaml
 # These will be used in the workflow as:
 SES_FROM_EMAIL: noreply@example.com
-SES_VERIFY_DOMAIN: true
 SES_NOTIFICATION_EMAIL: admin@example.com
-CONTACT_EMAIL: info@example.com
+DEFAULT_FROM_EMAIL: noreply@example.com
+SITE_URL: https://example.com
 ADMIN_NOTIFICATION_EMAILS: admin1@example.com,admin2@example.com
-ORGANIZATION_NAME: Coalition for Climate Action
+SES_CONFIGURATION_SET: coalition-config-set
 ```
 
 ## How It Works
 
-The `deploy_infra.yml` workflow automatically:
+The `deploy_infra.yml` workflow:
 
-1. **Reads these variables** from your GitHub environment
-2. **Passes them to Terraform** as `TF_VAR_ses_*` environment variables
-3. **Terraform uses them** to configure AWS SES:
-   - Creates IAM user with SES permissions
-   - Verifies your domain (if using Route53)
-   - Sets up DKIM, SPF, and DMARC records
-   - Generates SMTP credentials
-   - Stores everything in AWS Secrets Manager
-   - Configures ECS to use the credentials
+1. Passes `SES_FROM_EMAIL` and `SES_NOTIFICATION_EMAIL` to Terraform.
+2. Verifies the SES domain and configures DKIM, SPF, DMARC, notifications, and scoped sender-role permissions.
+3. Provisions the production SES API VPC endpoint and delivery-failure alarm.
+
+The `deploy_lambda.yml` workflow separately validates and bakes the application variables into the Lambda configuration. Lambda authenticates to the SES API with its execution role; it does not receive static SMTP credentials.
 
 ## Important Notes
 
@@ -76,10 +79,9 @@ Make sure to:
 
 ### Domain Verification
 
-If `SES_VERIFY_DOMAIN` is `true`, ensure:
+For domain verification, ensure:
 
 - Your domain uses Route53 for DNS
-- The `TF_VAR_ROUTE53_ZONE_ID` variable is set correctly
 - The domain matches your `TF_VAR_DOMAIN_NAME`
 
 ### Email Address Format
@@ -95,11 +97,13 @@ On first deployment with SES:
 1. **Terraform will**:
    - Create all SES resources
    - Verify your domain automatically (if using Route53)
-   - Generate and store SMTP credentials
+   - Grant the Lambda execution role SES send permission
+   - Create the production SES API VPC endpoint and monitoring resources
 
 2. **You need to**:
    - Request production access in AWS SES console (one-time)
    - Confirm SNS email subscription for notifications
+   - Deploy Lambda after the infrastructure is ready
 
 ## Verification
 
@@ -107,11 +111,13 @@ After deployment, verify the setup:
 
 1. **Check AWS Console**:
    - SES → Verified identities → Your domain should be verified
-   - Secrets Manager → `your-prefix/ses-smtp-credentials` should exist
+   - VPC → Endpoints → the production `email` interface endpoint should be available
+   - SES → Account dashboard → production access should be enabled
 
-2. **Check ECS Logs**:
-   - Email sending attempts will be logged
-   - Successful sends show in SES statistics
+2. **Check Lambda and CloudWatch**:
+   - Lambda configuration contains `DEFAULT_FROM_EMAIL`, `SITE_URL`, and the optional notification variables
+   - Successful sends appear in SES metrics
+   - Delivery failures increment the `EmailDeliveryFailures` metric and alarm
 
 3. **Test Email Sending**:
    - Trigger an endorsement verification email
@@ -140,14 +146,11 @@ If domain verification fails:
 If emails aren't being sent:
 
 - Check you've moved out of SES sandbox
-- Verify the from address if still in sandbox
-- Check ECS task logs for errors
-- Ensure Secrets Manager permissions are correct
+- Verify `DEFAULT_FROM_EMAIL` matches the authorized SES domain
+- Confirm the SES API endpoint resolves to a private address from Lambda
+- Check Lambda logs for `EMAIL_DELIVERY_FAILED`
+- Verify the execution role is included in the SES module's `sender_role_names`
 
 ## Cost
 
-With these settings, your email costs will be:
-
-- **First 62,000 emails/month**: Free (from ECS)
-- **Additional emails**: $0.10 per 1,000 emails
-- **Typical monthly cost**: $0 for low-traffic sites
+The SES API interface endpoint adds an hourly VPC endpoint charge even at zero traffic. Message pricing depends on the account's SES plan, and free usage depends on account credit or legacy eligibility. Check the [current SES pricing](https://aws.amazon.com/ses/pricing/) and the [measured infrastructure cost analysis](aws.md#cost-analysis).

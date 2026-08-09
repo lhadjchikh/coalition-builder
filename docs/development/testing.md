@@ -440,7 +440,6 @@ export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/coalition_test
 export NODE_ENV=test
 export NEXT_PUBLIC_API_URL=http://localhost:8000/api
 
-# Disable external services in tests
+# Disable external email delivery in tests
 export EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
-export CACHE_URL=locmem://
 ```

@@ -1,0 +1,26 @@
+{% extends "admin_help/base.html" %}
+
+{% block help_content %}
+  <p class="admin-help__lede">
+    This guide covers the two jobs the admin exists for: putting campaigns online,
+    and deciding which endorsements are real. You do not need to know how to code
+    to do either. Work through it in order the first time; after that, use it as a
+    reference.
+  </p>
+
+  <ol class="admin-help__index">
+    {% for entry in pages %}
+      <li>
+        <a href="{% url 'admin_help:page' entry.slug %}">{{ entry.title }}</a>
+        <span class="admin-help__blurb">{{ entry.blurb }}</span>
+      </li>
+    {% endfor %}
+  </ol>
+
+  <p class="admin-help__callout">
+    If you read only one page, make it
+    <a href="{% url 'admin_help:page' 'endorsement-pipeline' %}">How an endorsement travels</a>.
+    Nearly every question about why something is or isn't on the public site is
+    answered there.
+  </p>
+{% endblock %}

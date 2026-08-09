@@ -2,6 +2,8 @@
 Tests for the display_publicly field and admin display selection functionality.
 """
 
+from django.utils import timezone
+
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.models import Endorsement
 from coalition.test_base import BaseTestCase
@@ -40,6 +42,7 @@ class DisplayPubliclyTest(BaseTestCase):
             public_display=True,
             status="approved",
             email_verified=True,
+            reviewed_at=timezone.now(),
             terms_accepted=True,
         )
 
@@ -64,6 +67,13 @@ class DisplayPubliclyTest(BaseTestCase):
         self.endorsement.display_publicly = True
         self.endorsement.save()
         assert self.endorsement.should_display_publicly is True
+
+        self.endorsement.reviewed_at = None
+        self.endorsement.save()
+        assert self.endorsement.should_display_publicly is False
+
+        self.endorsement.reviewed_at = timezone.now()
+        self.endorsement.save()
 
         # Test with public_display = False
         self.endorsement.public_display = False

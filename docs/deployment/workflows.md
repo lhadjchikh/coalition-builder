@@ -122,7 +122,7 @@ Actions → Lambda Management → Run workflow → Select action
 
 #### `geodata_import.yml`
 
-Runs geographic data imports using ECS Fargate.
+Retains the intended ECS Fargate workflow for geographic imports. No current Terraform environment provisions its ECS cluster or task definition, so the workflow is unavailable until an environment explicitly wires in `modules/geodata-import`.
 
 **Import Types:**
 
@@ -132,7 +132,7 @@ Runs geographic data imports using ECS Fargate.
 - `all-tiger` - Import all TIGER data
 - `custom` - Run custom import command
 
-**Process:**
+**Intended process after provisioning:**
 
 1. Configures import command
 2. Runs ECS task with geodata-import container
@@ -174,18 +174,18 @@ Runs security scans.
 ### Development Environment
 
 ```yaml
-Environment: development
-Branch: development or feature/*
+Environment: dev
+Branch: development
 Lambda Stage: dev
-Vercel: Preview deployment
+Vercel: Development deployment
 ```
 
 ### Production Environment
 
 ```yaml
-Environment: production
+Environment: prod
 Branch: main
-Lambda Stage: production
+Lambda Stage: prod
 Vercel: Production deployment
 Keep-warm: Yes (4 minutes)
 X-Ray: Enabled
@@ -200,16 +200,14 @@ X-Ray: Enabled
 ### Development
 
 ```bash
-DOMAIN_NAME=api-dev.yourdomain.com
-CERTIFICATE_ARN=arn:aws:acm:us-east-1:...
+TF_VAR_DOMAIN_NAME=yourdomain.com
 DEVELOPMENT_API_URL=https://api-dev.yourdomain.com
 ```
 
 ### Production
 
 ```bash
-DOMAIN_NAME=api.yourdomain.com
-CERTIFICATE_ARN=arn:aws:acm:us-east-1:...
+TF_VAR_DOMAIN_NAME=yourdomain.com
 PRODUCTION_API_URL=https://api.yourdomain.com
 ```
 
@@ -310,10 +308,10 @@ vercel rollback
 
 ### Dev VPC Endpoints Toggle
 
-The dev environment's VPC endpoints (~$22/month) can be disabled when you're not actively developing to save costs. Use the **Dev Cost Control** workflow:
+The dev environment's two VPC endpoints can be disabled when you're not actively developing. Use the **Dev Cost Control** workflow; see the authoritative [cost analysis](aws.md#cost-analysis) for current and measured figures.
 
 ```bash
-# Disable VPC endpoints (saves ~$22/mo)
+# Disable both dev VPC endpoints
 gh workflow run dev_cost_control.yml -f vpc_endpoints=disable
 
 # Re-enable before developing
@@ -322,19 +320,14 @@ gh workflow run dev_cost_control.yml -f vpc_endpoints=enable
 
 Or use the GitHub UI: **Actions > Dev Cost Control > Run workflow**.
 
-When VPC endpoints are disabled, Lambda functions in the dev environment (which run in private subnets with no NAT/internet route) cannot reach Secrets Manager, CloudWatch Logs, or the Geo Places API at all. Re-enable the endpoints before deploying or testing the dev backend.
+When VPC endpoints are disabled, Lambda functions in the dev environment (which run in private subnets with no NAT/internet route) cannot reach Secrets Manager or the Geo Places API. CloudWatch Logs does not require an interface endpoint for Lambda's own logs. Re-enable the endpoints before deploying or testing the dev backend.
 
 ## Cost Monitoring
 
-The serverless architecture significantly reduces costs:
-
-- **Lambda**: Pay per invocation (~$5/month)
-- **Vercel**: Free tier or $20/month Pro
-- **DynamoDB**: Pay per request (~$1/month)
-- **Total**: ~$39/month vs $73/month for ECS
+Compute is essentially free at current traffic — Lambda does not even appear as a Cost Explorer line item. The bill is dominated by always-on resources: VPC interface endpoints, RDS, and WAF. See [Cost Analysis](aws.md#cost-analysis) for the measured per-service breakdown.
 
 Monitor usage:
 
-- AWS Cost Explorer for Lambda/DynamoDB
+- AWS Cost Explorer, grouped by service and then by usage type
 - Vercel Analytics for bandwidth
 - CloudWatch for detailed metrics

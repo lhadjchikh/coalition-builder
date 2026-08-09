@@ -36,6 +36,7 @@ django-tinymce = "^4.1.0"
 zappa = "^0.60.2"
 boto3 = "^1.40.16"
 pynamodb = "^6.1.0"
+markdown = "^3.7"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.11.12"
@@ -46,6 +47,7 @@ pytest-xdist = "^3.6.1"
 mypy = "^1.14.0"
 django-stubs = {extras = ["compatible-mypy"], version = "^5.1.1"}
 types-requests = "^2.32.0"
+types-markdown = "^3.7"
 
 [tool.poetry.group.docs]
 optional = true

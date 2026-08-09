@@ -281,7 +281,7 @@ The system previously used:
 The new database-backed approach:
 
 - Eliminates Redis dependency
-- Removes DynamoDB costs (~$1/month)
+- Removes the separate DynamoDB dependency and its associated cost
 - Provides consistent behavior everywhere
 - Simplifies deployment and testing
 

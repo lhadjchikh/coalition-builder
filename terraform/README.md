@@ -4,7 +4,7 @@
 [![Terraform](https://img.shields.io/badge/terraform-1.12+-blue.svg)](https://www.terraform.io/)
 [![AWS Provider](https://img.shields.io/badge/aws-5.99+-orange.svg)](https://registry.terraform.io/providers/hashicorp/aws/latest)
 
-This directory contains the Terraform configuration for deploying Coalition Builder's serverless infrastructure to AWS. The infrastructure is designed to be secure, scalable, and cost-optimized with a 46% cost reduction from the previous ECS-based deployment.
+This directory contains the Terraform configuration for deploying Coalition Builder's serverless infrastructure to AWS. It replaces the previous ECS-based deployment, removing the ALB, the ECS application service, and the NAT gateway.
 
 ## 📚 Documentation
 
@@ -14,8 +14,8 @@ Quick links:
 
 - [Multi-Account AWS Guide](../docs/deployment/multi-account-aws.md) - Bootstrap, OIDC, VPC peering, environment workflow
 - [AWS Serverless Guide](../docs/deployment/aws.md) - Complete serverless deployment walkthrough
-- [Lambda Deployment](../docs/lambda_deployment.md) - Django on Lambda setup
-- [Vercel Deployment](../docs/vercel_deployment.md) - Next.js on Vercel setup
+- [Lambda Deployment](../docs/LAMBDA_DEPLOYMENT.md) - Django on Lambda setup
+- [Vercel Deployment](../docs/VERCEL_DEPLOYMENT.md) - Next.js on Vercel setup
 - [Configuration Reference](https://lhadjchikh.github.io/coalition-builder/reference/environment/) - All environment variables
 - [Deployment Overview](https://lhadjchikh.github.io/coalition-builder/deployment/) - Multiple deployment options
 
@@ -23,7 +23,7 @@ Quick links:
 
 - **Terraform**: Infrastructure as Code (>= 1.12.0)
 - **AWS Provider**: ~> 5.99.0
-- **AWS Services**: Lambda, API Gateway, RDS PostgreSQL, DynamoDB, S3, Secrets Manager, ECS (TIGER imports only)
+- **AWS Services**: Lambda, API Gateway, RDS PostgreSQL, S3, CloudFront, Secrets Manager, SES, AWS Location Service
 - **Testing**: Terratest with AWS SDK Go v2
 - **Security**: WAF, Security Groups, KMS encryption
 
@@ -84,15 +84,8 @@ flowchart TB
     subgraph aws["AWS (us-east-1)"]
         apigateway --> lambda[Lambda Function<br/>Django via Zappa]
 
-        lambda --> rds[(RDS PostgreSQL<br/>with PostGIS)]
-        lambda --> dynamodb[(DynamoDB<br/>Rate Limiting)]
+        lambda --> rds[(RDS PostgreSQL<br/>with PostGIS<br/>+ rate-limit cache)]
         lambda --> s3[S3 Static Assets]
-
-        subgraph ecs_occasional["ECS (Occasional Use)"]
-            ecs_task[Fargate Task<br/>TIGER Data Import<br/>2 vCPU, 4GB RAM]
-        end
-
-        ecs_task --> rds
 
         subgraph security["Security & Monitoring"]
             secrets[Secrets Manager]
@@ -110,19 +103,21 @@ flowchart TB
 
 ### Current: Serverless Benefits
 
-- **46% Cost Reduction**: ~$39/month vs ~$73/month (ECS)
 - **Auto-scaling**: Lambda scales to zero when idle
 - **Global Performance**: Vercel edge network
 - **Minimal Maintenance**: No server management required
-- **Pay-per-use**: DynamoDB and Lambda billing
+- **Pay-per-use**: Lambda and API Gateway billing — compute is effectively free at current traffic
+
+Note that the bill is dominated by always-on resources (VPC interface endpoints, RDS, WAF) rather than compute. See [Cost Analysis](../docs/deployment/aws.md#cost-analysis) for measured figures.
 
 ### Infrastructure Components
 
 - **Lambda**: Django API via Zappa (Python 3.13)
 - **API Gateway**: REST API with custom domains
 - **RDS PostgreSQL**: Database with PostGIS extension
-- **DynamoDB**: Serverless rate limiting (replaces Redis)
-- **ECS Fargate**: TIGER shapefile imports (occasional use)
+- **VPC endpoints**: Secrets Manager and AWS Location in application environments, plus production SES API access; Lambda's own CloudWatch logs need no Logs endpoint
+- **Rate limiting**: PostgreSQL-backed Django cache (no DynamoDB or Redis)
+- **TIGER imports**: An ECS Fargate module and workflow remain in the repository but are not instantiated by a current environment
 - **Vercel**: Next.js frontend with global CDN
 
 ### Security Features
@@ -136,10 +131,10 @@ flowchart TB
 
 ### Cost Optimization
 
-- **ECS in Public Subnets**: Eliminates NAT Gateway costs (~$45/month savings)
+- **No NAT Gateway**: Interface VPC endpoints replace it — cheaper than a NAT gateway, but still the largest line item on the bill
+- **Single-AZ endpoints**: `enable_single_az_endpoints` halves interface endpoint hours
 - **S3 Gateway Endpoint**: Free S3 access without data transfer costs
-- **Fargate Spot**: Option to use Spot instances for non-critical workloads
-- **Auto-scaling**: Automatic scaling based on demand
+- **Scale to zero**: Lambda incurs no cost when idle
 - **Budget Alerts**: Proactive cost monitoring and alerting
 
 ## Multi-Account Deployment
@@ -245,20 +240,9 @@ The infrastructure is designed with security best practices:
 
 ## Cost Estimation
 
-Typical monthly costs for a production deployment:
+Measured monthly costs are maintained in one place: [Cost Analysis](../docs/deployment/aws.md#cost-analysis).
 
-| Service                   | Configuration                | Estimated Cost |
-| ------------------------- | ---------------------------- | -------------- |
-| ECS Fargate               | 0.5 vCPU, 1GB RAM            | ~$20           |
-| RDS PostgreSQL            | db.t4g.micro                 | ~$15           |
-| Application Load Balancer | 1 ALB                        | ~$20           |
-| S3 & CloudFront           | 10GB storage, 100GB transfer | ~$10           |
-| Route53                   | 1 hosted zone                | ~$0.50         |
-| Secrets Manager           | 5 secrets                    | ~$2.50         |
-| CloudWatch                | Logs and metrics             | ~$5            |
-| **Total**                 |                              | **~$73/month** |
-
-_Note: Actual costs vary based on usage and region._
+At current traffic, always-on networking and database resources dominate the bill while Lambda compute is negligible. Use the linked cost analysis for the dated measurements and exact figures.
 
 ## Support
 

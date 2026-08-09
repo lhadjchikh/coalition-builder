@@ -43,11 +43,13 @@ CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 
 ### Organization Configuration
 
-| Variable            | Description                               | Default                          | Required |
-| ------------------- | ----------------------------------------- | -------------------------------- | -------- |
-| `ORGANIZATION_NAME` | Organization name for emails and branding | `Coalition Builder`              | Yes      |
-| `ORG_TAGLINE`       | Organization tagline (fallback)           | `Building advocacy partnerships` | No       |
-| `CONTACT_EMAIL`     | Primary contact email address             | `info@example.org`               | Yes      |
+| Variable                        | Description                                        | Default                          | Required |
+| ------------------------------- | -------------------------------------------------- | -------------------------------- | -------- |
+| `ORGANIZATION_NAME`             | Organization name for emails and branding          | `Coalition Builder`              | Yes      |
+| `ORG_TAGLINE`                   | Organization tagline (fallback)                    | `Building advocacy partnerships` | No       |
+| `CONTACT_EMAIL`                 | Primary contact email address                      | `info@example.org`               | Yes      |
+| `ADMIN_HELP_SUPERVISOR_CONTACT` | Supervisor contact shown in the in-admin guide     | Generic supervisor wording       | No       |
+| `ADMIN_HELP_TECHNICAL_CONTACT`  | Technical support contact shown in the admin guide | Generic support wording          | No       |
 
 **Note:** `ORGANIZATION_NAME` and `CONTACT_EMAIL` are required for proper email functionality. These also serve as fallbacks when no active homepage configuration exists in the database.
 
@@ -57,6 +59,8 @@ CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 ORGANIZATION_NAME="Environmental Coalition"
 ORG_TAGLINE="Protecting our planet through policy"
 CONTACT_EMAIL="info@environmentalcoalition.org"
+ADMIN_HELP_SUPERVISOR_CONTACT="Campaign director (director@example.org)"
+ADMIN_HELP_TECHNICAL_CONTACT="Technical support (support@example.org)"
 ```
 
 ### File Storage Configuration
@@ -66,7 +70,7 @@ CONTACT_EMAIL="info@environmentalcoalition.org"
 | `AWS_STORAGE_BUCKET_NAME` | S3 bucket name for media file uploads | -           | Production |
 | `AWS_REGION`              | AWS region for S3 bucket              | `us-east-1` | No         |
 
-**Note:** In production, media files (uploaded images) are automatically stored in AWS S3. The ECS task role provides authentication for S3 access.
+**Note:** In production, media files (uploaded images) are automatically stored in AWS S3. The Lambda execution role provides authentication for S3 access.
 
 **File Organization:**
 
@@ -84,22 +88,23 @@ AWS_REGION="us-west-2"
 
 ### Email Configuration
 
-**Note**: When deployed on AWS ECS, email credentials are automatically pulled from AWS Secrets Manager if configured via Terraform. See [Email Configuration](../email-configuration.md) for automated AWS SES setup.
+**Note**: Lambda uses the SES API over a private VPC endpoint and authenticates with its execution role; it does not use SMTP credentials. Non-Lambda production deployments default to `SafeSMTPBackend` and must provide SMTP credentials. See [Email Configuration](../email-configuration.md) for the complete setup.
 
-| Variable                             | Description                                                | Default                              | Required |
-| ------------------------------------ | ---------------------------------------------------------- | ------------------------------------ | -------- |
-| `EMAIL_BACKEND`                      | Django email backend                                       | `SafeSMTPBackend` (production)       | No       |
-| `EMAIL_HOST`                         | SMTP host                                                  | `email-smtp.us-east-1.amazonaws.com` | No       |
-| `EMAIL_PORT`                         | SMTP port                                                  | `587`                                | No       |
-| `EMAIL_USE_TLS`                      | Use TLS encryption                                         | `True`                               | No       |
-| `EMAIL_HOST_USER`                    | SMTP username                                              | Auto from Secrets Manager            | No       |
-| `EMAIL_HOST_PASSWORD`                | SMTP password                                              | Auto from Secrets Manager            | No       |
-| `DEFAULT_FROM_EMAIL`                 | Default sender email                                       | -                                    | Yes      |
-| `ADMIN_NOTIFICATION_EMAILS`          | Comma-separated admin emails for endorsement notifications | -                                    | Yes      |
-| `AUTO_APPROVE_VERIFIED_ENDORSEMENTS` | Auto-approve after email verification                      | `true`                               | No       |
-| `AKISMET_SECRET_API_KEY`             | Akismet API key for spam detection                         | -                                    | No       |
-| `SITE_URL`                           | Base URL for email links                                   | -                                    | Yes      |
-| `API_URL`                            | Backend API URL (for admin links)                          | `http://localhost:8000`              | No       |
+| Variable                             | Description                                                | Default                               | Required |
+| ------------------------------------ | ---------------------------------------------------------- | ------------------------------------- | -------- |
+| `EMAIL_BACKEND`                      | Django email backend; selected automatically by runtime    | Console / SES API / `SafeSMTPBackend` | No       |
+| `EMAIL_HOST`                         | SMTP host for non-Lambda deployments                       | `email-smtp.us-east-1.amazonaws.com`  | No       |
+| `EMAIL_PORT`                         | SMTP port for non-Lambda deployments                       | `587`                                 | No       |
+| `EMAIL_USE_TLS`                      | Use TLS for SMTP                                           | `True`                                | No       |
+| `EMAIL_HOST_USER`                    | SMTP username for non-Lambda deployments                   | -                                     | No       |
+| `EMAIL_HOST_PASSWORD`                | SMTP password for non-Lambda deployments                   | -                                     | No       |
+| `DEFAULT_FROM_EMAIL`                 | Default sender; required by the prod Lambda workflow       | `CONTACT_EMAIL`                       | Prod     |
+| `ADMIN_NOTIFICATION_EMAILS`          | Comma-separated admin emails for endorsement notifications | -                                     | No       |
+| `SES_CONFIGURATION_SET`              | SES event-tracking configuration set used by Lambda        | -                                     | No       |
+| `AUTO_APPROVE_VERIFIED_ENDORSEMENTS` | Auto-approve after email verification                      | `false`                               | No       |
+| `AKISMET_SECRET_API_KEY`             | Akismet API key for spam detection                         | -                                     | No       |
+| `SITE_URL`                           | Base URL for email links; required by the prod workflow    | `http://localhost:3000`               | Prod     |
+| `API_URL`                            | Backend API URL for admin links                            | `http://localhost:8000`               | No       |
 
 **Email Template Configuration:**
 
@@ -107,19 +112,16 @@ AWS_REGION="us-west-2"
 | ------------------- | ---------------------------- | ------------------- | -------- |
 | `ORGANIZATION_NAME` | Name used in email templates | `Coalition Builder` | No       |
 
-**AWS SES Example (Automatic with Terraform):**
+**AWS Lambda SES API Example:**
 
 ```bash
-# These are configured automatically when using Terraform deployment
-EMAIL_BACKEND=coalition.core.email_backend.SafeSMTPBackend
-EMAIL_HOST=email-smtp.us-east-1.amazonaws.com
-EMAIL_PORT=587
-EMAIL_USE_TLS=True
-# EMAIL_HOST_USER and EMAIL_HOST_PASSWORD are pulled from AWS Secrets Manager
+# The deployment workflow bakes these GitHub Environment variables into Lambda.
+# EMAIL_BACKEND is selected automatically; no SMTP credentials are used.
 DEFAULT_FROM_EMAIL="Coalition Builder <noreply@yourdomain.com>"
 ADMIN_NOTIFICATION_EMAILS="admin1@yourdomain.com,admin2@yourdomain.com"
 SITE_URL="https://yourdomain.com"
 API_URL="https://api.yourdomain.com"
+SES_CONFIGURATION_SET="coalition-config-set"
 ```
 
 **Manual SMTP Example:**
@@ -198,10 +200,9 @@ These settings can be customized to adjust spam detection sensitivity:
 ENDORSEMENT_RATE_LIMIT_WINDOW=300
 ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS=3
 
-# Cache backend (required for rate limiting)
-# Redis recommended for production and development
-CACHE_URL=redis://localhost:6379/1
 ```
+
+Rate limiting uses Django's database cache backend, which needs no configuration — there is no `CACHE_URL` setting. See [Rate Limiting](../rate-limiting.md).
 
 **Note:** The spam prevention system includes built-in configurations for:
 
@@ -377,7 +378,7 @@ AWS_STORAGE_BUCKET_NAME=coalition-static-assets-a4853294
 # Optional: Direct backend serving
 BACKEND_DOMAIN=api.yourdomain.com
 
-# Backend configuration (in ECS/production)
+# Backend configuration (in Lambda/production)
 USE_S3_DIRECT_URLS=false  # Use CloudFront URLs (recommended)
 # USE_S3_DIRECT_URLS=true  # Use S3 URLs directly
 ```
@@ -486,9 +487,6 @@ SITE_URL="http://localhost:3000"
 ENDORSEMENT_RATE_LIMIT_WINDOW=300
 ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS=3
 
-# Cache (for rate limiting) - Redis container in docker compose
-CACHE_URL=redis://redis:6379/1
-
 # Frontend
 NEXT_PUBLIC_API_URL=http://localhost:8000/api
 REACT_APP_DEBUG=true
@@ -521,30 +519,22 @@ ORGANIZATION_NAME="Your Organization"
 ORG_TAGLINE="Your mission statement"
 CONTACT_EMAIL="info@yourdomain.com"
 
-# Email
-EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-EMAIL_HOST=smtp.yourmailprovider.com
-EMAIL_PORT=587
-EMAIL_USE_TLS=True
-EMAIL_HOST_USER=${EMAIL_USER}
-EMAIL_HOST_PASSWORD=${EMAIL_PASSWORD}
+# Email (Lambda selects the SES API backend automatically)
 DEFAULT_FROM_EMAIL="Your Organization <noreply@yourdomain.com>"
 ADMIN_NOTIFICATION_EMAILS="admin@yourdomain.com,moderator@yourdomain.com"
 SITE_URL="https://yourdomain.com"
+API_URL="https://api.yourdomain.com"
+SES_CONFIGURATION_SET="coalition-config-set"
 
 # Endorsement System
 ENDORSEMENT_RATE_LIMIT_WINDOW=300
 ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS=3
-
-# Cache (Redis recommended for production)
-CACHE_URL=redis://redis:6379/1
 
 # Storage
 USE_S3=True
 AWS_STORAGE_BUCKET_NAME=${S3_BUCKET_NAME}
 
 # Frontend
-API_URL=http://api:8000
 NEXT_PUBLIC_API_URL=https://yourdomain.com
 NODE_ENV=production
 NEXT_TELEMETRY_DISABLED=1
@@ -584,9 +574,6 @@ SITE_URL="http://testserver"
 # Endorsement system testing
 ENDORSEMENT_RATE_LIMIT_WINDOW=60
 ENDORSEMENT_RATE_LIMIT_MAX_ATTEMPTS=10
-
-# Cache for testing (in-memory)
-CACHE_URL=locmem://
 
 # Test Organization Settings
 ORGANIZATION_NAME="Test Coalition"
