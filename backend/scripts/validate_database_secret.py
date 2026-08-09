@@ -10,6 +10,7 @@ from urllib.parse import unquote, urlparse
 
 import boto3
 from botocore.config import Config
+from botocore.exceptions import BotoCoreError, ClientError
 
 logger = logging.getLogger(__name__)
 
@@ -196,13 +197,18 @@ def main() -> None:
             arguments.expected_environment,
             expected_database_name=arguments.expected_database_name,
         )
-    except DatabaseSecretValidationError as error:
+    except (DatabaseSecretValidationError, BotoCoreError, ClientError) as error:
+        error_message = (
+            str(error)
+            if isinstance(error, DatabaseSecretValidationError)
+            else "AWS Secrets Manager request failed."
+        )
         logger.error(
             "stage=database-secret-validation correlation=deployment-%s "
             "outcome=failure error_class=%s message=%s",
             arguments.expected_environment,
             type(error).__name__,
-            error,
+            error_message,
         )
         raise SystemExit(1) from error
     logger.info(

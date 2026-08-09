@@ -1,12 +1,16 @@
 """Tests for deployment-time database secret validation."""
 
 import json
-from unittest.mock import MagicMock
+import logging
+from argparse import Namespace
+from unittest.mock import MagicMock, patch
 
 import pytest
+from botocore.exceptions import ClientError
 
 from scripts.validate_database_secret import (
     DatabaseSecretValidationError,
+    main,
     validate_database_secret,
 )
 
@@ -152,3 +156,40 @@ class TestDatabaseSecretIsolation:
                 "dev",
                 expected_database_name="coalition_dev",
             )
+
+    def test_reports_aws_failures_as_structured_errors(
+        self,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        client = _secrets_client()
+        client.describe_secret.side_effect = ClientError(
+            {
+                "Error": {
+                    "Code": "AccessDeniedException",
+                    "Message": "sensitive-provider-detail",
+                },
+            },
+            "DescribeSecret",
+        )
+        arguments = Namespace(
+            secret_arn=SECRET_ARN,
+            expected_account_id="123456789012",
+            expected_environment="dev",
+            expected_database_name="coalition_dev",
+        )
+
+        with (
+            patch(
+                "scripts.validate_database_secret._parse_arguments",
+                return_value=arguments,
+            ),
+            patch("scripts.validate_database_secret.boto3.client", return_value=client),
+            caplog.at_level(logging.ERROR),
+            pytest.raises(SystemExit) as exit_error,
+        ):
+            main()
+
+        assert exit_error.value.code == 1
+        assert "outcome=failure error_class=ClientError" in caplog.text
+        assert "AWS Secrets Manager request failed" in caplog.text
+        assert "sensitive-provider-detail" not in caplog.text
