@@ -46,7 +46,7 @@ func configuredDatabaseNames(t *testing.T) map[string]string {
 }
 
 // #316 Definition of Done: authoritative, discriminating environment database names.
-func TestEnvironmentDatabasesUseSharedAuthoritativeNames(t *testing.T) {
+func TestAuthoritativeDatabaseNamesAreExplicit(t *testing.T) {
 	t.Parallel()
 
 	databaseNames := configuredDatabaseNames(t)
@@ -59,11 +59,14 @@ func TestEnvironmentDatabasesUseSharedAuthoritativeNames(t *testing.T) {
 		"coalition",
 		configuredDatabaseNameConfiguration(t).RDSInitialDatabase,
 	)
+}
+
+func TestSharedDatabaseUsesTheImmutableInitialName(t *testing.T) {
+	t.Parallel()
 
 	sharedMain := readRepositoryFile(t, "../../environments/shared/main.tf")
 	databaseNamesModule := readRepositoryFile(t, "../../modules/database-names/main.tf")
 	databaseModule := readRepositoryFile(t, "../../modules/database/main.tf")
-	databaseSetupScript := readRepositoryFile(t, "../../modules/database/scripts/db_setup.sh")
 	sharedOutputs := readRepositoryFile(t, "../../environments/shared/outputs.tf")
 	assert.Contains(t, sharedMain, `module "database_names"`)
 	assert.Contains(t, databaseNamesModule, `jsondecode(file("${path.module}/environment_database_names.json"))`)
@@ -76,6 +79,13 @@ func TestEnvironmentDatabasesUseSharedAuthoritativeNames(t *testing.T) {
 	assert.Contains(t, databaseModule, `host     = aws_db_instance.postgres.address`)
 	assert.Contains(t, databaseModule, `port     = aws_db_instance.postgres.port`)
 	assert.Contains(t, databaseModule, `dbname = "postgres"`)
+	assert.Contains(t, sharedOutputs, "value       = module.database_names.environment_database_names")
+}
+
+func TestDatabaseSetupSecretsUseTheirConnectionTargets(t *testing.T) {
+	t.Parallel()
+
+	databaseSetupScript := readRepositoryFile(t, "../../modules/database/scripts/db_setup.sh")
 	applicationSecretStart := strings.Index(databaseSetupScript, "app_secret_json=$(")
 	masterSecretStart := strings.Index(databaseSetupScript, "master_secret_json=$(")
 	require.GreaterOrEqual(t, applicationSecretStart, 0)
@@ -85,7 +95,10 @@ func TestEnvironmentDatabasesUseSharedAuthoritativeNames(t *testing.T) {
 	assert.Contains(t, applicationSecret, `"dbname": "$database"`)
 	assert.NotContains(t, applicationSecret, `"dbname": "postgres"`)
 	assert.Contains(t, masterSecret, `"dbname": "postgres"`)
-	assert.Contains(t, sharedOutputs, "value       = module.database_names.environment_database_names")
+}
+
+func TestApplicationEnvironmentsUseAuthoritativeDatabaseNames(t *testing.T) {
+	t.Parallel()
 
 	for _, environment := range []string{"dev", "prod"} {
 		environmentMain := readRepositoryFile(t, "../../environments/"+environment+"/main.tf")
