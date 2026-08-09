@@ -19,7 +19,7 @@ variables {
   additional_s3_bucket_prefixes = ["legacy", "archive"]
 }
 
-run "zappa_cloudformation_operations_are_allowed" {
+run "deployment_permissions_are_allowed" {
   command = plan
 
   assert {
