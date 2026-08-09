@@ -128,7 +128,7 @@ jobs:
               --since 1h \
               --format short
             echo '```'
-          } >> "${GITHUB_STEP_SUMMARY}"
+          } | tee -a "${GITHUB_STEP_SUMMARY}"
 
       - name: Roll back deployment
         if: github.event.inputs.action == 'rollback'

@@ -270,11 +270,36 @@ resource "aws_vpc_endpoint" "s3" {
 
 # Interface VPC Endpoints - allow Lambda in private subnets to reach AWS services
 locals {
-  interface_endpoints = {
+  always_on_interface_endpoints = {
     secretsmanager = "com.amazonaws.${var.aws_region}.secretsmanager"
-    logs           = "com.amazonaws.${var.aws_region}.logs"
     geo_places     = "com.amazonaws.${var.aws_region}.geo.places"
   }
+
+  # The SES API endpoint. Private DNS maps email.<region>.amazonaws.com onto
+  # it, so the AWS SDK reaches SES with no endpoint override. Opt-in because
+  # each interface endpoint bills hourly in every environment that enables it.
+  ses_interface_endpoint = var.enable_ses_endpoint ? {
+    ses = "com.amazonaws.${var.aws_region}.email"
+  } : {}
+
+  # Only needed by code that calls the CloudWatch Logs API itself. Lambda's own
+  # log delivery is performed by the Lambda service outside this VPC, so
+  # function logs keep flowing without it — verified against prod by denying
+  # all traffic through the endpoint and confirming logs still arrived.
+  #
+  # Beware when re-enabling is needed: with the endpoint absent, private DNS no
+  # longer overrides logs.<region>.amazonaws.com, so a Logs API call from these
+  # subnets HANGS until timeout rather than failing fast.
+  logs_interface_endpoint = var.enable_logs_endpoint ? {
+    logs = "com.amazonaws.${var.aws_region}.logs"
+  } : {}
+
+  interface_endpoints = merge(
+    local.always_on_interface_endpoints,
+    local.ses_interface_endpoint,
+    local.logs_interface_endpoint,
+  )
+
   endpoint_subnet_ids = (
     length(local.private_subnet_ids) > 0 && var.enable_single_az_endpoints
     ? [local.private_subnet_ids[0]]

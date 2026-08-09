@@ -12,6 +12,14 @@ from pathlib import Path
 DEV_STAGE_NAMES = {"dev"}
 PROD_STAGE_NAMES = {"prod"}
 STAGING_STAGE_NAMES = {"staging"}
+RUNTIME_ENVIRONMENT_VARIABLES = {
+    "USE_S3": "true",
+    "IS_LAMBDA": "true",
+    "USE_GEODJANGO": "true",
+    "GDAL_DATA": "/opt/share/gdal",
+    "PROJ_LIB": "/opt/share/proj",
+    "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
+}
 
 
 def get_env_or_default(key: str, default: str = "") -> str:
@@ -86,6 +94,66 @@ def with_location_place_index(
     return environment_variables
 
 
+# Django reads these at startup; each falls back to a local-development
+# default that is wrong (and silently so) in a deployed environment.
+EMAIL_SETTING_NAMES = (
+    "SITE_URL",
+    "API_URL",
+    "DEFAULT_FROM_EMAIL",
+    "ADMIN_NOTIFICATION_EMAILS",
+    "SES_CONFIGURATION_SET",
+)
+
+
+def collect_email_settings() -> dict[str, str]:
+    """Read the configured email env vars, dropping the unset ones."""
+    configured = {
+        name: get_env_or_default(name).strip() for name in EMAIL_SETTING_NAMES
+    }
+    return {name: value for name, value in configured.items() if value}
+
+
+def with_email_settings(
+    environment_variables: dict[str, str],
+    deployment_environment: str,
+    stage_names: set[str],
+    email_settings: dict[str, str],
+) -> dict[str, str]:
+    """Return the env vars with email settings added for the selected stage."""
+    if deployment_environment in stage_names:
+        return {**environment_variables, **email_settings}
+    return environment_variables
+
+
+def validate_email_settings(
+    deployment_environment: str,
+    email_settings: dict[str, str],
+) -> None:
+    """Refuse to deploy a non-debug stage with unusable email settings.
+
+    Without ``SITE_URL`` Django builds verification links against
+    ``http://localhost:3000``, and without ``DEFAULT_FROM_EMAIL`` it sends
+    from an address SES will reject. Both fail as quietly as a missing
+    network path, so they are caught here instead.
+    """
+    email_delivery_stage_names = PROD_STAGE_NAMES | STAGING_STAGE_NAMES
+    if deployment_environment not in email_delivery_stage_names:
+        return
+
+    missing = [
+        name
+        for name in ("SITE_URL", "DEFAULT_FROM_EMAIL")
+        if name not in email_settings
+    ]
+    if missing:
+        raise RuntimeError(
+            f"{' and '.join(missing)} must be set when deploying "
+            f"{deployment_environment} so "
+            "endorsement verification emails carry a reachable link from an "
+            "address SES accepts.",
+        )
+
+
 def configure_zappa_settings(output_path: Path | None = None) -> None:
     """Generate zappa_settings.json from environment variables."""
 
@@ -127,6 +195,8 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         cloudfront_domain,
         active_stage_names,
     )
+    email_settings = collect_email_settings()
+    validate_email_settings(deployment_environment, email_settings)
     dev_assets_bucket = get_stage_value(
         deployment_environment,
         DEV_STAGE_NAMES,
@@ -200,27 +270,46 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         dev_docker_image = "public.ecr.aws/lambda/python:3.13"
         production_docker_image = "public.ecr.aws/lambda/python:3.13"
 
-    dev_environment_variables = with_stage_cloudfront_domain(
+    aws_environment_variables = with_location_place_index(
         {
-            "ENVIRONMENT": "dev",
-            "DEBUG": "true",
-            "DATABASE_NAME": dev_db_name,
-            "AWS_STORAGE_BUCKET_NAME": dev_assets_bucket,
+            "DATABASE_URL": db_secret_arn,
+            "SECRET_KEY": django_secret_arn,
         },
+        location_place_index_name,
+    )
+    dev_environment_variables = with_email_settings(
+        with_stage_cloudfront_domain(
+            {
+                **RUNTIME_ENVIRONMENT_VARIABLES,
+                "ENVIRONMENT": "dev",
+                "DEBUG": "true",
+                "DATABASE_NAME": dev_db_name,
+                "AWS_STORAGE_BUCKET_NAME": dev_assets_bucket,
+            },
+            deployment_environment,
+            DEV_STAGE_NAMES,
+            cloudfront_domain,
+        ),
         deployment_environment,
         DEV_STAGE_NAMES,
-        cloudfront_domain,
+        email_settings,
     )
-    production_environment_variables = with_stage_cloudfront_domain(
-        {
-            "ENVIRONMENT": "production",
-            "DEBUG": "false",
-            "DATABASE_NAME": production_db_name,
-            "AWS_STORAGE_BUCKET_NAME": production_assets_bucket,
-        },
+    production_environment_variables = with_email_settings(
+        with_stage_cloudfront_domain(
+            {
+                **RUNTIME_ENVIRONMENT_VARIABLES,
+                "ENVIRONMENT": "production",
+                "DEBUG": "false",
+                "DATABASE_NAME": production_db_name,
+                "AWS_STORAGE_BUCKET_NAME": production_assets_bucket,
+            },
+            deployment_environment,
+            PROD_STAGE_NAMES,
+            cloudfront_domain,
+        ),
         deployment_environment,
         PROD_STAGE_NAMES,
-        cloudfront_domain,
+        email_settings,
     )
 
     # Build the configuration
@@ -240,17 +329,6 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             "timeout_seconds": 30,
             "slim_handler": False,
             "use_precompiled_packages": False,
-            "environment_variables": with_location_place_index(
-                {
-                    "USE_S3": "true",
-                    "IS_LAMBDA": "true",
-                    "USE_GEODJANGO": "true",
-                    "GDAL_DATA": "/opt/share/gdal",
-                    "PROJ_LIB": "/opt/share/proj",
-                    "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
-                },
-                location_place_index_name,
-            ),
             "exclude": [
                 "*.gz",
                 "*.rar",
@@ -289,10 +367,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             "memory_size": 512,
             "keep_warm": False,
             "environment_variables": dev_environment_variables,
-            "aws_environment_variables": {
-                "DATABASE_URL": db_secret_arn,
-                "SECRET_KEY": django_secret_arn,
-            },
+            "aws_environment_variables": aws_environment_variables,
             "apigateway_settings": {
                 "throttle_burst_limit": 50,
                 "throttle_rate_limit": 25,
@@ -306,10 +381,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             "keep_warm": True,
             "keep_warm_expression": "rate(4 minutes)",
             "environment_variables": production_environment_variables,
-            "aws_environment_variables": {
-                "DATABASE_URL": db_secret_arn,
-                "SECRET_KEY": django_secret_arn,
-            },
+            "aws_environment_variables": aws_environment_variables,
             "apigateway_settings": {
                 "throttle_burst_limit": 100,
                 "throttle_rate_limit": 50,
@@ -336,16 +408,22 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         else:
             staging_docker_image = "public.ecr.aws/lambda/python:3.13"
 
-        staging_environment_variables = with_stage_cloudfront_domain(
-            {
-                "ENVIRONMENT": "staging",
-                "DEBUG": "false",
-                "DATABASE_NAME": staging_db_name,
-                "AWS_STORAGE_BUCKET_NAME": staging_assets_bucket,
-            },
+        staging_environment_variables = with_email_settings(
+            with_stage_cloudfront_domain(
+                {
+                    **RUNTIME_ENVIRONMENT_VARIABLES,
+                    "ENVIRONMENT": "staging",
+                    "DEBUG": "false",
+                    "DATABASE_NAME": staging_db_name,
+                    "AWS_STORAGE_BUCKET_NAME": staging_assets_bucket,
+                },
+                deployment_environment,
+                STAGING_STAGE_NAMES,
+                cloudfront_domain,
+            ),
             deployment_environment,
             STAGING_STAGE_NAMES,
-            cloudfront_domain,
+            email_settings,
         )
 
         settings["staging"] = {
@@ -356,10 +434,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             "keep_warm": True,
             "keep_warm_expression": "rate(10 minutes)",
             "environment_variables": staging_environment_variables,
-            "aws_environment_variables": {
-                "DATABASE_URL": db_secret_arn,
-                "SECRET_KEY": django_secret_arn,
-            },
+            "aws_environment_variables": aws_environment_variables,
             "apigateway_settings": {
                 "throttle_burst_limit": 75,
                 "throttle_rate_limit": 40,

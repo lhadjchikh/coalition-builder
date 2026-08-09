@@ -63,6 +63,10 @@ module "networking" {
   # VPC endpoints for Lambda to reach AWS services (toggle to save costs)
   create_vpc_endpoints       = var.enable_vpc_endpoints
   enable_single_az_endpoints = true
+
+  # Nothing here calls the CloudWatch Logs API; Lambda's own logs arrive
+  # without it. Saves ~$7.44/mo whenever dev endpoints are switched on.
+  enable_logs_endpoint = false
 }
 
 # VPC Peering - dev to shared

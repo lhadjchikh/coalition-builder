@@ -1,0 +1,21 @@
+{% extends "admin_help/base.html" %}
+
+{% block help_breadcrumb %}&rsaquo; {{ page.title }}{% endblock %}
+
+{% block help_content %}
+  <div class="admin-help__toc">
+    <h2>On this page</h2>
+    {{ rendered.toc }}
+  </div>
+
+  <div class="admin-help__prose">{{ rendered.html }}</div>
+
+  <nav class="admin-help__pager" aria-label="Guide pages">
+    {% if previous_page %}
+      <a href="{% url 'admin_help:page' previous_page.slug %}">&larr; {{ previous_page.title }}</a>
+    {% endif %}
+    {% if next_page %}
+      <a class="admin-help__pager-next" href="{% url 'admin_help:page' next_page.slug %}">{{ next_page.title }} &rarr;</a>
+    {% endif %}
+  </nav>
+{% endblock %}
