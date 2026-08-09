@@ -33,7 +33,7 @@ django-storages = {extras = ["s3"], version = "^1.14.4"}
 pillow = "^12.3.0"
 requests = "^2.33.0"
 django-tinymce = "^4.1.0"
-zappa = "^0.60.2"
+zappa = "^0.62.1"
 boto3 = "^1.40.16"
 pynamodb = "^6.1.0"
 markdown = "^3.7"

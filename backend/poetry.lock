@@ -906,24 +906,6 @@ files = [
 ]
 
 [[package]]
-name = "kappa"
-version = "0.6.0"
-description = "A CLI tool for AWS Lambda developers"
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "kappa-0.6.0-py2-none-any.whl", hash = "sha256:4d6b7b3accce4a0aaaac92b36237a6304f0f2fffbbe3caea3f7c9f52d12c9989"},
-    {file = "kappa-0.6.0.tar.gz", hash = "sha256:4b5b372872f25d619e427e04282551048dc975a107385b076b3ffc6406a15833"},
-]
-
-[package.dependencies]
-boto3 = ">=1.2.3"
-click = ">=5.1"
-placebo = ">=0.8.1"
-PyYAML = ">=3.11"
-
-[[package]]
 name = "markdown"
 version = "3.10.3"
 description = "Python implementation of John Gruber's Markdown."
@@ -2142,24 +2124,24 @@ crt = ["botocore[crt] (>=1.37.4,<2.0a0)"]
 
 [[package]]
 name = "setuptools"
-version = "79.0.1"
-description = "Easily download, build, install, upgrade, and uninstall Python packages"
+version = "84.0.0"
+description = "Most extensible Python build backend with support for C/C++ extension modules"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "setuptools-79.0.1-py3-none-any.whl", hash = "sha256:e147c0549f27767ba362f9da434eab9c5dc0045d5304feb602a0af001089fc51"},
-    {file = "setuptools-79.0.1.tar.gz", hash = "sha256:128ce7b8f33c3079fd1b067ecbb4051a66e8526e7b65f6cec075dfc650ddfa88"},
+    {file = "setuptools-84.0.0-py3-none-any.whl", hash = "sha256:51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670"},
+    {file = "setuptools-84.0.0.tar.gz", hash = "sha256:f4695c21257f0d9b537ec2692c941d02ee143b7cc1276941349a546573b2ef73"},
 ]
 
 [package.extras]
-check = ["pytest-checkdocs (>=2.4)", "pytest-ruff (>=0.2.1) ; sys_platform != \"cygwin\"", "ruff (>=0.8.0) ; sys_platform != \"cygwin\""]
-core = ["importlib_metadata (>=6) ; python_version < \"3.10\"", "jaraco.functools (>=4)", "jaraco.text (>=3.7)", "more_itertools", "more_itertools (>=8.8)", "packaging (>=24.2)", "platformdirs (>=4.2.2)", "tomli (>=2.0.1) ; python_version < \"3.11\"", "wheel (>=0.43.0)"]
+check = ["pytest-checkdocs (>=2.14)", "pytest-ruff (>=0.2.1) ; sys_platform != \"cygwin\"", "ruff (>=0.13.0) ; sys_platform != \"cygwin\""]
+core = ["importlib_metadata (>=6) ; python_version < \"3.10\"", "jaraco.functools (>=4)", "jaraco.text (>=3.7)", "more_itertools", "more_itertools (>=8.8)", "packaging (>=24.2)", "tomli (>=2.0.1) ; python_version < \"3.11\"", "wheel (>=0.43.0)"]
 cover = ["pytest-cov"]
 doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "pyproject-hooks (!=1.1)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (>=1,<2)", "sphinx-reredirects", "sphinxcontrib-towncrier", "towncrier (<24.7)"]
-enabler = ["pytest-enabler (>=2.2)"]
+enabler = ["pytest-enabler (>=3.4)"]
 test = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "ini2toml[lite] (>=0.14)", "jaraco.develop (>=7.21) ; python_version >= \"3.9\" and sys_platform != \"cygwin\"", "jaraco.envs (>=2.2)", "jaraco.path (>=3.7.2)", "jaraco.test (>=5.5)", "packaging (>=24.2)", "pip (>=19.1)", "pyproject-hooks (!=1.1)", "pytest (>=6,!=8.1.*)", "pytest-home (>=0.5)", "pytest-perf ; sys_platform != \"cygwin\"", "pytest-subprocess", "pytest-timeout", "pytest-xdist (>=3)", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel (>=0.44.0)"]
-type = ["importlib_metadata (>=7.0.2) ; python_version < \"3.10\"", "jaraco.develop (>=7.21) ; sys_platform != \"cygwin\"", "mypy (==1.14.*)", "pytest-mypy"]
+type = ["importlib_metadata (>=7.0.2) ; python_version < \"3.10\"", "jaraco.develop (>=7.21) ; sys_platform != \"cygwin\"", "mypy (==1.18.*)", "pytest-mypy (>=1.0.1) ; platform_python_implementation != \"PyPy\""]
 
 [[package]]
 name = "six"
@@ -2721,14 +2703,14 @@ brotli = ["brotli"]
 
 [[package]]
 name = "zappa"
-version = "0.60.2"
+version = "0.62.1"
 description = "Server-less Python Web Services for AWS Lambda and API Gateway"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "zappa-0.60.2-py3-none-any.whl", hash = "sha256:876b81210cc152b617b3ddd988a9376023d0b00e47a195d285d646198ef45563"},
-    {file = "zappa-0.60.2.tar.gz", hash = "sha256:f20a07e8e447c954c50adafe93dd10c0c8261d70e7818bb2d4ba6023c6114542"},
+    {file = "zappa-0.62.1-py3-none-any.whl", hash = "sha256:eac794e3c0ad7ed32618ae03fd33d78d8f33fd2064c9d9f1f0a062140a3a56cb"},
+    {file = "zappa-0.62.1.tar.gz", hash = "sha256:e4c46ba64beff0a6397b3fa0e5b6cdbd2e33b5a067dbd11dd3a71895ec4260c2"},
 ]
 
 [package.dependencies]
@@ -2737,14 +2719,13 @@ boto3 = ">=1.17.28"
 durationpy = "*"
 hjson = "*"
 jmespath = "*"
-kappa = "0.6.0"
 pip = ">=24.0.0"
 placebo = "<0.10"
 python-dateutil = "*"
 python-slugify = "*"
 pyyaml = "*"
 requests = ">=2.32.0"
-setuptools = "<80.0.0"
+setuptools = "*"
 toml = "*"
 tqdm = ">=4.66.3"
 troposphere = ">=3.0"
@@ -2754,4 +2735,4 @@ wheel = "*"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.13"
-content-hash = "212a496237b47d12519b288f8a8aff871c1fb94725759d28765d738bd0cb9d95"
+content-hash = "936310319d944838e6fe85f303103bd085b3f40d88daee40c44ec3b561dc7e73"
