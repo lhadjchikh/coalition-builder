@@ -73,6 +73,7 @@ run "smtp_credentials_can_be_disabled" {
 
   variables {
     create_smtp_credentials = false
+    sender_role_names       = ["example-zappa-deployment"]
   }
 
   assert {
@@ -94,5 +95,13 @@ run "smtp_credentials_can_be_disabled" {
       output.ses_smtp_username == null,
     ])
     error_message = "SMTP credential outputs must be null when credential creation is disabled."
+  }
+
+  assert {
+    condition = alltrue([
+      length(aws_iam_policy.ses_send) == 1,
+      length(aws_iam_role_policy_attachment.ses_send) == 1,
+    ])
+    error_message = "Disabling SMTP credentials must preserve role-based SES sending for Lambda."
   }
 }
