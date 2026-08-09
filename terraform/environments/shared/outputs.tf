@@ -42,7 +42,7 @@ output "database_name" {
 
 output "environment_database_names" {
   description = "Authoritative database name for each application environment"
-  value       = var.environment_database_names
+  value       = module.database_names.environment_database_names
 }
 
 # Bastion Outputs

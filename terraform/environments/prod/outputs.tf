@@ -23,7 +23,7 @@ output "database_endpoint" {
 
 output "database_name" {
   description = "Authoritative production database name"
-  value       = data.terraform_remote_state.shared.outputs.environment_database_names["prod"]
+  value       = module.database_names.environment_database_names["prod"]
 }
 
 output "database_secret_arn" {

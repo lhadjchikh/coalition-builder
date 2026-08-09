@@ -4,7 +4,7 @@ This runbook controls the one-time rollout and ongoing verification of developme
 
 ## Authoritative isolation model
 
-The `environment_database_names` variable in `terraform/environments/shared/variables.tf` is the single source of truth for logical database names. The shared state exports that map, and the `dev` and `prod` stacks consume their own entries directly.
+The `environment_database_names` output in `terraform/modules/database-names/main.tf` is the single source of truth for logical database names. The shared, `dev`, and `prod` stacks consume that module directly, while shared state exports the same map for operational commands. Direct module consumption lets application-account plans remain valid before the new shared-state output has been applied.
 
 | Environment | Database        | Compatibility decision                                                                                                |
 | ----------- | --------------- | --------------------------------------------------------------------------------------------------------------------- |

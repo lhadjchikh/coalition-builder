@@ -40,6 +40,10 @@ data "terraform_remote_state" "shared" {
   }
 }
 
+module "database_names" {
+  source = "../../modules/database-names"
+}
+
 # Networking Module - VPC with private app subnets only (no public, no DB)
 module "networking" {
   source = "../../modules/networking"
@@ -142,7 +146,7 @@ module "secrets" {
   app_db_username = var.app_db_username
   app_db_password = var.app_db_password
   db_endpoint     = data.terraform_remote_state.shared.outputs.database_endpoint
-  db_name         = data.terraform_remote_state.shared.outputs.environment_database_names["dev"]
+  db_name         = module.database_names.environment_database_names["dev"]
   site_password   = var.site_password
 }
 

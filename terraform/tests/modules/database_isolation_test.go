@@ -27,11 +27,11 @@ func readRepositoryFile(t *testing.T, path string) string {
 func configuredDatabaseNames(t *testing.T) map[string]string {
 	t.Helper()
 
-	sharedVariables := readRepositoryFile(t, "../../environments/shared/variables.tf")
+	databaseNamesModule := readRepositoryFile(t, "../../modules/database-names/main.tf")
 	defaultMapMatch := regexp.MustCompile(
-		`(?s)variable "environment_database_names"\s*\{.*?default\s*=\s*\{(.*?)\n\s*\}`,
-	).FindStringSubmatch(sharedVariables)
-	require.Len(t, defaultMapMatch, 2, "shared must define the database-name authority")
+		`(?s)environment_database_names\s*=\s*\{(.*?)\n\s*\}`,
+	).FindStringSubmatch(databaseNamesModule)
+	require.Len(t, defaultMapMatch, 2, "the shared module must define the database-name authority")
 
 	nameMatches := regexp.MustCompile(`(?m)^\s*([a-z]+)\s*=\s*"([^"]+)"`).FindAllStringSubmatch(defaultMapMatch[1], -1)
 	databaseNames := make(map[string]string, len(nameMatches))
@@ -53,18 +53,21 @@ func TestEnvironmentDatabasesUseSharedAuthoritativeNames(t *testing.T) {
 
 	sharedMain := readRepositoryFile(t, "../../environments/shared/main.tf")
 	sharedOutputs := readRepositoryFile(t, "../../environments/shared/outputs.tf")
-	assert.Contains(t, sharedMain, `db_name                    = var.environment_database_names["prod"]`)
-	assert.Contains(t, sharedOutputs, "value       = var.environment_database_names")
+	assert.Contains(t, sharedMain, `module "database_names"`)
+	assert.Contains(t, sharedMain, `db_name                    = module.database_names.environment_database_names["prod"]`)
+	assert.Contains(t, sharedOutputs, "value       = module.database_names.environment_database_names")
 
 	for _, environment := range []string{"dev", "prod"} {
 		environmentMain := readRepositoryFile(t, "../../environments/"+environment+"/main.tf")
 		environmentVariables := readRepositoryFile(t, "../../environments/"+environment+"/variables.tf")
 
+		assert.Contains(t, environmentMain, `module "database_names"`)
 		assert.Contains(
 			t,
 			environmentMain,
-			`db_name         = data.terraform_remote_state.shared.outputs.environment_database_names["`+environment+`"]`,
+			`db_name         = module.database_names.environment_database_names["`+environment+`"]`,
 		)
+		assert.NotContains(t, environmentMain, "shared.outputs.environment_database_names")
 		assert.NotContains(t, environmentVariables, `variable "db_name"`)
 	}
 }
