@@ -4,7 +4,7 @@ This runbook controls the one-time rollout and ongoing verification of developme
 
 ## Authoritative isolation model
 
-The `environment_database_names` output in `terraform/modules/database-names/main.tf` is the single source of truth for logical database names. The shared, `dev`, and `prod` stacks consume that module directly, while shared state exports the same map for operational commands. Direct module consumption lets application-account plans remain valid before the new shared-state output has been applied.
+`terraform/modules/database-names/environment_database_names.json` is the single source of truth for logical database names. The database-names module loads that map for the shared, `dev`, and `prod` stacks, while shared state exports it for operational commands. Direct module consumption lets application-account plans remain valid before the new shared-state output has been applied.
 
 | Environment | Database        | Compatibility decision                                                                                                |
 | ----------- | --------------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -15,7 +15,7 @@ Each environment uses a distinct PostgreSQL login role. `PUBLIC` connectivity is
 
 Secrets Manager is the only active runtime configuration path. Each AWS application account owns a `coalition/database-url` secret tagged with its environment; Terraform builds both its `url` and `dbname` from the shared database-name map. SSM database URL parameters are retired. Lambda resolves the secret URL and does not accept a separate `DATABASE_NAME` override.
 
-The stable secret name intentionally preserves each existing ARN. The deployment validator checks the ARN account, the `Environment` tag, valid JSON, and agreement between the URL path and `dbname` before Zappa configuration or database migrations run.
+The stable secret name intentionally preserves each existing ARN. The deployment validator checks the ARN account, the `Environment` tag, the expected database from the authoritative map, valid JSON, and agreement between the URL path and `dbname` before Zappa configuration or database migrations run.
 
 ## Rollout
 
@@ -135,29 +135,49 @@ For each account, describe the database secret and confirm the account, `Environ
 AWS_PROFILE="${PROD_AWS_PROFILE}" poetry -C backend run python scripts/validate_database_secret.py \
   --secret-arn "${prod_secret_arn}" \
   --expected-account-id "${PROD_AWS_ACCOUNT_ID}" \
-  --expected-environment prod
+  --expected-environment prod \
+  --expected-database-name "${prod_database}"
 AWS_PROFILE="${DEV_AWS_PROFILE}" poetry -C backend run python scripts/validate_database_secret.py \
   --secret-arn "${dev_secret_arn}" \
   --expected-account-id "${DEV_AWS_ACCOUNT_ID}" \
-  --expected-environment dev
+  --expected-environment dev \
+  --expected-database-name "${dev_database}"
 ```
 
 Verify database permissions through the bastion: each matching role must connect to its own database, the development role must receive `permission denied for database coalition` when targeting production, and the production role must receive `permission denied for database coalition_dev` when targeting development.
 
-Verify both Lambda configurations expose the selected environment's secret ARN as `DATABASE_URL` and do not contain `DATABASE_NAME`. Then check each API health endpoint and confirm migrations exist independently in both databases.
+Verify both Lambda configurations expose the selected environment's secret ARN as `DATABASE_URL`:
 
 ```bash
-AWS_PROFILE="${PROD_AWS_PROFILE}" aws lambda get-function-configuration \
+deployed_prod_secret_arn="$(AWS_PROFILE="${PROD_AWS_PROFILE}" aws lambda get-function-configuration \
   --function-name coalition-prod \
-  --query 'Environment.Variables.{database_secret:DATABASE_URL,database_override:DATABASE_NAME}' \
+  --query 'Environment.Variables.DATABASE_URL' \
+  --output text \
   --cli-connect-timeout 5 \
-  --cli-read-timeout 30
-AWS_PROFILE="${DEV_AWS_PROFILE}" aws lambda get-function-configuration \
+  --cli-read-timeout 30)"
+deployed_dev_secret_arn="$(AWS_PROFILE="${DEV_AWS_PROFILE}" aws lambda get-function-configuration \
   --function-name coalition-dev \
-  --query 'Environment.Variables.{database_secret:DATABASE_URL,database_override:DATABASE_NAME}' \
+  --query 'Environment.Variables.DATABASE_URL' \
+  --output text \
   --cli-connect-timeout 5 \
-  --cli-read-timeout 30
+  --cli-read-timeout 30)"
+[[ "${deployed_prod_secret_arn}" == "${prod_secret_arn}" ]]
+[[ "${deployed_dev_secret_arn}" == "${dev_secret_arn}" ]]
 ```
+
+`DATABASE_NAME` was a packaged Zappa setting rather than a Lambda API environment variable, so querying `Environment.Variables.DATABASE_NAME` cannot verify its removal. Run the focused configuration tests instead; they verify that generated runtime stages omit the override and that Django uses the database encoded in the resolved secret URL.
+
+```bash
+(
+  cd backend
+  poetry run pytest \
+    scripts/tests/test_configure_zappa.py::TestDatabaseIsolation \
+    coalition/core/tests/test_lambda_settings.py::LambdaStorageSettingsTest::test_database_name_comes_from_resolved_secret_url \
+    --no-cov
+)
+```
+
+Finally, check each API health endpoint and confirm migrations exist independently in both databases.
 
 ## Rollback
 
