@@ -44,6 +44,8 @@ Deployment workflows authenticate to AWS with OIDC role assumption, so no long-l
 - `AWS_STORAGE_BUCKET_NAME`, `CLOUDFRONT_DOMAIN`
 - `AWS_LOCATION_PLACE_INDEX_NAME`
 - `VPC_SUBNET_IDS`, `VPC_SECURITY_GROUP_IDS`
+- `SITE_URL`, `DEFAULT_FROM_EMAIL` - required for production email links and the SES sender
+- `ADMIN_NOTIFICATION_EMAILS`, `SES_CONFIGURATION_SET` - notification recipients and SES event tracking
 
 **Repository secrets** (used by the frontend job, which does not select a GitHub Environment):
 
@@ -76,13 +78,13 @@ Internet
                                     API Gateway → Lambda (Django via Zappa)
                                                      ├── RDS PostgreSQL + PostGIS
                                                      ├── S3 (static & media)
-                                                     ├╌ SES API (blocked pending PR #312)
+                                                     ├── SES API (transactional email)
                                                      └── AWS Location Service (geocoding)
 
 TIGER geodata import scaffolding (not currently provisioned)
 ```
 
-Transactional email is not operational on the current Lambda deployment. [PR #312](https://github.com/lhadjchikh/coalition-builder/pull/312) replaces the unreachable SMTP path with the SES API over a VPC endpoint.
+Transactional email uses the SES API over a private VPC endpoint and authenticates through the Lambda execution role; see [PR #312](https://github.com/lhadjchikh/coalition-builder/pull/312).
 
 **Components:**
 

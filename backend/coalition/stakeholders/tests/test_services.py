@@ -6,7 +6,10 @@ from django.contrib.gis.geos import Point
 
 from coalition.regions.models import Region
 from coalition.stakeholders.models import Stakeholder
-from coalition.stakeholders.services import GeocodingService
+from coalition.stakeholders.services import (
+    AddressSuggestionsUnavailableError,
+    GeocodingService,
+)
 from coalition.test_base import BaseTestCase
 
 
@@ -394,9 +397,8 @@ class TestGeocodingService(BaseTestCase):
         """Test getting suggestions when AWS Location client is not available"""
         self.geocoding_service.location_client = None
 
-        suggestions = self.geocoding_service.get_address_suggestions("100 Congress")
-
-        assert suggestions == []
+        with self.assertRaises(AddressSuggestionsUnavailableError):
+            self.geocoding_service.get_address_suggestions("100 Congress")
 
     @patch("coalition.stakeholders.services.boto3")
     def test_get_address_suggestions_with_client_error(self, mock_boto3: Any) -> None:
@@ -415,9 +417,8 @@ class TestGeocodingService(BaseTestCase):
         self.geocoding_service.location_client = mock_client
         self.geocoding_service.place_index_name = "test-index"
 
-        suggestions = self.geocoding_service.get_address_suggestions("100 Congress")
-
-        assert suggestions == []
+        with self.assertRaises(AddressSuggestionsUnavailableError):
+            self.geocoding_service.get_address_suggestions("100 Congress")
 
     @patch("coalition.stakeholders.services.boto3")
     def test_get_address_suggestions_with_unexpected_error(
@@ -435,9 +436,8 @@ class TestGeocodingService(BaseTestCase):
         self.geocoding_service.location_client = mock_client
         self.geocoding_service.place_index_name = "test-index"
 
-        suggestions = self.geocoding_service.get_address_suggestions("100 Congress")
-
-        assert suggestions == []
+        with self.assertRaises(AddressSuggestionsUnavailableError):
+            self.geocoding_service.get_address_suggestions("100 Congress")
 
     def test_get_place_details_without_client(self) -> None:
         """Test getting place details when AWS Location client is not available"""

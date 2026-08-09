@@ -2,17 +2,22 @@ from typing import Any
 
 from django.contrib import admin
 from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied
 from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.utils import timezone
 from django.utils.html import format_html
+
+from coalition.admin_help.admin_links import HelpLinkAdminMixin
 
 from .email_service import EndorsementEmailService
 from .models import Endorsement
 
 
 @admin.register(Endorsement)
-class EndorsementAdmin(admin.ModelAdmin):
+class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
+    help_page_slug = "reviewing-endorsements"
+
     list_display = (
         "stakeholder_name",
         "stakeholder_organization",
@@ -32,6 +37,7 @@ class EndorsementAdmin(admin.ModelAdmin):
         "display_publicly",
         "created_at",
         "campaign",
+        ("reviewed_at", admin.EmptyFieldListFilter),
         "stakeholder__type",
         "stakeholder__state",
     )
@@ -43,7 +49,7 @@ class EndorsementAdmin(admin.ModelAdmin):
         "campaign__title",
         "statement",
     )
-    raw_id_fields = ("stakeholder", "campaign", "reviewed_by")
+    raw_id_fields = ("stakeholder", "campaign")
     ordering = ("-created_at",)
     readonly_fields = (
         "verification_token",
@@ -52,6 +58,8 @@ class EndorsementAdmin(admin.ModelAdmin):
         "terms_accepted",
         "terms_accepted_at",
         "org_authorized",
+        "reviewed_by",
+        "reviewed_at",
         "created_at",
         "updated_at",
         "verification_link",
@@ -118,6 +126,7 @@ class EndorsementAdmin(admin.ModelAdmin):
 
     actions = [
         "approve_endorsements",
+        "mark_auto_approved_reviewed",
         "reject_endorsements",
         "mark_verified",
         "send_verification_emails",
@@ -178,28 +187,57 @@ class EndorsementAdmin(admin.ModelAdmin):
             )
         return "No token generated"
 
-    @admin.action(description="Approve selected endorsements")
+    @admin.action(permissions=["change"], description="Approve selected endorsements")
     def approve_endorsements(
         self,
         request: HttpRequest,
         queryset: QuerySet[Endorsement],
     ) -> None:
-        count = 0
+        approved_count = 0
+        notification_count = 0
         for endorsement in queryset:
             if endorsement.status != "approved":
                 endorsement.approve(
                     user=request.user if isinstance(request.user, User) else None,
                 )
-                # Send approval notification
-                EndorsementEmailService.send_confirmation_email(endorsement)
-                count += 1
+                approved_count += 1
+                if EndorsementEmailService.send_confirmation_email(endorsement):
+                    notification_count += 1
 
         self.message_user(
             request,
-            f"Successfully approved {count} endorsement(s) and sent notifications.",
+            f"Successfully approved {approved_count} endorsement(s); "
+            f"sent {notification_count} notification(s).",
         )
 
-    @admin.action(description="Reject selected endorsements")
+    @admin.action(
+        permissions=["change"],
+        description="Mark auto-approved endorsements as reviewed",
+    )
+    def mark_auto_approved_reviewed(
+        self,
+        request: HttpRequest,
+        queryset: QuerySet[Endorsement],
+    ) -> None:
+        if not isinstance(request.user, User):
+            raise PermissionDenied
+
+        reviewed_at = timezone.now()
+        count = queryset.filter(
+            status="approved",
+            email_verified=True,
+            reviewed_at__isnull=True,
+        ).update(
+            reviewed_by=request.user,
+            reviewed_at=reviewed_at,
+            updated_at=reviewed_at,
+        )
+        self.message_user(
+            request,
+            f"Successfully marked {count} auto-approved endorsement(s) as reviewed.",
+        )
+
+    @admin.action(permissions=["change"], description="Reject selected endorsements")
     def reject_endorsements(
         self,
         request: HttpRequest,
@@ -215,7 +253,7 @@ class EndorsementAdmin(admin.ModelAdmin):
 
         self.message_user(request, f"Successfully rejected {count} endorsement(s).")
 
-    @admin.action(description="Mark as email verified")
+    @admin.action(permissions=["change"], description="Mark as email verified")
     def mark_verified(
         self,
         request: HttpRequest,
@@ -232,7 +270,7 @@ class EndorsementAdmin(admin.ModelAdmin):
             f"Successfully marked {count} endorsement(s) as email verified.",
         )
 
-    @admin.action(description="Send verification emails")
+    @admin.action(permissions=["change"], description="Send verification emails")
     def send_verification_emails(
         self,
         request: HttpRequest,
@@ -251,7 +289,7 @@ class EndorsementAdmin(admin.ModelAdmin):
             f"Successfully sent verification emails for {count} endorsement(s).",
         )
 
-    @admin.action(description="Send approval notifications")
+    @admin.action(permissions=["change"], description="Send approval notifications")
     def send_approval_notifications(
         self,
         request: HttpRequest,
@@ -267,7 +305,7 @@ class EndorsementAdmin(admin.ModelAdmin):
             f"Successfully sent approval notifications for {count} endorsement(s).",
         )
 
-    @admin.action(description="Approve for public display")
+    @admin.action(permissions=["change"], description="Approve for public display")
     def approve_for_display(
         self,
         request: HttpRequest,
@@ -278,6 +316,7 @@ class EndorsementAdmin(admin.ModelAdmin):
             status="approved",
             email_verified=True,
             public_display=True,
+            reviewed_at__isnull=False,
         ).update(display_publicly=True)
 
         self.message_user(
@@ -285,6 +324,7 @@ class EndorsementAdmin(admin.ModelAdmin):
             f"Successfully approved {count} endorsement(s) for public display.",
         )
 
+    @admin.action(permissions=["change"], description="Remove from public display")
     def remove_from_display(
         self,
         request: HttpRequest,

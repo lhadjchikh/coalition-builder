@@ -1,0 +1,17 @@
+{% extends "admin_help/base.html" %}
+
+{% block help_breadcrumb %}&rsaquo; Complete guide{% endblock %}
+
+{% block help_content %}
+  <p class="admin-help__lede">
+    Every page of the guide, end to end. Use your browser's find (Ctrl-F, or Cmd-F
+    on a Mac) to search it, or print this page for a paper copy.
+  </p>
+
+  {% for entry, rendered in sections %}
+    <section class="admin-help__section">
+      <h2 id="{{ entry.slug }}">{{ entry.title }}</h2>
+      <div class="admin-help__prose">{{ rendered.html }}</div>
+    </section>
+  {% endfor %}
+{% endblock %}

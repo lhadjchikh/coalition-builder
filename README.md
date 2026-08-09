@@ -92,6 +92,7 @@ flowchart TD
 - **🔐 Email Verification** - Secure token-based email verification for all endorsements
 - **🛡️ Spam Prevention** - Multi-layer protection including rate limiting and content analysis
 - **👨‍💼 Admin Review** - Comprehensive moderation workflow with bulk actions
+- **📖 Staff Operating Guide** - Contextual, staff-only campaign and endorsement guidance inside Django admin
 - **📧 Automated Notifications** - Email workflows for verification, approval, and admin alerts
 - **📊 Data Export** - CSV/JSON export capabilities with filtering options
 
@@ -121,7 +122,7 @@ flowchart LR
         Lambda[λ Django on Lambda<br/>Zappa container image]
         RDS[(RDS PostgreSQL + PostGIS)]
         S3[S3 + CloudFront<br/>static & media]
-        SES[SES API<br/>pending PR #312]
+        SES[SES API<br/>transactional email]
         Location[AWS Location Service<br/>geocoding]
     end
 
@@ -130,11 +131,11 @@ flowchart LR
     APIGW --> Lambda
     Lambda --> RDS
     Lambda --> S3
-    Lambda -.->|pending #312| SES
+    Lambda --> SES
     Lambda --> Location
 ```
 
-Transactional email is currently blocked in Lambda. [PR #312](https://github.com/lhadjchikh/coalition-builder/pull/312) replaces the unreachable SMTP path with the SES API over a VPC endpoint.
+[PR #312](https://github.com/lhadjchikh/coalition-builder/pull/312) replaced the unreachable Lambda SMTP path with the SES API over a private VPC endpoint and execution-role authentication.
 
 There are no always-on application servers: no ALB, no ECS application service, and no NAT gateway. RDS and the EC2 bastion remain always-on resources, while Lambda reaches AWS services through VPC endpoints. Terraform is split into `shared` (VPC, RDS, bastion), `prod`, and `dev` environments, with GitHub Actions authenticating via OIDC.
 

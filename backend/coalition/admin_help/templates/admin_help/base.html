@@ -1,0 +1,39 @@
+{% extends "admin/base_site.html" %}
+
+{% block extrastyle %}{{ block.super }}{% include "admin_help/_styles.html" %}{% endblock %}
+
+{% comment %}
+  The subtitle is set so the browser tab reads "Admin guide | <page>", but the
+  breadcrumb already says where you are, so it is not repeated as a heading.
+{% endcomment %}
+{% block content_subtitle %}{% endblock %}
+
+{% block breadcrumbs %}
+  <div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; <a href="{% url 'admin_help:index' %}">Admin guide</a>
+    {% block help_breadcrumb %}{% endblock %}
+  </div>
+{% endblock %}
+
+{% block content %}
+  <div class="admin-help">
+    <nav class="admin-help__nav" aria-label="Guide contents">
+      <h2>Guide contents</h2>
+      <ol>
+        {% for entry in pages %}
+          <li{% if entry.slug == page.slug %} class="is-current"{% endif %}>
+            <a href="{% url 'admin_help:page' entry.slug %}">{{ entry.title }}</a>
+          </li>
+        {% endfor %}
+      </ol>
+      <p class="admin-help__nav-aside">
+        <a href="{% url 'admin_help:all' %}">Whole guide on one page</a>
+        &mdash; for printing, or for searching with Ctrl-F.
+      </p>
+    </nav>
+    <article class="admin-help__body">
+      {% block help_content %}{% endblock %}
+    </article>
+  </div>
+{% endblock %}

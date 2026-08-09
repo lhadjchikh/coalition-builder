@@ -310,10 +310,10 @@ vercel rollback
 
 ### Dev VPC Endpoints Toggle
 
-The dev environment's VPC endpoints (~$22/month) can be disabled when you're not actively developing to save costs. Use the **Dev Cost Control** workflow:
+The dev environment's two VPC endpoints (~$15/month at $0.01/hour per endpoint) can be disabled when you're not actively developing to save costs. Use the **Dev Cost Control** workflow:
 
 ```bash
-# Disable VPC endpoints (saves ~$22/mo)
+# Disable VPC endpoints (saves ~$15/mo)
 gh workflow run dev_cost_control.yml -f vpc_endpoints=disable
 
 # Re-enable before developing
@@ -322,7 +322,7 @@ gh workflow run dev_cost_control.yml -f vpc_endpoints=enable
 
 Or use the GitHub UI: **Actions > Dev Cost Control > Run workflow**.
 
-When VPC endpoints are disabled, Lambda functions in the dev environment (which run in private subnets with no NAT/internet route) cannot reach Secrets Manager, CloudWatch Logs, or the Geo Places API at all. Re-enable the endpoints before deploying or testing the dev backend.
+When VPC endpoints are disabled, Lambda functions in the dev environment (which run in private subnets with no NAT/internet route) cannot reach Secrets Manager or the Geo Places API. CloudWatch Logs does not require an interface endpoint for Lambda's own logs. Re-enable the endpoints before deploying or testing the dev backend.
 
 ## Cost Monitoring
 

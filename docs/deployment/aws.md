@@ -18,7 +18,7 @@ flowchart TB
 
         lambda --> rds[(RDS PostgreSQL<br/>with PostGIS<br/>+ rate-limit cache)]
         lambda --> s3_static[S3 Static Assets]
-        lambda -.->|pending PR #312| ses[SES API]
+        lambda --> ses[SES API]
         lambda --> geo[AWS Location Service]
 
         subgraph security["Security & Monitoring"]
@@ -35,7 +35,7 @@ flowchart TB
     vercel --> apigateway
 ```
 
-The SES edge is not operational in the current Lambda deployment. [PR #312](https://github.com/lhadjchikh/coalition-builder/pull/312) adds the SES API VPC endpoint, execution-role permissions, and application backend needed to enable it.
+Lambda sends transactional email through the SES API over a private VPC endpoint and authenticates with its execution role; see [PR #312](https://github.com/lhadjchikh/coalition-builder/pull/312).
 
 ## AWS Resources
 
@@ -66,10 +66,12 @@ The SES edge is not operational in the current Lambda deployment. [PR #312](http
 
 #### VPC Interface Endpoints
 
-- **Endpoints**: Secrets Manager, CloudWatch Logs, AWS Location (`geo.places`)
+- **Production**: Secrets Manager, AWS Location (`geo.places`), and SES API (`email`)
+- **Development, when enabled**: Secrets Manager and AWS Location (`geo.places`)
 - **Placement**: Single AZ (`enable_single_az_endpoints`) to halve hourly cost
 - **Purpose**: Let the Lambda in private subnets reach AWS services without a NAT gateway
-- **Cost**: $0.01/hour each — see [Cost Analysis](#cost-analysis), where these are the largest line item
+- **CloudWatch Logs**: No interface endpoint is provisioned; Lambda delivers its own logs without one
+- **Cost**: $0.01/hour each — see [Cost Analysis](#cost-analysis). The July 2026 snapshot predates the Logs-to-SES endpoint swap in production and removal of the Logs endpoint in development.
 
 There is no application rate-limiting DynamoDB table. The bootstrap still creates DynamoDB tables for Terraform state locking. Application rate limiting uses the PostgreSQL-backed Django cache; see [Rate Limiting](../rate-limiting.md).
 
@@ -191,14 +193,14 @@ To find out what is behind a surprising service total, re-run with `--group-by T
 
 ### What actually drives the bill
 
-- **VPC interface endpoints are the single largest cost — $44.64/month across prod and dev**, more than RDS. Each account runs three interface endpoints (Secrets Manager, CloudWatch Logs, and AWS Location `geo.places`) at $0.01/hour each. They are pinned to a single AZ (`enable_single_az_endpoints`), which already halves what multi-AZ would cost.
+- **VPC interface endpoints were the single largest July cost — $44.64/month across prod and dev**, more than RDS. During that snapshot each account ran three interface endpoints (Secrets Manager, CloudWatch Logs, and AWS Location `geo.places`) at $0.01/hour each. They are pinned to a single AZ (`enable_single_az_endpoints`), which already halves what multi-AZ would cost. The current configuration replaces the production Logs endpoint with SES and removes the development Logs endpoint, so a refreshed snapshot should show five endpoint-hours across the two accounts instead of six when development endpoints are enabled.
 - **Compute is effectively free.** Lambda does not appear as a line item at all, and API Gateway costs $0.03/month at current traffic. The serverless migration did deliver on compute cost.
 - **The dev account costs nearly as much as prod ($24.68 vs $31.92)** despite serving no traffic, because VPC endpoint hours accrue whether or not the Lambda is invoked.
 - **No DynamoDB cost line appears above the reporting threshold.** The application code and settings — not the billing data — establish that rate limiting uses the PostgreSQL-backed Django cache. Terraform state-lock tables still exist.
 
 ### Cost reduction opportunities
 
-- Removing the three interface endpoints from the **dev** account would save ~$22/month. Dev would then need another route to Secrets Manager, CloudWatch Logs, and AWS Location.
+- Disabling the two interface endpoints in the **dev** account saves about $15/month at $0.01/hour per endpoint. Dev would then need another route to Secrets Manager and AWS Location.
 - The `geo.places` endpoint is only needed by code paths that geocode; dropping it where unused saves ~$7.44/month per account.
 - WAF ($6.00/month, prod only) is a fixed web-ACL charge.
 

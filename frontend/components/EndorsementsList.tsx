@@ -9,6 +9,11 @@ interface EndorsementsListProps {
   onCountUpdate?: (count: number, recentCount?: number) => void;
 }
 
+export const formatStakeholderLocation = (
+  city: string,
+  state: string | null
+): string => [city, state].filter(Boolean).join(", ");
+
 const EndorsementsList: React.FC<EndorsementsListProps> = ({
   campaignId,
   refreshTrigger,
@@ -106,8 +111,10 @@ const EndorsementsList: React.FC<EndorsementsListProps> = ({
                 </span>
                 <br />
                 <span className="location">
-                  {endorsement.stakeholder.city},{" "}
-                  {endorsement.stakeholder.state}
+                  {formatStakeholderLocation(
+                    endorsement.stakeholder.city,
+                    endorsement.stakeholder.state
+                  )}
                 </span>
               </div>
               <div className="stakeholder-type">

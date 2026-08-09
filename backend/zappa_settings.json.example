@@ -17,15 +17,6 @@
     "timeout_seconds": 30,
     "slim_handler": false,
     "use_precompiled_packages": false,
-    "environment_variables": {
-      "USE_S3": "true",
-      "IS_LAMBDA": "true",
-      "USE_GEODJANGO": "true",
-      "GDAL_DATA": "/opt/share/gdal",
-      "PROJ_LIB": "/opt/share/proj",
-      "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
-      "AWS_LOCATION_PLACE_INDEX_NAME": "coalition-geocoding-index"
-    },
     "exclude": [
       "*.gz",
       "*.rar",
@@ -64,6 +55,12 @@
     "memory_size": 512,
     "keep_warm": false,
     "environment_variables": {
+      "USE_S3": "true",
+      "IS_LAMBDA": "true",
+      "USE_GEODJANGO": "true",
+      "GDAL_DATA": "/opt/share/gdal",
+      "PROJ_LIB": "/opt/share/proj",
+      "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
       "ENVIRONMENT": "dev",
       "DEBUG": "true",
       "DATABASE_NAME": "coalition_dev",
@@ -71,7 +68,8 @@
     },
     "aws_environment_variables": {
       "DATABASE_URL": "arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:coalition/database-url-XXXXXX",
-      "SECRET_KEY": "arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:coalition/secret-key-XXXXXX"
+      "SECRET_KEY": "arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:coalition/secret-key-XXXXXX",
+      "AWS_LOCATION_PLACE_INDEX_NAME": "coalition-geocoding-index"
     },
     "apigateway_settings": {
       "throttle_burst_limit": 50,
@@ -86,6 +84,12 @@
     "keep_warm": true,
     "keep_warm_expression": "rate(10 minutes)",
     "environment_variables": {
+      "USE_S3": "true",
+      "IS_LAMBDA": "true",
+      "USE_GEODJANGO": "true",
+      "GDAL_DATA": "/opt/share/gdal",
+      "PROJ_LIB": "/opt/share/proj",
+      "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
       "ENVIRONMENT": "staging",
       "DEBUG": "false",
       "DATABASE_NAME": "coalition_staging",
@@ -93,7 +97,8 @@
     },
     "aws_environment_variables": {
       "DATABASE_URL": "arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:coalition/database-url-XXXXXX",
-      "SECRET_KEY": "arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:coalition/secret-key-XXXXXX"
+      "SECRET_KEY": "arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:coalition/secret-key-XXXXXX",
+      "AWS_LOCATION_PLACE_INDEX_NAME": "coalition-geocoding-index"
     },
     "apigateway_settings": {
       "throttle_burst_limit": 75,
@@ -108,6 +113,12 @@
     "keep_warm": true,
     "keep_warm_expression": "rate(4 minutes)",
     "environment_variables": {
+      "USE_S3": "true",
+      "IS_LAMBDA": "true",
+      "USE_GEODJANGO": "true",
+      "GDAL_DATA": "/opt/share/gdal",
+      "PROJ_LIB": "/opt/share/proj",
+      "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
       "ENVIRONMENT": "production",
       "DEBUG": "false",
       "DATABASE_NAME": "coalition_production",
@@ -115,7 +126,8 @@
     },
     "aws_environment_variables": {
       "DATABASE_URL": "arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:coalition/database-url-XXXXXX",
-      "SECRET_KEY": "arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:coalition/secret-key-XXXXXX"
+      "SECRET_KEY": "arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:coalition/secret-key-XXXXXX",
+      "AWS_LOCATION_PLACE_INDEX_NAME": "coalition-geocoding-index"
     },
     "apigateway_settings": {
       "throttle_burst_limit": 100,

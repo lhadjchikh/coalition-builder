@@ -1,0 +1,222 @@
+/* Styling for the in-admin help guide. Inherits the admin's colour variables so
+   it follows the light/dark theme the reader has chosen. */
+
+.admin-help {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.admin-help__nav {
+  flex: 0 0 15rem;
+  position: sticky;
+  top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--hairline-color);
+  border-radius: 4px;
+  background: var(--darkened-bg);
+}
+
+.admin-help__nav h2 {
+  margin-top: 0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-help__nav ol {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.admin-help__nav li {
+  margin-bottom: 0.4rem;
+  line-height: 1.3;
+}
+
+.admin-help__nav li.is-current > a {
+  font-weight: 700;
+  color: var(--body-fg);
+}
+
+.admin-help__nav-aside {
+  margin-bottom: 0;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--hairline-color);
+  font-size: 0.8rem;
+  color: var(--body-quiet-color);
+}
+
+.admin-help__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 46rem;
+}
+
+.admin-help__lede {
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.admin-help__index {
+  padding-left: 1.4rem;
+}
+
+.admin-help__index li {
+  margin-bottom: 0.9rem;
+}
+
+.admin-help__index a {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.admin-help__blurb {
+  display: block;
+  color: var(--body-quiet-color);
+}
+
+.admin-help__toc {
+  margin-bottom: 1.5rem;
+  padding: 0.6rem 1rem;
+  border-left: 3px solid var(--primary);
+  background: var(--darkened-bg);
+}
+
+.admin-help__toc h2 {
+  margin: 0.4rem 0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-help__toc ul {
+  margin: 0 0 0.6rem;
+  padding-left: 1.2rem;
+}
+
+.admin-help__prose {
+  line-height: 1.6;
+}
+
+.admin-help__prose h2 {
+  margin-top: 2rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--hairline-color);
+}
+
+.admin-help__prose h3 {
+  margin-top: 1.6rem;
+}
+
+.admin-help__prose table {
+  width: 100%;
+  margin: 1rem 0;
+  border-collapse: collapse;
+}
+
+.admin-help__prose th,
+.admin-help__prose td {
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--hairline-color);
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-help__prose th {
+  background: var(--darkened-bg);
+}
+
+.admin-help__prose blockquote {
+  margin: 1rem 0;
+  padding: 0.6rem 1rem;
+  border-left: 3px solid var(--primary);
+  background: var(--darkened-bg);
+}
+
+.admin-help__prose code {
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  background: var(--darkened-bg);
+  font-size: 0.9em;
+}
+
+.admin-help__prose .headerlink {
+  margin-left: 0.4rem;
+  opacity: 0;
+  text-decoration: none;
+}
+
+.admin-help__prose h2:hover .headerlink,
+.admin-help__prose h3:hover .headerlink {
+  opacity: 0.5;
+}
+
+.admin-help__prose .admonition {
+  margin: 1rem 0;
+  padding: 0.8rem 1rem;
+  border-left: 4px solid var(--primary);
+  border-radius: 3px;
+  background: var(--darkened-bg);
+}
+
+.admin-help__prose .admonition.warning {
+  border-left-color: var(--error-fg);
+}
+
+.admin-help__prose .admonition-title {
+  margin-top: 0;
+  font-weight: 700;
+}
+
+.admin-help__pager {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--hairline-color);
+}
+
+.admin-help__pager-next {
+  margin-left: auto;
+}
+
+.admin-help__section {
+  margin-bottom: 3rem;
+}
+
+/* Contextual banner shown on the admin screens the guide documents. */
+.admin-help-banner {
+  margin: 0 0 0.8rem;
+  padding: 0.5rem 0.9rem;
+  border-left: 3px solid var(--primary);
+  background: var(--darkened-bg);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 60rem) {
+  .admin-help {
+    display: block;
+  }
+
+  .admin-help__nav {
+    position: static;
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media print {
+  .admin-help__nav,
+  .admin-help__pager,
+  .admin-help-banner,
+  #header,
+  #nav-sidebar,
+  .breadcrumbs,
+  #footer {
+    display: none !important;
+  }
+
+  .admin-help__body {
+    max-width: none;
+  }
+}

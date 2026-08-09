@@ -1,0 +1,5 @@
+{% extends "admin/change_form.html" %}
+
+{% block extrastyle %}{{ block.super }}{% include "admin_help/_styles.html" %}{% endblock %}
+
+{% block pretitle %}{{ block.super }}{% include "admin_help/_help_banner.html" %}{% endblock %}

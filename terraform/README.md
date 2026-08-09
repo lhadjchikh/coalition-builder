@@ -115,7 +115,7 @@ Note that the bill is dominated by always-on resources (VPC interface endpoints,
 - **Lambda**: Django API via Zappa (Python 3.13)
 - **API Gateway**: REST API with custom domains
 - **RDS PostgreSQL**: Database with PostGIS extension
-- **VPC endpoints**: Secrets Manager, CloudWatch Logs, and AWS Location, so the Lambda needs no NAT gateway
+- **VPC endpoints**: Secrets Manager and AWS Location in application environments, plus production SES API access; Lambda's own CloudWatch logs need no Logs endpoint
 - **Rate limiting**: PostgreSQL-backed Django cache (no DynamoDB or Redis)
 - **TIGER imports**: An ECS Fargate module and workflow remain in the repository but are not instantiated by a current environment
 - **Vercel**: Next.js frontend with global CDN
