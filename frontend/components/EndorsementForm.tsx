@@ -1,5 +1,4 @@
 import React, {
-  useEffect,
   useState,
   useRef,
   forwardRef,
@@ -8,8 +7,8 @@ import React, {
 import API from "../services/api";
 import analytics from "../services/analytics";
 import { Campaign, EndorsementCreate, Stakeholder } from "../types/index";
-import SocialShareButtons from "./SocialShareButtons";
 import AddressAutocomplete from "./AddressAutocomplete";
+import EndorsementConfirmationDialog from "./EndorsementConfirmationDialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import "../styles/Endorsements.css";
@@ -119,13 +118,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
     });
     const formRef = useRef<HTMLFormElement>(null);
     const typeSelectRef = useRef<HTMLSelectElement>(null);
-    const confirmationCloseRef = useRef<HTMLButtonElement>(null);
-
-    useEffect(() => {
-      if (success) {
-        confirmationCloseRef.current?.focus();
-      }
-    }, [success]);
+    const submitButtonRef = useRef<HTMLButtonElement>(null);
 
     // Expose methods to parent component
     useImperativeHandle(
@@ -315,57 +308,11 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
         )}
 
         {success && (
-          <div className="confirmation-dialog-backdrop">
-            <div
-              className="success-message confirmation-dialog"
-              data-testid="success-message"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="endorsement-confirmation-title"
-              onKeyDown={(event) => {
-                if (event.key === "Escape") {
-                  setSuccess(false);
-                }
-              }}
-            >
-              <button
-                ref={confirmationCloseRef}
-                type="button"
-                className="confirmation-dialog-close"
-                aria-label="Close confirmation"
-                onClick={() => setSuccess(false)}
-              >
-                ×
-              </button>
-              <h3 id="endorsement-confirmation-title">
-                Thank you for your endorsement!
-              </h3>
-              <p>
-                Check your email and click the verification link. Your
-                endorsement will be sent for review after you verify it.
-              </p>
-
-              <div className="share-endorsement-section">
-                <p className="share-cta">
-                  Help amplify your support by sharing this campaign:
-                </p>
-                <SocialShareButtons
-                  url={`${window.location.origin}/campaigns/${campaign.name}`}
-                  title={`I just endorsed ${campaign.title}!`}
-                  description={`Join me in supporting this important initiative: ${
-                    campaign.summary || campaign.description
-                  }`}
-                  hashtags={[
-                    "PolicyChange",
-                    "CivicEngagement",
-                    campaign.name?.replace(/-/g, "") || "",
-                  ]}
-                  campaignName={campaign.name}
-                  showLabel={false}
-                />
-              </div>
-            </div>
-          </div>
+          <EndorsementConfirmationDialog
+            campaign={campaign}
+            onClose={() => setSuccess(false)}
+            returnFocusTo={submitButtonRef.current}
+          />
         )}
 
         {error && (
@@ -747,6 +694,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
 
           <div className="form-actions">
             <button
+              ref={submitButtonRef}
               type="submit"
               disabled={isSubmitting}
               data-testid="submit-button"

@@ -71,6 +71,18 @@ jest.mock("../../services/api", () => ({
 }));
 jest.mock("../../services/analytics");
 
+const showModalMock = jest.fn(function (this: HTMLDialogElement) {
+  this.open = true;
+});
+const closeDialogMock = jest.fn(function (this: HTMLDialogElement) {
+  this.open = false;
+});
+
+Object.defineProperties(HTMLDialogElement.prototype, {
+  showModal: { configurable: true, value: showModalMock },
+  close: { configurable: true, value: closeDialogMock },
+});
+
 // Mock SocialShareButtons component
 jest.mock("../SocialShareButtons", () => {
   return function MockSocialShareButtons(props: {
@@ -298,7 +310,9 @@ describe("EndorsementForm", () => {
         ).toBeInTheDocument();
       });
 
-      expect(screen.getByRole("dialog")).toHaveAttribute("aria-modal", "true");
+      const confirmationDialog = screen.getByRole("dialog");
+      expect(confirmationDialog.tagName).toBe("DIALOG");
+      expect(showModalMock).toHaveBeenCalledTimes(1);
 
       // Check that social share buttons are displayed
       expect(screen.getByTestId("social-share-buttons")).toBeInTheDocument();
@@ -324,7 +338,8 @@ describe("EndorsementForm", () => {
       });
       await fillAddressFields();
       fireEvent.click(screen.getByTestId("terms-checkbox"));
-      fireEvent.click(screen.getByTestId("submit-button"));
+      const submitButton = screen.getByTestId("submit-button");
+      fireEvent.click(submitButton);
 
       await waitFor(() =>
         expect(screen.getByRole("dialog")).toBeInTheDocument()
@@ -334,6 +349,8 @@ describe("EndorsementForm", () => {
       );
 
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(closeDialogMock).toHaveBeenCalledTimes(1);
+      expect(submitButton).toHaveFocus();
       expect(API.createEndorsement).toHaveBeenCalledTimes(1);
     });
 
