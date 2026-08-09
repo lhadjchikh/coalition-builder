@@ -68,6 +68,17 @@ jobs:
         run: |
           ../../scripts/setup_remote_state.sh "${{ inputs.environment }}"
 
+      - name: Repair verified production state digest
+        if: >-
+          github.event_name == 'workflow_dispatch' &&
+          github.ref == 'refs/heads/lhadjchikh/discover-api-gateway-id' &&
+          inputs.environment == 'prod'
+        run: >-
+          .github/scripts/repair_terraform_state_digest.sh
+          prod
+          ac5f4e1313f6561458763a21caab1f17
+          9376ab195b0c76b30861c9bb4742c779
+
       - name: Terraform init
         working-directory: ${{ env.TF_DIRECTORY }}
         run: timeout 5m terraform init -backend-config=backend.hcl -input=false
