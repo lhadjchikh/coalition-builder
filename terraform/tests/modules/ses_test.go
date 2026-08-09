@@ -1,7 +1,9 @@
 package modules
 
 import (
+	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -13,6 +15,16 @@ import (
 
 func TestSESModuleStructure(t *testing.T) {
 	common.ValidateModuleStructure(t, "ses")
+}
+
+func TestProductionDisablesSESSMTPCredentials(t *testing.T) {
+	productionSource, err := os.ReadFile("../../environments/prod/main.tf")
+	assert.NoError(t, err)
+
+	productionOptOut := regexp.MustCompile(
+		`(?s)module "ses" \{.*?create_smtp_credentials\s*=\s*false.*?\n\}`,
+	)
+	assert.Regexp(t, productionOptOut, string(productionSource))
 }
 
 func TestSESModulePlanCreatesExpectedResources(t *testing.T) {
