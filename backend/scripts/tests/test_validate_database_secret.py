@@ -87,6 +87,19 @@ class TestDatabaseSecretIsolation:
 
         client.get_secret_value.assert_not_called()
 
+    def test_rejects_malformed_secret_tags_with_an_accurate_error(self) -> None:
+        client = _secrets_client()
+        client.describe_secret.return_value = {"Tags": {"Environment": "dev"}}
+
+        with pytest.raises(DatabaseSecretValidationError, match="valid tag list"):
+            validate_database_secret(
+                client,
+                SECRET_ARN,
+                "123456789012",
+                "dev",
+                expected_database_name="coalition_dev",
+            )
+
     def test_rejects_disagreement_between_url_and_dbname(self) -> None:
         client = _secrets_client(url_database_name="coalition")
 

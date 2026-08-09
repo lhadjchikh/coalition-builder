@@ -89,7 +89,7 @@ def _load_secret_tags(
     tags = metadata.get("Tags")
     if not isinstance(tags, list):
         raise DatabaseSecretValidationError(
-            "Database secret has no Environment tag.",
+            "Database secret metadata must contain a valid tag list.",
         )
     return {
         tag["Key"]: tag["Value"]
