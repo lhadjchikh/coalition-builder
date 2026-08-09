@@ -1,4 +1,7 @@
 {
-  "dev": "coalition_dev",
-  "prod": "coalition"
+  "rds_initial_database": "coalition",
+  "environment_databases": {
+    "dev": "coalition_dev",
+    "prod": "coalition_prod"
+  }
 }

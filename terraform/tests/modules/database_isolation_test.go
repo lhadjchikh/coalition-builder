@@ -15,6 +15,11 @@ import (
 
 const databaseProvisioningScript = "../../modules/database/scripts/provision_environment_databases.sh"
 
+type databaseNameConfiguration struct {
+	RDSInitialDatabase   string            `json:"rds_initial_database"`
+	EnvironmentDatabases map[string]string `json:"environment_databases"`
+}
+
 func readRepositoryFile(t *testing.T, path string) string {
 	t.Helper()
 
@@ -24,14 +29,20 @@ func readRepositoryFile(t *testing.T, path string) string {
 	return string(contents)
 }
 
-func configuredDatabaseNames(t *testing.T) map[string]string {
+func configuredDatabaseNameConfiguration(t *testing.T) databaseNameConfiguration {
 	t.Helper()
 
 	databaseNamesJSON := readRepositoryFile(t, "../../modules/database-names/environment_database_names.json")
-	databaseNames := make(map[string]string)
+	var databaseNames databaseNameConfiguration
 	require.NoError(t, json.Unmarshal([]byte(databaseNamesJSON), &databaseNames))
 
 	return databaseNames
+}
+
+func configuredDatabaseNames(t *testing.T) map[string]string {
+	t.Helper()
+
+	return configuredDatabaseNameConfiguration(t).EnvironmentDatabases
 }
 
 // #316 Definition of Done: authoritative, discriminating environment database names.
@@ -41,14 +52,27 @@ func TestEnvironmentDatabasesUseSharedAuthoritativeNames(t *testing.T) {
 	databaseNames := configuredDatabaseNames(t)
 	require.Contains(t, databaseNames, "dev")
 	require.Contains(t, databaseNames, "prod")
-	assert.NotEqual(t, databaseNames["dev"], databaseNames["prod"])
+	assert.Equal(t, "coalition_dev", databaseNames["dev"])
+	assert.Equal(t, "coalition_prod", databaseNames["prod"])
+	assert.Equal(
+		t,
+		"coalition",
+		configuredDatabaseNameConfiguration(t).RDSInitialDatabase,
+	)
 
 	sharedMain := readRepositoryFile(t, "../../environments/shared/main.tf")
 	databaseNamesModule := readRepositoryFile(t, "../../modules/database-names/main.tf")
+	databaseModule := readRepositoryFile(t, "../../modules/database/main.tf")
+	databaseSetupScript := readRepositoryFile(t, "../../modules/database/scripts/db_setup.sh")
 	sharedOutputs := readRepositoryFile(t, "../../environments/shared/outputs.tf")
 	assert.Contains(t, sharedMain, `module "database_names"`)
 	assert.Contains(t, databaseNamesModule, `jsondecode(file("${path.module}/environment_database_names.json"))`)
-	assert.Contains(t, sharedMain, `db_name                    = module.database_names.environment_database_names["prod"]`)
+	assert.Contains(t, sharedMain, `db_name                    = module.database_names.rds_initial_database_name`)
+	assert.NotContains(t, sharedMain, `db_name                    = module.database_names.environment_database_names["prod"]`)
+	assert.Contains(t, databaseModule, `host     = aws_db_instance.postgres.address`)
+	assert.Contains(t, databaseModule, `port     = aws_db_instance.postgres.port`)
+	assert.Contains(t, databaseModule, `dbname = "postgres"`)
+	assert.Contains(t, databaseSetupScript, `"dbname": "postgres"`)
 	assert.Contains(t, sharedOutputs, "value       = module.database_names.environment_database_names")
 
 	for _, environment := range []string{"dev", "prod"} {

@@ -4,12 +4,16 @@ This runbook controls the one-time rollout and ongoing verification of developme
 
 ## Authoritative isolation model
 
-`terraform/modules/database-names/environment_database_names.json` is the single source of truth for logical database names. The database-names module loads that map for the shared, `dev`, and `prod` stacks, while shared state exports it for operational commands. Direct module consumption lets application-account plans remain valid before the new shared-state output has been applied.
+`terraform/modules/database-names/environment_database_names.json` is the single source of truth for the RDS creation-time name and logical environment database names. The database-names module loads the environment map for the shared, `dev`, and `prod` stacks, while shared state exports that map for operational commands. Direct module consumption lets application-account plans remain valid before the new shared-state output has been applied.
 
-| Environment | Database        | Compatibility decision                                                                                                |
-| ----------- | --------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `prod`      | `coalition`     | Preserve the existing RDS primary database and all production data. Renaming or replacing it is outside this rollout. |
-| `dev`       | `coalition_dev` | Create an empty logical database on the same RDS instance. Development migrations and writes occur only here.         |
+| Environment | Database         | Compatibility decision                                                                                       |
+| ----------- | ---------------- | ------------------------------------------------------------------------------------------------------------ |
+| `prod`      | `coalition_prod` | Preserve the existing production database and data selected by the production Secrets Manager URL.          |
+| `dev`       | `coalition_dev`  | Preserve or create the isolated development database. Development migrations and writes occur only here.    |
+
+The RDS instance was originally created with `coalition`. That immutable creation-time input remains separate from the environment database map so changing the production runtime name cannot propose replacing the RDS instance. The unused `coalition` logical database may be removed operationally after both application environments are verified against their authoritative databases.
+
+The shared administrator secret uses PostgreSQL's built-in `postgres` maintenance database as its connection target. It must not point at the retired creation-time database or either application database.
 
 Each environment uses a distinct PostgreSQL login role. `PUBLIC` connectivity is revoked on both databases, the production role is denied development access, and the development role is denied production access. The provisioning script applies these grants idempotently.
 
@@ -54,7 +58,7 @@ AWS_PROFILE="${SHARED_AWS_PROFILE}" aws rds wait db-snapshot-completed \
 
 Record the snapshot identifier and confirm its status is `available`. Do not continue from a failed or incomplete snapshot.
 
-After the snapshot is available, apply only the shared stack so the authoritative map is available in remote state. This changes the RDS module input from the old `db_name` variable to the production entry with the same value, so the plan must show no RDS replacement.
+After the snapshot is available, apply only the shared stack so the authoritative map is available in remote state. The RDS module continues to receive its immutable initial name, `coalition`, so the plan must show no RDS replacement even though production runs on `coalition_prod`.
 
 ```bash
 AWS_PROFILE="${SHARED_AWS_PROFILE}" terraform -chdir=terraform/environments/shared plan
@@ -121,7 +125,7 @@ Rerun the command once. The second run must succeed without recreating either da
 
 ### Apply application-account Terraform
 
-Set the dev gate only after provisioning succeeds, then apply `prod` and `dev`. A merge to `main` may generate the production plan, but production apply is manual-only so it cannot run before this runbook's snapshot and provisioning gates. The production plan must retain `coalition` and must not replace `aws_secretsmanager_secret_version.db_url`; the development secret version must change to `coalition_dev`; and the plans must remove the unused SSM parameters and read-policy attachments. Stop if the production plan proposes replacing its database secret version and reconcile the configured credential before applying.
+Set the dev gate only after provisioning succeeds, then apply `prod` and `dev`. A merge to `main` may generate the production plan, but production apply is manual-only so it cannot run before this runbook's snapshot and provisioning gates. The production secret must retain `coalition_prod`, the development secret must retain `coalition_dev`, and the plans must remove the unused SSM parameters and read-policy attachments. A secret-version replacement is acceptable only when its redacted fields match the expected database and the coordinated application credential; stop if the plan changes the database name or credential unexpectedly.
 
 ```bash
 gh variable set DATABASE_ISOLATION_READY --env dev --body true
@@ -162,7 +166,7 @@ AWS_PROFILE="${DEV_AWS_PROFILE}" poetry -C backend run python scripts/validate_d
   --expected-database-name "${dev_database}"
 ```
 
-Verify database permissions through the bastion: each matching role must connect to its own database, the development role must receive `permission denied for database coalition` when targeting production, and the production role must receive `permission denied for database coalition_dev` when targeting development.
+Verify database permissions through the bastion: each matching role must connect to its own database, the development role must receive `permission denied for database coalition_prod` when targeting production, and the production role must receive `permission denied for database coalition_dev` when targeting development.
 
 Verify both Lambda configurations expose the selected environment's secret ARN as `DATABASE_URL`:
 

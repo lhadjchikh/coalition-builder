@@ -110,7 +110,7 @@ jobs:
           EXPECTED_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
           EXPECTED_ENVIRONMENT: ${{ github.event.inputs.environment }}
         run: |
-          EXPECTED_DATABASE_NAME="$(jq -er --arg environment "${EXPECTED_ENVIRONMENT}" '.[$environment]' "${DATABASE_NAME_MAP}")"
+          EXPECTED_DATABASE_NAME="$(jq -er --arg environment "${EXPECTED_ENVIRONMENT}" '.environment_databases[$environment]' "${DATABASE_NAME_MAP}")"
           poetry run python scripts/validate_database_secret.py \
             --secret-arn "${DATABASE_SECRET_ARN}" \
             --expected-account-id "${EXPECTED_ACCOUNT_ID}" \

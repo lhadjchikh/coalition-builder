@@ -75,7 +75,7 @@ module "database" {
   db_allocated_storage       = var.db_allocated_storage
   db_engine_version          = var.db_engine_version
   db_instance_class          = var.db_instance_class
-  db_name                    = module.database_names.environment_database_names["prod"]
+  db_name                    = module.database_names.rds_initial_database_name
   db_username                = var.db_username
   db_password                = var.db_password
   app_db_username            = var.app_db_username

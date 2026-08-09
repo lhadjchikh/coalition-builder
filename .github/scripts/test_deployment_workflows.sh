@@ -112,6 +112,10 @@ require_step_text \
 require_step_text \
   "${lambda_workflow}" \
   "Validate database secret isolation" \
+  ".environment_databases[\$environment]"
+require_step_text \
+  "${lambda_workflow}" \
+  "Validate database secret isolation" \
   '--expected-database-name "${EXPECTED_DATABASE_NAME}"'
 require_step_text \
   "${lambda_workflow}" \
@@ -156,6 +160,10 @@ require_step_text \
   "${management_workflow}" \
   "Validate database secret isolation" \
   "github.event.inputs.action == 'schedule' ||"
+require_step_text \
+  "${management_workflow}" \
+  "Validate database secret isolation" \
+  ".environment_databases[\$environment]"
 require_step_text \
   "${management_workflow}" \
   "Validate database secret isolation" \

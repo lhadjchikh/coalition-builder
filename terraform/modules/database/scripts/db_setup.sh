@@ -490,7 +490,7 @@ update_secrets() {
     "password": "$app_password",
     "host": "$host",
     "port": "$port",
-    "dbname": "$database"
+    "dbname": "postgres"
 }
 EOF
   )
