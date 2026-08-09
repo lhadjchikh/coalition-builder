@@ -1,0 +1,25 @@
+{% extends "admin/base.html" %}
+{% comment %}
+  A copy of django/contrib/admin/templates/admin/base_site.html (Django 5.2) with a
+  link to the in-admin guide added to the user tools. Django gives no way to extend
+  an overridden template, so the branding and title blocks are reproduced verbatim.
+  Re-check this file against Django's version when upgrading; the branding test in
+  coalition/admin_help/tests/test_admin_integration.py catches a botched copy.
+{% endcomment %}
+{% load i18n %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+<div id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a></div>
+{% if user.is_anonymous %}
+  {% include "admin/color_theme_toggle.html" %}
+{% endif %}
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block userlinks %}
+<a href="{% url 'admin_help:index' %}">{% translate 'Admin guide' %}</a> /
+{{ block.super }}
+{% endblock %}

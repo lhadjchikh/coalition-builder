@@ -4,13 +4,17 @@ Tests for endorsement API endpoints.
 
 import json
 import uuid
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
-from django.contrib.auth.models import User
+from botocore.exceptions import ClientError
+from django.contrib.auth.models import Permission, User
 from django.core.cache import cache
-from django.test import Client
+from django.http import HttpResponse
+from django.test import Client, override_settings
+from django.utils import timezone
 
 from coalition.campaigns.models import PolicyCampaign
+from coalition.endorsements.email_service import EndorsementEmailService
 from coalition.endorsements.models import Endorsement
 from coalition.legal.models import LegalDocument, TermsAcceptance
 from coalition.stakeholders.models import Stakeholder
@@ -26,6 +30,75 @@ def get_valid_form_metadata() -> dict[str, str]:
         "ip_address": "192.168.1.100",
         "session_id": "test-session-123",
     }
+
+
+class EndorsementSurvivesEmailOutageTest(BaseTestCase):
+    """A broken mail path must not cost the user their submission.
+
+    ``create_endorsement`` sends the verification email inside
+    ``transaction.atomic``, so an exception escaping the email layer would
+    roll back the stakeholder, endorsement and terms acceptance and return a
+    500. The submission must persist and stay resendable instead.
+    """
+
+    def setUp(self) -> None:
+        super().setUp()
+        cache.clear()
+        self.client = Client()
+        self.campaign = PolicyCampaign.objects.create(
+            name="outage-campaign",
+            title="Outage Campaign",
+            summary="A campaign used to test email outages",
+            allow_endorsements=True,
+        )
+
+    def submit_endorsement(self) -> HttpResponse:
+        return self.client.post(
+            "/api/endorsements/",
+            data=json.dumps(
+                {
+                    "campaign_id": self.campaign.id,
+                    "stakeholder": {
+                        "first_name": "Dana",
+                        "last_name": "Reed",
+                        "email": "dana@example.com",
+                        "street_address": "1 Main St",
+                        "city": "Baltimore",
+                        "state": "MD",
+                        "zip_code": "21201",
+                        "type": "individual",
+                    },
+                    "statement": "I support this campaign",
+                    "public_display": True,
+                    "terms_accepted": True,
+                    "form_metadata": get_valid_form_metadata(),
+                },
+            ),
+            content_type="application/json",
+        )
+
+    @patch("coalition.endorsements.email_service.send_mail")
+    def test_endorsement_persists_when_mail_transport_fails(
+        self,
+        mock_send_mail: Mock,
+    ) -> None:
+        mock_send_mail.side_effect = ClientError(
+            {"Error": {"Code": "MessageRejected", "Message": "not verified"}},
+            "SendEmail",
+        )
+
+        response = self.submit_endorsement()
+
+        assert response.status_code == 200, response.content
+        stakeholder = Stakeholder.objects.get(email="dana@example.com")
+        endorsement = Endorsement.objects.get(
+            stakeholder=stakeholder,
+            campaign=self.campaign,
+        )
+        assert endorsement.statement == "I support this campaign"
+        # Never marked as sent, so the verification email can be resent.
+        assert endorsement.verification_sent_at is None
+        assert endorsement.email_verified is False
 
 
 class EndorsementAPITest(BaseTestCase):
@@ -81,6 +154,7 @@ class EndorsementAPITest(BaseTestCase):
         # Approve and verify the endorsement
         self.endorsement.email_verified = True
         self.endorsement.status = "approved"
+        self.endorsement.reviewed_at = timezone.now()
         self.endorsement.display_publicly = True
         self.endorsement.save()
 
@@ -111,6 +185,7 @@ class EndorsementAPITest(BaseTestCase):
         # Approve and verify the endorsement
         self.endorsement.email_verified = True
         self.endorsement.status = "approved"
+        self.endorsement.reviewed_at = timezone.now()
         self.endorsement.display_publicly = True
         self.endorsement.save()
 
@@ -247,6 +322,38 @@ class EndorsementAPITest(BaseTestCase):
         data = response.json()
         assert "not accepting endorsements" in data["detail"]
 
+    def test_create_endorsement_inactive_campaign(self) -> None:
+        """Inactive campaigns do not accept submissions through a stale form."""
+        self.campaign.active = False
+        self.campaign.save()
+
+        endorsement_data = {
+            "campaign_id": self.campaign.id,
+            "stakeholder": {
+                "first_name": "Test",
+                "last_name": "User",
+                "organization": "Test Org",
+                "email": "test@example.com",
+                "street_address": "123 Test St",
+                "city": "Richmond",
+                "state": "VA",
+                "zip_code": "23220",
+                "type": "other",
+            },
+            "terms_accepted": True,
+            "org_authorized": True,
+            "form_metadata": get_valid_form_metadata(),
+        }
+
+        response = self.client.post(
+            "/api/endorsements/",
+            data=json.dumps(endorsement_data),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 404
+        assert not Stakeholder.objects.filter(email="test@example.com").exists()
+
     def test_create_endorsement_nonexistent_campaign(self) -> None:
         """Test POST /api/endorsements/ with invalid campaign ID"""
         endorsement_data = {
@@ -332,6 +439,7 @@ class EndorsementAPITest(BaseTestCase):
         # Make original endorsement approved and verified for comparison
         self.endorsement.email_verified = True
         self.endorsement.status = "approved"
+        self.endorsement.reviewed_at = timezone.now()
         self.endorsement.display_publicly = True
         self.endorsement.save()
 
@@ -517,6 +625,20 @@ class EndorsementAPIEnhancedTest(BaseTestCase):
             password="testpass",
             is_staff=True,
         )
+        self.user.user_permissions.add(
+            Permission.objects.get(
+                codename="change_endorsement",
+                content_type__app_label="endorsements",
+            ),
+            Permission.objects.get(
+                codename="view_endorsement",
+                content_type__app_label="endorsements",
+            ),
+            Permission.objects.get(
+                codename="view_stakeholder",
+                content_type__app_label="stakeholders",
+            ),
+        )
 
         self.stakeholder = self.create_stakeholder(
             first_name="Test",
@@ -542,15 +664,52 @@ class EndorsementAPIEnhancedTest(BaseTestCase):
     def test_verify_endorsement_success(self) -> None:
         """Test successful endorsement verification"""
         token = str(self.endorsement.verification_token)
-        response = self.client.post(f"/api/endorsements/verify/{token}/")
+        with patch.object(
+            EndorsementEmailService,
+            "send_confirmation_email",
+        ) as send_approval_email:
+            response = self.client.post(f"/api/endorsements/verify/{token}/")
 
         assert response.status_code == 200
         data = response.json()
         assert "Email verified successfully" in data["message"]
+        send_approval_email.assert_not_called()
 
         self.endorsement.refresh_from_db()
         assert self.endorsement.email_verified is True
         assert self.endorsement.verified_at is not None
+
+    @override_settings(AUTO_APPROVE_VERIFIED_ENDORSEMENTS=True)
+    def test_verify_endorsement_sends_approval_email_when_auto_approved(self) -> None:
+        token = str(self.endorsement.verification_token)
+
+        with patch.object(
+            EndorsementEmailService,
+            "send_confirmation_email",
+        ) as send_approval_email:
+            response = self.client.post(f"/api/endorsements/verify/{token}/")
+
+        assert response.status_code == 200
+        self.endorsement.refresh_from_db()
+        assert self.endorsement.status == "approved"
+        send_approval_email.assert_called_once_with(self.endorsement)
+
+    def test_verify_endorsement_does_not_resend_existing_approval(self) -> None:
+        self.endorsement.status = "approved"
+        self.endorsement.save()
+        token = str(self.endorsement.verification_token)
+
+        with patch.object(
+            EndorsementEmailService,
+            "send_confirmation_email",
+        ) as send_approval_email:
+            response = self.client.post(f"/api/endorsements/verify/{token}/")
+
+        assert response.status_code == 200
+        self.endorsement.refresh_from_db()
+        assert self.endorsement.email_verified
+        assert self.endorsement.status == "approved"
+        send_approval_email.assert_not_called()
 
     def test_verify_endorsement_invalid_token_format(self) -> None:
         """Test endorsement verification with invalid token format"""
@@ -891,6 +1050,77 @@ class EndorsementAPIEnhancedTest(BaseTestCase):
 
         response = self.client.get("/api/endorsements/export/json/")
         assert response.status_code == 403
+
+    def test_staff_without_model_permissions_cannot_access_admin_endpoints(
+        self,
+    ) -> None:
+        permissionless_staff = User.objects.create_user(
+            username="permissionless-staff",
+            is_staff=True,
+        )
+        self.client.force_login(permissionless_staff)
+
+        responses = [
+            self.client.post(
+                f"/api/endorsements/admin/approve/{self.endorsement.id}/",
+            ),
+            self.client.post(
+                f"/api/endorsements/admin/reject/{self.endorsement.id}/",
+            ),
+            self.client.get("/api/endorsements/admin/pending/"),
+            self.client.get("/api/endorsements/export/csv/"),
+            self.client.get("/api/endorsements/export/json/"),
+        ]
+
+        assert [response.status_code for response in responses] == [403] * 5
+
+    def test_staff_with_view_permissions_cannot_change_endorsements(self) -> None:
+        viewer = User.objects.create_user(username="endorsement-viewer", is_staff=True)
+        viewer.user_permissions.add(
+            Permission.objects.get(
+                codename="view_endorsement",
+                content_type__app_label="endorsements",
+            ),
+            Permission.objects.get(
+                codename="view_stakeholder",
+                content_type__app_label="stakeholders",
+            ),
+        )
+        self.client.force_login(viewer)
+
+        responses = [
+            self.client.post(
+                f"/api/endorsements/admin/approve/{self.endorsement.id}/",
+            ),
+            self.client.post(
+                f"/api/endorsements/admin/reject/{self.endorsement.id}/",
+            ),
+        ]
+
+        assert [response.status_code for response in responses] == [403, 403]
+
+    def test_staff_needs_both_view_permissions_for_private_endorsement_data(
+        self,
+    ) -> None:
+        partial_viewer = User.objects.create_user(
+            username="partial-endorsement-viewer",
+            is_staff=True,
+        )
+        partial_viewer.user_permissions.add(
+            Permission.objects.get(
+                codename="view_endorsement",
+                content_type__app_label="endorsements",
+            ),
+        )
+        self.client.force_login(partial_viewer)
+
+        responses = [
+            self.client.get("/api/endorsements/admin/pending/"),
+            self.client.get("/api/endorsements/export/csv/"),
+            self.client.get("/api/endorsements/export/json/"),
+        ]
+
+        assert [response.status_code for response in responses] == [403, 403, 403]
 
 
 class TermsAcceptanceIntegrationTest(BaseTestCase):

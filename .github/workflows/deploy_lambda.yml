@@ -50,8 +50,10 @@ jobs:
           AWS_STORAGE_BUCKET_NAME: ${{ vars.AWS_STORAGE_BUCKET_NAME }}
           CLOUDFRONT_DOMAIN: ${{ vars.CLOUDFRONT_DOMAIN }}
           DATABASE_SECRET_ARN: ${{ secrets.DATABASE_SECRET_ARN }}
+          DEFAULT_FROM_EMAIL: ${{ vars.DEFAULT_FROM_EMAIL }}
           DEPLOYMENT_API_URL: ${{ steps.deployment_environment.outputs.environment == 'prod' && vars.PRODUCTION_API_URL || vars.DEVELOPMENT_API_URL }}
           DJANGO_SECRET_ARN: ${{ secrets.DJANGO_SECRET_ARN }}
+          SITE_URL: ${{ vars.SITE_URL }}
           VPC_SECURITY_GROUP_IDS: ${{ vars.VPC_SECURITY_GROUP_IDS }}
           VPC_SUBNET_IDS: ${{ vars.VPC_SUBNET_IDS }}
           ZAPPA_ROLE_NAME: ${{ vars.ZAPPA_ROLE_NAME }}
@@ -71,7 +73,9 @@ jobs:
           )
 
           if [[ "${{ steps.deployment_environment.outputs.environment }}" == "prod" ]]; then
-            required_names+=(CLOUDFRONT_DOMAIN)
+            # Without these, prod still sends mail — but from an address SES
+            # rejects, carrying verification links to http://localhost:3000.
+            required_names+=(CLOUDFRONT_DOMAIN SITE_URL DEFAULT_FROM_EMAIL)
           fi
 
           for required_name in "${required_names[@]}"; do
@@ -196,6 +200,12 @@ jobs:
           DATABASE_SECRET_ARN: ${{ secrets.DATABASE_SECRET_ARN }}
           DJANGO_SECRET_ARN: ${{ secrets.DJANGO_SECRET_ARN }}
           ZAPPA_ROLE_NAME: ${{ vars.ZAPPA_ROLE_NAME }}
+          # Email delivery settings baked into the Lambda environment
+          SITE_URL: ${{ vars.SITE_URL }}
+          API_URL: ${{ steps.deployment_environment.outputs.environment == 'prod' && vars.PRODUCTION_API_URL || vars.DEVELOPMENT_API_URL }}
+          DEFAULT_FROM_EMAIL: ${{ vars.DEFAULT_FROM_EMAIL }}
+          ADMIN_NOTIFICATION_EMAILS: ${{ vars.ADMIN_NOTIFICATION_EMAILS }}
+          SES_CONFIGURATION_SET: ${{ vars.SES_CONFIGURATION_SET }}
         run: |
           poetry run python scripts/configure_zappa.py
           poetry run zappa save-python-settings-file "${DEPLOYMENT_ENVIRONMENT}"

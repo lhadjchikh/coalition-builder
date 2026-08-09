@@ -77,3 +77,8 @@ variable "secret_recovery_days" {
   type        = number
   default     = 7
 }
+variable "sender_role_names" {
+  description = "IAM role names to grant SES sending rights, so role-based compute (Lambda) can send without static SMTP credentials"
+  type        = list(string)
+  default     = []
+}

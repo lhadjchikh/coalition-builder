@@ -10,10 +10,12 @@ as an integrated flow, covering gaps not addressed by individual unit tests.
 
 import json
 import uuid
+from unittest.mock import patch
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Permission, User
 from django.core.cache import cache
 from django.test import Client, override_settings
+from django.utils import timezone
 
 from coalition.campaigns.models import PolicyCampaign
 from coalition.endorsements.models import Endorsement
@@ -34,6 +36,20 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
             email="admin@example.com",
             password="testpass",
             is_staff=True,
+        )
+        self.admin_user.user_permissions.add(
+            Permission.objects.get(
+                codename="change_endorsement",
+                content_type__app_label="endorsements",
+            ),
+            Permission.objects.get(
+                codename="view_endorsement",
+                content_type__app_label="endorsements",
+            ),
+            Permission.objects.get(
+                codename="view_stakeholder",
+                content_type__app_label="stakeholders",
+            ),
         )
 
         self.campaign = PolicyCampaign.objects.create(
@@ -148,8 +164,16 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
         assert response.status_code == 200
         assert len(response.json()) == 0
 
-        # Admin selects for display
+        # Selecting for display does not bypass the required human review.
         endorsement.display_publicly = True
+        endorsement.save()
+
+        response = self.client.get("/api/endorsements/")
+        assert response.status_code == 200
+        assert len(response.json()) == 0
+
+        endorsement.reviewed_by = self.admin_user
+        endorsement.reviewed_at = timezone.now()
         endorsement.save()
 
         response = self.client.get("/api/endorsements/")
@@ -214,7 +238,7 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
             email_verified=True,
         )
 
-        # Create an approved endorsement (should NOT appear in pending list)
+        # A human-reviewed approved endorsement is complete and should not appear.
         approved_stakeholder = self.create_stakeholder(
             first_name="Approved",
             last_name="User",
@@ -223,6 +247,22 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
         )
         Endorsement.objects.create(
             stakeholder=approved_stakeholder,
+            campaign=self.campaign,
+            status="approved",
+            email_verified=True,
+            reviewed_by=self.admin_user,
+            reviewed_at=timezone.now(),
+        )
+
+        # Auto-approved endorsements still require a human review.
+        auto_approved_stakeholder = self.create_stakeholder(
+            first_name="Auto",
+            last_name="Approved",
+            email="auto-approved@example.com",
+            type="individual",
+        )
+        auto_approved = Endorsement.objects.create(
+            stakeholder=auto_approved_stakeholder,
             campaign=self.campaign,
             status="approved",
             email_verified=True,
@@ -236,10 +276,10 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
         returned_ids = {item["id"] for item in data}
         assert pending.id in returned_ids
         assert verified.id in returned_ids
-        assert len(data) == 2  # Only pending and verified
+        assert auto_approved.id in returned_ids
+        assert len(data) == 3
 
-    def test_admin_approve_already_approved_is_idempotent(self) -> None:
-        """Test that approving an already-approved endorsement is handled gracefully."""
+    def test_admin_approve_records_review_for_auto_approved_endorsement(self) -> None:
         stakeholder = self.create_stakeholder(
             email="test@example.com",
             type="individual",
@@ -248,16 +288,53 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
             stakeholder=stakeholder,
             campaign=self.campaign,
             status="approved",
+            email_verified=True,
+        )
+
+        self.client.force_login(self.admin_user)
+        with patch(
+            "coalition.api.endorsements.EndorsementEmailService.send_confirmation_email",
+        ) as send_confirmation_email:
+            response = self.client.post(
+                f"/api/endorsements/admin/approve/{endorsement.id}/",
+            )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert "review recorded" in data["message"].lower()
+        endorsement.refresh_from_db()
+        assert endorsement.reviewed_by == self.admin_user
+        assert endorsement.reviewed_at is not None
+        send_confirmation_email.assert_not_called()
+
+        pending_response = self.client.get("/api/endorsements/admin/pending/")
+        pending_ids = {item["id"] for item in pending_response.json()}
+        assert endorsement.id not in pending_ids
+
+    def test_admin_approve_already_reviewed_is_idempotent(self) -> None:
+        stakeholder = self.create_stakeholder(
+            email="test@example.com",
+            type="individual",
+        )
+        original_reviewed_at = timezone.now()
+        endorsement = Endorsement.objects.create(
+            stakeholder=stakeholder,
+            campaign=self.campaign,
+            status="approved",
             reviewed_by=self.admin_user,
+            reviewed_at=original_reviewed_at,
         )
 
         self.client.force_login(self.admin_user)
         response = self.client.post(
             f"/api/endorsements/admin/approve/{endorsement.id}/",
         )
+
         assert response.status_code == 200
-        data = response.json()
-        assert "already approved" in data["message"].lower()
+        assert "already approved" in response.json()["message"].lower()
+        endorsement.refresh_from_db()
+        assert endorsement.reviewed_by == self.admin_user
+        assert endorsement.reviewed_at == original_reviewed_at
 
     def test_admin_reject_already_rejected_is_idempotent(self) -> None:
         """Test that rejecting an already-rejected endorsement is handled gracefully."""
@@ -486,7 +563,7 @@ class ApprovalWorkflowDisplayConditionsTest(BaseTestCase):
         assert len(response.json()) == 0
 
     def test_all_conditions_met_shows_in_public_list(self) -> None:
-        """Test that meeting all four conditions makes endorsement visible."""
+        """Test that meeting all five conditions makes endorsement visible."""
         stakeholder = self.create_stakeholder(
             email="visible@example.com",
             type="individual",
@@ -497,6 +574,7 @@ class ApprovalWorkflowDisplayConditionsTest(BaseTestCase):
             public_display=True,
             email_verified=True,
             status="approved",
+            reviewed_at=timezone.now(),
             display_publicly=True,
         )
 
@@ -504,7 +582,7 @@ class ApprovalWorkflowDisplayConditionsTest(BaseTestCase):
         assert response.status_code == 200
         data = response.json()
         assert len(data) == 1
-        assert data[0]["stakeholder"]["email"] == "visible@example.com"
+        assert data[0]["stakeholder"]["id"] == stakeholder.id
 
     def test_user_withdraws_public_consent_hides_endorsement(self) -> None:
         """Test that user setting public_display=False hides their endorsement."""
@@ -518,6 +596,7 @@ class ApprovalWorkflowDisplayConditionsTest(BaseTestCase):
             public_display=True,
             email_verified=True,
             status="approved",
+            reviewed_at=timezone.now(),
             display_publicly=True,
         )
 
@@ -546,6 +625,7 @@ class ApprovalWorkflowDisplayConditionsTest(BaseTestCase):
             public_display=True,
             email_verified=True,
             status="approved",
+            reviewed_at=timezone.now(),
             display_publicly=True,
         )
 
