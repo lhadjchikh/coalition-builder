@@ -72,7 +72,15 @@ func TestEnvironmentDatabasesUseSharedAuthoritativeNames(t *testing.T) {
 	assert.Contains(t, databaseModule, `host     = aws_db_instance.postgres.address`)
 	assert.Contains(t, databaseModule, `port     = aws_db_instance.postgres.port`)
 	assert.Contains(t, databaseModule, `dbname = "postgres"`)
-	assert.Contains(t, databaseSetupScript, `"dbname": "postgres"`)
+	applicationSecretStart := strings.Index(databaseSetupScript, "app_secret_json=$(")
+	masterSecretStart := strings.Index(databaseSetupScript, "master_secret_json=$(")
+	require.GreaterOrEqual(t, applicationSecretStart, 0)
+	require.Greater(t, masterSecretStart, applicationSecretStart)
+	applicationSecret := databaseSetupScript[applicationSecretStart:masterSecretStart]
+	masterSecret := databaseSetupScript[masterSecretStart:]
+	assert.Contains(t, applicationSecret, `"dbname": "$database"`)
+	assert.NotContains(t, applicationSecret, `"dbname": "postgres"`)
+	assert.Contains(t, masterSecret, `"dbname": "postgres"`)
 	assert.Contains(t, sharedOutputs, "value       = module.database_names.environment_database_names")
 
 	for _, environment := range []string{"dev", "prod"} {
