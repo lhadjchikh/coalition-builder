@@ -6,6 +6,7 @@ from typing import Any
 
 from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -612,7 +613,14 @@ def admin_list_pending_endorsements(request: HttpRequest) -> list[Endorsement]:
 
     queryset = (
         Endorsement.objects.select_related("stakeholder", "campaign")
-        .filter(status__in=["pending", "verified"])
+        .filter(
+            Q(status__in=["pending", "verified"])
+            | Q(
+                status="approved",
+                email_verified=True,
+                reviewed_at__isnull=True,
+            ),
+        )
         .order_by("-created_at")
     )
 

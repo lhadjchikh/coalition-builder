@@ -237,7 +237,7 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
             email_verified=True,
         )
 
-        # Create an approved endorsement (should NOT appear in pending list)
+        # A human-reviewed approved endorsement is complete and should not appear.
         approved_stakeholder = self.create_stakeholder(
             first_name="Approved",
             last_name="User",
@@ -246,6 +246,22 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
         )
         Endorsement.objects.create(
             stakeholder=approved_stakeholder,
+            campaign=self.campaign,
+            status="approved",
+            email_verified=True,
+            reviewed_by=self.admin_user,
+            reviewed_at=timezone.now(),
+        )
+
+        # Auto-approved endorsements still require a human review.
+        auto_approved_stakeholder = self.create_stakeholder(
+            first_name="Auto",
+            last_name="Approved",
+            email="auto-approved@example.com",
+            type="individual",
+        )
+        auto_approved = Endorsement.objects.create(
+            stakeholder=auto_approved_stakeholder,
             campaign=self.campaign,
             status="approved",
             email_verified=True,
@@ -259,7 +275,8 @@ class EndorsementApprovalLifecycleTest(BaseTestCase):
         returned_ids = {item["id"] for item in data}
         assert pending.id in returned_ids
         assert verified.id in returned_ids
-        assert len(data) == 2  # Only pending and verified
+        assert auto_approved.id in returned_ids
+        assert len(data) == 3
 
     def test_admin_approve_already_approved_is_idempotent(self) -> None:
         """Test that approving an already-approved endorsement is handled gracefully."""
