@@ -71,7 +71,7 @@ class HelpRegistryTest(TestCase):
             "/team",
             "our team",
             "profile page",
-            "5 minutes",
+            "next public request",
         ):
             with self.subTest(required_guidance=required_guidance):
                 assert required_guidance in source.lower()

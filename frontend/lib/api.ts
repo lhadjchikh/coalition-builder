@@ -19,15 +19,14 @@ class SSRApiClient extends BaseApiClient {
     options?: RequestInit
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
+    const revalidationOptions =
+      options?.cache === "no-store" ? {} : { next: { revalidate: 300 } };
 
     try {
       const response = await fetch(url, {
         headers: this.defaultHeaders,
         signal: options?.signal ?? AbortSignal.timeout(this.timeout),
-        // Add cache settings for SSR
-        next: {
-          revalidate: 300, // Revalidate every 5 minutes
-        },
+        ...revalidationOptions,
         ...options,
       });
 

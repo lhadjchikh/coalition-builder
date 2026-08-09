@@ -29,6 +29,6 @@ Hiding a group removes the entire group and all of its people from the public AP
 
 When the last active person in the last visible group is deactivated or deleted, `/team` returns 404 and the **Our Team** navigation link disappears. Reactivating a person in a visible group restores both.
 
-## Allow time for publication
+## Publication timing
 
-Public team and profile pages are cached. After saving a group, person, headshot, biography, or team content block, allow up to **5 minutes** for every public page to show the change. The navigation availability check is refreshed independently and may update sooner.
+The team directory, optional profiles, team content blocks, and navigation availability are fetched without a stale server cache. After saving a group, person, biography, or team content block, the updated content appears on the **next public request**.

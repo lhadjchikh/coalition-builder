@@ -22,6 +22,8 @@ export interface ApiClientConfig {
   headers?: Record<string, string>;
 }
 
+const FRESH_REQUEST_OPTIONS: RequestInit = { cache: "no-store" };
+
 export class ApiRequestError extends Error {
   constructor(public readonly status: number) {
     super(`HTTP error! status: ${status}`);
@@ -127,13 +129,21 @@ export abstract class BaseApiClient {
     return this.request<ContentBlock>(`/api/content-blocks/${blockId}/`);
   }
 
+  async getTeamContentBlocks(): Promise<ContentBlock[]> {
+    return this.request<ContentBlock[]>(
+      "/api/content-blocks/?page_type=team",
+      FRESH_REQUEST_OPTIONS
+    );
+  }
+
   async getPeople(): Promise<PersonGroup[]> {
-    return this.request<PersonGroup[]>("/api/people/");
+    return this.request<PersonGroup[]>("/api/people/", FRESH_REQUEST_OPTIONS);
   }
 
   async getPerson(slug: string): Promise<PersonDetail> {
     return this.request<PersonDetail>(
-      `/api/people/${encodeURIComponent(slug)}/`
+      `/api/people/${encodeURIComponent(slug)}/`,
+      FRESH_REQUEST_OPTIONS
     );
   }
 

@@ -10,7 +10,7 @@ jest.mock("../../../lib/api", () => ({
   ssrApiClient: {
     getHomepage: jest.fn(),
     getPeople: jest.fn(),
-    getContentBlocksByPageType: jest.fn(),
+    getTeamContentBlocks: jest.fn(),
   },
 }));
 jest.mock("../../../utils/theme", () => ({
@@ -58,13 +58,11 @@ describe("/team route", () => {
     });
     (ssrApiClient.getHomepage as jest.Mock).mockResolvedValue(homepage);
     (ssrApiClient.getPeople as jest.Mock).mockResolvedValue(groups);
-    (ssrApiClient.getContentBlocksByPageType as jest.Mock).mockResolvedValue(
-      []
-    );
+    (ssrApiClient.getTeamContentBlocks as jest.Mock).mockResolvedValue([]);
   });
 
   it("renders publishable groups and team content", async () => {
-    (ssrApiClient.getContentBlocksByPageType as jest.Mock).mockResolvedValue([
+    (ssrApiClient.getTeamContentBlocks as jest.Mock).mockResolvedValue([
       { id: 1 },
     ]);
 
@@ -73,9 +71,7 @@ describe("/team route", () => {
     expect(screen.getByTestId("team-page")).toHaveTextContent("Test Coalition");
     expect(screen.getByTestId("team-page")).toHaveTextContent("1 groups");
     expect(screen.getByTestId("team-page")).toHaveTextContent("1 blocks");
-    expect(ssrApiClient.getContentBlocksByPageType).toHaveBeenCalledWith(
-      "team"
-    );
+    expect(ssrApiClient.getTeamContentBlocks).toHaveBeenCalledTimes(1);
   });
 
   it("returns not found after a successful empty people response", async () => {

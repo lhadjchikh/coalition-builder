@@ -32,7 +32,7 @@ export default async function TeamRoute() {
   const [homepageState, groupsState, blocksState] = await Promise.allSettled([
     ssrApiClient.getHomepage(),
     ssrApiClient.getPeople(),
-    ssrApiClient.getContentBlocksByPageType("team"),
+    ssrApiClient.getTeamContentBlocks(),
   ]);
 
   const homepage: HomePage =
