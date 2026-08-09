@@ -82,6 +82,29 @@ class AdminTimezoneMiddlewareTest(TestCase):
 
         assert self.call_middleware(request) == settings.TIME_ZONE
 
+    def test_restores_preexisting_timezone_after_response(self) -> None:
+        SiteConfiguration.objects.create(timezone="America/Denver")
+        timezone.activate("Europe/Paris")
+        request = self.factory.get("/admin/")
+
+        self.call_middleware(request)
+
+        assert timezone.get_current_timezone_name() == "Europe/Paris"
+
+    def test_restores_preexisting_timezone_after_exception(self) -> None:
+        SiteConfiguration.objects.create(timezone="America/Denver")
+        timezone.activate("Europe/Paris")
+        request = self.factory.get("/admin/")
+
+        def raise_error(captured_request: HttpRequest) -> HttpResponse:
+            raise RuntimeError("response failed")
+
+        middleware = AdminTimezoneMiddleware(raise_error)
+        with self.assertRaises(RuntimeError):
+            middleware(request)
+
+        assert timezone.get_current_timezone_name() == "Europe/Paris"
+
     def test_does_not_query_configuration_for_public_request(self) -> None:
         SiteConfiguration.objects.create(timezone="America/Los_Angeles")
         request = self.factory.get("/")

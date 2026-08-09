@@ -18,8 +18,5 @@ class AdminTimezoneMiddleware:
         if not request.path_info.startswith("/admin/"):
             return self.get_response(request)
 
-        timezone.activate(SiteConfiguration.get_timezone())
-        try:
+        with timezone.override(SiteConfiguration.get_timezone()):
             return self.get_response(request)
-        finally:
-            timezone.deactivate()
