@@ -550,3 +550,28 @@ class TestEmailConfiguration:
         settings = _generate_settings(tmp_path, {"DEPLOYMENT_ENVIRONMENT": "dev"})
 
         assert "SITE_URL" not in settings["dev"]["environment_variables"]
+
+    def test_selected_staging_receives_email_settings(self, tmp_path: Path) -> None:
+        """A generated non-debug staging Lambda must not use local email defaults."""
+        email_settings = {
+            "SITE_URL": "https://staging.example.org",
+            "API_URL": "https://api.staging.example.org",
+            "DEFAULT_FROM_EMAIL": "admin@example.org",
+            "ADMIN_NOTIFICATION_EMAILS": "ops@example.org",
+            "SES_CONFIGURATION_SET": "example-staging",
+        }
+
+        settings = _generate_settings(
+            tmp_path,
+            {
+                "ENABLE_STAGING": "true",
+                "DEPLOYMENT_ENVIRONMENT": "staging",
+                **email_settings,
+            },
+        )
+
+        staging_environment = settings["staging"]["environment_variables"]
+        assert all(
+            staging_environment[name] == configured_value
+            for name, configured_value in email_settings.items()
+        )

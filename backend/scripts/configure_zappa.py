@@ -406,16 +406,21 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         else:
             staging_docker_image = "public.ecr.aws/lambda/python:3.13"
 
-        staging_environment_variables = with_stage_cloudfront_domain(
-            {
-                "ENVIRONMENT": "staging",
-                "DEBUG": "false",
-                "DATABASE_NAME": staging_db_name,
-                "AWS_STORAGE_BUCKET_NAME": staging_assets_bucket,
-            },
+        staging_environment_variables = with_email_settings(
+            with_stage_cloudfront_domain(
+                {
+                    "ENVIRONMENT": "staging",
+                    "DEBUG": "false",
+                    "DATABASE_NAME": staging_db_name,
+                    "AWS_STORAGE_BUCKET_NAME": staging_assets_bucket,
+                },
+                deployment_environment,
+                STAGING_STAGE_NAMES,
+                cloudfront_domain,
+            ),
             deployment_environment,
             STAGING_STAGE_NAMES,
-            cloudfront_domain,
+            email_settings,
         )
 
         settings["staging"] = {
