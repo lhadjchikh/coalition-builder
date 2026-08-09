@@ -32,6 +32,47 @@ describe("next.config.js rewrites", () => {
   });
 });
 
+describe("next.config.js redirects", () => {
+  let redirects;
+
+  beforeAll(async () => {
+    redirects = await nextConfig.redirects();
+  });
+
+  it("redirects /admin to the backend admin page", () => {
+    expect(redirects).toContainEqual({
+      source: "/admin",
+      destination: `${nextConfig.env.API_URL.replace(/\/+$/, "")}/admin/`,
+      permanent: false,
+    });
+  });
+
+  it("normalizes the production API URL before appending /admin/", async () => {
+    const originalApiUrl = process.env.API_URL;
+    process.env.API_URL = "https://api.landandbay.org/";
+    jest.resetModules();
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const productionConfig = require("../next.config.js");
+      const productionRedirects = await productionConfig.redirects();
+
+      expect(productionRedirects).toContainEqual({
+        source: "/admin",
+        destination: "https://api.landandbay.org/admin/",
+        permanent: false,
+      });
+    } finally {
+      if (originalApiUrl === undefined) {
+        delete process.env.API_URL;
+      } else {
+        process.env.API_URL = originalApiUrl;
+      }
+      jest.resetModules();
+    }
+  });
+});
+
 describe("next.config.js build type checking", () => {
   it("uses the test-excluding TypeScript build configuration", () => {
     expect(nextConfig.typescript.tsconfigPath).toBe("tsconfig.build.json");

@@ -5,6 +5,7 @@ const API_BASE_URL =
   process.env.API_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
   "http://localhost:8000";
+const ADMIN_PAGE_URL = `${API_BASE_URL.replace(/\/+$/, "")}/admin/`;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -26,6 +27,16 @@ const nextConfig = {
   env: {
     API_URL: API_BASE_URL,
     NEXT_PUBLIC_API_URL: API_BASE_URL,
+  },
+
+  async redirects() {
+    return [
+      {
+        source: "/admin",
+        destination: ADMIN_PAGE_URL,
+        permanent: false,
+      },
+    ];
   },
 
   // Rewrites for API calls - routes relative paths to backend.
