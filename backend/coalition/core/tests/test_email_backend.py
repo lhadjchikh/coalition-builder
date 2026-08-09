@@ -1,193 +1,80 @@
 """
 Tests for the SafeSMTPBackend email backend
+
+The backend deliberately has two modes: in DEBUG it prints to the console so
+local development never needs a mail server, and outside DEBUG every failure
+is raised so a broken mail path cannot masquerade as a delivered email.
 """
 
-import socket
+from smtplib import SMTPAuthenticationError, SMTPServerDisconnected
 from typing import Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
+from django.core.exceptions import ImproperlyConfigured
 from django.core.mail import EmailMessage
-from django.test import override_settings
 
 from coalition.core.email_backend import SafeSMTPBackend
 
 
-class TestSafeSMTPBackend:
-    """Test the SafeSMTPBackend class"""
+def make_message() -> EmailMessage:
+    return EmailMessage("Test", "Body", "from@example.com", ["to@example.com"])
 
-    def test_init_sets_timeout(self) -> None:
-        """Test that initialization sets a timeout"""
-        backend = SafeSMTPBackend()
-        assert backend.timeout == 10
+
+class TestSafeSMTPBackendConfiguration:
+    """Construction and configuration handling"""
+
+    def test_init_sets_default_timeout(self) -> None:
+        assert SafeSMTPBackend().timeout == 10
 
     def test_init_with_custom_timeout(self) -> None:
-        """Test initialization with custom timeout"""
-        backend = SafeSMTPBackend(timeout=5)
-        assert backend.timeout == 5
+        assert SafeSMTPBackend(timeout=5).timeout == 5
 
     def test_send_empty_messages_returns_zero(self) -> None:
-        """Test sending empty list of messages returns 0"""
-        backend = SafeSMTPBackend()
-        result = backend.send_messages([])
-        assert result == 0
+        assert SafeSMTPBackend().send_messages([]) == 0
 
-    @patch("coalition.core.email_backend.SMTPBackend.send_messages")
-    def test_send_messages_success(self, mock_send: Any) -> None:
-        """Test successful sending via SMTP"""
-        mock_send.return_value = 1
 
+class TestSafeSMTPBackendInDebug:
+    """In DEBUG the console stands in for a real mail server"""
+
+    @pytest.fixture(autouse=True)
+    def _debug_mode(self, settings: Any) -> None:
+        settings.DEBUG = True
+
+    def test_console_is_used_even_when_smtp_is_configured(self) -> None:
         backend = SafeSMTPBackend(host="smtp.example.com", port=587)
-        message = EmailMessage("Test", "Body", "from@example.com", ["to@example.com"])
+        message = make_message()
 
-        with patch("socket.socket") as mock_socket:
-            mock_sock_instance = MagicMock()
-            mock_sock_instance.connect_ex.return_value = 0  # Success
-            mock_socket.return_value.__enter__.return_value = mock_sock_instance
-
+        with patch.object(backend.console_backend, "send_messages") as mock_console:
+            mock_console.return_value = 1
             result = backend.send_messages([message])
 
         assert result == 1
-        mock_send.assert_called_once()
+        mock_console.assert_called_once_with([message])
 
-    def test_send_messages_no_host_falls_back_to_console(self) -> None:
-        """Test that missing host falls back to console"""
-        backend = SafeSMTPBackend()  # No host/port configured
+    def test_console_is_used_when_smtp_is_not_configured(self) -> None:
+        backend = SafeSMTPBackend()
         backend.host = None
 
-        message = EmailMessage("Test", "Body", "from@example.com", ["to@example.com"])
-
         with patch.object(backend.console_backend, "send_messages") as mock_console:
             mock_console.return_value = 1
-            result = backend.send_messages([message])
+            result = backend.send_messages([make_message()])
 
         assert result == 1
-        mock_console.assert_called_once_with([message])
 
-    def test_send_messages_no_port_falls_back_to_console(self) -> None:
-        """Test that missing port falls back to console"""
-        backend = SafeSMTPBackend(host="smtp.example.com")
-        backend.port = None
-
-        message = EmailMessage("Test", "Body", "from@example.com", ["to@example.com"])
-
-        with patch.object(backend.console_backend, "send_messages") as mock_console:
-            mock_console.return_value = 1
-            result = backend.send_messages([message])
-
-        assert result == 1
-        mock_console.assert_called_once()
-
-    @override_settings(DEBUG=True)
-    def test_send_messages_debug_mode_uses_console(self) -> None:
-        """Test that DEBUG mode always uses console"""
-        backend = SafeSMTPBackend(host="smtp.example.com", port=587)
-        message = EmailMessage("Test", "Body", "from@example.com", ["to@example.com"])
-
-        with patch.object(backend.console_backend, "send_messages") as mock_console:
-            mock_console.return_value = 1
-            result = backend.send_messages([message])
-
-        assert result == 1
-        mock_console.assert_called_once_with([message])
-
-    def test_send_messages_connection_refused_falls_back(self) -> None:
-        """Test fallback when SMTP connection is refused"""
-        backend = SafeSMTPBackend(host="smtp.example.com", port=587)
-        message = EmailMessage("Test", "Body", "from@example.com", ["to@example.com"])
-
-        with patch("socket.socket") as mock_socket:
-            mock_sock_instance = MagicMock()
-            mock_sock_instance.connect_ex.return_value = 1  # Connection refused
-            mock_socket.return_value.__enter__.return_value = mock_sock_instance
-
-            with patch.object(backend.console_backend, "send_messages") as mock_console:
-                mock_console.return_value = 1
-                result = backend.send_messages([message])
-
-        assert result == 1
-        mock_console.assert_called_once()
-
-    def test_send_messages_socket_timeout_falls_back(self) -> None:
-        """Test fallback when socket times out"""
-        backend = SafeSMTPBackend(host="smtp.example.com", port=587)
-        message = EmailMessage("Test", "Body", "from@example.com", ["to@example.com"])
-
-        with patch("socket.socket") as mock_socket:
-            mock_socket.side_effect = TimeoutError("Connection timed out")
-
-            with patch.object(backend.console_backend, "send_messages") as mock_console:
-                mock_console.return_value = 1
-                result = backend.send_messages([message])
-
-        assert result == 1
-        mock_console.assert_called_once()
-
-    def test_send_messages_socket_gaierror_falls_back(self) -> None:
-        """Test fallback when hostname resolution fails"""
-        backend = SafeSMTPBackend(host="invalid.hostname.local", port=587)
-        message = EmailMessage("Test", "Body", "from@example.com", ["to@example.com"])
-
-        with patch("socket.socket") as mock_socket:
-            mock_socket.side_effect = socket.gaierror("Name resolution failed")
-
-            with patch.object(backend.console_backend, "send_messages") as mock_console:
-                mock_console.return_value = 1
-                result = backend.send_messages([message])
-
-        assert result == 1
-        mock_console.assert_called_once()
-
-    @override_settings(DEBUG=True)
     @patch("coalition.core.email_backend.SMTPBackend.send_messages")
-    def test_send_messages_smtp_exception_falls_back(self, mock_send: Any) -> None:
-        """Test fallback when SMTP sending fails in DEBUG mode"""
-        mock_send.side_effect = Exception("SMTP Error")
-
+    def test_smtp_is_never_attempted(self, mock_send: Any) -> None:
         backend = SafeSMTPBackend(host="smtp.example.com", port=587)
-        message = EmailMessage("Test", "Body", "from@example.com", ["to@example.com"])
 
-        with patch("socket.socket") as mock_socket:
-            mock_sock_instance = MagicMock()
-            mock_sock_instance.connect_ex.return_value = 0  # Connection OK
-            mock_socket.return_value.__enter__.return_value = mock_sock_instance
+        with patch.object(backend.console_backend, "send_messages") as mock_console:
+            mock_console.return_value = 1
+            backend.send_messages([make_message()])
 
-            with patch.object(backend.console_backend, "send_messages") as mock_console:
-                mock_console.return_value = 1
-                result = backend.send_messages([message])
+        mock_send.assert_not_called()
 
-        assert result == 1
-        mock_console.assert_called_once()
-
-    @override_settings(DEBUG=False)
-    @patch("coalition.core.email_backend.SMTPBackend.send_messages")
-    def test_send_messages_smtp_exception_raises_in_production(
-        self,
-        mock_send: Any,
-    ) -> None:
-        """Test that SMTP exceptions are raised in production"""
-        mock_send.side_effect = Exception("SMTP Error")
-
-        backend = SafeSMTPBackend(host="smtp.example.com", port=587)
-        message = EmailMessage("Test", "Body", "from@example.com", ["to@example.com"])
-
-        with patch("socket.socket") as mock_socket:
-            mock_sock_instance = MagicMock()
-            mock_sock_instance.connect_ex.return_value = 0  # Connection OK
-            mock_socket.return_value.__enter__.return_value = mock_sock_instance
-
-            with pytest.raises(Exception, match="SMTP Error"):
-                backend.send_messages([message])
-
-    def test_send_multiple_messages(self) -> None:
-        """Test sending multiple messages"""
+    def test_multiple_messages_go_to_console_together(self) -> None:
         backend = SafeSMTPBackend()
-        backend.host = None  # Force console backend
-
-        messages = [
-            EmailMessage("Test1", "Body1", "from@example.com", ["to1@example.com"]),
-            EmailMessage("Test2", "Body2", "from@example.com", ["to2@example.com"]),
-        ]
+        messages = [make_message(), make_message()]
 
         with patch.object(backend.console_backend, "send_messages") as mock_console:
             mock_console.return_value = 2
@@ -195,3 +82,73 @@ class TestSafeSMTPBackend:
 
         assert result == 2
         mock_console.assert_called_once_with(messages)
+
+
+class TestSafeSMTPBackendInProduction:
+    """Outside DEBUG, mail must be delivered or the failure must be raised"""
+
+    @pytest.fixture(autouse=True)
+    def _production_mode(self, settings: Any) -> None:
+        settings.DEBUG = False
+
+    @patch("coalition.core.email_backend.SMTPBackend.send_messages")
+    def test_successful_send_returns_count(self, mock_send: Any) -> None:
+        mock_send.return_value = 1
+        backend = SafeSMTPBackend(host="smtp.example.com", port=587)
+
+        assert backend.send_messages([make_message()]) == 1
+        mock_send.assert_called_once()
+
+    @patch("coalition.core.email_backend.SMTPBackend.send_messages")
+    def test_unreachable_server_raises_instead_of_logging_to_console(
+        self,
+        mock_send: Any,
+    ) -> None:
+        """The failure mode that silently broke production endorsement email."""
+        mock_send.side_effect = SMTPServerDisconnected("Connection unexpectedly closed")
+        backend = SafeSMTPBackend(host="email-smtp.us-east-1.amazonaws.com", port=587)
+
+        with (
+            patch.object(backend.console_backend, "send_messages") as mock_console,
+            pytest.raises(SMTPServerDisconnected),
+        ):
+            backend.send_messages([make_message()])
+
+        mock_console.assert_not_called()
+
+    @patch("coalition.core.email_backend.SMTPBackend.send_messages")
+    def test_connection_timeout_raises(self, mock_send: Any) -> None:
+        mock_send.side_effect = TimeoutError("timed out")
+        backend = SafeSMTPBackend(host="email-smtp.us-east-1.amazonaws.com", port=587)
+
+        with pytest.raises(TimeoutError):
+            backend.send_messages([make_message()])
+
+    @patch("coalition.core.email_backend.SMTPBackend.send_messages")
+    def test_bad_credentials_raise(self, mock_send: Any) -> None:
+        mock_send.side_effect = SMTPAuthenticationError(535, b"Authentication failed")
+        backend = SafeSMTPBackend(host="smtp.example.com", port=587)
+
+        with pytest.raises(SMTPAuthenticationError):
+            backend.send_messages([make_message()])
+
+    def test_missing_host_raises_rather_than_discarding_mail(self) -> None:
+        backend = SafeSMTPBackend()
+        backend.host = None
+
+        with pytest.raises(ImproperlyConfigured, match="EMAIL_HOST"):
+            backend.send_messages([make_message()])
+
+    def test_missing_port_raises_rather_than_discarding_mail(self) -> None:
+        backend = SafeSMTPBackend(host="smtp.example.com")
+        backend.port = None
+
+        with pytest.raises(ImproperlyConfigured, match="EMAIL_PORT"):
+            backend.send_messages([make_message()])
+
+    def test_empty_messages_still_returns_zero_without_configuration(self) -> None:
+        """Nothing to send is not a misconfiguration."""
+        backend = SafeSMTPBackend()
+        backend.host = None
+
+        assert backend.send_messages([]) == 0

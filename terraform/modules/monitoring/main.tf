@@ -293,3 +293,68 @@ resource "awscc_ce_anomaly_subscription" "project_anomaly_subscription" {
   # Alert on anomalies with impact >= $5
   threshold = 5
 }
+
+# Email delivery failure alarm
+#
+# The endorsement email service converts transport failures into a logged
+# error rather than an exception, so that a broken mail path never rolls back
+# the submission the user just made. That containment is only safe if someone
+# is told: this alarm is what makes the failure loud.
+resource "aws_cloudwatch_log_metric_filter" "email_delivery_failure" {
+  count = var.application_log_group_name != "" ? 1 : 0
+
+  name           = "${var.prefix}-email-delivery-failure"
+  log_group_name = var.application_log_group_name
+
+  # Marker emitted by coalition.endorsements.email_service.DELIVERY_FAILURE_MARKER
+  pattern = "EMAIL_DELIVERY_FAILED"
+
+  metric_transformation {
+    name          = "EmailDeliveryFailures"
+    namespace     = "${var.prefix}/Application"
+    value         = "1"
+    default_value = "0"
+  }
+}
+
+resource "aws_sns_topic" "email_delivery_alerts" {
+  count = var.application_log_group_name != "" ? 1 : 0
+
+  name = "${var.prefix}-email-delivery-alerts"
+
+  tags = {
+    Name = "${var.prefix}-email-delivery-alerts"
+  }
+}
+
+resource "aws_sns_topic_subscription" "email_delivery_alerts" {
+  count = var.application_log_group_name != "" ? 1 : 0
+
+  topic_arn = aws_sns_topic.email_delivery_alerts[0].arn
+  protocol  = "email"
+  endpoint  = var.alert_email
+}
+
+resource "aws_cloudwatch_metric_alarm" "email_delivery_failure" {
+  count = var.application_log_group_name != "" ? 1 : 0
+
+  alarm_name        = "${var.prefix}-email-delivery-failure"
+  alarm_description = "Outbound email failed to send. Endorsement verification links are not reaching users."
+
+  namespace   = "${var.prefix}/Application"
+  metric_name = aws_cloudwatch_log_metric_filter.email_delivery_failure[0].metric_transformation[0].name
+  statistic   = "Sum"
+  period      = 300
+
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = 0
+  evaluation_periods  = 1
+  treat_missing_data  = "notBreaching"
+
+  alarm_actions = [aws_sns_topic.email_delivery_alerts[0].arn]
+  ok_actions    = [aws_sns_topic.email_delivery_alerts[0].arn]
+
+  tags = {
+    Name = "${var.prefix}-email-delivery-failure"
+  }
+}

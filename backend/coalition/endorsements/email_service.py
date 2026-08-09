@@ -3,11 +3,11 @@ Email service for endorsement verification and notifications
 """
 
 import logging
-from smtplib import SMTPException
+from dataclasses import dataclass
+from typing import Any
 
 from django.conf import settings
 from django.core.mail import send_mail
-from django.template.exceptions import TemplateDoesNotExist
 from django.template.loader import render_to_string
 from django.utils import timezone
 
@@ -15,249 +15,163 @@ from .models import Endorsement
 
 logger = logging.getLogger(__name__)
 
+# Distinctive token matched by the CloudWatch metric filter behind the
+# endorsement-email alarm. Changing it requires updating
+# terraform/modules/monitoring/main.tf.
+DELIVERY_FAILURE_MARKER = "EMAIL_DELIVERY_FAILED"
+
+
+@dataclass(frozen=True)
+class _OutboundEmail:
+    """One message to render and send.
+
+    ``template_base`` names the pair of templates to render: ``<base>.txt``
+    for the plain-text body and ``<base>.html`` for the HTML alternative.
+    """
+
+    subject: str
+    template_base: str
+    context: dict[str, Any]
+    recipients: list[str]
+    description: str
+
+
+def _deliver(email: _OutboundEmail) -> bool:
+    """Render and send one message, reporting failure rather than raising.
+
+    Callers run inside ``transaction.atomic``: letting a transport error
+    propagate would roll back the endorsement the user just submitted, so a
+    broken mail path would destroy their submission instead of merely
+    delaying their verification link. Failures are logged with a traceback
+    and the delivery-failure marker so they still page an operator.
+    """
+    try:
+        plain_message = render_to_string(f"{email.template_base}.txt", email.context)
+        html_message = render_to_string(f"{email.template_base}.html", email.context)
+        sent_count = send_mail(
+            subject=email.subject,
+            message=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=email.recipients,
+            html_message=html_message,
+            fail_silently=False,
+        )
+    except Exception:
+        logger.exception(
+            "%s: could not send %s",
+            DELIVERY_FAILURE_MARKER,
+            email.description,
+        )
+        return False
+
+    if not sent_count:
+        logger.error(
+            "%s: mail backend accepted no recipients for %s",
+            DELIVERY_FAILURE_MARKER,
+            email.description,
+        )
+        return False
+
+    logger.info("Sent %s", email.description)
+    return True
+
+
+def _admin_notification_recipients() -> list[str]:
+    """Resolve configured admin addresses, tolerating a comma-separated string."""
+    configured = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", "")
+    if isinstance(configured, str):
+        return [address.strip() for address in configured.split(",") if address.strip()]
+    if configured:
+        return list(configured)
+    return [address for _name, address in getattr(settings, "ADMINS", [])]
+
 
 class EndorsementEmailService:
     """Service for sending endorsement-related emails"""
 
     @staticmethod
     def send_verification_email(endorsement: Endorsement) -> bool:
+        """Send email verification to the stakeholder.
+
+        Returns True if the message was accepted for delivery.
         """
-        Send email verification to stakeholder
-        Returns True if email was sent successfully
-        """
-        try:
-            # Generate verification URL
-            verification_url = (
-                f"{settings.SITE_URL}/verify-endorsement/"
-                f"{endorsement.verification_token}/"
-            )
+        verification_url = (
+            f"{settings.SITE_URL}/verify-endorsement/{endorsement.verification_token}/"
+        )
+        delivered = _deliver(
+            _OutboundEmail(
+                subject=(
+                    f"Please verify your endorsement for {endorsement.campaign.title}"
+                ),
+                template_base="emails/endorsement_verification",
+                context={
+                    "endorsement": endorsement,
+                    "stakeholder": endorsement.stakeholder,
+                    "campaign": endorsement.campaign,
+                    "verification_url": verification_url,
+                    "site_url": settings.SITE_URL,
+                    "organization_name": settings.ORGANIZATION_NAME,
+                },
+                recipients=[endorsement.stakeholder.email],
+                description=f"verification email for endorsement {endorsement.id}",
+            ),
+        )
 
-            # Email context
-            context = {
-                "endorsement": endorsement,
-                "stakeholder": endorsement.stakeholder,
-                "campaign": endorsement.campaign,
-                "verification_url": verification_url,
-                "site_url": settings.SITE_URL,
-                "organization_name": settings.ORGANIZATION_NAME,
-            }
+        if delivered:
+            endorsement.verification_sent_at = timezone.now()
+            endorsement.save(update_fields=["verification_sent_at"])
 
-            # Render email content
-            subject = f"Please verify your endorsement for {endorsement.campaign.title}"
-
-            # HTML email content
-            html_message = render_to_string(
-                "emails/endorsement_verification.html",
-                context,
-            )
-
-            # Plain text fallback
-            plain_message = render_to_string(
-                "emails/endorsement_verification.txt",
-                context,
-            )
-
-            # Send email
-            success = send_mail(
-                subject=subject,
-                message=plain_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[endorsement.stakeholder.email],
-                html_message=html_message,
-                fail_silently=False,
-            )
-
-            if success:
-                # Update verification sent timestamp
-                endorsement.verification_sent_at = timezone.now()
-                endorsement.save(update_fields=["verification_sent_at"])
-
-                logger.info(
-                    f"Verification email sent to {endorsement.stakeholder.email} "
-                    f"for endorsement {endorsement.id}",
-                )
-                return True
-            else:
-                logger.error(
-                    f"Failed to send verification email for endorsement "
-                    f"{endorsement.id}",
-                )
-                return False
-
-        except TemplateDoesNotExist as e:
-            logger.error(
-                f"Email template not found for endorsement {endorsement.id}: {str(e)}",
-            )
-            return False
-        except SMTPException as e:
-            logger.error(
-                f"SMTP error sending verification email for endorsement "
-                f"{endorsement.id}: {str(e)}",
-            )
-            return False
-        except (AttributeError, KeyError) as e:
-            logger.error(
-                f"Configuration error sending verification email for endorsement "
-                f"{endorsement.id}: {str(e)}",
-            )
-            return False
+        return delivered
 
     @staticmethod
     def send_admin_notification(endorsement: Endorsement) -> bool:
-        """
-        Send notification to admins about new endorsement requiring review
-        Returns True if email was sent successfully
-        """
-        try:
-            # Get admin emails from settings or use a default
-            admin_emails = getattr(settings, "ADMIN_NOTIFICATION_EMAILS", "")
-            if isinstance(admin_emails, str):
-                admin_emails = [
-                    email.strip() for email in admin_emails.split(",") if email.strip()
-                ]
+        """Notify admins that a new endorsement needs review."""
+        recipients = _admin_notification_recipients()
+        if not recipients:
+            logger.warning("No admin emails configured for endorsement notifications")
+            return False
 
-            if not admin_emails and hasattr(settings, "ADMINS"):
-                admin_emails = [email for name, email in settings.ADMINS]
-
-            if not admin_emails:
-                logger.warning(
-                    "No admin emails configured for endorsement notifications",
-                )
-                return False
-
-            # Email context
-            context = {
-                "endorsement": endorsement,
-                "stakeholder": endorsement.stakeholder,
-                "campaign": endorsement.campaign,
-                "admin_url": (
-                    f"{settings.API_URL}/admin/endorsements/endorsement/"
-                    f"{endorsement.id}/change/"
+        return _deliver(
+            _OutboundEmail(
+                subject=(
+                    f"New endorsement requires review: {endorsement.campaign.title}"
                 ),
-                "organization_name": settings.ORGANIZATION_NAME,
-            }
-
-            # Render email content
-            subject = f"New endorsement requires review: {endorsement.campaign.title}"
-
-            # HTML email content
-            html_message = render_to_string(
-                "emails/admin_endorsement_notification.html",
-                context,
-            )
-
-            # Plain text fallback
-            plain_message = render_to_string(
-                "emails/admin_endorsement_notification.txt",
-                context,
-            )
-
-            # Send email to all admins
-            success = send_mail(
-                subject=subject,
-                message=plain_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=admin_emails,
-                html_message=html_message,
-                fail_silently=False,
-            )
-
-            if success:
-                logger.info(f"Admin notification sent for endorsement {endorsement.id}")
-                return True
-            else:
-                logger.error(
-                    f"Failed to send admin notification for endorsement "
-                    f"{endorsement.id}",
-                )
-                return False
-
-        except TemplateDoesNotExist as e:
-            logger.error(
-                f"Email template not found for admin notification "
-                f"{endorsement.id}: {str(e)}",
-            )
-            return False
-        except SMTPException as e:
-            logger.error(
-                f"SMTP error sending admin notification for endorsement "
-                f"{endorsement.id}: {str(e)}",
-            )
-            return False
-        except (AttributeError, KeyError) as e:
-            logger.error(
-                f"Configuration error sending admin notification for endorsement "
-                f"{endorsement.id}: {str(e)}",
-            )
-            return False
+                template_base="emails/admin_endorsement_notification",
+                context={
+                    "endorsement": endorsement,
+                    "stakeholder": endorsement.stakeholder,
+                    "campaign": endorsement.campaign,
+                    "admin_url": (
+                        f"{settings.API_URL}/admin/endorsements/endorsement/"
+                        f"{endorsement.id}/change/"
+                    ),
+                    "organization_name": settings.ORGANIZATION_NAME,
+                },
+                recipients=recipients,
+                description=f"admin notification for endorsement {endorsement.id}",
+            ),
+        )
 
     @staticmethod
     def send_confirmation_email(endorsement: Endorsement) -> bool:
-        """
-        Send confirmation email to stakeholder when endorsement is approved
-        Returns True if email was sent successfully
-        """
-        try:
-            # Email context
-            context = {
-                "endorsement": endorsement,
-                "stakeholder": endorsement.stakeholder,
-                "campaign": endorsement.campaign,
-                "campaign_url": (
-                    f"{settings.SITE_URL}/campaigns/{endorsement.campaign.name}/"
+        """Confirm to the stakeholder that their endorsement was approved."""
+        return _deliver(
+            _OutboundEmail(
+                subject=(
+                    f"Your endorsement for {endorsement.campaign.title} "
+                    "has been approved"
                 ),
-                "organization_name": settings.ORGANIZATION_NAME,
-            }
-
-            # Render email content
-            subject = (
-                f"Your endorsement for {endorsement.campaign.title} has been approved"
-            )
-
-            # HTML email content
-            html_message = render_to_string("emails/endorsement_approved.html", context)
-
-            # Plain text fallback
-            plain_message = render_to_string("emails/endorsement_approved.txt", context)
-
-            # Send email
-            success = send_mail(
-                subject=subject,
-                message=plain_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[endorsement.stakeholder.email],
-                html_message=html_message,
-                fail_silently=False,
-            )
-
-            if success:
-                logger.info(
-                    f"Approval confirmation sent to {endorsement.stakeholder.email} "
-                    f"for endorsement {endorsement.id}",
-                )
-                return True
-            else:
-                logger.error(
-                    f"Failed to send approval confirmation for endorsement "
-                    f"{endorsement.id}",
-                )
-                return False
-
-        except TemplateDoesNotExist as e:
-            logger.error(
-                f"Email template not found for approval confirmation "
-                f"{endorsement.id}: {str(e)}",
-            )
-            return False
-        except SMTPException as e:
-            logger.error(
-                f"SMTP error sending approval confirmation for endorsement "
-                f"{endorsement.id}: {str(e)}",
-            )
-            return False
-        except (AttributeError, KeyError) as e:
-            logger.error(
-                f"Configuration error sending approval confirmation for endorsement "
-                f"{endorsement.id}: {str(e)}",
-            )
-            return False
+                template_base="emails/endorsement_approved",
+                context={
+                    "endorsement": endorsement,
+                    "stakeholder": endorsement.stakeholder,
+                    "campaign": endorsement.campaign,
+                    "campaign_url": (
+                        f"{settings.SITE_URL}/campaigns/{endorsement.campaign.name}/"
+                    ),
+                    "organization_name": settings.ORGANIZATION_NAME,
+                },
+                recipients=[endorsement.stakeholder.email],
+                description=f"approval confirmation for endorsement {endorsement.id}",
+            ),
+        )

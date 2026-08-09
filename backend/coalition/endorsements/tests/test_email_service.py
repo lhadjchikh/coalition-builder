@@ -5,7 +5,9 @@ Tests for endorsement email service functionality.
 from smtplib import SMTPException
 from unittest.mock import Mock, patch
 
+from botocore.exceptions import ClientError
 from django.core import mail
+from django.core.exceptions import ImproperlyConfigured
 from django.template.exceptions import TemplateDoesNotExist
 
 from coalition.campaigns.models import PolicyCampaign
@@ -126,3 +128,112 @@ class EndorsementEmailServiceTest(BaseTestCase):
         assert "has been approved" in email.subject.lower()
         assert self.stakeholder.email in email.to
         assert f"https://example.test/campaigns/{self.campaign.name}/" in email.body
+
+
+def ses_rejection() -> ClientError:
+    """The error the SES API raises for an unverified or rejected recipient."""
+    return ClientError(
+        {"Error": {"Code": "MessageRejected", "Message": "not verified"}},
+        "SendEmail",
+    )
+
+
+class EndorsementEmailFailureContainmentTest(BaseTestCase):
+    """Email transport failures must be reported, not propagated.
+
+    ``create_endorsement`` sends these emails inside ``transaction.atomic``.
+    An exception escaping the service would roll back the stakeholder and
+    endorsement the user just submitted, so a broken mail path would silently
+    destroy their submission. The service therefore converts every transport
+    failure into ``False`` plus a logged error.
+    """
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.stakeholder = self.create_stakeholder(email="test@example.com")
+        self.campaign = PolicyCampaign.objects.create(
+            name="test-campaign",
+            title="Test Campaign",
+            summary="Test summary",
+        )
+        self.endorsement = Endorsement.objects.create(
+            stakeholder=self.stakeholder,
+            campaign=self.campaign,
+            statement="Test statement",
+        )
+
+    @patch("coalition.endorsements.email_service.send_mail")
+    def test_verification_email_contains_ses_rejection(
+        self,
+        mock_send_mail: Mock,
+    ) -> None:
+        mock_send_mail.side_effect = ses_rejection()
+
+        sent = EndorsementEmailService.send_verification_email(self.endorsement)
+
+        assert sent is False
+
+    @patch("coalition.endorsements.email_service.send_mail")
+    def test_verification_email_contains_misconfiguration(
+        self,
+        mock_send_mail: Mock,
+    ) -> None:
+        mock_send_mail.side_effect = ImproperlyConfigured("EMAIL_HOST missing")
+
+        sent = EndorsementEmailService.send_verification_email(self.endorsement)
+
+        assert sent is False
+
+    @patch("coalition.endorsements.email_service.send_mail")
+    def test_admin_notification_contains_ses_rejection(
+        self,
+        mock_send_mail: Mock,
+    ) -> None:
+        mock_send_mail.side_effect = ses_rejection()
+
+        with self.settings(ADMIN_NOTIFICATION_EMAILS=["admin@example.com"]):
+            result = EndorsementEmailService.send_admin_notification(self.endorsement)
+
+        assert result is False
+
+    @patch("coalition.endorsements.email_service.send_mail")
+    def test_confirmation_email_contains_ses_rejection(
+        self,
+        mock_send_mail: Mock,
+    ) -> None:
+        mock_send_mail.side_effect = ses_rejection()
+
+        sent = EndorsementEmailService.send_confirmation_email(self.endorsement)
+
+        assert sent is False
+
+    @patch("coalition.endorsements.email_service.send_mail")
+    def test_failure_is_logged_with_traceback_and_recipient(
+        self,
+        mock_send_mail: Mock,
+    ) -> None:
+        """Containment only stays safe if the failure is loud in the logs."""
+        mock_send_mail.side_effect = ses_rejection()
+
+        with self.assertLogs(
+            "coalition.endorsements.email_service",
+            level="ERROR",
+        ) as captured:
+            EndorsementEmailService.send_verification_email(self.endorsement)
+
+        record = captured.records[0]
+        assert record.exc_info is not None, "expected traceback for alarm triage"
+        assert str(self.endorsement.id) in record.getMessage()
+
+    @patch("coalition.endorsements.email_service.send_mail")
+    def test_failed_verification_does_not_record_a_sent_timestamp(
+        self,
+        mock_send_mail: Mock,
+    ) -> None:
+        """A resend must remain possible after a failure."""
+        mock_send_mail.side_effect = ses_rejection()
+
+        EndorsementEmailService.send_verification_email(self.endorsement)
+
+        self.endorsement.refresh_from_db()
+        assert self.endorsement.verification_sent_at is None

@@ -4,10 +4,12 @@ Tests for endorsement API endpoints.
 
 import json
 import uuid
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
+from botocore.exceptions import ClientError
 from django.contrib.auth.models import Permission, User
 from django.core.cache import cache
+from django.http import HttpResponse
 from django.test import Client, override_settings
 from django.utils import timezone
 
@@ -28,6 +30,75 @@ def get_valid_form_metadata() -> dict[str, str]:
         "ip_address": "192.168.1.100",
         "session_id": "test-session-123",
     }
+
+
+class EndorsementSurvivesEmailOutageTest(BaseTestCase):
+    """A broken mail path must not cost the user their submission.
+
+    ``create_endorsement`` sends the verification email inside
+    ``transaction.atomic``, so an exception escaping the email layer would
+    roll back the stakeholder, endorsement and terms acceptance and return a
+    500. The submission must persist and stay resendable instead.
+    """
+
+    def setUp(self) -> None:
+        super().setUp()
+        cache.clear()
+        self.client = Client()
+        self.campaign = PolicyCampaign.objects.create(
+            name="outage-campaign",
+            title="Outage Campaign",
+            summary="A campaign used to test email outages",
+            allow_endorsements=True,
+        )
+
+    def submit_endorsement(self) -> HttpResponse:
+        return self.client.post(
+            "/api/endorsements/",
+            data=json.dumps(
+                {
+                    "campaign_id": self.campaign.id,
+                    "stakeholder": {
+                        "first_name": "Dana",
+                        "last_name": "Reed",
+                        "email": "dana@example.com",
+                        "street_address": "1 Main St",
+                        "city": "Baltimore",
+                        "state": "MD",
+                        "zip_code": "21201",
+                        "type": "individual",
+                    },
+                    "statement": "I support this campaign",
+                    "public_display": True,
+                    "terms_accepted": True,
+                    "form_metadata": get_valid_form_metadata(),
+                },
+            ),
+            content_type="application/json",
+        )
+
+    @patch("coalition.endorsements.email_service.send_mail")
+    def test_endorsement_persists_when_mail_transport_fails(
+        self,
+        mock_send_mail: Mock,
+    ) -> None:
+        mock_send_mail.side_effect = ClientError(
+            {"Error": {"Code": "MessageRejected", "Message": "not verified"}},
+            "SendEmail",
+        )
+
+        response = self.submit_endorsement()
+
+        assert response.status_code == 200, response.content
+        stakeholder = Stakeholder.objects.get(email="dana@example.com")
+        endorsement = Endorsement.objects.get(
+            stakeholder=stakeholder,
+            campaign=self.campaign,
+        )
+        assert endorsement.statement == "I support this campaign"
+        # Never marked as sent, so the verification email can be resent.
+        assert endorsement.verification_sent_at is None
+        assert endorsement.email_verified is False
 
 
 class EndorsementAPITest(BaseTestCase):
