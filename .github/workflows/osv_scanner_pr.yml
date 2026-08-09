@@ -1,0 +1,16 @@
+name: OSV-Scanner PR Scan
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  scan_pr:
+    name: Reject newly introduced dependency vulnerabilities
+    uses: ./.github/workflows/osv_scanner_compare.yml
+    with:
+      base_sha: ${{ github.event.pull_request.base.sha }}
+      head_sha: ${{ github.sha }}

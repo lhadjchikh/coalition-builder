@@ -158,16 +158,17 @@ Runs the complete test suite.
 - Terraform validation
 - Go tests for Terraform modules
 
-#### `security.yml`
+#### `osv_scanner_pr.yml`
 
-Runs security scans.
+Compares dependency lockfiles in pull requests against `main`. The check fails only when a change introduces a known vulnerability.
 
-**Checks:**
+#### `osv_scanner_merge_group.yml`
 
-- Python dependencies (safety)
-- JavaScript dependencies (npm audit)
-- Docker image scanning
-- SAST scanning with CodeQL
+Compares a merge group's dependency lockfiles against its base commit. The check fails only when the merge group introduces a known vulnerability.
+
+#### `osv_scanner_scheduled.yml`
+
+Scans the backend Poetry lockfile, frontend npm lockfile, and Terraform test Go module every Monday and on manual request. Results are uploaded to GitHub code scanning without failing the workflow while the existing vulnerability backlog is triaged.
 
 ## Environment Configuration
 

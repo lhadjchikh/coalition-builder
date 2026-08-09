@@ -189,6 +189,28 @@ _Figure 1: Workflow dependency tree showing how push/PR events trigger orchestra
 - **Unit Tests**: Fast validation tests that check module file structure and configuration
 - **Integration Tests**: Plan-only tests that validate complete terraform configuration with real AWS credentials but no resource creation
 
+### Dependency Security Workflows
+
+#### OSV-Scanner PR Scan (`osv_scanner_pr.yml`)
+
+- **Triggered by**: pull requests targeting `main`
+- Compares the proposed dependency state with `main`
+- Fails only when a change introduces a known vulnerability
+- Scans the backend Poetry lockfile, frontend npm lockfile, and Terraform test Go module
+
+#### OSV-Scanner Merge Group Scan (`osv_scanner_merge_group.yml`)
+
+- **Triggered by**: merge groups targeting `main`
+- Compares the merge group's proposed dependency state with its base commit
+- Uses the same explicit dependency scope and new-vulnerability gate as the pull-request scan
+
+#### OSV-Scanner Scheduled Scan (`osv_scanner_scheduled.yml`)
+
+- **Triggered by**: a weekly Monday schedule or manual dispatch
+- Reports the complete known-vulnerability backlog to GitHub code scanning
+- Remains non-blocking while existing findings are triaged
+- Uses the same explicit dependency scope as the pull-request scan
+
 ### Deployment Workflows
 
 #### Infrastructure Deployment (`deploy_infra.yml`)
