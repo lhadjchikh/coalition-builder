@@ -317,6 +317,9 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             },
             "manage_roles": False,
             "role_name": zappa_role_name or "coalition-zappa-deployment",
+            # Zappa defaults to DEBUG before Django configures logging. At that
+            # level botocore records Secrets Manager response bodies.
+            "log_level": "INFO",
             "timeout_seconds": 30,
             "slim_handler": False,
             "use_precompiled_packages": False,

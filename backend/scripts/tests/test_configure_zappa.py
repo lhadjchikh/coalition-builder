@@ -113,6 +113,13 @@ class TestDatabaseIsolation:
             assert "DATABASE_NAME" not in settings[stage]["environment_variables"]
 
 
+class TestLoggingConfiguration:
+    def test_base_stage_suppresses_sdk_debug_payloads(self, tmp_path: Path) -> None:
+        settings = _generate_settings(tmp_path)
+
+        assert settings["base"]["log_level"] == "INFO"
+
+
 class TestLocationConfiguration:
     """Tests for the AWS Location place index in generated settings."""
 

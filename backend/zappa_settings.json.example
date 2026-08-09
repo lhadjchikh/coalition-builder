@@ -5,6 +5,7 @@
     "project_name": "coalition",
     "s3_bucket": "coalition-zappa-deployments",
     "runtime": "python3.13",
+    "log_level": "INFO",
     "vpc_config": {
       "SubnetIds": [
         "subnet-XXXXXXXXXXXXXXXXXXXX",
