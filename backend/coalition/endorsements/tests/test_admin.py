@@ -147,6 +147,29 @@ class EndorsementAdminTest(BaseTestCase):
         assert self.endorsement.reviewed_at is not None
         mock_message.assert_called_once()
 
+    def test_approve_endorsements_reports_failed_notification(self) -> None:
+        request = HttpRequest()
+        request.user = self.user
+        request._messages = Mock()
+        queryset = Endorsement.objects.filter(id=self.endorsement.id)
+
+        with (
+            patch.object(
+                EndorsementEmailService,
+                "send_confirmation_email",
+                return_value=False,
+            ),
+            patch.object(self.admin, "message_user") as mock_message,
+        ):
+            self.admin.approve_endorsements(request, queryset)
+
+        self.endorsement.refresh_from_db()
+        assert self.endorsement.status == "approved"
+        mock_message.assert_called_once_with(
+            request,
+            "Successfully approved 1 endorsement(s); sent 0 notification(s).",
+        )
+
     def test_mark_verified_action(self) -> None:
         """Test mark_verified admin action"""
         request = HttpRequest()
@@ -254,7 +277,7 @@ class EndorsementAdminTest(BaseTestCase):
         mock_email.assert_not_called()
         mock_message.assert_called_once_with(
             request,
-            "Successfully approved 0 endorsement(s) and sent notifications.",
+            "Successfully approved 0 endorsement(s); sent 0 notification(s).",
         )
 
     def test_mark_auto_approved_endorsements_as_reviewed(self) -> None:

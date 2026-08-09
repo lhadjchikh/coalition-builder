@@ -191,19 +191,21 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
         request: HttpRequest,
         queryset: QuerySet[Endorsement],
     ) -> None:
-        count = 0
+        approved_count = 0
+        notification_count = 0
         for endorsement in queryset:
             if endorsement.status != "approved":
                 endorsement.approve(
                     user=request.user if isinstance(request.user, User) else None,
                 )
-                # Send approval notification
-                EndorsementEmailService.send_confirmation_email(endorsement)
-                count += 1
+                approved_count += 1
+                if EndorsementEmailService.send_confirmation_email(endorsement):
+                    notification_count += 1
 
         self.message_user(
             request,
-            f"Successfully approved {count} endorsement(s) and sent notifications.",
+            f"Successfully approved {approved_count} endorsement(s); "
+            f"sent {notification_count} notification(s).",
         )
 
     @admin.action(
