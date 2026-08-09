@@ -12,6 +12,14 @@ from pathlib import Path
 DEV_STAGE_NAMES = {"dev"}
 PROD_STAGE_NAMES = {"prod"}
 STAGING_STAGE_NAMES = {"staging"}
+RUNTIME_ENVIRONMENT_VARIABLES = {
+    "USE_S3": "true",
+    "IS_LAMBDA": "true",
+    "USE_GEODJANGO": "true",
+    "GDAL_DATA": "/opt/share/gdal",
+    "PROJ_LIB": "/opt/share/proj",
+    "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
+}
 
 
 def get_env_or_default(key: str, default: str = "") -> str:
@@ -262,9 +270,17 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         dev_docker_image = "public.ecr.aws/lambda/python:3.13"
         production_docker_image = "public.ecr.aws/lambda/python:3.13"
 
+    aws_environment_variables = with_location_place_index(
+        {
+            "DATABASE_URL": db_secret_arn,
+            "SECRET_KEY": django_secret_arn,
+        },
+        location_place_index_name,
+    )
     dev_environment_variables = with_email_settings(
         with_stage_cloudfront_domain(
             {
+                **RUNTIME_ENVIRONMENT_VARIABLES,
                 "ENVIRONMENT": "dev",
                 "DEBUG": "true",
                 "DATABASE_NAME": dev_db_name,
@@ -281,6 +297,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
     production_environment_variables = with_email_settings(
         with_stage_cloudfront_domain(
             {
+                **RUNTIME_ENVIRONMENT_VARIABLES,
                 "ENVIRONMENT": "production",
                 "DEBUG": "false",
                 "DATABASE_NAME": production_db_name,
@@ -312,17 +329,6 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             "timeout_seconds": 30,
             "slim_handler": False,
             "use_precompiled_packages": False,
-            "environment_variables": with_location_place_index(
-                {
-                    "USE_S3": "true",
-                    "IS_LAMBDA": "true",
-                    "USE_GEODJANGO": "true",
-                    "GDAL_DATA": "/opt/share/gdal",
-                    "PROJ_LIB": "/opt/share/proj",
-                    "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
-                },
-                location_place_index_name,
-            ),
             "exclude": [
                 "*.gz",
                 "*.rar",
@@ -361,10 +367,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             "memory_size": 512,
             "keep_warm": False,
             "environment_variables": dev_environment_variables,
-            "aws_environment_variables": {
-                "DATABASE_URL": db_secret_arn,
-                "SECRET_KEY": django_secret_arn,
-            },
+            "aws_environment_variables": aws_environment_variables,
             "apigateway_settings": {
                 "throttle_burst_limit": 50,
                 "throttle_rate_limit": 25,
@@ -378,10 +381,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             "keep_warm": True,
             "keep_warm_expression": "rate(4 minutes)",
             "environment_variables": production_environment_variables,
-            "aws_environment_variables": {
-                "DATABASE_URL": db_secret_arn,
-                "SECRET_KEY": django_secret_arn,
-            },
+            "aws_environment_variables": aws_environment_variables,
             "apigateway_settings": {
                 "throttle_burst_limit": 100,
                 "throttle_rate_limit": 50,
@@ -411,6 +411,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
         staging_environment_variables = with_email_settings(
             with_stage_cloudfront_domain(
                 {
+                    **RUNTIME_ENVIRONMENT_VARIABLES,
                     "ENVIRONMENT": "staging",
                     "DEBUG": "false",
                     "DATABASE_NAME": staging_db_name,
@@ -433,10 +434,7 @@ def configure_zappa_settings(output_path: Path | None = None) -> None:
             "keep_warm": True,
             "keep_warm_expression": "rate(10 minutes)",
             "environment_variables": staging_environment_variables,
-            "aws_environment_variables": {
-                "DATABASE_URL": db_secret_arn,
-                "SECRET_KEY": django_secret_arn,
-            },
+            "aws_environment_variables": aws_environment_variables,
             "apigateway_settings": {
                 "throttle_burst_limit": 75,
                 "throttle_rate_limit": 40,

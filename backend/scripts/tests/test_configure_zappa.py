@@ -7,7 +7,10 @@ from unittest.mock import patch
 
 import pytest
 
-from scripts.configure_zappa import configure_zappa_settings
+from scripts.configure_zappa import (
+    RUNTIME_ENVIRONMENT_VARIABLES,
+    configure_zappa_settings,
+)
 
 
 def _generate_settings(
@@ -98,20 +101,30 @@ class TestProvidedSecretARNs:
 class TestLocationConfiguration:
     """Tests for the AWS Location place index in generated settings."""
 
-    def test_place_index_name_is_added_to_lambda_environment(
+    def test_place_index_name_is_added_to_each_stage_aws_environment(
         self,
         tmp_path: Path,
     ) -> None:
-        """The configured place index must be available to the geocoding service."""
+        """Every stage must expose the place index through Lambda configuration."""
         settings = _generate_settings(
             tmp_path,
-            {"AWS_LOCATION_PLACE_INDEX_NAME": "landandbay-geocoding-index"},
+            {
+                "AWS_LOCATION_PLACE_INDEX_NAME": "landandbay-geocoding-index",
+                "ENABLE_STAGING": "true",
+            },
         )
 
-        assert (
-            settings["base"]["environment_variables"]["AWS_LOCATION_PLACE_INDEX_NAME"]
-            == "landandbay-geocoding-index"
-        )
+        for stage in ("dev", "staging", "prod"):
+            assert (
+                settings[stage]["aws_environment_variables"][
+                    "AWS_LOCATION_PLACE_INDEX_NAME"
+                ]
+                == "landandbay-geocoding-index"
+            )
+            assert (
+                "AWS_LOCATION_PLACE_INDEX_NAME"
+                not in settings[stage]["environment_variables"]
+            )
 
     def test_unconfigured_place_index_is_omitted_outside_ci(
         self,
@@ -120,10 +133,26 @@ class TestLocationConfiguration:
         """Local settings should not contain a misleading empty index name."""
         settings = _generate_settings(tmp_path)
 
-        assert (
-            "AWS_LOCATION_PLACE_INDEX_NAME"
-            not in settings["base"]["environment_variables"]
-        )
+        for stage in ("dev", "prod"):
+            for environment_key in (
+                "environment_variables",
+                "aws_environment_variables",
+            ):
+                assert (
+                    "AWS_LOCATION_PLACE_INDEX_NAME"
+                    not in settings[stage][environment_key]
+                )
+
+    def test_runtime_variables_are_materialized_in_each_stage(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        """Stage maps must retain runtime variables when overriding base settings."""
+        settings = _generate_settings(tmp_path, {"ENABLE_STAGING": "true"})
+
+        for stage in ("dev", "staging", "prod"):
+            stage_environment = settings[stage]["environment_variables"]
+            assert RUNTIME_ENVIRONMENT_VARIABLES.items() <= stage_environment.items()
 
 
 class TestAssetConfiguration:

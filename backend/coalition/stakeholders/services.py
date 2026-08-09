@@ -23,6 +23,10 @@ AWS_LOCATION_CONFIDENCE_THRESHOLD = float(
 )
 
 
+class AddressSuggestionsUnavailableError(RuntimeError):
+    """Raised when the configured address-suggestion provider cannot respond."""
+
+
 class GeocodingService:
     """Service for geocoding addresses and assigning legislative districts"""
 
@@ -96,8 +100,9 @@ class GeocodingService:
         Returns a list of suggested addresses with structured components.
         """
         if not self.location_client or not self.place_index_name:
-            logger.warning("AWS Location Service not available for suggestions")
-            return []
+            raise AddressSuggestionsUnavailableError(
+                "AWS Location Service is not configured for address suggestions",
+            )
 
         try:
             response = self.location_client.search_place_index_for_suggestions(
@@ -118,12 +123,16 @@ class GeocodingService:
 
             return suggestions
 
-        except ClientError as e:
-            logger.error(f"Failed to get address suggestions: {e}")
-            return []
-        except Exception as e:
-            logger.error(f"Unexpected error getting suggestions: {e}")
-            return []
+        except ClientError as error:
+            logger.exception("AWS Location address-suggestion request failed")
+            raise AddressSuggestionsUnavailableError(
+                "AWS Location failed to provide address suggestions",
+            ) from error
+        except Exception as error:
+            logger.exception("Unexpected address-suggestion provider failure")
+            raise AddressSuggestionsUnavailableError(
+                "Address suggestion provider failed unexpectedly",
+            ) from error
 
     def get_place_details(self, place_id: str) -> dict[str, str] | None:
         """

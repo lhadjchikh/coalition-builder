@@ -15,17 +15,6 @@
         "slim_handler": false,
         "use_precompiled_packages": false,
         
-        "environment_variables": {
-            "USE_S3": "true",
-            "AWS_STORAGE_BUCKET_NAME": "YOUR-ASSETS-BUCKET",
-            "IS_LAMBDA": "true",
-            "USE_GEODJANGO": "true",
-            "GDAL_DATA": "/opt/share/gdal",
-            "PROJ_LIB": "/opt/share/proj",
-            "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
-            "AWS_LOCATION_PLACE_INDEX_NAME": "YOUR-PLACE-INDEX-NAME"
-        },
-        
         "exclude": [
             "*.gz", "*.rar", "*.zip", "*.tar",
             ".git/*", "tests/*", "*.pyc", "local/*",
@@ -54,6 +43,12 @@
         "keep_warm": false,
         
         "environment_variables": {
+            "USE_S3": "true",
+            "IS_LAMBDA": "true",
+            "USE_GEODJANGO": "true",
+            "GDAL_DATA": "/opt/share/gdal",
+            "PROJ_LIB": "/opt/share/proj",
+            "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
             "ENVIRONMENT": "dev",
             "DEBUG": "true",
             "DATABASE_NAME": "YOUR-DEV-DB-NAME",
@@ -62,7 +57,8 @@
         
         "aws_environment_variables": {
             "DATABASE_URL": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:YOUR-DB-SECRET",
-            "SECRET_KEY": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:YOUR-DJANGO-SECRET"
+            "SECRET_KEY": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:YOUR-DJANGO-SECRET",
+            "AWS_LOCATION_PLACE_INDEX_NAME": "YOUR-PLACE-INDEX-NAME"
         },
         
         "apigateway_settings": {
@@ -80,6 +76,12 @@
         "keep_warm_expression": "rate(10 minutes)",
         
         "environment_variables": {
+            "USE_S3": "true",
+            "IS_LAMBDA": "true",
+            "USE_GEODJANGO": "true",
+            "GDAL_DATA": "/opt/share/gdal",
+            "PROJ_LIB": "/opt/share/proj",
+            "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
             "ENVIRONMENT": "staging",
             "DEBUG": "false",
             "DATABASE_NAME": "YOUR-STAGING-DB-NAME",
@@ -88,7 +90,8 @@
         
         "aws_environment_variables": {
             "DATABASE_URL": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:YOUR-DB-SECRET",
-            "SECRET_KEY": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:YOUR-DJANGO-SECRET"
+            "SECRET_KEY": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:YOUR-DJANGO-SECRET",
+            "AWS_LOCATION_PLACE_INDEX_NAME": "YOUR-PLACE-INDEX-NAME"
         },
         
         "apigateway_settings": {
@@ -106,6 +109,12 @@
         "keep_warm_expression": "rate(4 minutes)",
         
         "environment_variables": {
+            "USE_S3": "true",
+            "IS_LAMBDA": "true",
+            "USE_GEODJANGO": "true",
+            "GDAL_DATA": "/opt/share/gdal",
+            "PROJ_LIB": "/opt/share/proj",
+            "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
             "ENVIRONMENT": "production",
             "DEBUG": "false",
             "DATABASE_NAME": "YOUR-PRODUCTION-DB-NAME",
@@ -114,7 +123,8 @@
         
         "aws_environment_variables": {
             "DATABASE_URL": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:YOUR-DB-SECRET",
-            "SECRET_KEY": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:YOUR-DJANGO-SECRET"
+            "SECRET_KEY": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:YOUR-DJANGO-SECRET",
+            "AWS_LOCATION_PLACE_INDEX_NAME": "YOUR-PLACE-INDEX-NAME"
         },
         
         "apigateway_settings": {

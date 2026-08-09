@@ -93,6 +93,22 @@ require_step_text \
   "${lambda_workflow}" \
   "Configure Zappa settings" \
   'AWS_LOCATION_PLACE_INDEX_NAME: ${{ vars.AWS_LOCATION_PLACE_INDEX_NAME }}'
+require_step_text \
+  "${lambda_workflow}" \
+  "Verify deployed address configuration" \
+  'aws lambda wait function-updated'
+require_step_text \
+  "${lambda_workflow}" \
+  "Verify deployed address configuration" \
+  'Environment.Variables.AWS_LOCATION_PLACE_INDEX_NAME'
+require_step_text \
+  "${lambda_workflow}" \
+  "Verify deployed address configuration" \
+  'if [[ "${DEPLOYED_PLACE_INDEX_NAME}" != "${AWS_LOCATION_PLACE_INDEX_NAME}" ]]; then'
+require_step_text \
+  "${lambda_workflow}" \
+  "Verify deployed address configuration" \
+  'exit 1'
 
 require_text "${frontend_workflow}" 'group: deploy-frontend-'
 require_text "${frontend_workflow}" "cancel-in-progress: false"

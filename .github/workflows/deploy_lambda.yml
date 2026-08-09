@@ -292,6 +292,23 @@ jobs:
           aws lambda wait function-updated --function-name "coalition-${DEPLOYMENT_ENVIRONMENT}"
           poetry run zappa update "${DEPLOYMENT_ENVIRONMENT}" --docker-image-uri "${IMAGE_URI}"
 
+      - name: Verify deployed address configuration
+        env:
+          AWS_LOCATION_PLACE_INDEX_NAME: ${{ vars.AWS_LOCATION_PLACE_INDEX_NAME }}
+          DEPLOYMENT_ENVIRONMENT: ${{ steps.deployment_environment.outputs.environment }}
+        run: |
+          aws lambda wait function-updated --function-name "coalition-${DEPLOYMENT_ENVIRONMENT}"
+
+          DEPLOYED_PLACE_INDEX_NAME=$(aws lambda get-function-configuration \
+            --function-name "coalition-${DEPLOYMENT_ENVIRONMENT}" \
+            --query 'Environment.Variables.AWS_LOCATION_PLACE_INDEX_NAME' \
+            --output text)
+
+          if [[ "${DEPLOYED_PLACE_INDEX_NAME}" != "${AWS_LOCATION_PLACE_INDEX_NAME}" ]]; then
+            echo "::error::Deployed Lambda is missing the configured AWS Location place index"
+            exit 1
+          fi
+
       - name: Create cache table
         working-directory: ./backend
         env:
