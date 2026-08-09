@@ -186,14 +186,17 @@ jobs:
       - name: Validate database secret isolation
         working-directory: ./backend
         env:
+          DATABASE_NAME_MAP: ../terraform/modules/database-names/environment_database_names.json
           DATABASE_SECRET_ARN: ${{ secrets.DATABASE_SECRET_ARN }}
           EXPECTED_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
           EXPECTED_ENVIRONMENT: ${{ steps.deployment_environment.outputs.environment }}
         run: |
+          EXPECTED_DATABASE_NAME="$(jq -er --arg environment "${EXPECTED_ENVIRONMENT}" '.[$environment]' "${DATABASE_NAME_MAP}")"
           poetry run python scripts/validate_database_secret.py \
             --secret-arn "${DATABASE_SECRET_ARN}" \
             --expected-account-id "${EXPECTED_ACCOUNT_ID}" \
-            --expected-environment "${EXPECTED_ENVIRONMENT}"
+            --expected-environment "${EXPECTED_ENVIRONMENT}" \
+            --expected-database-name "${EXPECTED_DATABASE_NAME}"
 
       - name: Configure Zappa settings
         working-directory: ./backend

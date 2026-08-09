@@ -41,13 +41,19 @@ def validate_database_secret(
     secret_arn: str,
     expected_account_id: str,
     expected_environment: str,
+    *,
+    expected_database_name: str,
 ) -> str:
-    """Validate secret ownership and return its internally consistent DB name."""
+    """Validate secret ownership and return its expected database name."""
     _validate_arn_account(secret_arn, expected_account_id)
     secret_tags = _load_secret_tags(client, secret_arn)
     _validate_environment_tag(secret_tags, expected_environment)
     secret_payload = _load_secret_payload(client, secret_arn)
     database_name = _required_string(secret_payload, "dbname")
+    if database_name != expected_database_name:
+        raise DatabaseSecretValidationError(
+            "Secret dbname does not match the expected database.",
+        )
     tagged_database_name = _required_tag(secret_tags, "DatabaseName")
     if database_name != tagged_database_name:
         raise DatabaseSecretValidationError(
@@ -167,6 +173,7 @@ def _parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--expected-environment", choices=("dev", "prod"), required=True
     )
+    parser.add_argument("--expected-database-name", required=True)
     return parser.parse_args()
 
 
@@ -187,6 +194,7 @@ def main() -> None:
             arguments.secret_arn,
             arguments.expected_account_id,
             arguments.expected_environment,
+            expected_database_name=arguments.expected_database_name,
         )
     except DatabaseSecretValidationError as error:
         logger.error(

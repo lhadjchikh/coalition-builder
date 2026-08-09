@@ -2,9 +2,9 @@ package modules
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"os/exec"
-	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -27,17 +27,9 @@ func readRepositoryFile(t *testing.T, path string) string {
 func configuredDatabaseNames(t *testing.T) map[string]string {
 	t.Helper()
 
-	databaseNamesModule := readRepositoryFile(t, "../../modules/database-names/main.tf")
-	defaultMapMatch := regexp.MustCompile(
-		`(?s)environment_database_names\s*=\s*\{(.*?)\n\s*\}`,
-	).FindStringSubmatch(databaseNamesModule)
-	require.Len(t, defaultMapMatch, 2, "the shared module must define the database-name authority")
-
-	nameMatches := regexp.MustCompile(`(?m)^\s*([a-z]+)\s*=\s*"([^"]+)"`).FindAllStringSubmatch(defaultMapMatch[1], -1)
-	databaseNames := make(map[string]string, len(nameMatches))
-	for _, nameMatch := range nameMatches {
-		databaseNames[nameMatch[1]] = nameMatch[2]
-	}
+	databaseNamesJSON := readRepositoryFile(t, "../../modules/database-names/environment_database_names.json")
+	databaseNames := make(map[string]string)
+	require.NoError(t, json.Unmarshal([]byte(databaseNamesJSON), &databaseNames))
 
 	return databaseNames
 }
@@ -52,8 +44,10 @@ func TestEnvironmentDatabasesUseSharedAuthoritativeNames(t *testing.T) {
 	assert.NotEqual(t, databaseNames["dev"], databaseNames["prod"])
 
 	sharedMain := readRepositoryFile(t, "../../environments/shared/main.tf")
+	databaseNamesModule := readRepositoryFile(t, "../../modules/database-names/main.tf")
 	sharedOutputs := readRepositoryFile(t, "../../environments/shared/outputs.tf")
 	assert.Contains(t, sharedMain, `module "database_names"`)
+	assert.Contains(t, databaseNamesModule, `jsondecode(file("${path.module}/environment_database_names.json"))`)
 	assert.Contains(t, sharedMain, `db_name                    = module.database_names.environment_database_names["prod"]`)
 	assert.Contains(t, sharedOutputs, "value       = module.database_names.environment_database_names")
 

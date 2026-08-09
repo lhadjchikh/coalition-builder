@@ -54,6 +54,7 @@ class TestDatabaseSecretIsolation:
             SECRET_ARN,
             "123456789012",
             "dev",
+            expected_database_name="coalition_dev",
         )
 
         assert database_name == "coalition_dev"
@@ -62,7 +63,13 @@ class TestDatabaseSecretIsolation:
         client = _secrets_client()
 
         with pytest.raises(DatabaseSecretValidationError, match="AWS account"):
-            validate_database_secret(client, SECRET_ARN, "999999999999", "dev")
+            validate_database_secret(
+                client,
+                SECRET_ARN,
+                "999999999999",
+                "dev",
+                expected_database_name="coalition_dev",
+            )
 
         client.get_secret_value.assert_not_called()
 
@@ -70,7 +77,13 @@ class TestDatabaseSecretIsolation:
         client = _secrets_client(environment="prod")
 
         with pytest.raises(DatabaseSecretValidationError, match="Environment tag"):
-            validate_database_secret(client, SECRET_ARN, "123456789012", "dev")
+            validate_database_secret(
+                client,
+                SECRET_ARN,
+                "123456789012",
+                "dev",
+                expected_database_name="coalition_dev",
+            )
 
         client.get_secret_value.assert_not_called()
 
@@ -78,17 +91,51 @@ class TestDatabaseSecretIsolation:
         client = _secrets_client(url_database_name="coalition")
 
         with pytest.raises(DatabaseSecretValidationError, match="URL database"):
-            validate_database_secret(client, SECRET_ARN, "123456789012", "dev")
+            validate_database_secret(
+                client,
+                SECRET_ARN,
+                "123456789012",
+                "dev",
+                expected_database_name="coalition_dev",
+            )
 
     def test_rejects_disagreement_with_authoritative_database_tag(self) -> None:
         client = _secrets_client(tagged_database_name="coalition")
 
         with pytest.raises(DatabaseSecretValidationError, match="DatabaseName tag"):
-            validate_database_secret(client, SECRET_ARN, "123456789012", "dev")
+            validate_database_secret(
+                client,
+                SECRET_ARN,
+                "123456789012",
+                "dev",
+                expected_database_name="coalition_dev",
+            )
+
+    def test_rejects_an_internally_consistent_wrong_database(self) -> None:
+        client = _secrets_client(
+            database_name="coalition",
+            tagged_database_name="coalition",
+            url_database_name="coalition",
+        )
+
+        with pytest.raises(DatabaseSecretValidationError, match="expected database"):
+            validate_database_secret(
+                client,
+                SECRET_ARN,
+                "123456789012",
+                "dev",
+                expected_database_name="coalition_dev",
+            )
 
     def test_rejects_invalid_secret_json(self) -> None:
         client = _secrets_client()
         client.get_secret_value.return_value = {"SecretString": "not-json"}
 
         with pytest.raises(DatabaseSecretValidationError, match="valid JSON"):
-            validate_database_secret(client, SECRET_ARN, "123456789012", "dev")
+            validate_database_secret(
+                client,
+                SECRET_ARN,
+                "123456789012",
+                "dev",
+                expected_database_name="coalition_dev",
+            )
