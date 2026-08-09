@@ -9,7 +9,7 @@ permissions:
   id-token: write # For AWS authentication
 
 env:
-  GO_VERSION: "1.24"
+  GO_VERSION: "1.25"
   AWS_DEFAULT_REGION: us-east-1
   TF_IN_AUTOMATION: true
   TERRATEST_TERRAFORM: terraform

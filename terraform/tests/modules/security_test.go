@@ -36,7 +36,7 @@ func TestSecurityModuleCreatesDatabaseSecurityGroup(t *testing.T) {
 	dbSGID := terraform.Output(t, terraformOptions, "db_security_group_id")
 	assert.NotEmpty(t, dbSGID)
 
-	sg := common.GetSecurityGroupById(t, dbSGID, testConfig.AWSRegion)
+	sg := common.GetSecurityGroupByID(t, dbSGID, testConfig.AWSRegion)
 	assert.Equal(t, "vpc-12345678", *sg.VpcId)
 
 	expectedName := fmt.Sprintf("%s-db-sg", testConfig.Prefix)
@@ -77,7 +77,7 @@ func TestSecurityModuleCreatesBastionSecurityGroup(t *testing.T) {
 	bastionSGID := terraform.Output(t, terraformOptions, "bastion_security_group_id")
 	assert.NotEmpty(t, bastionSGID)
 
-	sg := common.GetSecurityGroupById(t, bastionSGID, testConfig.AWSRegion)
+	sg := common.GetSecurityGroupByID(t, bastionSGID, testConfig.AWSRegion)
 	assert.Equal(t, "vpc-12345678", *sg.VpcId)
 
 	expectedName := fmt.Sprintf("%s-bastion-sg", testConfig.Prefix)
@@ -134,12 +134,12 @@ func TestSecurityModuleValidatesResourceTags(t *testing.T) {
 
 	// Validate database security group naming
 	dbSGID := terraform.Output(t, terraformOptions, "db_security_group_id")
-	dbSG := common.GetSecurityGroupById(t, dbSGID, testConfig.AWSRegion)
+	dbSG := common.GetSecurityGroupByID(t, dbSGID, testConfig.AWSRegion)
 	common.ValidateResourceNaming(t, *dbSG.GroupName, testConfig.Prefix, "db-sg")
 
 	// Validate bastion security group naming
 	bastionSGID := terraform.Output(t, terraformOptions, "bastion_security_group_id")
-	bastionSG := common.GetSecurityGroupById(t, bastionSGID, testConfig.AWSRegion)
+	bastionSG := common.GetSecurityGroupByID(t, bastionSGID, testConfig.AWSRegion)
 	common.ValidateResourceNaming(t, *bastionSG.GroupName, testConfig.Prefix, "bastion-sg")
 }
 
@@ -162,7 +162,7 @@ func TestSecurityModuleWithRestrictiveBastionCIDRs(t *testing.T) {
 
 	// Validate bastion security group only allows the specific CIDR
 	bastionSGID := terraform.Output(t, terraformOptions, "bastion_security_group_id")
-	bastionSG := common.GetSecurityGroupById(t, bastionSGID, testConfig.AWSRegion)
+	bastionSG := common.GetSecurityGroupByID(t, bastionSGID, testConfig.AWSRegion)
 
 	assert.NotNil(t, bastionSG, "Bastion security group should exist and be configured")
 

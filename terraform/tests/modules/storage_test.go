@@ -31,7 +31,7 @@ func TestStorageModule(t *testing.T) {
 
 	// Validate CloudFront outputs
 	cloudfrontDomain := terraform.Output(t, terraformOptions, "cloudfront_distribution_domain_name")
-	cloudfrontId := terraform.Output(t, terraformOptions, "cloudfront_distribution_id")
+	cloudfrontID := terraform.Output(t, terraformOptions, "cloudfront_distribution_id")
 
 	// Validate outputs exist and have expected format
 	assert.NotEmpty(t, bucketName)
@@ -39,7 +39,7 @@ func TestStorageModule(t *testing.T) {
 	assert.NotEmpty(t, bucketDomain)
 	assert.NotEmpty(t, uploadPolicyArn)
 	assert.NotEmpty(t, cloudfrontDomain)
-	assert.NotEmpty(t, cloudfrontId)
+	assert.NotEmpty(t, cloudfrontID)
 
 	// Validate bucket name format
 	assert.Contains(t, bucketName, testConfig.Prefix)
