@@ -28,8 +28,8 @@ fail() {
 
 usage() {
   printf '%s\n' \
-    "Usage: $0 --endpoint HOST[:PORT] --master-user USER \" \
-    "  --prod-database NAME --dev-database NAME \" \
+    "Usage: $0 --endpoint HOST[:PORT] --master-user USER" \
+    "  --prod-database NAME --dev-database NAME" \
     "  --prod-user USER --dev-user USER [--maintenance-database NAME]"
 }
 
@@ -42,6 +42,14 @@ require_option_value() {
 
 parse_arguments() {
   while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --help)
+        usage
+        exit 0
+        ;;
+      --endpoint | --master-user | --maintenance-database | --prod-database | --dev-database | --prod-user | --dev-user) ;;
+      *) fail "unknown option: $1" ;;
+    esac
     require_option_value "$1" "${2:-}"
     case "$1" in
       --endpoint) endpoint="$2" ;;
@@ -51,11 +59,6 @@ parse_arguments() {
       --dev-database) dev_database="$2" ;;
       --prod-user) prod_user="$2" ;;
       --dev-user) dev_user="$2" ;;
-      --help)
-        usage
-        exit 0
-        ;;
-      *) fail "unknown option: $1" ;;
     esac
     shift 2
   done

@@ -162,6 +162,25 @@ func TestDatabaseProvisioningGuardsFailThroughSQL(t *testing.T) {
 	assert.Equal(t, 3, strings.Count(provisioningSQL, "RAISE EXCEPTION"))
 }
 
+func TestDatabaseProvisioningHelpExitsSuccessfully(t *testing.T) {
+	t.Parallel()
+
+	command := exec.Command(databaseProvisioningScript, "--help")
+	output, err := command.CombinedOutput()
+	require.NoError(t, err, string(output))
+	assert.Contains(t, string(output), "Usage:")
+	assert.Contains(t, string(output), "--maintenance-database NAME")
+}
+
+func TestDatabaseProvisioningRejectsUnknownOptions(t *testing.T) {
+	t.Parallel()
+
+	command := exec.Command(databaseProvisioningScript, "--unknown")
+	output, err := command.CombinedOutput()
+	require.Error(t, err)
+	assert.Contains(t, string(output), "unknown option: --unknown")
+}
+
 // #316 Definition of Done: prevent database-name or role collisions at the boundary.
 func TestDatabaseProvisioningRejectsEnvironmentCollisions(t *testing.T) {
 	t.Parallel()
