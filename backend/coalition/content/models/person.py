@@ -3,6 +3,7 @@
 from typing import TYPE_CHECKING
 
 from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
 from django.db import models
 from tinymce.models import HTMLField
 
@@ -34,7 +35,10 @@ class Person(models.Model):
         related_name="person_headshots",
     )
     email = models.EmailField(blank=True)
-    linkedin_url = models.URLField(blank=True)
+    linkedin_url = models.URLField(
+        blank=True,
+        validators=[URLValidator(schemes=["http", "https"])],
+    )
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     profile_page_enabled = models.BooleanField(default=False)

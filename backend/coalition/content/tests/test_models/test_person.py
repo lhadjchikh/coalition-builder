@@ -122,6 +122,8 @@ class PersonModelTest(BaseTestCase):
         for linkedin_url in (
             "linkedin.com/in/jane",
             "javascript:alert(1)",
+            "ftp://example.com/jane",
+            "ftps://example.com/jane",
             "not a url",
         ):
             with (
