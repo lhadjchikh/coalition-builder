@@ -121,14 +121,15 @@ def validate_email_settings(
     deployment_environment: str,
     email_settings: dict[str, str],
 ) -> None:
-    """Refuse to deploy prod with mail that would be sent but unusable.
+    """Refuse to deploy a non-debug stage with unusable email settings.
 
     Without ``SITE_URL`` Django builds verification links against
     ``http://localhost:3000``, and without ``DEFAULT_FROM_EMAIL`` it sends
     from an address SES will reject. Both fail as quietly as a missing
     network path, so they are caught here instead.
     """
-    if deployment_environment not in PROD_STAGE_NAMES:
+    email_delivery_stage_names = PROD_STAGE_NAMES | STAGING_STAGE_NAMES
+    if deployment_environment not in email_delivery_stage_names:
         return
 
     missing = [
@@ -138,7 +139,8 @@ def validate_email_settings(
     ]
     if missing:
         raise RuntimeError(
-            f"{' and '.join(missing)} must be set when deploying prod so "
+            f"{' and '.join(missing)} must be set when deploying "
+            f"{deployment_environment} so "
             "endorsement verification emails carry a reachable link from an "
             "address SES accepts.",
         )

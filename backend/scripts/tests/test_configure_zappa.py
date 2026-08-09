@@ -332,6 +332,8 @@ class TestDeploymentEnvironmentValidation:
                 "ENABLE_STAGING": "true",
                 "DEPLOYMENT_ENVIRONMENT": "staging",
                 "AWS_STORAGE_BUCKET_NAME": "coalition-staging-assets-example",
+                "SITE_URL": "https://staging.example.org",
+                "DEFAULT_FROM_EMAIL": "admin@example.org",
             },
         )
         assert (
@@ -575,3 +577,26 @@ class TestEmailConfiguration:
             staging_environment[name] == configured_value
             for name, configured_value in email_settings.items()
         )
+
+    @pytest.mark.parametrize("missing_setting", ["SITE_URL", "DEFAULT_FROM_EMAIL"])
+    def test_staging_requires_email_settings(
+        self,
+        tmp_path: Path,
+        missing_setting: str,
+    ) -> None:
+        """Staging sends real mail and must reject local-development defaults."""
+        email_settings = {
+            "SITE_URL": "https://staging.example.org",
+            "DEFAULT_FROM_EMAIL": "admin@example.org",
+        }
+        del email_settings[missing_setting]
+
+        with pytest.raises(RuntimeError, match=missing_setting):
+            _generate_settings(
+                tmp_path,
+                {
+                    "ENABLE_STAGING": "true",
+                    "DEPLOYMENT_ENVIRONMENT": "staging",
+                    **email_settings,
+                },
+            )
