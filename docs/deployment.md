@@ -300,7 +300,7 @@ The per-service cost breakdown lives in [AWS Serverless Deployment](deployment/a
 - Lambda and API Gateway bill per request, with no idle cost
 - Lambda keep-warm only for production
 - Vercel free tier for development
-- ECS only for occasional TIGER imports
+- Retained TIGER import scaffolding incurs no ECS cost because no current environment provisions it
 
 ## Troubleshooting
 

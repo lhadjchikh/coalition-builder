@@ -1,8 +1,10 @@
 # Geographic Data Import
 
+> **Unavailable in current environments.** The ECS module and manual workflow remain as scaffolding, but no `shared`, `prod`, or `dev` Terraform environment instantiates the import cluster or task definition. The commands below become usable only after an environment explicitly provisions and wires those resources.
+
 ## Overview
 
-The Coalition Builder uses TIGER/Line shapefiles from the U.S. Census Bureau for geographic boundaries. These imports are run as ECS Fargate tasks to handle the CPU and memory-intensive GDAL operations.
+The Coalition Builder uses TIGER/Line shapefiles from the U.S. Census Bureau for geographic boundaries. The retained design runs these imports as ECS Fargate tasks to handle the CPU- and memory-intensive GDAL operations.
 
 ## Architecture
 
@@ -19,7 +21,7 @@ ECS Fargate Task (4GB RAM, 2 vCPU)
 
 ### Automatic Import via GitHub Actions
 
-The easiest way to import geographic data is through the GitHub Actions workflow:
+After provisioning the retained ECS resources, the intended entry point is the GitHub Actions workflow:
 
 1. Go to Actions → Geographic Data Import
 2. Click "Run workflow"
@@ -27,7 +29,7 @@ The easiest way to import geographic data is through the GitHub Actions workflow
    - **Import type**: states, counties, places, or all
    - **States**: Comma-separated state codes or "all"
    - **Year**: TIGER data year (default: 2023)
-   - **Environment**: dev, staging, or production
+   - **Environment**: `dev` or `prod`
 
 ### Manual Import via ECS
 
@@ -170,10 +172,12 @@ WHERE NOT ST_IsValid(geometry);
 ### Import Fails
 
 1. **Out of Memory**
+
    - Increase ECS task memory
    - Import smaller batches of states
 
 2. **Network Timeout**
+
    - Census FTP may be slow
    - Retry or download files locally first
 

@@ -122,7 +122,7 @@ Actions → Lambda Management → Run workflow → Select action
 
 #### `geodata_import.yml`
 
-Runs geographic data imports using ECS Fargate.
+Retains the intended ECS Fargate workflow for geographic imports. No current Terraform environment provisions its ECS cluster or task definition, so the workflow is unavailable until an environment explicitly wires in `modules/geodata-import`.
 
 **Import Types:**
 
@@ -132,7 +132,7 @@ Runs geographic data imports using ECS Fargate.
 - `all-tiger` - Import all TIGER data
 - `custom` - Run custom import command
 
-**Process:**
+**Intended process after provisioning:**
 
 1. Configures import command
 2. Runs ECS task with geodata-import container
