@@ -45,7 +45,13 @@ terraform/
 scripts/lint.py          Repo-wide auto-fixing lint driver
 docs/                    MkDocs source published to GitHub Pages
 .github/workflows/       CI; check_app.yml is the PR entry point
+.claude/agents/          Repo-scoped review experts (advocacy copy, content publishing)
+.claude/review-routing.json  Which experts /domain-review runs on which paths
 ```
+
+The two experts in `.claude/agents/` cite this repo's models and templates by path; when you move
+`html_sanitizer.py`, `STAKEHOLDER_TYPE_CHOICES`, or the campaign page component, update them in the
+same PR. See `.claude/README.md`.
 
 ## Commands
 
