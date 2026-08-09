@@ -92,17 +92,20 @@ export interface Stakeholder {
   updated_at?: string;
 }
 
-export type PublicStakeholder = Pick<
-  Stakeholder,
-  | "name"
-  | "first_name"
-  | "last_name"
-  | "organization"
-  | "role"
-  | "city"
-  | "state"
-  | "type"
-> & { id: number };
+export type PublicStakeholder = Omit<
+  Pick<
+    Stakeholder,
+    | "name"
+    | "first_name"
+    | "last_name"
+    | "organization"
+    | "role"
+    | "city"
+    | "state"
+    | "type"
+  >,
+  "state"
+> & { id: number; state: string | null };
 
 // Endorsement type definition
 export interface Endorsement {
