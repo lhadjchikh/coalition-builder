@@ -1,0 +1,64 @@
+{
+  "rules": [
+    {
+      "match": "backend/coalition/campaigns/**",
+      "experts": ["advocacy-campaign-copy-expert"]
+    },
+    {
+      "match": "backend/coalition/endorsements/**",
+      "experts": ["advocacy-campaign-copy-expert"]
+    },
+    {
+      "match": "backend/coalition/stakeholders/**",
+      "experts": ["advocacy-campaign-copy-expert"]
+    },
+    {
+      "match": "backend/coalition/legislators/**",
+      "experts": ["advocacy-campaign-copy-expert"]
+    },
+    {
+      "match": "frontend/components/Campaign*.tsx",
+      "experts": ["advocacy-campaign-copy-expert", "content-publishing-expert"]
+    },
+    {
+      "match": "frontend/components/Endorsement*.tsx",
+      "experts": ["advocacy-campaign-copy-expert"]
+    },
+    {
+      "match": "backend/coalition/content/**",
+      "experts": ["content-publishing-expert"]
+    },
+    {
+      "match": "backend/coalition/admin_help/**",
+      "experts": ["content-publishing-expert", "advocacy-campaign-copy-expert"]
+    },
+    {
+      "match": "backend/templates/emails/**",
+      "experts": ["advocacy-campaign-copy-expert"]
+    },
+    {
+      "match": "backend/coalition/legal/**",
+      "experts": ["content-publishing-expert"]
+    },
+    {
+      "match": "backend/coalition/*/migrations/*.py",
+      "experts": ["content-publishing-expert"]
+    },
+    {
+      "match": "frontend/app/**/page.tsx",
+      "experts": ["content-publishing-expert"]
+    },
+    {
+      "match": "frontend/app/**/layout.tsx",
+      "experts": ["content-publishing-expert"]
+    },
+    {
+      "match": "frontend/components/ContentBlock*.tsx",
+      "experts": ["content-publishing-expert"]
+    },
+    {
+      "match": "frontend/components/StructuredData.tsx",
+      "experts": ["content-publishing-expert"]
+    }
+  ]
+}

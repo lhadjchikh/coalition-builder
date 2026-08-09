@@ -108,5 +108,8 @@ backend/zappa_settings.json
 backend/zappa_settings.py
 .vercel
 
+# Claude - Codex adapter layers generated from .claude/model-policy.json
+.claude/codex/
+
 # Agent scratch space (campaign drafts, review ledgers)
 .context/
