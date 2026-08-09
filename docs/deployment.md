@@ -213,7 +213,6 @@ Environment variables are set via GitHub Actions:
    ```
 
 2. **Set GitHub Variables:**
-
    - `DOMAIN_NAME`: `api.yourdomain.com`
    - `CERTIFICATE_ARN`: ACM certificate ARN
 
@@ -222,7 +221,6 @@ Environment variables are set via GitHub Actions:
 ### Vercel (Frontend)
 
 1. **Add Domain in Vercel Dashboard:**
-
    - Project Settings → Domains
    - Add `yourdomain.com`
 
@@ -307,13 +305,11 @@ The per-service cost breakdown lives in [AWS Serverless Deployment](deployment/a
 ### Common Issues
 
 1. **Lambda Cold Starts**
-
    - Enable keep-warm for production
    - Increase memory allocation
    - Use provisioned concurrency if needed
 
 2. **Database Connection Errors**
-
    - Check VPC configuration
    - Verify security groups
    - Check connection pool settings

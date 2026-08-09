@@ -95,7 +95,6 @@ For domain verification, ensure:
 On first deployment with SES:
 
 1. **Terraform will**:
-
    - Create all SES resources
    - Verify your domain automatically (if using Route53)
    - Grant the Lambda execution role SES send permission
@@ -111,13 +110,11 @@ On first deployment with SES:
 After deployment, verify the setup:
 
 1. **Check AWS Console**:
-
    - SES → Verified identities → Your domain should be verified
    - VPC → Endpoints → the production `email` interface endpoint should be available
    - SES → Account dashboard → production access should be enabled
 
 2. **Check Lambda and CloudWatch**:
-
    - Lambda configuration contains `DEFAULT_FROM_EMAIL`, `SITE_URL`, and the optional notification variables
    - Successful sends appear in SES metrics
    - Delivery failures increment the `EmailDeliveryFailures` metric and alarm
