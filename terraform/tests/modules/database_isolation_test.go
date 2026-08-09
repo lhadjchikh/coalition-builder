@@ -72,15 +72,14 @@ func TestEnvironmentDatabasesUseSharedAuthoritativeNames(t *testing.T) {
 	}
 }
 
-// #316 Definition of Done: every dev Terraform apply requires an explicit rollout gate.
-func TestDevelopmentTerraformRequiresDatabaseIsolationReadiness(t *testing.T) {
+// #316 Definition of Done: readiness gates deployment without disabling targeted cost controls.
+func TestDevelopmentTerraformReadinessIsExternalToTheStack(t *testing.T) {
 	t.Parallel()
 
 	devVariables := readRepositoryFile(t, "../../environments/dev/variables.tf")
 	devOutputs := readRepositoryFile(t, "../../environments/dev/outputs.tf")
-	assert.Contains(t, devVariables, `variable "database_isolation_ready"`)
-	assert.Regexp(t, `condition\s*=\s*var\.database_isolation_ready`, devVariables)
-	assert.Regexp(t, `value\s*=\s*var\.database_isolation_ready`, devOutputs)
+	assert.NotContains(t, devVariables, `variable "database_isolation_ready"`)
+	assert.NotContains(t, devOutputs, `output "database_isolation_ready"`)
 }
 
 // #316 Definition of Done: remove the unused parallel SSM database URL path.

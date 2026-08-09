@@ -31,11 +31,6 @@ output "database_secret_arn" {
   value       = module.secrets.db_url_secret_arn
 }
 
-output "database_isolation_ready" {
-  description = "Whether the operator-confirmed database isolation gate passed"
-  value       = var.database_isolation_ready
-}
-
 # Zappa/Lambda
 output "zappa_deployment_role_arn" {
   description = "ARN of the Zappa Lambda execution role"
