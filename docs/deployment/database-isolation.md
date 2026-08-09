@@ -89,6 +89,22 @@ Run the idempotent provisioning script from a host that can reach RDS. It requir
 ```bash
 read -rsp "RDS master password: " PGPASSWORD
 export PGPASSWORD
+psql \
+  --host "${rds_endpoint%:*}" \
+  --port "${rds_endpoint##*:}" \
+  --username "${DB_USERNAME}" \
+  --dbname postgres \
+  --set "prod_user=${PROD_APP_DB_USERNAME}" \
+  --set "dev_user=${DEV_APP_DB_USERNAME}" <<'SQL'
+SELECT
+  rolname,
+  rolsuper,
+  rolcreatedb,
+  rolcreaterole,
+  pg_has_role(rolname, 'rds_superuser', 'member') AS rds_superuser_member
+FROM pg_roles
+WHERE rolname IN (:'prod_user', :'dev_user');
+SQL
 terraform/modules/database/scripts/provision_environment_databases.sh \
   --endpoint "${rds_endpoint}" \
   --master-user "${DB_USERNAME}" \
@@ -98,6 +114,8 @@ terraform/modules/database/scripts/provision_environment_databases.sh \
   --dev-user "${DEV_APP_DB_USERNAME}"
 unset PGPASSWORD
 ```
+
+Both application rows must report `false` for `rolsuper`, `rolcreatedb`, `rolcreaterole`, and `rds_superuser_member`. Stop the rollout if either role is privileged. Do not revoke membership automatically: first identify extension and schema ownership that must move to the master role, then repeat this preflight after remediation.
 
 Rerun the command once. The second run must succeed without recreating either database or altering production data.
 
