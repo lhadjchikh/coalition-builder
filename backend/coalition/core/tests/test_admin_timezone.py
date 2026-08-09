@@ -2,6 +2,7 @@
 
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.test import RequestFactory, TestCase
@@ -121,6 +122,7 @@ class SiteConfigurationAdminTest(TestCase):
     def setUp(self) -> None:
         self.model_admin = SiteConfigurationAdmin(SiteConfiguration, admin.site)
         self.request = RequestFactory().get("/admin/core/siteconfiguration/")
+        self.request.user = User.objects.create_superuser(username="site-admin")
 
     def test_timezone_choices_include_common_iana_zones(self) -> None:
         form_class = self.model_admin.get_form(self.request)
@@ -136,6 +138,9 @@ class SiteConfigurationAdminTest(TestCase):
             admin.site._registry[SiteConfiguration],
             SiteConfigurationAdmin,
         )
+
+    def test_initial_configuration_can_be_added(self) -> None:
+        assert self.model_admin.has_add_permission(self.request) is True
 
     def test_second_configuration_cannot_be_added(self) -> None:
         SiteConfiguration.objects.create()
