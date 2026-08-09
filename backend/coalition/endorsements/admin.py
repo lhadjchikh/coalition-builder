@@ -185,7 +185,7 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
             )
         return "No token generated"
 
-    @admin.action(description="Approve selected endorsements")
+    @admin.action(permissions=["change"], description="Approve selected endorsements")
     def approve_endorsements(
         self,
         request: HttpRequest,
@@ -206,7 +206,10 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
             f"Successfully approved {count} endorsement(s) and sent notifications.",
         )
 
-    @admin.action(description="Mark auto-approved endorsements as reviewed")
+    @admin.action(
+        permissions=["change"],
+        description="Mark auto-approved endorsements as reviewed",
+    )
     def mark_auto_approved_reviewed(
         self,
         request: HttpRequest,
@@ -230,7 +233,7 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
             f"Successfully marked {count} auto-approved endorsement(s) as reviewed.",
         )
 
-    @admin.action(description="Reject selected endorsements")
+    @admin.action(permissions=["change"], description="Reject selected endorsements")
     def reject_endorsements(
         self,
         request: HttpRequest,
@@ -246,7 +249,7 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
 
         self.message_user(request, f"Successfully rejected {count} endorsement(s).")
 
-    @admin.action(description="Mark as email verified")
+    @admin.action(permissions=["change"], description="Mark as email verified")
     def mark_verified(
         self,
         request: HttpRequest,
@@ -263,7 +266,7 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
             f"Successfully marked {count} endorsement(s) as email verified.",
         )
 
-    @admin.action(description="Send verification emails")
+    @admin.action(permissions=["change"], description="Send verification emails")
     def send_verification_emails(
         self,
         request: HttpRequest,
@@ -282,7 +285,7 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
             f"Successfully sent verification emails for {count} endorsement(s).",
         )
 
-    @admin.action(description="Send approval notifications")
+    @admin.action(permissions=["change"], description="Send approval notifications")
     def send_approval_notifications(
         self,
         request: HttpRequest,
@@ -298,7 +301,7 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
             f"Successfully sent approval notifications for {count} endorsement(s).",
         )
 
-    @admin.action(description="Approve for public display")
+    @admin.action(permissions=["change"], description="Approve for public display")
     def approve_for_display(
         self,
         request: HttpRequest,
@@ -317,6 +320,7 @@ class EndorsementAdmin(HelpLinkAdminMixin, admin.ModelAdmin):
             f"Successfully approved {count} endorsement(s) for public display.",
         )
 
+    @admin.action(permissions=["change"], description="Remove from public display")
     def remove_from_display(
         self,
         request: HttpRequest,

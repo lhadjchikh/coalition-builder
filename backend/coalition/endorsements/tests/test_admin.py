@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 
 from django.contrib.admin import EmptyFieldListFilter
 from django.contrib.admin.sites import AdminSite
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Permission, User
 from django.http import HttpRequest
 from django.utils import timezone
 
@@ -82,6 +82,23 @@ class EndorsementAdminTest(BaseTestCase):
 
     def test_reviewed_by_empty_filter_is_available(self) -> None:
         assert ("reviewed_by", EmptyFieldListFilter) in self.admin.list_filter
+
+    def test_view_only_staff_cannot_access_mutating_actions(self) -> None:
+        viewer = User.objects.create_user(username="endorsement-viewer", is_staff=True)
+        viewer.user_permissions.add(
+            Permission.objects.get(
+                codename="view_endorsement",
+                content_type__app_label="endorsements",
+            ),
+        )
+        view_request = HttpRequest()
+        view_request.user = viewer
+
+        assert set(self.admin.actions).isdisjoint(self.admin.get_actions(view_request))
+
+        change_request = HttpRequest()
+        change_request.user = self.user
+        assert set(self.admin.actions).issubset(self.admin.get_actions(change_request))
 
     def test_verification_link_method(self) -> None:
         """Test verification_link admin method"""
