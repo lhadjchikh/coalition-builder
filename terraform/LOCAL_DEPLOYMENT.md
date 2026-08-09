@@ -65,16 +65,16 @@ Type `yes` when prompted to confirm.
 - **Application Load Balancer**
 - **S3 Buckets** for static assets
 
-### Security & Secrets (Hybrid Approach)
+### Security & Secrets
 
-- **SSM Parameter Store** (FREE):
-  - `/coalition/dev/database-url`
-  - `/coalition/staging/database-url`
-  - `/coalition/prod/database-url`
-  - `/coalition/secret-key`
-  - `/coalition/site-password`
-- **Secrets Manager** ($0.40/month):
-  - SES SMTP credentials (complex JSON)
+- **Secrets Manager**:
+  - `/<prefix>/database-master` in the shared account
+  - `/<prefix>/database-url` in each application account
+  - `/<prefix>/secret-key`
+  - `/<prefix>/site-password`
+  - `/<prefix>/ses-smtp-credentials`
+
+SSM database URL parameters are retired. Secrets Manager is the only active runtime secrets path.
 
 ### Optional Components
 

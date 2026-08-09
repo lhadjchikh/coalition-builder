@@ -91,12 +91,21 @@ validate_shared_environment() {
   require_nonempty_string_array TF_VAR_allowed_lambda_cidrs
 }
 
-# Terraform discovers the Zappa-created API Gateway by name, so this flag alone
-# decides whether the live custom domain and its DNS record exist. An unset value
-# would otherwise reach Terraform as an empty string, so reject it here where the
-# message can name the variable.
+# Validate application deployment gates before values reach Terraform. Every
+# application requires an explicit custom-domain decision, while development
+# additionally requires the operator-confirmed database-isolation rollout.
 validate_application_environment() {
+  local environment="$1"
+  local isolation_readiness_variable=TF_VAR_database_isolation_ready
+
   require_boolean_variable TF_VAR_enable_api_custom_domain
+  if [[ "${environment}" == dev ]]; then
+    require_boolean_variable "${isolation_readiness_variable}"
+    if [[ "${!isolation_readiness_variable}" != true ]]; then
+      fail_validation 'DatabaseIsolationNotReady' "${isolation_readiness_variable}" \
+        "development database provisioning and verification must finish before Terraform deploys dev"
+    fi
+  fi
 }
 
 validate_environment() {
@@ -107,7 +116,7 @@ validate_environment() {
 
   case "${environment}" in
     shared) validate_shared_environment ;;
-    prod | dev) validate_application_environment ;;
+    prod | dev) validate_application_environment "${environment}" ;;
     *)
       fail_validation 'InvalidEnvironment' environment \
         "deployment environment must be shared, prod, or dev"

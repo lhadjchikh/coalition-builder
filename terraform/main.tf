@@ -123,6 +123,7 @@ module "database" {
 module "secrets" {
   source = "./modules/secrets"
 
+  environment     = var.environment
   prefix          = var.prefix
   app_db_username = var.app_db_username
   app_db_password = var.app_db_password

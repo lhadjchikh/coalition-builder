@@ -19,11 +19,13 @@ resource "aws_kms_alias" "secrets" {
 # Database URL Secret
 resource "aws_secretsmanager_secret" "db_url" {
   name        = "${var.prefix}/database-url"
-  description = "PostgreSQL database connection URL for the application"
+  description = "PostgreSQL database connection URL for the ${var.environment} application"
   kms_key_id  = aws_kms_key.secrets.arn
 
   tags = {
-    Name = "${var.prefix}-db-url"
+    Name         = "${var.prefix}-${var.environment}-db-url"
+    DatabaseName = var.db_name
+    Environment  = var.environment
   }
 }
 
@@ -39,7 +41,6 @@ resource "aws_secretsmanager_secret" "secret_key" {
 }
 
 # Database URL Secret Version
-# Secret versions - use lifecycle to avoid storing sensitive data in state
 resource "aws_secretsmanager_secret_version" "db_url" {
   secret_id = aws_secretsmanager_secret.db_url.id
   secret_string = jsonencode({
@@ -50,12 +51,6 @@ resource "aws_secretsmanager_secret_version" "db_url" {
     port     = try(split(":", var.db_endpoint)[1], "5432")
     dbname   = var.db_name
   })
-
-  lifecycle {
-    ignore_changes = [
-      secret_string
-    ]
-  }
 }
 
 resource "aws_secretsmanager_secret_version" "secret_key" {
@@ -92,4 +87,3 @@ resource "aws_secretsmanager_secret_version" "site_password_secret" {
     ]
   }
 }
-

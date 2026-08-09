@@ -4,8 +4,10 @@ set -euo pipefail
 
 repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 lambda_workflow="${repository_root}/.github/workflows/deploy_lambda.yml"
+dev_cost_workflow="${repository_root}/.github/workflows/dev_cost_control.yml"
 frontend_workflow="${repository_root}/.github/workflows/deploy_frontend.yml"
 management_workflow="${repository_root}/.github/workflows/lambda_management.yml"
+infra_workflow="${repository_root}/.github/workflows/deploy_infra.yml"
 terraform_workflow="${repository_root}/.github/workflows/deploy_terraform_environment.yml"
 shellcheck_workflow="${repository_root}/.github/workflows/lint_shellcheck.yml"
 
@@ -66,8 +68,10 @@ reject_text() {
 }
 
 require_file "${lambda_workflow}"
+require_file "${dev_cost_workflow}"
 require_file "${frontend_workflow}"
 require_file "${management_workflow}"
+require_file "${infra_workflow}"
 require_file "${terraform_workflow}"
 require_file "${shellcheck_workflow}"
 require_absent_file "${repository_root}/.github/workflows/deploy_app.yml"
@@ -93,6 +97,26 @@ require_step_text \
   "${lambda_workflow}" \
   "Configure Zappa settings" \
   'AWS_LOCATION_PLACE_INDEX_NAME: ${{ vars.AWS_LOCATION_PLACE_INDEX_NAME }}'
+require_step_text \
+  "${lambda_workflow}" \
+  "Validate database secret isolation" \
+  'python scripts/validate_database_secret.py'
+require_step_text \
+  "${lambda_workflow}" \
+  "Validate database secret isolation" \
+  'EXPECTED_ENVIRONMENT: ${{ steps.deployment_environment.outputs.environment }}'
+require_step_text \
+  "${lambda_workflow}" \
+  "Validate database secret isolation" \
+  'environment_database_names.json'
+require_step_text \
+  "${lambda_workflow}" \
+  "Validate database secret isolation" \
+  ".environment_databases[\$environment]"
+require_step_text \
+  "${lambda_workflow}" \
+  "Validate database secret isolation" \
+  '--expected-database-name "${EXPECTED_DATABASE_NAME}"'
 require_step_text \
   "${lambda_workflow}" \
   "Verify deployed address configuration" \
@@ -128,9 +152,36 @@ require_step_text \
   "${management_workflow}" \
   "Configure Zappa settings" \
   'AWS_LOCATION_PLACE_INDEX_NAME: ${{ vars.AWS_LOCATION_PLACE_INDEX_NAME }}'
+require_step_text \
+  "${management_workflow}" \
+  "Validate database secret isolation" \
+  'python scripts/validate_database_secret.py'
+require_step_text \
+  "${management_workflow}" \
+  "Validate database secret isolation" \
+  "github.event.inputs.action == 'schedule' ||"
+require_step_text \
+  "${management_workflow}" \
+  "Validate database secret isolation" \
+  ".environment_databases[\$environment]"
+require_step_text \
+  "${management_workflow}" \
+  "Validate database secret isolation" \
+  '--expected-database-name "${EXPECTED_DATABASE_NAME}"'
+
+require_text \
+  "${infra_workflow}" \
+  "apply: \${{ github.event_name == 'workflow_dispatch' }}"
+require_text \
+  "${terraform_workflow}" \
+  "if: inputs.apply && github.ref == 'refs/heads/main' && steps.plan.outputs.has_changes == 'true'"
 
 require_text "${terraform_workflow}" "TF_VAR_create_new_key_pair: \${{ vars.CREATE_NEW_KEY_PAIR }}"
+require_text \
+  "${terraform_workflow}" \
+  "TF_VAR_database_isolation_ready: \${{ github.event_name == 'pull_request' && 'true' || vars.DATABASE_ISOLATION_READY }}"
 require_text "${terraform_workflow}" "validate_terraform_environment_variables.sh"
+reject_text "${dev_cost_workflow}" "TF_VAR_database_isolation_ready"
 require_text_occurrences \
   "${shellcheck_workflow}" \
   '".github/workflows/deploy_terraform_environment.yml"' \

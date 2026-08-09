@@ -21,6 +21,16 @@ output "database_endpoint" {
   value       = data.terraform_remote_state.shared.outputs.database_endpoint
 }
 
+output "database_name" {
+  description = "Authoritative development database name"
+  value       = module.database_names.environment_database_names["dev"]
+}
+
+output "database_secret_arn" {
+  description = "Set the dev GitHub environment's DATABASE_SECRET_ARN secret to this ARN"
+  value       = module.secrets.db_url_secret_arn
+}
+
 # Zappa/Lambda
 output "zappa_deployment_role_arn" {
   description = "ARN of the Zappa Lambda execution role"

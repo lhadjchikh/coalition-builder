@@ -5,6 +5,7 @@
         "project_name": "coalition",
         "s3_bucket": "YOUR-ZAPPA-DEPLOYMENT-BUCKET",
         "runtime": "python3.13",
+        "log_level": "INFO",
         
         "vpc_config": {
             "SubnetIds": [],
@@ -51,7 +52,6 @@
             "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
             "ENVIRONMENT": "dev",
             "DEBUG": "true",
-            "DATABASE_NAME": "YOUR-DEV-DB-NAME",
             "AWS_STORAGE_BUCKET_NAME": "YOUR-DEV-ASSETS-BUCKET"
         },
         
@@ -84,7 +84,6 @@
             "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
             "ENVIRONMENT": "staging",
             "DEBUG": "false",
-            "DATABASE_NAME": "YOUR-STAGING-DB-NAME",
             "AWS_STORAGE_BUCKET_NAME": "YOUR-STAGING-ASSETS-BUCKET"
         },
         
@@ -117,7 +116,6 @@
             "LD_LIBRARY_PATH": "/opt/lib:/opt/lib64",
             "ENVIRONMENT": "production",
             "DEBUG": "false",
-            "DATABASE_NAME": "YOUR-PRODUCTION-DB-NAME",
             "AWS_STORAGE_BUCKET_NAME": "YOUR-PRODUCTION-ASSETS-BUCKET"
         },
         

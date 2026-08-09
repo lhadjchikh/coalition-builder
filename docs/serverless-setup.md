@@ -25,11 +25,6 @@ export DEPLOYMENT_ENVIRONMENT="dev"
 export AWS_STORAGE_BUCKET_NAME="coalition-dev-assets-abc123"
 export AWS_LOCATION_PLACE_INDEX_NAME="coalition-geocoding-index"
 
-# Optional - Database names (defaults shown)
-export DEV_DB_NAME="coalition_dev"
-export STAGING_DB_NAME="coalition_staging"
-export PRODUCTION_DB_NAME="coalition_production"
-
 # Optional - For custom Docker images
 export USE_CUSTOM_DOCKER="true"
 export ECR_REGISTRY="123456789012.dkr.ecr.us-east-1.amazonaws.com"
@@ -45,7 +40,7 @@ Run the configuration script:
 
 ```bash
 cd backend
-python scripts/configure-zappa.py
+python scripts/configure_zappa.py
 ```
 
 This generates `zappa_settings.json` with your specific configuration.

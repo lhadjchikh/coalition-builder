@@ -57,13 +57,6 @@ variable "enable_vpc_endpoints" {
   default     = true
 }
 
-# Database (in shared account, accessed via peering)
-variable "db_name" {
-  description = "Database name in the shared RDS instance (dev database)"
-  type        = string
-  default     = "coalition"
-}
-
 variable "app_db_username" {
   description = "Application database username"
   type        = string

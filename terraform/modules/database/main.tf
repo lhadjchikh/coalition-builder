@@ -65,9 +65,10 @@ resource "aws_secretsmanager_secret_version" "db_master_initial" {
   secret_string = jsonencode({
     username = var.db_username
     password = var.db_password
-    host     = "" # Will be updated after DB creation
-    port     = "" # Will be updated after DB creation
-    dbname   = var.db_name
+    host     = aws_db_instance.postgres.address
+    port     = aws_db_instance.postgres.port
+    # Keep admin credentials usable even if the creation-time database is retired.
+    dbname = "postgres"
   })
 }
 

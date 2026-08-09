@@ -14,7 +14,7 @@ The repository contains these authentication layers:
 
 ### Current Automation Boundary
 
-The infrastructure workflow does not enable or update application-level password protection. It reads the selected GitHub Environment's `SITE_PASSWORD` secret as a Terraform variable and stores it in SSM Parameter Store and Secrets Manager, but it does not add `SITE_PASSWORD_ENABLED`, `SITE_USERNAME`, or `SITE_PASSWORD` to Lambda or Vercel.
+The infrastructure workflow does not enable or update application-level password protection. It reads the selected GitHub Environment's `SITE_PASSWORD` secret as a Terraform variable and stores it in Secrets Manager, but it does not add `SITE_PASSWORD_ENABLED`, `SITE_USERNAME`, or `SITE_PASSWORD` to Lambda or Vercel.
 
 Both applications default password protection to disabled when their runtime variables are absent. Do not set these values only through the Lambda or Vercel consoles: the next application deployment can replace console-managed configuration.
 
@@ -31,7 +31,7 @@ The `deploy_infra.yml` workflow automatically:
 
 1. Reads `SITE_PASSWORD` from the selected GitHub Environment
 2. Passes it to Terraform as `TF_VAR_site_password`
-3. Stores it in SSM Parameter Store and AWS Secrets Manager
+3. Stores it in AWS Secrets Manager
 
 It does not update Lambda or Vercel environment variables.
 
@@ -78,6 +78,6 @@ No repository or environment secret currently enables protection by itself. When
 
 ## Security Features
 
-- **AWS storage**: Terraform stores `SITE_PASSWORD` in SSM Parameter Store and Secrets Manager.
+- **AWS storage**: Terraform stores `SITE_PASSWORD` in Secrets Manager.
 - **Local environment variables**: Enable and configure protection during development.
 - **Separate application layers**: Frontend and backend protection must be configured and verified independently.

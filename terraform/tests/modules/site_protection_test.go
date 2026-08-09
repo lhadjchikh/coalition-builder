@@ -15,6 +15,7 @@ func TestSecretsModuleValidation(t *testing.T) {
 		terraformOptions := &terraform.Options{
 			TerraformDir: "../../modules/secrets",
 			Vars: map[string]interface{}{
+				"environment":     "dev",
 				"prefix":          "test-coalition",
 				"app_db_username": "testuser",
 				"app_db_password": "testpass123",
@@ -42,6 +43,7 @@ func TestSecretsModuleValidation(t *testing.T) {
 		terraformOptions := &terraform.Options{
 			TerraformDir: "../../modules/secrets",
 			Vars: map[string]interface{}{
+				"environment":     "dev",
 				"prefix":          "test-coalition",
 				"app_db_username": "testuser",
 				"app_db_password": "testpass123",

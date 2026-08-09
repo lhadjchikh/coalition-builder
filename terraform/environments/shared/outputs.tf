@@ -40,6 +40,11 @@ output "database_name" {
   value       = module.database.db_instance_name
 }
 
+output "environment_database_names" {
+  description = "Authoritative database name for each application environment"
+  value       = module.database_names.environment_database_names
+}
+
 # Bastion Outputs
 output "bastion_public_ip" {
   description = "Public IP of the bastion host"

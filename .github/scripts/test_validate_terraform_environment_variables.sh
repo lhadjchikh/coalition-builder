@@ -109,9 +109,31 @@ application_environment=(
 assert_application_configuration_is_accepted() {
   local environment="$1"
 
+  if [[ "${environment}" == dev ]]; then
+    env -i PATH="${PATH}" GITHUB_RUN_ID=test \
+      "${application_environment[@]}" \
+      TF_VAR_database_isolation_ready=true \
+      "${VALIDATOR}" "${environment}" >/dev/null
+    return
+  fi
+
   env -i PATH="${PATH}" GITHUB_RUN_ID=test \
     "${application_environment[@]}" \
     "${VALIDATOR}" "${environment}" >/dev/null
+}
+
+assert_dev_database_isolation_gate_is_enforced() {
+  local readiness
+
+  for readiness in "" false; do
+    if env -i PATH="${PATH}" GITHUB_RUN_ID=test \
+      "${application_environment[@]}" \
+      TF_VAR_database_isolation_ready="${readiness}" \
+      "${VALIDATOR}" dev >/dev/null 2>&1; then
+      printf 'Expected dev validation to require TF_VAR_database_isolation_ready=true\n' >&2
+      return 1
+    fi
+  done
 }
 
 # Terraform discovers the API Gateway id by name, so this flag is the only thing
@@ -168,6 +190,7 @@ assert_all_shared_variables_are_required
 assert_empty_network_boundaries_are_rejected
 assert_repository_identity_mismatch_is_rejected
 assert_shared_environment_ignores_the_custom_domain_flag
+assert_dev_database_isolation_gate_is_enforced
 
 for application_environment_name in prod dev; do
   assert_application_configuration_is_accepted "${application_environment_name}"
