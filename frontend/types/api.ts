@@ -141,6 +141,17 @@ export interface EndorsementCreate {
   form_metadata?: SpamPreventionMetadata;
 }
 
+export interface EndorsementVerification {
+  success: boolean;
+  message: string;
+  status: "pending" | "verified" | "approved" | "rejected";
+}
+
+export interface EndorsementVerificationResend {
+  success: boolean;
+  message: string;
+}
+
 // Theme and styling types
 export interface Theme {
   id: number;

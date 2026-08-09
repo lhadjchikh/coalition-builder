@@ -1,0 +1,113 @@
+import React from "react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import API from "../../../../services/api";
+import VerifyEndorsementPage from "../page";
+
+jest.mock("../../../../services/api", () => ({
+  __esModule: true,
+  default: {
+    verifyEndorsement: jest.fn(),
+  },
+}));
+
+describe("VerifyEndorsementPage", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("verifies the token and confirms the endorsement is under review", async () => {
+    (API.verifyEndorsement as jest.Mock).mockResolvedValue({
+      success: true,
+      message:
+        "Email verified successfully! Your endorsement is now under review.",
+      status: "verified",
+    });
+
+    render(
+      <VerifyEndorsementPage
+        params={Promise.resolve({ token: "verification-token" })}
+      />
+    );
+
+    expect(screen.getByText("Verifying your endorsement…")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(API.verifyEndorsement).toHaveBeenCalledWith("verification-token");
+    });
+    expect(
+      await screen.findByRole("heading", { name: "Endorsement verified" })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Return home" })).toHaveAttribute(
+      "href",
+      "/"
+    );
+  });
+
+  it("reports an auto-approved endorsement accurately", async () => {
+    (API.verifyEndorsement as jest.Mock).mockResolvedValue({
+      success: true,
+      message: "Email verified successfully",
+      status: "approved",
+    });
+
+    render(
+      <VerifyEndorsementPage
+        params={Promise.resolve({ token: "approved-token" })}
+      />
+    );
+
+    expect(
+      await screen.findByText("Thank you. Your endorsement has been approved.")
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/under review/i)).not.toBeInTheDocument();
+  });
+
+  it("shows a useful error when verification fails", async () => {
+    (API.verifyEndorsement as jest.Mock).mockRejectedValue(
+      new Error("HTTP error! status: 404")
+    );
+
+    render(
+      <VerifyEndorsementPage
+        params={Promise.resolve({ token: "missing-token" })}
+      />
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: "Verification failed" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/we could not verify your endorsement right now/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/contact the campaign organizers to request a new link/i)
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Try again" })).toBeEnabled();
+  });
+
+  it("retries verification after a temporary failure", async () => {
+    (API.verifyEndorsement as jest.Mock)
+      .mockRejectedValueOnce(new Error("Network unavailable"))
+      .mockResolvedValueOnce({
+        success: true,
+        message:
+          "Email verified successfully! Your endorsement is now under review.",
+        status: "verified",
+      });
+
+    render(
+      <VerifyEndorsementPage
+        params={Promise.resolve({ token: "verification-token" })}
+      />
+    );
+
+    fireEvent.click(await screen.findByRole("button", { name: "Try again" }));
+
+    expect(screen.getByText("Verifying your endorsement…")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(API.verifyEndorsement).toHaveBeenCalledTimes(2);
+    });
+    expect(
+      await screen.findByRole("heading", { name: "Endorsement verified" })
+    ).toBeInTheDocument();
+  });
+});

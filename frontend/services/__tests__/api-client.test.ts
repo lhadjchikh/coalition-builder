@@ -244,6 +244,25 @@ describe("BaseApiClient", () => {
     });
   });
 
+  describe("verifyEndorsement", () => {
+    it("should verify an endorsement token", async () => {
+      const verification = {
+        success: true,
+        message: "Email verified successfully",
+        status: "verified" as const,
+      };
+      client.requestMock.mockResolvedValue(verification);
+
+      const result = await client.verifyEndorsement("token/with spaces");
+
+      expect(result).toEqual(verification);
+      expect(client.requestMock).toHaveBeenCalledWith(
+        "/api/endorsements/verify/token%2Fwith%20spaces/",
+        { method: "POST" }
+      );
+    });
+  });
+
   describe("getHomepage", () => {
     it("should fetch homepage", async () => {
       const mockHomepage: HomePage = {

@@ -7,8 +7,8 @@ import React, {
 import API from "../services/api";
 import analytics from "../services/analytics";
 import { Campaign, EndorsementCreate, Stakeholder } from "../types/index";
-import SocialShareButtons from "./SocialShareButtons";
 import AddressAutocomplete from "./AddressAutocomplete";
+import EndorsementConfirmationDialog from "./EndorsementConfirmationDialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import "../styles/Endorsements.css";
@@ -107,6 +107,9 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<boolean>(false);
+    const [confirmationEmail, setConfirmationEmail] = useState<string | null>(
+      null
+    );
 
     // Spam prevention state
     const [formStartTime] = useState<string>(new Date().toISOString());
@@ -118,6 +121,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
     });
     const formRef = useRef<HTMLFormElement>(null);
     const typeSelectRef = useRef<HTMLSelectElement>(null);
+    const submitButtonRef = useRef<HTMLButtonElement>(null);
 
     // Expose methods to parent component
     useImperativeHandle(
@@ -207,6 +211,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
         };
 
         await API.createEndorsement(endorsementData);
+        setConfirmationEmail(stakeholder.email);
         setSuccess(true);
 
         // Track successful endorsement submission
@@ -306,34 +311,16 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
           </div>
         )}
 
-        {success && (
-          <div className="success-message" data-testid="success-message">
-            <h3>Thank you for your endorsement!</h3>
-            <p>
-              Your endorsement has been submitted successfully and will be
-              reviewed shortly.
-            </p>
-
-            <div className="share-endorsement-section">
-              <p className="share-cta">
-                Help amplify your support by sharing this campaign:
-              </p>
-              <SocialShareButtons
-                url={`${window.location.origin}/campaigns/${campaign.name}`}
-                title={`I just endorsed ${campaign.title}!`}
-                description={`Join me in supporting this important initiative: ${
-                  campaign.summary || campaign.description
-                }`}
-                hashtags={[
-                  "PolicyChange",
-                  "CivicEngagement",
-                  campaign.name?.replace(/-/g, "") || "",
-                ]}
-                campaignName={campaign.name}
-                showLabel={false}
-              />
-            </div>
-          </div>
+        {success && confirmationEmail && (
+          <EndorsementConfirmationDialog
+            campaign={campaign}
+            email={confirmationEmail}
+            onClose={() => {
+              setSuccess(false);
+              setConfirmationEmail(null);
+            }}
+            returnFocusTo={submitButtonRef.current}
+          />
         )}
 
         {error && (
@@ -715,6 +702,7 @@ const EndorsementForm = forwardRef<EndorsementFormRef, EndorsementFormProps>(
 
           <div className="form-actions">
             <button
+              ref={submitButtonRef}
               type="submit"
               disabled={isSubmitting}
               data-testid="submit-button"

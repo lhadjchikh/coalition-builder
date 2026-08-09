@@ -2,7 +2,12 @@
 // Extends the shared base client with browser-specific functionality like CSRF
 
 import { BaseApiClient } from "./api-client";
-import type { Endorsement, EndorsementCreate } from "../types";
+import type {
+  Endorsement,
+  EndorsementCreate,
+  EndorsementVerification,
+  EndorsementVerificationResend,
+} from "../types";
 
 export function getBaseUrl(): string {
   // For browser context, always use relative URLs to avoid CORS
@@ -310,6 +315,22 @@ class FrontendApiClient extends BaseApiClient {
     endorsementData: EndorsementCreate
   ): Promise<Endorsement> {
     return this.post<Endorsement>("/api/endorsements/", endorsementData);
+  }
+
+  async verifyEndorsement(token: string): Promise<EndorsementVerification> {
+    return this.post<EndorsementVerification>(
+      `/api/endorsements/verify/${encodeURIComponent(token)}/`
+    );
+  }
+
+  async resendEndorsementVerification(
+    email: string,
+    campaignId: number
+  ): Promise<EndorsementVerificationResend> {
+    return this.post<EndorsementVerificationResend>(
+      "/api/endorsements/resend-verification/",
+      { email, campaign_id: campaignId }
+    );
   }
 }
 

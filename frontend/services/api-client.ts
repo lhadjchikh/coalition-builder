@@ -12,6 +12,7 @@ import type {
   Legislator,
   Endorsement,
   EndorsementCreate,
+  EndorsementVerification,
 } from "../types";
 
 export interface ApiClientConfig {
@@ -86,6 +87,13 @@ export abstract class BaseApiClient {
       },
       body: JSON.stringify(endorsementData),
     });
+  }
+
+  async verifyEndorsement(token: string): Promise<EndorsementVerification> {
+    return this.request<EndorsementVerification>(
+      `/api/endorsements/verify/${encodeURIComponent(token)}/`,
+      { method: "POST" }
+    );
   }
 
   async getHomepage(): Promise<HomePage> {

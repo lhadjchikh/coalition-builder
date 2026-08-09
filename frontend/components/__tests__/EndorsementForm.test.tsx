@@ -19,6 +19,7 @@ jest.mock("../../services/api", () => ({
     getEndorsements: jest.fn(),
     getCampaignEndorsements: jest.fn(),
     createEndorsement: jest.fn(),
+    resendEndorsementVerification: jest.fn(),
     getHomepageById: jest.fn(),
     getContentBlocks: jest.fn(),
     getContentBlocksByPageType: jest.fn(),
@@ -70,6 +71,18 @@ jest.mock("../../services/api", () => ({
   },
 }));
 jest.mock("../../services/analytics");
+
+const showModalMock = jest.fn(function (this: HTMLDialogElement) {
+  this.open = true;
+});
+const closeDialogMock = jest.fn(function (this: HTMLDialogElement) {
+  this.open = false;
+});
+
+Object.defineProperties(HTMLDialogElement.prototype, {
+  showModal: { configurable: true, value: showModalMock },
+  close: { configurable: true, value: closeDialogMock },
+});
 
 // Mock SocialShareButtons component
 jest.mock("../SocialShareButtons", () => {
@@ -184,6 +197,11 @@ describe("EndorsementForm", () => {
       campaign_id: 1,
       stakeholder_id: 1,
     });
+    (API.resendEndorsementVerification as jest.Mock).mockResolvedValue({
+      success: true,
+      message:
+        "If an endorsement exists for this email and campaign, a verification email has been sent.",
+    });
   });
 
   it("handles honeypot field changes", () => {
@@ -297,12 +315,92 @@ describe("EndorsementForm", () => {
           screen.getByText("Thank you for your endorsement!")
         ).toBeInTheDocument();
       });
+      expect(
+        screen.getByRole("button", { name: "Send another verification email" })
+      ).toBeEnabled();
+      expect(
+        screen.getByText(/verifying your email completes your submission/i)
+      ).toBeInTheDocument();
+
+      const confirmationDialog = screen.getByRole("dialog");
+      expect(confirmationDialog.tagName).toBe("DIALOG");
+      expect(showModalMock).toHaveBeenCalledTimes(1);
 
       // Check that social share buttons are displayed
       expect(screen.getByTestId("social-share-buttons")).toBeInTheDocument();
       expect(
         screen.getByText("Help amplify your support by sharing this campaign:")
       ).toBeInTheDocument();
+    });
+
+    it("requests another verification email without resubmitting", async () => {
+      render(<EndorsementForm campaign={mockCampaign} />);
+
+      fireEvent.change(screen.getByTestId("type-select"), {
+        target: { value: "individual" },
+      });
+      fireEvent.change(screen.getByTestId("first-name-input"), {
+        target: { value: "John" },
+      });
+      fireEvent.change(screen.getByTestId("last-name-input"), {
+        target: { value: "Doe" },
+      });
+      fireEvent.change(screen.getByTestId("email-input"), {
+        target: { value: "john@example.com" },
+      });
+      await fillAddressFields();
+      fireEvent.click(screen.getByTestId("terms-checkbox"));
+      fireEvent.click(screen.getByTestId("submit-button"));
+
+      fireEvent.click(
+        await screen.findByRole("button", {
+          name: "Send another verification email",
+        })
+      );
+
+      await waitFor(() => {
+        expect(API.resendEndorsementVerification).toHaveBeenCalledWith(
+          "john@example.com",
+          mockCampaign.id
+        );
+      });
+      expect(
+        screen.getByText(/another verification email has been requested/i)
+      ).toBeInTheDocument();
+      expect(API.createEndorsement).toHaveBeenCalledTimes(1);
+    });
+
+    it("closes the confirmation dialog without resubmitting", async () => {
+      render(<EndorsementForm campaign={mockCampaign} />);
+
+      fireEvent.change(screen.getByTestId("type-select"), {
+        target: { value: "individual" },
+      });
+      fireEvent.change(screen.getByTestId("first-name-input"), {
+        target: { value: "John" },
+      });
+      fireEvent.change(screen.getByTestId("last-name-input"), {
+        target: { value: "Doe" },
+      });
+      fireEvent.change(screen.getByTestId("email-input"), {
+        target: { value: "john@example.com" },
+      });
+      await fillAddressFields();
+      fireEvent.click(screen.getByTestId("terms-checkbox"));
+      const submitButton = screen.getByTestId("submit-button");
+      fireEvent.click(submitButton);
+
+      await waitFor(() =>
+        expect(screen.getByRole("dialog")).toBeInTheDocument()
+      );
+      fireEvent.click(
+        screen.getByRole("button", { name: "Close confirmation" })
+      );
+
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(closeDialogMock).toHaveBeenCalledTimes(1);
+      expect(submitButton).toHaveFocus();
+      expect(API.createEndorsement).toHaveBeenCalledTimes(1);
     });
 
     it("passes correct props to SocialShareButtons component", async () => {

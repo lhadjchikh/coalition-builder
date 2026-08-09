@@ -2,15 +2,19 @@
 Tests for endorsement email service functionality.
 """
 
+from datetime import timedelta
 from smtplib import SMTPException
 from unittest.mock import Mock, patch
 
 from botocore.exceptions import ClientError
 from django.core import mail
 from django.core.exceptions import ImproperlyConfigured
+from django.db import OperationalError
 from django.template.exceptions import TemplateDoesNotExist
+from django.utils import timezone
 
 from coalition.campaigns.models import PolicyCampaign
+from coalition.content.models import HomePage
 from coalition.test_base import BaseTestCase
 
 from ..email_service import EndorsementEmailService
@@ -60,6 +64,110 @@ class EndorsementEmailServiceTest(BaseTestCase):
         # Check that timestamp was updated
         self.endorsement.refresh_from_db()
         assert self.endorsement.verification_sent_at is not None
+
+    @patch("coalition.endorsements.email_service.send_mail")
+    def test_timestamp_is_persisted_before_verification_email_is_sent(
+        self,
+        mock_send_mail: Mock,
+    ) -> None:
+        with (
+            patch.object(
+                self.endorsement,
+                "save",
+                side_effect=OperationalError("database unavailable"),
+            ),
+            self.assertRaises(OperationalError),
+        ):
+            EndorsementEmailService.send_verification_email(self.endorsement)
+
+        mock_send_mail.assert_not_called()
+
+    @patch("coalition.endorsements.email_service.send_mail")
+    def test_failed_resend_preserves_previous_sent_timestamp(
+        self,
+        mock_send_mail: Mock,
+    ) -> None:
+        mock_send_mail.return_value = 1
+        EndorsementEmailService.send_verification_email(self.endorsement)
+        self.endorsement.refresh_from_db()
+        previous_sent_at = self.endorsement.verification_sent_at
+
+        mock_send_mail.return_value = 0
+        sent = EndorsementEmailService.send_verification_email(self.endorsement)
+
+        assert sent is False
+        self.endorsement.refresh_from_db()
+        assert self.endorsement.verification_sent_at == previous_sent_at
+
+    def test_failed_resend_does_not_overwrite_newer_concurrent_timestamp(
+        self,
+    ) -> None:
+        previous_sent_at = timezone.now() - timedelta(hours=1)
+        newer_sent_at = timezone.now() + timedelta(seconds=1)
+        self.endorsement.verification_sent_at = previous_sent_at
+        self.endorsement.save(update_fields=["verification_sent_at"])
+
+        def record_concurrent_success(_email: object) -> bool:
+            Endorsement.objects.filter(pk=self.endorsement.pk).update(
+                verification_sent_at=newer_sent_at,
+            )
+            return False
+
+        with patch(
+            "coalition.endorsements.email_service._deliver",
+            side_effect=record_concurrent_success,
+        ):
+            sent = EndorsementEmailService.send_verification_email(self.endorsement)
+
+        assert sent is False
+        self.endorsement.refresh_from_db()
+        assert self.endorsement.verification_sent_at == newer_sent_at
+
+    def test_verification_email_uses_active_homepage_organization_name(self) -> None:
+        HomePage.objects.create(
+            organization_name="Land and Bay Stewards",
+            tagline="Stewarding land and bay",
+            hero_title="Land and Bay Stewards",
+        )
+        mail.outbox = []
+
+        with self.settings(ORGANIZATION_NAME="Coalition Builder"):
+            sent = EndorsementEmailService.send_verification_email(self.endorsement)
+
+        assert sent is True
+        assert "Land and Bay Stewards" in mail.outbox[0].body
+        assert "Coalition Builder" not in mail.outbox[0].body
+
+    def test_verification_email_uses_configured_name_without_homepage(self) -> None:
+        HomePage.objects.all().delete()
+        mail.outbox = []
+
+        with self.settings(ORGANIZATION_NAME="Configured Organization"):
+            sent = EndorsementEmailService.send_verification_email(self.endorsement)
+
+        assert sent is True
+        assert "Configured Organization" in mail.outbox[0].body
+
+    @patch(
+        "coalition.endorsements.email_service.HomePage.get_active",
+        side_effect=OperationalError("homepage lookup failed"),
+    )
+    def test_homepage_lookup_failure_prevents_wrong_brand_email(
+        self,
+        mock_get_active: Mock,
+    ) -> None:
+        mail.outbox = []
+
+        with self.assertLogs(
+            "coalition.endorsements.email_service",
+            level="ERROR",
+        ) as captured:
+            sent = EndorsementEmailService.send_verification_email(self.endorsement)
+
+        assert sent is False
+        assert mail.outbox == []
+        assert "EMAIL_DELIVERY_FAILED" in captured.output[0]
+        mock_get_active.assert_called_once_with()
 
     @patch("coalition.endorsements.email_service.send_mail")
     def test_send_verification_email_failure(self, mock_send_mail: Mock) -> None:

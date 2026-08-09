@@ -9,6 +9,7 @@ from unittest.mock import Mock, patch
 from botocore.exceptions import ClientError
 from django.contrib.auth.models import Permission, User
 from django.core.cache import cache
+from django.db import OperationalError
 from django.http import HttpResponse
 from django.test import Client, override_settings
 from django.utils import timezone
@@ -99,6 +100,36 @@ class EndorsementSurvivesEmailOutageTest(BaseTestCase):
         # Never marked as sent, so the verification email can be resent.
         assert endorsement.verification_sent_at is None
         assert endorsement.email_verified is False
+
+    def test_endorsement_persists_when_admin_notification_raises(self) -> None:
+        with patch.object(
+            EndorsementEmailService,
+            "send_admin_notification",
+            side_effect=RuntimeError("unexpected notification failure"),
+        ):
+            response = self.submit_endorsement()
+
+        assert response.status_code == 200, response.content
+        endorsement = Endorsement.objects.get(
+            stakeholder__email="dana@example.com",
+            campaign=self.campaign,
+        )
+        assert endorsement.status == "pending"
+        assert endorsement.email_verified is False
+
+    def test_endorsement_persists_when_verification_notification_raises(self) -> None:
+        with patch.object(
+            EndorsementEmailService,
+            "send_verification_email",
+            side_effect=OperationalError("timestamp save failed"),
+        ):
+            response = self.submit_endorsement()
+
+        assert response.status_code == 200, response.content
+        assert Endorsement.objects.filter(
+            stakeholder__email="dana@example.com",
+            campaign=self.campaign,
+        ).exists()
 
 
 class EndorsementAPITest(BaseTestCase):
