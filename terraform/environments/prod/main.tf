@@ -111,8 +111,11 @@ module "zappa" {
 
   prefix       = var.prefix
   project_name = "coalition"
+  stage_name   = var.api_gateway_stage
   aws_region   = var.aws_region
   vpc_id       = module.networking.vpc_id
+
+  discover_api_gateway = var.enable_api_custom_domain
 
   create_lambda_sg = true
   # Lambda needs to reach shared account's DB subnets via VPC peering
@@ -358,9 +361,9 @@ resource "aws_acm_certificate_validation" "main" {
   validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
 }
 
-# API custom domain (conditional — requires api_gateway_id from Zappa deployment)
+# API custom domain (conditional — requires the API Gateway Zappa deploys)
 resource "aws_api_gateway_domain_name" "api" {
-  count = var.api_gateway_id != "" ? 1 : 0
+  count = var.enable_api_custom_domain ? 1 : 0
 
   domain_name              = "api.${var.domain_name}"
   regional_certificate_arn = aws_acm_certificate_validation.main.certificate_arn
@@ -371,9 +374,9 @@ resource "aws_api_gateway_domain_name" "api" {
 }
 
 resource "aws_api_gateway_base_path_mapping" "api" {
-  count = var.api_gateway_id != "" ? 1 : 0
+  count = var.enable_api_custom_domain ? 1 : 0
 
-  api_id      = var.api_gateway_id
+  api_id      = module.zappa.api_gateway_id
   stage_name  = var.api_gateway_stage
   domain_name = aws_api_gateway_domain_name.api[0].domain_name
 }
@@ -381,7 +384,7 @@ resource "aws_api_gateway_base_path_mapping" "api" {
 # API DNS record in shared account's Route53 zone
 resource "aws_route53_record" "api" {
   provider = aws.shared
-  count    = var.api_gateway_id != "" ? 1 : 0
+  count    = var.enable_api_custom_domain ? 1 : 0
 
   allow_overwrite = true
   zone_id         = data.terraform_remote_state.shared.outputs.route53_zone_id

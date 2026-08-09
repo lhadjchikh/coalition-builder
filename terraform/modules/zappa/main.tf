@@ -1,3 +1,21 @@
+locals {
+  # Zappa slugifies the combined project and stage before naming AWS resources.
+  zappa_stage_resource_name = trim(
+    replace(lower("${var.project_name}-${var.stage_name}"), "/[_-]+/", "-"),
+    "-"
+  )
+}
+
+# Zappa, not Terraform, creates the API Gateway REST API. Terraform discovers it
+# by name so no environment has to carry a hand-copied id that can drift out of
+# date. Discovery is opt-in because the first Terraform apply of an environment
+# necessarily precedes the first Zappa deployment.
+data "aws_api_gateway_rest_api" "zappa" {
+  count = var.discover_api_gateway ? 1 : 0
+
+  name = local.zappa_stage_resource_name
+}
+
 # S3 bucket for Zappa deployments
 resource "aws_s3_bucket" "zappa_deployments" {
   bucket = coalesce(var.zappa_bucket_name, "${var.prefix}-zappa-deployments")
