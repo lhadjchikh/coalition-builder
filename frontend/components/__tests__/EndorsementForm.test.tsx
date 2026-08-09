@@ -309,6 +309,9 @@ describe("EndorsementForm", () => {
           screen.getByText("Thank you for your endorsement!")
         ).toBeInTheDocument();
       });
+      expect(
+        screen.getByText(/resubmit the form to request another verification/i)
+      ).toBeInTheDocument();
 
       const confirmationDialog = screen.getByRole("dialog");
       expect(confirmationDialog.tagName).toBe("DIALOG");

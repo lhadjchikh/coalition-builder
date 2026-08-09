@@ -59,6 +59,10 @@ const EndorsementConfirmationDialog: React.FC<
         Check your email and click the verification link. Your endorsement will
         be sent for review after you verify it.
       </p>
+      <p>
+        If the email does not arrive, close this message and resubmit the form
+        to request another verification email.
+      </p>
 
       <div className="share-endorsement-section">
         <p className="share-cta">
