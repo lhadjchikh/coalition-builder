@@ -18,10 +18,9 @@ resource "aws_kms_alias" "secrets" {
 
 # Database URL Secret
 resource "aws_secretsmanager_secret" "db_url" {
-  name                    = "${var.prefix}/database-url"
-  description             = "PostgreSQL database connection URL for the ${var.environment} application"
-  kms_key_id              = aws_kms_key.secrets.arn
-  recovery_window_in_days = 30
+  name        = "${var.prefix}/database-url"
+  description = "PostgreSQL database connection URL for the ${var.environment} application"
+  kms_key_id  = aws_kms_key.secrets.arn
 
   tags = {
     Name         = "${var.prefix}-${var.environment}-db-url"
